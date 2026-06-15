@@ -1,0 +1,8 @@
+[package]
+name = "adinkra-codespace"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nauty-pet = "0.14"
+petgraph = "0.8"
