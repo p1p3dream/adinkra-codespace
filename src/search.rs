@@ -503,3 +503,106 @@ pub fn search(config: &SearchConfig) {
         );
     }
 }
+
+/// Saturation test: stress-test random sampling to determine whether the known
+/// class count is the true total or merely a lower bound.
+///
+/// Runs up to `max_batches` batches of `random_batch(n, batch_size, seed)` with
+/// incrementing seeds. Tracks when each new class is discovered and stops early
+/// if 50 consecutive batches produce zero new classes.
+pub fn saturate(n: usize, batch_size: usize, max_batches: usize) {
+    let total_start = Instant::now();
+    let mut state = SearchState::new(n);
+
+    let dry_limit: usize = 50;
+    let mut dry_streak: usize = 0;
+    let mut last_new_batch: usize = 0;
+    let mut discovery_curve: Vec<(usize, usize, usize)> = Vec::new(); // (batch, cumulative_attempts, total_classes)
+
+    println!("=== Saturation Test: N={} ===", n);
+    println!(
+        "batch_size={}, max_batches={}, dry_limit={}",
+        batch_size, max_batches, dry_limit
+    );
+    println!();
+
+    for batch_idx in 0..max_batches {
+        let seed = 100_000u64 + (batch_idx as u64) * 7919; // distinct seed per batch
+        let codes = baselines::random_batch(n, batch_size, seed);
+
+        let mut new_this_batch: usize = 0;
+        for code in codes {
+            if state.try_add(code) {
+                new_this_batch += 1;
+            }
+        }
+
+        if new_this_batch > 0 {
+            dry_streak = 0;
+            last_new_batch = batch_idx;
+        } else {
+            dry_streak += 1;
+        }
+
+        let cumulative_attempts = (batch_idx + 1) * batch_size;
+        discovery_curve.push((batch_idx, cumulative_attempts, state.count()));
+
+        eprintln!(
+            "batch {:>4} | +{:<3} new | total {:>4} | dry streak {:>3} | [{:?}]",
+            batch_idx,
+            new_this_batch,
+            state.count(),
+            dry_streak,
+            total_start.elapsed()
+        );
+
+        if dry_streak >= dry_limit {
+            eprintln!(
+                "Stopping: {} consecutive dry batches (no new classes)",
+                dry_limit
+            );
+            break;
+        }
+    }
+
+    // --- Summary ---
+    let total_batches = discovery_curve.len();
+    let total_attempts = total_batches * batch_size;
+    let elapsed = total_start.elapsed();
+
+    println!();
+    println!("=== SATURATION RESULTS: N={} ===", n);
+    println!("Total equivalence classes found: {}", state.count());
+    println!("Total attempts: {} ({} batches x {})", total_attempts, total_batches, batch_size);
+    println!("Last new class found in batch: {}", last_new_batch);
+    println!("Total time: {:?}", elapsed);
+    println!();
+
+    // k-distribution
+    let max_k = state.found.iter().map(|c| c.k()).max().unwrap_or(0);
+    println!("k-distribution:");
+    println!("{:>5} | {:>8} | {:>14}", "k", "Count", "Indecomposable");
+    println!("{}", "-".repeat(35));
+    for k in 1..=max_k {
+        let at_k: Vec<&DoublyEvenCode> = state.found.iter().filter(|c| c.k() == k).collect();
+        if at_k.is_empty() {
+            continue;
+        }
+        let indecomp = at_k
+            .iter()
+            .filter(|c| c.k() > 1 && !is_decomposable(c))
+            .count();
+        println!("{:>5} | {:>8} | {:>14}", k, at_k.len(), indecomp);
+    }
+
+    // Discovery curve (every 10th batch)
+    println!();
+    println!("Discovery curve (every 10th batch):");
+    println!("{:>6} | {:>12} | {:>8}", "Batch", "Attempts", "Classes");
+    println!("{}", "-".repeat(35));
+    for &(batch, attempts, classes) in &discovery_curve {
+        if batch % 10 == 0 || batch == total_batches - 1 {
+            println!("{:>6} | {:>12} | {:>8}", batch, attempts, classes);
+        }
+    }
+}

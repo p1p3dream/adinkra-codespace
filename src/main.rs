@@ -26,6 +26,7 @@ fn main() {
         "invariants" => cmd_invariants(&args),
         "validate" => cmd_validate(),
         "search" => cmd_search(&args),
+        "saturate" => cmd_saturate(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -46,6 +47,8 @@ fn print_usage(prog: &str) {
     eprintln!("  invariants <n>          Print invariants for all codes of length n");
     eprintln!("  validate                Self-test: enumerate N=4..8, verify known results");
     eprintln!("  search [n] [pop] [gen]  Search for doubly-even codes at N (default 16)");
+    eprintln!("  saturate [n] [batch_size] [max_batches]");
+    eprintln!("                          Saturation test at N (defaults: 16, 5000, 500)");
     eprintln!("  help                    Print this help message");
 }
 
@@ -406,6 +409,30 @@ fn cmd_search(args: &[String]) {
     }
 
     search::search(&config);
+}
+
+// ---------------------------------------------------------------------------
+// saturate
+// ---------------------------------------------------------------------------
+
+fn cmd_saturate(args: &[String]) {
+    let n = if args.len() > 2 {
+        args[2].parse::<usize>().unwrap_or(16)
+    } else {
+        16
+    };
+    let batch_size = if args.len() > 3 {
+        args[3].parse::<usize>().unwrap_or(5000)
+    } else {
+        5000
+    };
+    let max_batches = if args.len() > 4 {
+        args[4].parse::<usize>().unwrap_or(500)
+    } else {
+        500
+    };
+
+    search::saturate(n, batch_size, max_batches);
 }
 
 // ---------------------------------------------------------------------------
