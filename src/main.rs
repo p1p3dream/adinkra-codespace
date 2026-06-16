@@ -27,6 +27,7 @@ fn main() {
         "validate" => cmd_validate(),
         "search" => cmd_search(&args),
         "saturate" => cmd_saturate(&args),
+        "validate-miller" => cmd_validate_miller(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -49,6 +50,8 @@ fn print_usage(prog: &str) {
     eprintln!("  search [n] [pop] [gen]  Search for doubly-even codes at N (default 16)");
     eprintln!("  saturate [n] [batch_size] [max_batches]");
     eprintln!("                          Saturation test at N (defaults: 16, 5000, 500)");
+    eprintln!("  validate-miller [n]     Compare counts against Miller/Doran-Faux-Gates");
+    eprintln!("                          reference (available: N=4, N=8, N=12, N=16)");
     eprintln!("  help                    Print this help message");
 }
 
@@ -433,6 +436,20 @@ fn cmd_saturate(args: &[String]) {
     };
 
     search::saturate(n, batch_size, max_batches);
+}
+
+// ---------------------------------------------------------------------------
+// validate-miller
+// ---------------------------------------------------------------------------
+
+fn cmd_validate_miller(args: &[String]) {
+    let n = if args.len() > 2 {
+        args[2].parse::<usize>().unwrap_or(16)
+    } else {
+        16
+    };
+
+    search::validate_miller(n);
 }
 
 // ---------------------------------------------------------------------------

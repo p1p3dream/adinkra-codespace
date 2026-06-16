@@ -153,4 +153,43 @@ mod tests {
         let c2 = DoublyEvenCode::new(8, vec![0b11111111]); // [8,1,8]
         assert_ne!(exact_canonical_key(&c1), exact_canonical_key(&c2));
     }
+
+    /// Count equivalence classes at N=10 and N=12 via exact enumeration + nauty.
+    /// Compare against Table 4 from arXiv:0806.0050.
+    #[test]
+    fn nauty_count_n10_n12() {
+        // Table 4 per-k counts (including zero-column codes):
+        // N=10: k=1:2, k=2:3, k=3:3, k=4:2  total=10
+        // N=12: k=1:3, k=2:5, k=3:7, k=4:7, k=5:2  total=24
+        for &(n, expected_total) in &[(10usize, 10usize), (12, 24)] {
+            let codes = enumerate_codes(n);
+            let mut nauty_set: std::collections::HashSet<Vec<u64>> =
+                std::collections::HashSet::new();
+            let mut per_k: std::collections::HashMap<usize, usize> =
+                std::collections::HashMap::new();
+            for code in &codes {
+                if code.k() > 0 {
+                    let key = exact_canonical_key(code);
+                    if nauty_set.insert(key) {
+                        *per_k.entry(code.k()).or_insert(0) += 1;
+                    }
+                }
+            }
+            let total: usize = per_k.values().sum();
+            let mut ks: Vec<usize> = per_k.keys().copied().collect();
+            ks.sort();
+            eprintln!(
+                "N={}: total={} (expected {}) per-k: {:?}",
+                n,
+                total,
+                expected_total,
+                ks.iter().map(|k| (*k, per_k[k])).collect::<Vec<_>>()
+            );
+            assert_eq!(
+                total, expected_total,
+                "N={}: nauty found {} classes but expected {}",
+                n, total, expected_total
+            );
+        }
+    }
 }
