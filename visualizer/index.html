@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adinkra Chromotopology Explorer</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111118;
+      --bg-tertiary: #1a1a24;
+      --bg-hover: #22222e;
+      --border-color: #2a2a3a;
+      --border-accent: #3a3a50;
+      --text-primary: #e8e8f0;
+      --text-secondary: #9898aa;
+      --text-muted: #6a6a7e;
+      --text-accent: #b8b8cc;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+      --sidebar-width: 300px;
+      --panel-radius: 8px;
+      --transition-fast: 150ms ease;
+      --transition-med: 250ms ease;
+
+      /* k-value colors: 8 visually distinct hues */
+      --k1: #4e79a7;
+      --k2: #f28e2b;
+      --k3: #e15759;
+      --k4: #76b7b2;
+      --k5: #59a14f;
+      --k6: #edc948;
+      --k7: #b07aa1;
+      --k8: #ff9da7;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── App Layout ────────────────────────────────────────── */
+    #app {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────── */
+    #sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    #sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #sidebar::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+    #sidebar::-webkit-scrollbar-thumb:hover {
+      background: var(--border-accent);
+    }
+
+    .sidebar-header {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .sidebar-header .subtitle {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-section {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-section:last-child {
+      border-bottom: none;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* ── k-value Checkboxes ────────────────────────────────── */
+    .k-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .k-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      user-select: none;
+    }
+
+    .k-filter-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .k-filter-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-accent);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+    }
+
+    .k-filter-item input[type="checkbox"]:checked {
+      border-color: var(--checkbox-color, var(--text-secondary));
+      background: var(--checkbox-color, var(--text-secondary));
+    }
+
+    .k-filter-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 3px;
+      width: 4px;
+      height: 7px;
+      border: solid var(--bg-primary);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .k-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .k-count {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: auto;
+      font-family: var(--font-mono);
+    }
+
+    /* ── Property Toggle Buttons ───────────────────────────── */
+    .property-filters {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .prop-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .prop-toggle:hover {
+      border-color: var(--border-accent);
+      background: var(--bg-hover);
+    }
+
+    .prop-toggle.active {
+      border-color: #4e79a7;
+      background: rgba(78, 121, 167, 0.12);
+    }
+
+    .prop-toggle .prop-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .prop-toggle.active .prop-name {
+      color: var(--text-primary);
+    }
+
+    .prop-toggle .prop-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border-color);
+      transition: background var(--transition-fast);
+    }
+
+    .prop-toggle.active .prop-indicator {
+      background: #4e79a7;
+      box-shadow: 0 0 6px rgba(78, 121, 167, 0.5);
+    }
+
+    /* ── Sort Dropdown ─────────────────────────────────────── */
+    .sort-select {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      outline: none;
+      transition: border-color var(--transition-fast);
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236a6a7e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    .sort-select:hover,
+    .sort-select:focus {
+      border-color: var(--border-accent);
+    }
+
+    .sort-select option {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+
+    /* ── Filter Stats Summary ──────────────────────────────── */
+    .filter-stats {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .filter-stats .count {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
+    .filter-stats .label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .filter-stats .total {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-left: auto;
+    }
+
+    /* ── Main Content ──────────────────────────────────────── */
+    #main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-color);
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--bg-primary);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+    }
+
+    .panel-body::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .panel-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .panel-body::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    /* ── SVG Defaults for D3 panels ────────────────────────── */
+    .panel-body svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Shared D3 Styles ──────────────────────────────────── */
+    .grid-line {
+      stroke: var(--border-color);
+      stroke-width: 0.5;
+      stroke-dasharray: 2, 4;
+    }
+
+    .axis-label {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      fill: var(--text-muted);
+    }
+
+    .tick text {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      fill: var(--text-muted);
+    }
+
+    .tick line {
+      stroke: var(--border-color);
+    }
+
+    .domain {
+      stroke: var(--border-color);
+    }
+
+    /* ── Tooltip ───────────────────────────────────────────── */
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-accent);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+      max-width: 280px;
+    }
+
+    #tooltip.visible {
+      opacity: 1;
+    }
+
+    #tooltip .tip-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    #tooltip .tip-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 1px 0;
+    }
+
+    #tooltip .tip-key {
+      color: var(--text-muted);
+    }
+
+    #tooltip .tip-val {
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Mono Data Display ─────────────────────────────────── */
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    .data-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+
+    /* ── Loading State ─────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      transition: opacity 400ms ease;
+    }
+
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--k1);
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Empty / Placeholder States ────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 12px;
+      gap: 6px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 24px;
+      opacity: 0.4;
+    }
+
+    /* ── Selection Highlight ───────────────────────────────── */
+    .selected-ring {
+      stroke: #fff;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .hovered-ring {
+      stroke: rgba(255, 255, 255, 0.4);
+      stroke-width: 1.5;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading overlay -->
+  <div id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading chromotopology data...</div>
+  </div>
+
+  <!-- Tooltip -->
+  <div id="tooltip">
+    <div class="tip-title"></div>
+    <div class="tip-body"></div>
+  </div>
+
+  <div id="app">
+    <!-- ── Sidebar ──────────────────────────────────────── -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <h1>Adinkra Chromotopology Explorer</h1>
+        <div class="subtitle">145 Doubly-Even Code Classes at N=16</div>
+      </div>
+
+      <!-- Filter summary -->
+      <div class="sidebar-section">
+        <div class="filter-stats">
+          <span class="count" id="filtered-count">145</span>
+          <span class="label">codes shown</span>
+          <span class="total">/ 145</span>
+        </div>
+      </div>
+
+      <!-- k-value filters -->
+      <div class="sidebar-section">
+        <div class="section-label">Dimension (k)</div>
+        <div class="k-filters" id="k-filters">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Property filters -->
+      <div class="sidebar-section">
+        <div class="section-label">Properties</div>
+        <div class="property-filters" id="property-filters">
+          <div class="prop-toggle" data-prop="is_self_dual">
+            <span class="prop-name">Self-Dual</span>
+            <span class="prop-indicator"></span>
+          </div>
+          <div class="prop-toggle" data-prop="is_self_orthogonal">
+            <span class="prop-name">Self-Orthogonal</span>
+            <span class="prop-indicator"></span>
+          </div>
+          <div class="prop-toggle" data-prop="is_indecomposable">
+            <span class="prop-name">Indecomposable</span>
+            <span class="prop-indicator"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sort -->
+      <div class="sidebar-section">
+        <div class="section-label">Sort By</div>
+        <select class="sort-select" id="sort-select">
+          <option value="k">Dimension (k)</option>
+          <option value="min_distance">Min Distance</option>
+          <option value="num_codewords">Codeword Count</option>
+          <option value="zero_columns">Zero Columns</option>
+          <option value="automorphism_group_size">Automorphism Group</option>
+          <option value="index">Index</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ─────────────────────────────────── -->
+    <main id="main-content">
+      <div class="panel" id="overview-panel">
+        <div class="panel-header">
+          <span class="panel-title">Overview</span>
+        </div>
+        <div class="panel-body" id="overview-plot"></div>
+      </div>
+
+      <div class="panel" id="stats-panel-container">
+        <div class="panel-header">
+          <span class="panel-title">Statistics</span>
+        </div>
+        <div class="panel-body" id="stats-panel"></div>
+      </div>
+
+      <div class="panel" id="detail-panel-container">
+        <div class="panel-header">
+          <span class="panel-title">Code Detail</span>
+        </div>
+        <div class="panel-body" id="detail-panel">
+          <div class="empty-state">
+            <div class="empty-icon">&#x25C8;</div>
+            <div>Select a code to view details</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="graph-panel-container">
+        <div class="panel-header">
+          <span class="panel-title">Bipartite Graph</span>
+        </div>
+        <div class="panel-body" id="graph-panel">
+          <div class="empty-state">
+            <div class="empty-icon">&#x25CB;</div>
+            <div>Select a code to view its graph</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Application Logic ─────────────────────────────── -->
+  <script>
+    // ══════════════════════════════════════════════════════
+    // Global State
+    // ══════════════════════════════════════════════════════
+    window.APP = {
+      data: [],           // all 145 codes
+      filtered: [],       // currently visible after filters
+      selected: null,     // currently selected code object (or null)
+      hovered: null,      // currently hovered code object (or null)
+      sortField: 'k',
+      filters: {
+        kValues: new Set([1, 2, 3, 4, 5, 6, 7, 8]),
+        properties: {
+          is_self_dual: false,
+          is_self_orthogonal: false,
+          is_indecomposable: false,
+        },
+      },
+      // k-value color scale: 8 distinct, perceptually separated colors
+      colorScale: null,
+      kColors: {
+        1: '#4e79a7',
+        2: '#f28e2b',
+        3: '#e15759',
+        4: '#76b7b2',
+        5: '#59a14f',
+        6: '#edc948',
+        7: '#b07aa1',
+        8: '#ff9da7',
+      },
+      // k-value counts from full dataset
+      kCounts: {},
+    };
+
+    // Build the D3 ordinal color scale
+    APP.colorScale = d3.scaleOrdinal()
+      .domain([1, 2, 3, 4, 5, 6, 7, 8])
+      .range([
+        APP.kColors[1], APP.kColors[2], APP.kColors[3], APP.kColors[4],
+        APP.kColors[5], APP.kColors[6], APP.kColors[7], APP.kColors[8],
+      ]);
+
+    // ══════════════════════════════════════════════════════
+    // Event Bus (CustomEvent on document)
+    // ══════════════════════════════════════════════════════
+    const EventBus = {
+      emit(name, detail) {
+        document.dispatchEvent(new CustomEvent(name, { detail }));
+      },
+      on(name, handler) {
+        document.addEventListener(name, (e) => handler(e.detail));
+      },
+    };
+    window.EventBus = EventBus;
+
+    // ══════════════════════════════════════════════════════
+    // Tooltip Helper
+    // ══════════════════════════════════════════════════════
+    const Tooltip = {
+      el: null,
+      init() {
+        this.el = document.getElementById('tooltip');
+      },
+      show(x, y, code) {
+        if (!this.el) return;
+        const title = this.el.querySelector('.tip-title');
+        const body = this.el.querySelector('.tip-body');
+        title.textContent = `Code #${code.index}  (k=${code.k})`;
+        body.innerHTML = [
+          this._row('Codewords', code.num_codewords),
+          this._row('Min Distance', code.min_distance),
+          this._row('Zero Columns', code.zero_columns),
+          this._row('Self-Dual', code.is_self_dual ? 'yes' : 'no'),
+          this._row('Indecomposable', code.is_indecomposable ? 'yes' : 'no'),
+        ].join('');
+        // Position with boundary awareness
+        const pad = 14;
+        let left = x + pad;
+        let top = y + pad;
+        if (left + 280 > window.innerWidth) left = x - 280 - pad;
+        if (top + 160 > window.innerHeight) top = y - 160 - pad;
+        this.el.style.left = left + 'px';
+        this.el.style.top = top + 'px';
+        this.el.classList.add('visible');
+      },
+      hide() {
+        if (this.el) this.el.classList.remove('visible');
+      },
+      _row(key, val) {
+        return `<div class="tip-row"><span class="tip-key">${key}</span><span class="tip-val">${val}</span></div>`;
+      },
+    };
+    window.Tooltip = Tooltip;
+
+    // ══════════════════════════════════════════════════════
+    // Filter & Sort Logic
+    // ══════════════════════════════════════════════════════
+    function applyFilters() {
+      const { kValues, properties } = APP.filters;
+
+      APP.filtered = APP.data.filter((code) => {
+        // k-value filter
+        if (!kValues.has(code.k)) return false;
+        // Property filters (when active, code must have that property true)
+        for (const [prop, active] of Object.entries(properties)) {
+          if (active && !code[prop]) return false;
+        }
+        return true;
+      });
+
+      // Sort
+      const field = APP.sortField;
+      APP.filtered.sort((a, b) => {
+        if (typeof a[field] === 'number' && typeof b[field] === 'number') {
+          return a[field] - b[field];
+        }
+        return 0;
+      });
+
+      // Update count display
+      document.getElementById('filtered-count').textContent = APP.filtered.length;
+
+      // Emit filter-changed event
+      EventBus.emit('filter-changed', { filtered: APP.filtered });
+    }
+
+    // ══════════════════════════════════════════════════════
+    // Sidebar Initialization
+    // ══════════════════════════════════════════════════════
+    function initSidebar() {
+      // k-value checkboxes
+      const kContainer = document.getElementById('k-filters');
+      const kColorMap = APP.kColors;
+      for (let k = 1; k <= 8; k++) {
+        const count = APP.kCounts[k] || 0;
+        const item = document.createElement('label');
+        item.className = 'k-filter-item';
+        item.innerHTML = `
+          <input type="checkbox" checked data-k="${k}" style="--checkbox-color: ${kColorMap[k]}">
+          <span class="k-label" style="color: ${kColorMap[k]}">k=${k}</span>
+          <span class="k-count">${count}</span>
+        `;
+        kContainer.appendChild(item);
+      }
+
+      // k checkbox change handlers
+      kContainer.addEventListener('change', (e) => {
+        const cb = e.target;
+        if (cb.dataset.k) {
+          const k = parseInt(cb.dataset.k, 10);
+          if (cb.checked) {
+            APP.filters.kValues.add(k);
+          } else {
+            APP.filters.kValues.delete(k);
+          }
+          applyFilters();
+        }
+      });
+
+      // Property toggle buttons
+      document.querySelectorAll('.prop-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const prop = btn.dataset.prop;
+          const isActive = btn.classList.toggle('active');
+          APP.filters.properties[prop] = isActive;
+          applyFilters();
+        });
+      });
+
+      // Sort dropdown
+      const sortSelect = document.getElementById('sort-select');
+      sortSelect.addEventListener('change', () => {
+        APP.sortField = sortSelect.value;
+        applyFilters();
+      });
+    }
+
+    // ══════════════════════════════════════════════════════
+    // Code Selection / Hover
+    // ══════════════════════════════════════════════════════
+    function selectCode(code) {
+      APP.selected = code;
+      EventBus.emit('code-selected', { code });
+    }
+
+    function hoverCode(code) {
+      APP.hovered = code;
+      EventBus.emit('code-hovered', { code });
+    }
+
+    function unhoverCode() {
+      APP.hovered = null;
+      EventBus.emit('code-hovered', { code: null });
+    }
+
+    window.selectCode = selectCode;
+    window.hoverCode = hoverCode;
+    window.unhoverCode = unhoverCode;
+
+    // ══════════════════════════════════════════════════════
+    // Data Loading & Initialization
+    // ══════════════════════════════════════════════════════
+    async function init() {
+      try {
+        const response = await fetch('../adinkra_codes_n16.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const raw = await response.json();
+
+        // The JSON is { n, total_classes, codes: [...] }
+        APP.data = raw.codes || raw;
+
+        // Compute k-value counts
+        APP.kCounts = {};
+        for (const code of APP.data) {
+          APP.kCounts[code.k] = (APP.kCounts[code.k] || 0) + 1;
+        }
+
+        // Initialize sidebar controls
+        initSidebar();
+
+        // Apply initial filters (all codes, sorted by k)
+        applyFilters();
+
+        // Initialize tooltip system
+        Tooltip.init();
+
+        // Call each component's render function with the right arguments
+        if (window.OverviewPlot && window.OverviewPlot.render) {
+          window.OverviewPlot.render(
+            document.getElementById('overview-plot'), APP.filtered, APP.colorScale
+          );
+        }
+        if (window.StatsPanel && window.StatsPanel.render) {
+          window.StatsPanel.render(
+            document.getElementById('stats-panel'), APP.data, APP.colorScale
+          );
+        }
+        if (window.DetailPanel && window.DetailPanel.render) {
+          window.DetailPanel.render(document.getElementById('detail-panel'));
+        }
+        if (window.GraphPanel && window.GraphPanel.render) {
+          window.GraphPanel.render(document.getElementById('graph-panel'));
+        }
+
+        // Hide loading overlay
+        const overlay = document.getElementById('loading-overlay');
+        overlay.classList.add('hidden');
+        setTimeout(() => overlay.remove(), 500);
+
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        const overlay = document.getElementById('loading-overlay');
+        overlay.querySelector('.loading-text').textContent =
+          'Failed to load data. Check console for details.';
+        overlay.querySelector('.loading-spinner').style.display = 'none';
+      }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // Wire up event listeners for component updates
+    // ══════════════════════════════════════════════════════
+    EventBus.on('filter-changed', () => {
+      if (window.OverviewPlot && window.OverviewPlot.update) window.OverviewPlot.update(APP.filtered);
+      if (window.StatsPanel && window.StatsPanel.update) window.StatsPanel.update(APP.filtered);
+    });
+
+    EventBus.on('code-selected', (detail) => {
+      // Components may dispatch code-selected with the code as detail directly
+      if (detail && detail.code) {
+        APP.selected = detail.code;
+      } else if (detail && detail.k !== undefined) {
+        // The scatter plot dispatches the code object itself as detail
+        APP.selected = detail;
+      }
+      if (window.OverviewPlot && window.OverviewPlot.update) window.OverviewPlot.update(APP.filtered);
+      if (window.DetailPanel && window.DetailPanel.update) window.DetailPanel.update(APP.selected, APP.colorScale);
+      if (window.GraphPanel && window.GraphPanel.update) window.GraphPanel.update(APP.selected, APP.colorScale);
+    });
+
+    EventBus.on('code-hovered', () => {
+      if (window.OverviewPlot && window.OverviewPlot.update) window.OverviewPlot.update(APP.filtered);
+    });
+
+    // Start the app once component scripts have loaded
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <!-- ── Component Scripts (loaded after main app logic) ── -->
+  <script src="overview-plot.js"></script>
+  <script src="stats-panel.js"></script>
+  <script src="detail-panel.js"></script>
+  <script src="graph-panel.js"></script>
+</body>
+</html>
