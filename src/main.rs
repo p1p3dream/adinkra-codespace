@@ -1,9 +1,16 @@
 mod baselines;
 mod canonical;
+mod chromotopology;
 mod code;
+mod dashing;
 mod eval;
+mod filters;
+mod holoraumy;
+mod lr_matrix;
 mod nauty_canonical;
+mod pipeline;
 mod search;
+mod signed_perm;
 
 use std::time::Instant;
 
@@ -28,6 +35,7 @@ fn main() {
         "search" => cmd_search(&args),
         "saturate" => cmd_saturate(&args),
         "validate-miller" => cmd_validate_miller(&args),
+        "pipeline" => cmd_pipeline(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -52,6 +60,7 @@ fn print_usage(prog: &str) {
     eprintln!("                          Saturation test at N (defaults: 16, 5000, 500)");
     eprintln!("  validate-miller [n]     Compare counts against Miller/Doran-Faux-Gates");
     eprintln!("                          reference (available: N=4, N=8, N=12, N=16)");
+    eprintln!("  pipeline <json>         Run the full dimensional lifting pipeline");
     eprintln!("  help                    Print this help message");
 }
 
@@ -450,6 +459,22 @@ fn cmd_validate_miller(args: &[String]) {
     };
 
     search::validate_miller(n);
+}
+
+// ---------------------------------------------------------------------------
+// pipeline
+// ---------------------------------------------------------------------------
+
+fn cmd_pipeline(args: &[String]) {
+    let json_path = if args.len() > 2 {
+        args[2].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
+
+    let output = pipeline::run_pipeline(json_path);
+    let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
+    println!("{}", json);
 }
 
 // ---------------------------------------------------------------------------
