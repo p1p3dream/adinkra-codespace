@@ -70,6 +70,14 @@ fn gadget_stratum_matrix(reps: &[HoloraumyData]) -> Vec<Vec<f64>> {
 }
 
 pub fn run_pipeline(json_path: &str) -> FullPipelineOutput {
+    run_pipeline_filtered(json_path, None)
+}
+
+pub fn run_pipeline_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
+    run_pipeline_filtered(json_path, Some(only_k))
+}
+
+fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipelineOutput {
     let t0 = Instant::now();
 
     let data = fs::read_to_string(json_path)
@@ -78,13 +86,26 @@ pub fn run_pipeline(json_path: &str) -> FullPipelineOutput {
         panic!("Failed to parse JSON {json_path:?}: {e}. Expected {{n, total_classes, codes:[...]}}")
     });
     let n = catalog.n;
-    eprintln!("Loaded {} code classes (N={})", catalog.codes.len(), n);
 
-    let per_code: Vec<(PipelineResult, Vec<HoloraumyData>)> = catalog
+    let codes: Vec<(usize, &CodeEntry)> = catalog
         .codes
-        .par_iter()
+        .iter()
         .enumerate()
-        .map(|(idx, entry)| {
+        .filter(|(_, e)| only_k.map_or(true, |k| e.k == k))
+        .collect();
+
+    if let Some(k) = only_k {
+        eprintln!(
+            "Loaded {} code classes with k={} (N={}, {} total in catalog)",
+            codes.len(), k, n, catalog.codes.len()
+        );
+    } else {
+        eprintln!("Loaded {} code classes (N={})", codes.len(), n);
+    }
+
+    let per_code: Vec<(PipelineResult, Vec<HoloraumyData>)> = codes
+        .par_iter()
+        .map(|&(idx, ref entry)| {
             let code = DoublyEvenCode::new(n, entry.generators_raw.clone());
             assert!(code.is_valid(), "code {idx}: invalid doubly-even code");
 
