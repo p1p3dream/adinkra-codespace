@@ -2,6 +2,14 @@
 //! (finding F8, "route (b)") and the dense-matrix gadget on the resulting
 //! irreducible pieces.
 //!
+//! References (see REFERENCES.md):
+//!   - GR(d,N) Garden algebra / L,R matrices: Doran-Faux-Gates-Hübsch-Iga-Landweber
+//!     arXiv:0811.3410; Faux-Gates hep-th/0408004.
+//!   - Gadget definition & normalization: Gates-Hübsch et al. arXiv:1508.07546
+//!     (JHEP 11(2015)113).
+//!   - k=8 D16/E8×E8 validation target (distance spectrum): Arunseangroj-Bedessem-
+//!     Gates-Yerger, arXiv:2503.13797 (2025).
+//!
 //! # Background
 //!
 //! A valise representation at code-stratum `k` (N colours, d = 2^(N-k-1)) has

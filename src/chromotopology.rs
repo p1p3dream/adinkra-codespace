@@ -247,6 +247,53 @@ impl Chromotopology {
             .map(|&idx| self.coset_reps[idx])
             .collect()
     }
+
+    // -----------------------------------------------------------------------
+    // Vertex-level accessors (shared 0..num_vertices index space).
+    //
+    // VERTEX INDEXING CONVENTION:
+    // A "vertex" index `v` in 0..num_vertices is the *coset index* used
+    // internally (the position in `coset_reps`). Bosons and fermions share
+    // this single index space (they are NOT re-indexed by partition rank).
+    // A vertex `v` is a boson iff its canonical representative has even
+    // Hamming weight, equivalently iff `boson_rank[v] != usize::MAX`.
+    // This is the same index returned by `coset_of(..)`.
+    // -----------------------------------------------------------------------
+
+    /// True if vertex `v` (a coset index in 0..num_vertices) is a boson.
+    pub fn is_boson_vertex(&self, v: usize) -> bool {
+        self.boson_rank[v] != usize::MAX
+    }
+
+    /// The (boson_vertex, fermion_vertex) coset-index pair joined by edge
+    /// `color` at boson rank `boson_rank`.
+    ///
+    /// `color_perm(color)[boson_rank]` gives the fermion *rank* of the
+    /// neighbor; we translate both endpoints back into the shared coset-index
+    /// (vertex) space via `boson_indices` / `fermion_indices`.
+    pub fn edge_vertices(&self, color: usize, boson_rank: usize) -> (usize, usize) {
+        let boson_vertex = self.boson_indices[boson_rank];
+        let fermion_rank = self.edge_target[color][boson_rank];
+        let fermion_vertex = self.fermion_indices[fermion_rank];
+        (boson_vertex, fermion_vertex)
+    }
+
+    /// Adjacency list over the shared vertex (coset-index) space.
+    ///
+    /// `result[v]` lists every vertex adjacent to `v` across all N colors.
+    /// The graph is N-regular and bipartite, so each list has length N (one
+    /// neighbor per color), and the adjacency is symmetric.
+    pub fn vertex_adjacency(&self) -> Vec<Vec<usize>> {
+        let mut adj = vec![Vec::with_capacity(self.n); self.num_vertices];
+        for color in 0..self.n {
+            for boson_rank in 0..self.d {
+                let (b, f) = self.edge_vertices(color, boson_rank);
+                adj[b].push(f);
+                adj[f].push(b);
+            }
+        }
+        adj
+    }
 }
 
 // ===========================================================================

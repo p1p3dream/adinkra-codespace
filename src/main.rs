@@ -1,5 +1,6 @@
 mod baselines;
 mod canonical;
+mod chromochar;
 mod chromotopology;
 mod code;
 mod dashing;
@@ -7,11 +8,14 @@ mod decompose;
 mod eval;
 mod filters;
 mod holoraumy;
+mod lorentz;
 mod lr_matrix;
 mod nauty_canonical;
 mod pipeline;
+mod ranking;
 mod search;
 mod signed_perm;
+mod tendim_data;
 
 use std::time::Instant;
 

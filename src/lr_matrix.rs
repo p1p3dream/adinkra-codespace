@@ -7,6 +7,8 @@
 ///   L_I * R_J + L_J * R_I = 2 * delta_IJ * I_d
 
 use crate::signed_perm::SignedPerm;
+use crate::ranking::Ranking;
+use crate::chromotopology::Chromotopology;
 
 #[derive(Debug, Clone)]
 pub struct AdinkraRep {
@@ -79,6 +81,62 @@ impl AdinkraRep {
     pub fn vtilde_matrix(&self, i: usize, j: usize) -> SignedPerm {
         self.l_matrices[i].inverse().compose(&self.l_matrices[j])
     }
+
+    // =======================================================================
+    // Non-valise (height-aware) L/R support.
+    //
+    // In a valise Adinkra the ranking is 2-level (every boson sits below every
+    // fermion), so every color I unconditionally RAISES the boson it acts on,
+    // and the right-acting operator is the blind transpose: R_I = L_I^T.
+    //
+    // For a NON-valise ranking, color I splits into "up-edges" (boson below the
+    // fermion: D_I raises) and "down-edges" (boson above the fermion: D_I
+    // lowers). The supercharge acting downward picks up a relative sign, so the
+    // height-aware R is NOT a blind inverse of L. The local raising/lowering
+    // signature chi_I(j) in {+1,-1} captures this per source vertex.
+    //
+    // KEY: SignedPerm::compose is a RIGHT action (a.compose(b) = matrix b*a),
+    // and for a valise ranking everything below reduces to today's behavior.
+    // =======================================================================
+
+    /// chi_I(j) in {+1,-1}, one entry per boson rank j (length d).
+    ///
+    /// +1 where color I RAISES the source vertex (the fermion neighbor sits
+    /// strictly above the boson in the ranking), -1 where color I LOWERS it
+    /// (the fermion sits strictly below the boson).
+    ///
+    /// For a valise ranking (or any strictly 2-level ranking with all bosons
+    /// below all fermions) every entry is +1.
+    ///
+    /// NOTE: this is the correct per-edge up/down primitive, but it does NOT by
+    /// itself yield a height-aware R via a sign-flipped transpose — that square
+    /// model fails diagonal Garden closure on genuinely multi-level rankings
+    /// (verified by adversarial review). The correct non-valise L/R is the
+    /// RECTANGULAR, height-blocked construction (e.g. the 82x176 / 176x82 form of
+    /// the 10D dataset in `crate::tendim_data`); building that square-free path is
+    /// future work. Until then, only `height_signature` and the worldsheet
+    /// spin-sum (`crate::filters::worldsheet_spin_sum`) consume the ranking.
+    pub fn height_signature(
+        &self,
+        color: usize,
+        chromo: &Chromotopology,
+        ranking: &Ranking,
+    ) -> Vec<i8> {
+        let d = self.d;
+        let mut sig = vec![1i8; d];
+        for boson_rank in 0..d {
+            let (boson_vertex, fermion_vertex) = chromo.edge_vertices(color, boson_rank);
+            // Height of the fermion relative to the boson: raise if the fermion
+            // is above the boson, lower if below.
+            sig[boson_rank] = if ranking.height[fermion_vertex] > ranking.height[boson_vertex] {
+                1
+            } else {
+                -1
+            };
+        }
+        sig
+    }
+
 }
 
 // ===========================================================================
@@ -169,6 +227,46 @@ mod tests {
                     j
                 );
             }
+        }
+    }
+
+    // -- non-valise (height-aware) L/R --------------------------------------
+
+    use crate::code::DoublyEvenCode;
+    use crate::chromotopology::Chromotopology;
+    use crate::ranking::Ranking;
+
+    /// The N=4, k=1 chromotopology ({0000, 1111}).
+    fn chromo_n4() -> Chromotopology {
+        Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]))
+    }
+
+    /// Valise ranking: every boson at height 0, every fermion at height 1.
+    fn valise_ranking(chromo: &Chromotopology) -> Ranking {
+        let height = (0..chromo.num_vertices())
+            .map(|v| if chromo.is_boson_vertex(v) { 0 } else { 1 })
+            .collect();
+        Ranking { height }
+    }
+
+    #[test]
+    fn height_signature_all_plus_on_valise() {
+        let chromo = chromo_n4();
+        let ranking = valise_ranking(&chromo);
+        // The CS fixture's color permutations match the N=4 [4,1,4]
+        // chromotopology edges exactly ([0,1,2,3],[1,0,3,2],[2,3,0,1],[3,2,1,0]),
+        // so the height-aware path (which reads chromo.edge_vertices) is
+        // consistent with this rep's l_matrices.
+        let rep = cs_n4();
+        for color in 0..rep.n {
+            let sig = rep.height_signature(color, &chromo, &ranking);
+            assert_eq!(sig.len(), rep.d);
+            assert!(
+                sig.iter().all(|&s| s == 1),
+                "valise height_signature for color {} must be all +1, got {:?}",
+                color,
+                sig
+            );
         }
     }
 
