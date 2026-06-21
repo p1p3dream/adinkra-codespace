@@ -29,10 +29,13 @@ impl SignedPerm {
         self.perm.iter().enumerate().all(|(i, &p)| p == i as u16) && self.sign.iter().all(|&s| s == 1)
     }
 
-    /// Matrix product self * other (i.e. A * B where self = A, other = B).
+    /// Composition of signed permutations. With the convention that row `i` has
+    /// its sole nonzero at column `perm[i]`, this is a RIGHT action: the returned
+    /// element's matrix equals the product `other * self` (NOT `self * other`).
+    /// Verified by the `compose_manual_3_element` test.
     ///
-    /// Result row i: the nonzero entry is at column `A.perm[B.perm[i]]`
-    /// with value `A.sign[B.perm[i]] * B.sign[i]`.
+    /// Result row i: the nonzero entry is at column `self.perm[other.perm[i]]`
+    /// with value `self.sign[other.perm[i]] * other.sign[i]`.
     pub fn compose(&self, other: &SignedPerm) -> SignedPerm {
         let d = self.dim();
         let mut perm = vec![0u16; d];
@@ -294,11 +297,12 @@ mod tests {
 
     #[test]
     fn compose_manual_3_element() {
-        // A = sample_3: perm=[2,0,1], sign=[1,-1,1]
-        // B = sample_3b: perm=[1,2,0], sign=[-1,1,-1]
+        // A = sample_3 = self: perm=[2,0,1], sign=[1,-1,1]
+        // B = sample_3b = other: perm=[1,2,0], sign=[-1,1,-1]
         //
-        // (A*B).perm[i] = A.perm[B.perm[i]]
-        // (A*B).sign[i] = A.sign[B.perm[i]] * B.sign[i]
+        // compose is a RIGHT action: A.compose(B) has matrix B*A. Its parts are
+        //   result.perm[i] = A.perm[B.perm[i]]
+        //   result.sign[i] = A.sign[B.perm[i]] * B.sign[i]
         //
         // i=0: B.perm[0]=1, A.perm[1]=0, A.sign[1]=-1, B.sign[0]=-1 => perm=0, sign=1
         // i=1: B.perm[1]=2, A.perm[2]=1, A.sign[2]=1,  B.sign[1]=1  => perm=1, sign=1

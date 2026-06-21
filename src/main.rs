@@ -3,6 +3,7 @@ mod canonical;
 mod chromotopology;
 mod code;
 mod dashing;
+mod decompose;
 mod eval;
 mod filters;
 mod holoraumy;
@@ -37,6 +38,7 @@ fn main() {
         "validate-miller" => cmd_validate_miller(&args),
         "pipeline" => cmd_pipeline(&args),
         "pipeline-k" => cmd_pipeline_k(&args),
+        "decompose-k" => cmd_decompose_k(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -63,6 +65,8 @@ fn print_usage(prog: &str) {
     eprintln!("                          reference (available: N=4, N=8, N=12, N=16)");
     eprintln!("  pipeline <json>         Run the full dimensional lifting pipeline");
     eprintln!("  pipeline-k <k> [json]   Run pipeline for a single k-stratum only");
+    eprintln!("  decompose-k <k> [json]  Irreducible-decompose a single k-stratum (F8 route b)");
+    eprintln!("                          and compute the dense gadget on irreducible pieces");
     eprintln!("  help                    Print this help message");
 }
 
@@ -488,6 +492,19 @@ fn cmd_pipeline_k(args: &[String]) {
     };
 
     let output = pipeline::run_pipeline_k(json_path, k);
+    let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
+    println!("{}", json);
+}
+
+fn cmd_decompose_k(args: &[String]) {
+    let k = parse_usize_arg(args, 2, "decompose-k <k> [json]");
+    let json_path = if args.len() > 3 {
+        args[3].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
+
+    let output = pipeline::run_decompose_k(json_path, k);
     let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
     println!("{}", json);
 }

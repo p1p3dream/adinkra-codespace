@@ -7,6 +7,7 @@ use rayon::prelude::*;
 use crate::chromotopology::Chromotopology;
 use crate::code::DoublyEvenCode;
 use crate::dashing::DashingEnumerator;
+use crate::decompose::{decompose_rep, dense_gadget_matrix, DenseHoloraumy};
 use crate::filters::worldsheet_all_splits;
 use crate::holoraumy::{dmin, gadget, HoloraumyData};
 use crate::lr_matrix::AdinkraRep;
@@ -48,6 +49,32 @@ pub struct GadgetStratum {
     pub matrix: Vec<Vec<f64>>,
 }
 
+/// Gadget matrix over the IRREDUCIBLE summands of a k-stratum (F8 route b).
+///
+/// Each reducible valise rep (k < N/2) is decomposed into `d/dmin` irreducible
+/// pieces; the gadget is then computed on those pieces. The diagonal is `1.0`
+/// (every irreducible has self-gadget 1, a basis-independent fact), in contrast
+/// to the flat `d/dmin` diagonal of the reducible [`GadgetStratum`].
+///
+/// NOTE: off-diagonal (cross-summand) values are computed in the orthonormal
+/// basis the decomposition produced and are NOT a basis-invariant classification
+/// without a canonical orientation choice — see the [`crate::decompose`] module
+/// docs.
+#[derive(Debug, Clone, Serialize)]
+pub struct IrrepGadgetStratum {
+    pub k: usize,
+    pub d: usize,
+    pub dmin: usize,
+    pub num_valise_reps: usize,
+    pub num_irreps: usize,
+    pub decomposed: bool,
+    pub skip_reason: Option<String>,
+    /// Maximum Garden-algebra / V²=-I residual over all summands (numerical
+    /// health check; ~0 when decomposition is clean). `None` when skipped.
+    pub max_summand_residual: Option<f64>,
+    pub matrix: Vec<Vec<f64>>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct FullPipelineOutput {
     pub n: usize,
@@ -55,6 +82,8 @@ pub struct FullPipelineOutput {
     pub total_reps: usize,
     pub results: Vec<PipelineResult>,
     pub gadget_strata: Vec<GadgetStratum>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub irrep_strata: Vec<IrrepGadgetStratum>,
     pub elapsed_secs: f64,
 }
 
@@ -198,6 +227,153 @@ fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipeline
         total_reps: start,
         results,
         gadget_strata,
+        irrep_strata: Vec::new(),
+        elapsed_secs: elapsed,
+    }
+}
+
+/// Build the `AdinkraRep` for every dashing class of a single code entry.
+fn build_reps_for_code(n: usize, entry: &CodeEntry) -> (usize, Vec<AdinkraRep>) {
+    let code = DoublyEvenCode::new(n, entry.generators_raw.clone());
+    assert!(code.is_valid(), "invalid doubly-even code");
+    let chromo = Chromotopology::from_code(&code);
+    let d = chromo.d();
+    let de = DashingEnumerator::new(&code);
+    let color_perms: Vec<Vec<usize>> = (0..n).map(|c| chromo.color_perm(c).to_vec()).collect();
+    let boson_reps = chromo.boson_reps();
+    let reps = (0..de.num_classes())
+        .map(|di| {
+            let signs = de.get_dashing_for_chromotopology(di, &boson_reps);
+            AdinkraRep::from_parts(n, d, &color_perms, &signs)
+        })
+        .collect();
+    (d, reps)
+}
+
+/// Run F8 route (b) on a single k-stratum: decompose every valise rep into its
+/// `d/dmin` irreducible summands and compute the dense gadget matrix over all
+/// summands in the stratum.
+///
+/// When `d > decompose::MAX_DECOMPOSE_D` the dense path is infeasible, so the
+/// stratum is recorded as skipped (not decomposed) rather than attempted.
+pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
+    let t0 = Instant::now();
+
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).unwrap_or_else(|e| {
+        panic!("Failed to parse JSON {json_path:?}: {e}. Expected {{n, total_classes, codes:[...]}}")
+    });
+    let n = catalog.n;
+    let dm = dmin(n);
+
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
+
+    eprintln!(
+        "decompose-k: {} code classes with k={} (N={}, dmin={})",
+        codes.len(),
+        only_k,
+        n,
+        dm
+    );
+
+    // Build all valise reps for the stratum (parallel per code).
+    let per_code: Vec<(usize, Vec<AdinkraRep>)> = codes
+        .par_iter()
+        .map(|&(_idx, entry)| build_reps_for_code(n, entry))
+        .collect();
+
+    let d = per_code.first().map(|(d, _)| *d).unwrap_or(0);
+    let num_valise_reps: usize = per_code.iter().map(|(_, reps)| reps.len()).sum();
+
+    // Scale guard: skip the whole stratum if the dense path is infeasible.
+    if d > crate::decompose::MAX_DECOMPOSE_D {
+        let reason = format!(
+            "d={d} exceeds MAX_DECOMPOSE_D={}; dense decomposition infeasible",
+            crate::decompose::MAX_DECOMPOSE_D
+        );
+        eprintln!("decompose-k: SKIPPED k={only_k}: {reason}");
+        let stratum = IrrepGadgetStratum {
+            k: only_k,
+            d,
+            dmin: dm,
+            num_valise_reps,
+            num_irreps: 0,
+            decomposed: false,
+            skip_reason: Some(reason),
+            max_summand_residual: None,
+            matrix: Vec::new(),
+        };
+        let elapsed = t0.elapsed().as_secs_f64();
+        return FullPipelineOutput {
+            n,
+            num_codes: codes.len(),
+            total_reps: num_valise_reps,
+            results: Vec::new(),
+            gadget_strata: Vec::new(),
+            irrep_strata: vec![stratum],
+            elapsed_secs: elapsed,
+        };
+    }
+
+    // Decompose every rep into irreducible summands, in parallel.
+    eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {} summands each)...", d / dm);
+    let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();
+    let decomposed: Vec<crate::decompose::Decomposition> = all_reps
+        .par_iter()
+        .map(|rep| decompose_rep(rep).expect("d within guard, decomposition should succeed"))
+        .collect();
+
+    // Flatten to dense holoraumy per summand; track worst residual (parallel).
+    let summands: Vec<&crate::decompose::IrrepSummand> =
+        decomposed.iter().flat_map(|d| d.summands.iter()).collect();
+    let built: Vec<(f64, DenseHoloraumy)> = summands
+        .par_iter()
+        .map(|s| (crate::decompose::summand_residual(s), DenseHoloraumy::from_summand(s)))
+        .collect();
+    let worst_residual = built.iter().map(|(r, _)| *r).fold(0.0f64, f64::max);
+    let holos: Vec<DenseHoloraumy> = built.into_iter().map(|(_, h)| h).collect();
+    let num_irreps = holos.len();
+
+    eprintln!("decompose-k: computing {num_irreps}x{num_irreps} irreducible gadget matrix...");
+    let matrix = dense_gadget_matrix(&holos);
+
+    // The irreducible self-gadget must be 1.0 (basis-independent).
+    for (i, row) in matrix.iter().enumerate() {
+        debug_assert!(
+            (row[i] - 1.0).abs() < 1e-6,
+            "irrep gadget diagonal[{i}] = {} != 1.0",
+            row[i]
+        );
+    }
+
+    let stratum = IrrepGadgetStratum {
+        k: only_k,
+        d,
+        dmin: dm,
+        num_valise_reps,
+        num_irreps,
+        decomposed: true,
+        skip_reason: None,
+        max_summand_residual: Some(worst_residual),
+        matrix,
+    };
+
+    let elapsed = t0.elapsed().as_secs_f64();
+    eprintln!("decompose-k complete in {elapsed:.2}s (max summand residual {worst_residual:.2e})");
+
+    FullPipelineOutput {
+        n,
+        num_codes: codes.len(),
+        total_reps: num_valise_reps,
+        results: Vec::new(),
+        gadget_strata: Vec::new(),
+        irrep_strata: vec![stratum],
         elapsed_secs: elapsed,
     }
 }

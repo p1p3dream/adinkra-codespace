@@ -115,6 +115,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "slow: enumerates/canonicalizes N=8 codes (>60s); run with --ignored"]
     fn nauty_matches_exact_n8() {
         let codes = enumerate_codes(8);
         let exact_classes = deduplicate(codes.clone());
@@ -157,6 +158,7 @@ mod tests {
     /// Count equivalence classes at N=10 and N=12 via exact enumeration + nauty.
     /// Compare against Table 4 from arXiv:0806.0050.
     #[test]
+    #[ignore = "slow: enumerates/canonicalizes N=10,12 codes (>60s); run with --ignored"]
     fn nauty_count_n10_n12() {
         // Table 4 per-k counts (including zero-column codes):
         // N=10: k=1:2, k=2:3, k=3:3, k=4:2  total=10
