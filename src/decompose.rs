@@ -73,23 +73,32 @@ use crate::signed_perm::SignedPerm;
 /// rewrite, not a dense path.
 pub const MAX_DECOMPOSE_D: usize = 512;
 
-/// Memory budget (bytes) for the dense gadget step of a whole k-stratum. The
+/// RAM budget (bytes) for the gadget step of a whole k-stratum. The
 /// `d ≤ MAX_DECOMPOSE_D` guard alone is NOT sufficient: the gadget pairs every
-/// irreducible summand against every other, so it retains one `DenseHoloraumy`
-/// (C(N,2) matrices of dmin × dmin f64 ≈ 15.7 MB at N=16) per summand
-/// SIMULTANEOUSLY. That scales with `num_irreps` (= reps × d/dmin), not `d`:
-/// k=8 ≈ 8 GB (fits), but k=7 ≈ 36 GB and would silently OOM-kill a 64 GB box.
-/// `run_decompose_k` refuses (clean skip) when the estimate exceeds this budget
-/// rather than dying. Tune to the host; the real fix for larger strata is a
-/// blocked/streamed (or GPU) Gram, not raising this.
-pub const MAX_DECOMPOSE_GADGET_BYTES: u64 = 24 * 1024 * 1024 * 1024; // 24 GiB
+/// irreducible summand against every other, so the holoraumy of every summand is
+/// retained SIMULTANEOUSLY, scaling with `num_irreps` (= reps × d/dmin), not `d`.
+///
+/// `run_decompose_k` uses the memory-bounded streamed Gram path
+/// (`crate::streamed_gadget`), which stores one flat f32 holoraumy vector per
+/// summand (C(N,2) × dmin² × 4 bytes ≈ 7.86 MB at N=16). At N=16 that is
+/// k=8 ≈ 4 GB, k=7 ≈ 18 GB (both fit a 64 GB box), but k=6 ≈ 180 GB. When the
+/// estimate exceeds this budget the stratum is refused (clean skip) instead of
+/// OOM-killing; the next step for larger strata is a disk-backed/GPU tiled Gram.
+pub const MAX_DECOMPOSE_GADGET_BYTES: u64 = 40 * 1024 * 1024 * 1024; // 40 GiB
 
-/// Estimated peak bytes of retained dense holoraumy for `num_irreps` summands at
-/// `n` colours (dmin = dmin(n)): num_irreps × C(n,2) × dmin² × 8.
+/// Estimated peak bytes of the streamed gadget for `num_irreps` summands at `n`
+/// colours: the f32 flat-vector store (num_irreps × C(n,2) × dmin² × 4) PLUS the
+/// f64 result matrix (num_irreps² × 8) PLUS a 12% transient margin (per-worker
+/// decomposition + dense holoraumy scratch during flatten). The result matrix is
+/// negligible at k=7/8 but grows quadratically and dominates for small k.
 pub fn estimated_gadget_bytes(n: usize, num_irreps: usize) -> u64 {
     let dm = dmin(n) as u64;
     let pairs = (n as u64) * (n as u64 - 1) / 2;
-    (num_irreps as u64) * pairs * dm * dm * 8
+    let ni = num_irreps as u64;
+    let flat = ni * pairs * dm * dm * 4;
+    let result = ni * ni * 8;
+    let base = flat + result;
+    base + base / 8 // ~12.5% margin
 }
 
 /// Fixed seed for the deterministic PRNG so decomposition is reproducible across

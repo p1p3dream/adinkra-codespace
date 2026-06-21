@@ -15,6 +15,7 @@ mod pipeline;
 mod ranking;
 mod search;
 mod signed_perm;
+mod streamed_gadget;
 mod tendim_data;
 
 use std::time::Instant;

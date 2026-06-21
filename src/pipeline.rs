@@ -7,7 +7,7 @@ use rayon::prelude::*;
 use crate::chromotopology::Chromotopology;
 use crate::code::DoublyEvenCode;
 use crate::dashing::DashingEnumerator;
-use crate::decompose::{decompose_rep, dense_gadget_matrix, DenseHoloraumy};
+use crate::decompose::decompose_rep;
 use crate::filters::worldsheet_all_splits;
 use crate::holoraumy::{dmin, gadget, HoloraumyData};
 use crate::lr_matrix::AdinkraRep;
@@ -251,11 +251,13 @@ fn build_reps_for_code(n: usize, entry: &CodeEntry) -> (usize, Vec<AdinkraRep>) 
 }
 
 /// Run F8 route (b) on a single k-stratum: decompose every valise rep into its
-/// `d/dmin` irreducible summands and compute the dense gadget matrix over all
-/// summands in the stratum.
+/// `d/dmin` irreducible summands and compute the gadget matrix over all summands
+/// via the memory-bounded streamed Gram (`crate::streamed_gadget`).
 ///
-/// When `d > decompose::MAX_DECOMPOSE_D` the dense path is infeasible, so the
-/// stratum is recorded as skipped (not decomposed) rather than attempted.
+/// Two guards: the stratum is recorded as skipped (not decomposed) when
+/// `d > decompose::MAX_DECOMPOSE_D` (per-rep decomposition infeasible) or when the
+/// estimated gadget memory exceeds `decompose::MAX_DECOMPOSE_GADGET_BYTES`
+/// (num_irreps too large for RAM — needs a disk-backed/GPU tiled Gram).
 pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
     let t0 = Instant::now();
 
@@ -321,19 +323,19 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         };
     }
 
-    // Memory guard (separate from the d-guard above): the dense gadget retains one
-    // DenseHoloraumy per irreducible summand SIMULTANEOUSLY (~15.7 MB each at N=16),
-    // so peak memory scales with num_irreps (= reps x d/dmin), NOT with d. k=8 is
-    // ~8 GB (fits) but k=7 is ~36 GB and would silently OOM-kill the box. Refuse
-    // cleanly here instead of dying.
+    // Memory guard (separate from the d-guard above): peak memory scales with
+    // num_irreps (= reps x d/dmin), NOT with d. The gadget uses the streamed Gram
+    // path (crate::streamed_gadget), which holds one flat f32 holoraumy vector per
+    // summand (~7.86 MB at N=16): k=8 ~4 GB, k=7 ~18 GB (both fit), but k=6 ~180 GB.
+    // Refuse cleanly here instead of OOM-killing; larger strata need a disk-backed
+    // or GPU tiled Gram.
     let num_irreps_est = num_valise_reps * (d / dm);
     let est_bytes = crate::decompose::estimated_gadget_bytes(n, num_irreps_est);
     if est_bytes > crate::decompose::MAX_DECOMPOSE_GADGET_BYTES {
         let gib = |b: u64| b as f64 / (1u64 << 30) as f64;
         let reason = format!(
-            "estimated dense holoraumy {:.1} GiB ({} irreps x {} colour-pairs x {}^2 f64) \
-             exceeds budget {:.1} GiB; would OOM. Needs a blocked/streamed (or GPU) gadget, \
-             not the all-in-memory dense path.",
+            "estimated flat holoraumy store {:.1} GiB ({} irreps x {} colour-pairs x {}^2 f32) \
+             exceeds budget {:.1} GiB; would OOM. Needs a disk-backed/GPU tiled Gram.",
             gib(est_bytes), num_irreps_est, n * (n - 1) / 2, dm,
             gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES)
         );
@@ -351,35 +353,50 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         };
     }
 
-    // Decompose every rep into irreducible summands, in parallel.
+    // Decompose each rep and IMMEDIATELY flatten its summands to compact f32
+    // holoraumy vectors (dropping the f64 Decomposition per rep), so peak memory is
+    // the flat-vector store (~7.86 MB/summand), not the retained dense holoraumy
+    // tensors (~15.7 MB/summand) that OOM-killed k=7. See crate::streamed_gadget.
     eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {} summands each)...", d / dm);
     let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();
-    let decomposed: Vec<crate::decompose::Decomposition> = all_reps
+    let built: Vec<(f64, Vec<f32>)> = all_reps
         .par_iter()
-        .map(|rep| decompose_rep(rep).expect("d within guard, decomposition should succeed"))
-        .collect();
-
-    // Flatten to dense holoraumy per summand; track worst residual (parallel).
-    let summands: Vec<&crate::decompose::IrrepSummand> =
-        decomposed.iter().flat_map(|d| d.summands.iter()).collect();
-    let built: Vec<(f64, DenseHoloraumy)> = summands
-        .par_iter()
-        .map(|s| (crate::decompose::summand_residual(s), DenseHoloraumy::from_summand(s)))
+        .flat_map_iter(|rep| {
+            let decomp = decompose_rep(rep).expect("d within guard, decomposition should succeed");
+            let out: Vec<(f64, Vec<f32>)> = decomp
+                .summands
+                .iter()
+                .map(|s| {
+                    (
+                        crate::decompose::summand_residual(s),
+                        crate::streamed_gadget::flatten_summand(s),
+                    )
+                })
+                .collect();
+            out.into_iter()
+        })
         .collect();
     let worst_residual = built.iter().map(|(r, _)| *r).fold(0.0f64, f64::max);
-    let holos: Vec<DenseHoloraumy> = built.into_iter().map(|(_, h)| h).collect();
-    let num_irreps = holos.len();
+    let vectors: Vec<Vec<f32>> = built.into_iter().map(|(_, w)| w).collect();
+    let num_irreps = vectors.len();
 
-    eprintln!("decompose-k: computing {num_irreps}x{num_irreps} irreducible gadget matrix...");
-    let matrix = dense_gadget_matrix(&holos);
+    eprintln!("decompose-k: computing {num_irreps}x{num_irreps} irreducible gadget matrix (streamed Gram)...");
+    let matrix = crate::streamed_gadget::gram_gadget_matrix(&vectors, n);
 
-    // The irreducible self-gadget must be 1.0 (basis-independent).
+    // The irreducible self-gadget must be 1.0 (basis-independent). Check in
+    // RELEASE too (not just debug_assert): a drifted diagonal means a broken
+    // decomposition. f32 storage allows ~1e-7 drift, so warn above 1e-5.
+    let mut worst_diag_dev = 0.0f64;
     for (i, row) in matrix.iter().enumerate() {
-        debug_assert!(
-            (row[i] - 1.0).abs() < 1e-6,
-            "irrep gadget diagonal[{i}] = {} != 1.0",
-            row[i]
+        worst_diag_dev = worst_diag_dev.max((row[i] - 1.0).abs());
+    }
+    if worst_diag_dev > 1e-5 {
+        eprintln!(
+            "decompose-k: WARNING: worst irrep self-gadget deviation from 1.0 is {worst_diag_dev:.3e} \
+             (> 1e-5) — decomposition may be unsound for k={only_k}."
         );
+    } else {
+        eprintln!("decompose-k: self-gadget diagonal OK (worst dev {worst_diag_dev:.3e}).");
     }
 
     let stratum = IrrepGadgetStratum {
