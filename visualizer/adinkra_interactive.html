@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Adinkra Graph Explorer</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    *{box-sizing:border-box} html,body{height:100%;margin:0;overflow:hidden;background:#0d0d1a;color:#e5e7eb;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+    #app{height:100vh;display:grid;grid-template-columns:320px 1fr;background:#0d0d1a}
+    aside{background:#111827;border-right:1px solid #263244;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+    header{padding:16px 18px;border-bottom:1px solid #263244} h1{font-size:17px;margin:0 0 4px;color:white}.sub{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em}
+    .section{padding:14px 18px;border-bottom:1px solid #263244}.label{font-size:10px;color:#6b7280;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+    select,input[type=range]{width:100%} select{background:#0b1020;color:#e5e7eb;border:1px solid #374151;border-radius:7px;padding:8px;font-size:12px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0;color:#cbd5e1;font-size:12px}.row input[type=checkbox]{accent-color:#8b5cf6}
+    button{background:#1f2937;color:#d1d5db;border:1px solid #374151;border-radius:7px;padding:7px 10px;font-size:12px;cursor:pointer} button:hover{background:#374151;color:#fff}.buttons{display:flex;gap:8px;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#0b1020;border:1px solid #263244;border-radius:8px;padding:8px}.stat .v{font:700 16px ui-monospace,SFMono-Regular,Menlo,monospace;color:#fff}.stat .k{font-size:10px;color:#6b7280;text-transform:uppercase}
+    #details{padding:14px 18px;overflow:auto;flex:1}.empty{color:#6b7280;font-size:12px}.node-title{font-weight:700;color:#fff;margin-bottom:8px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #374151;border-radius:999px;padding:3px 8px;font-size:11px;color:#d1d5db;margin:2px 4px 6px 0}.swatch{width:9px;height:9px;border-radius:50%;display:inline-block}.kv{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#cbd5e1;margin:4px 0}.kv span{color:#6b7280}
+    #plotWrap{position:relative;min-width:0;min-height:0}#plot{width:100%;height:100%}.help{position:absolute;left:14px;bottom:12px;background:rgba(17,24,39,.72);border:1px solid #374151;border-radius:999px;padding:6px 10px;color:#cbd5e1;font-size:11px;backdrop-filter:blur(10px);pointer-events:none}.badge{position:absolute;top:12px;left:14px;background:rgba(124,58,237,.18);border:1px solid rgba(167,139,250,.45);border-radius:8px;padding:7px 10px;font-size:12px;color:#ddd;backdrop-filter:blur(10px)}
+  </style>
+</head>
+<body>
+<div id="app">
+  <aside>
+    <header><h1>Adinkra Graph Explorer</h1><div class="sub">SageOps-style 3D interaction</div></header>
+    <div class="section">
+      <div class="label">Graph</div>
+      <select id="graphSelect"></select>
+      <div class="stats" style="margin-top:10px">
+        <div class="stat"><div class="v" id="nodesStat">0</div><div class="k">nodes</div></div>
+        <div class="stat"><div class="v" id="edgesStat">0</div><div class="k">edges</div></div>
+        <div class="stat"><div class="v" id="nStat">0</div><div class="k">N</div></div>
+        <div class="stat"><div class="v" id="kStat">0</div><div class="k">k</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="label">View controls</div>
+      <label class="row"><span>Show edges</span><input id="showEdges" type="checkbox" checked></label>
+      <label class="row"><span>Show negative signs</span><input id="showNegative" type="checkbox" checked></label>
+      <label class="row"><span>Selected neighborhood</span><input id="showNeighborhood" type="checkbox" checked></label>
+      <label class="row"><span>Edge opacity <b id="opacityVal">0.18</b></span></label>
+      <input id="edgeOpacity" type="range" min="0.02" max="0.9" value="0.18" step="0.02">
+      <label class="row"><span>Edge width <b id="widthVal">2</b></span></label>
+      <input id="edgeWidth" type="range" min="0.5" max="5" value="2" step="0.25">
+      <div class="buttons" style="margin-top:12px"><button id="resetBtn">Reset view</button><button id="clearBtn">Clear selection</button></div>
+    </div>
+    <div class="section">
+      <div class="label">Supersymmetry generators</div>
+      <div id="colorFilters" class="buttons"></div>
+    </div>
+    <div id="details"><div class="empty">Click a boson or fermion to inspect its Q-neighbors.</div></div>
+  </aside>
+  <main id="plotWrap"><div id="plot"></div><div class="badge" id="graphBadge">Loading</div><div class="help">Drag to rotate, scroll to zoom, click a node to highlight Q-neighbors</div></main>
+</div>
+<script>
+const EDGE_COLORS = ['#60a5fa','#f87171','#34d399','#fbbf24','#a78bfa','#f472b6','#22d3ee','#a3e635','#fb923c','#818cf8','#2dd4bf','#e11d48','#0ea5e9','#c084fc','#fde047','#10b981'];
+const BOSON = '#88bbff';
+const FERMION = '#ff9f66';
+let data, current, selectedId = null, activeColors = new Set();
+
+const $ = (id) => document.getElementById(id);
+function nodeById(id){ return current.nodes.find(n => n.id === id); }
+function edgesFor(id){ return current.edges.filter(e => e.src === id || e.dst === id); }
+function activeEdge(e){ return activeColors.has(e.color); }
+function signSymbol(s){ return s > 0 ? '+' : '-'; }
+
+function edgeTrace(edges, name, width, opacity, colorMode='byColor'){
+  const traces = [];
+  const byColor = new Map();
+  for(const e of edges){
+    if(!byColor.has(e.color)) byColor.set(e.color, []);
+    byColor.get(e.color).push(e);
+  }
+  for(const [color, es] of byColor.entries()){
+    const x=[],y=[],z=[],text=[];
+    for(const e of es){
+      const a = current.nodes[e.srcIndex], b = current.nodes[e.dstIndex];
+      x.push(a.x,b.x,null); y.push(a.y,b.y,null); z.push(a.z,b.z,null);
+      text.push(e.label,e.label,null);
+    }
+    traces.push({type:'scatter3d',mode:'lines',name:name || `Q${color+1}`,showlegend:false,x,y,z,text,hoverinfo:'text',opacity,line:{color:EDGE_COLORS[color % EDGE_COLORS.length],width}});
+  }
+  return traces;
+}
+
+function buildTraces(){
+  const showEdges = $('showEdges').checked;
+  const showNegative = $('showNegative').checked;
+  const showNeighborhood = $('showNeighborhood').checked;
+  const opacity = Number($('edgeOpacity').value);
+  const width = Number($('edgeWidth').value);
+  const traces = [];
+
+  if(showEdges){
+    const edges = current.edges.filter(activeEdge);
+    traces.push(...edgeTrace(edges, 'edge', width, opacity));
+  }
+
+  const bosons = current.nodes.filter(n => n.kind === 'boson');
+  const fermions = current.nodes.filter(n => n.kind === 'fermion');
+  const selected = selectedId ? nodeById(selectedId) : null;
+  const neighborIds = new Set(selected ? edgesFor(selectedId).flatMap(e => [e.src, e.dst]) : []);
+
+  function nodeTrace(nodes, kind, color, symbol){
+    return {type:'scatter3d',mode:'markers',name:kind,x:nodes.map(n=>n.x),y:nodes.map(n=>n.y),z:nodes.map(n=>n.z),customdata:nodes.map(n=>n.id),text:nodes.map(n=>`${n.label}<br>${kind}<br>degree ${n.degree}`),hoverinfo:'text',marker:{size:nodes.map(n => n.id === selectedId ? 11 : neighborIds.has(n.id) ? 8 : 5),color:nodes.map(n => selected && !neighborIds.has(n.id) ? 'rgba(80,85,105,0.25)' : color),symbol,line:{color:kind === 'boson' ? '#dbeafe' : '#fed7aa',width:nodes.map(n => n.id === selectedId ? 3 : neighborIds.has(n.id) ? 1.6 : 0.5)},opacity:1}};
+  }
+  traces.push(nodeTrace(bosons,'boson',BOSON,'circle-open'));
+  traces.push(nodeTrace(fermions,'fermion',FERMION,'circle'));
+
+  if(showNegative){
+    const neg = current.edges.filter(e => e.sign < 0 && activeEdge(e));
+    const mids = neg.map(e => { const a=current.nodes[e.srcIndex], b=current.nodes[e.dstIndex]; return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2,t:`− Q${e.color+1}`}; });
+    traces.push({type:'scatter3d',mode:'text',showlegend:false,name:'negative signs',x:mids.map(m=>m.x),y:mids.map(m=>m.y),z:mids.map(m=>m.z),text:mids.map(m=>m.t),hoverinfo:'skip',textfont:{color:'rgba(255,255,255,.45)',size:9}});
+  }
+
+  if(selected && showNeighborhood){
+    const selectedEdges = edgesFor(selectedId).filter(activeEdge);
+    traces.push(...edgeTrace(selectedEdges, 'selected edges', width + 3, 1));
+    traces.push({type:'scatter3d',mode:'markers',name:'selected halo',showlegend:false,x:[selected.x],y:[selected.y],z:[selected.z],hoverinfo:'skip',marker:{size:20,color:'rgba(255,255,255,0)',line:{color:'#c4b5fd',width:3}}});
+  }
+  return traces;
+}
+
+function render(){
+  $('nodesStat').textContent = current.nodes.length;
+  $('edgesStat').textContent = current.edges.length;
+  $('nStat').textContent = current.n;
+  $('kStat').textContent = current.k;
+  $('graphBadge').textContent = `${current.label}: ${current.numBosons} bosons, ${current.numFermions} fermions`;
+  $('opacityVal').textContent = $('edgeOpacity').value;
+  $('widthVal').textContent = $('edgeWidth').value;
+  const layout = {paper_bgcolor:'#0d0d1a',plot_bgcolor:'#0d0d1a',margin:{l:0,r:0,t:0,b:0},showlegend:true,legend:{orientation:'h',x:0.01,y:0.02,bgcolor:'rgba(17,24,39,.65)',font:{color:'#e5e7eb',size:11}},scene:{bgcolor:'#0d0d1a',aspectmode:'data',camera:{eye:{x:1.65,y:1.65,z:1.2}},xaxis:axis(),yaxis:axis(),zaxis:axis()},hoverlabel:{bgcolor:'#111827',bordercolor:'#475569',font:{color:'#fff'}}};
+  const config = {responsive:true,displayModeBar:true,displaylogo:false,modeBarButtonsToRemove:['toImage','sendDataToCloud','select2d','lasso2d','toggleSpikelines']};
+  Plotly.react('plot', buildTraces(), layout, config);
+}
+function axis(){ return {showgrid:true,gridcolor:'#222',zeroline:false,showticklabels:false,title:{text:''},showspikes:false}; }
+
+function updateDetails(){
+  const box = $('details');
+  const n = selectedId ? nodeById(selectedId) : null;
+  if(!n){ box.innerHTML = '<div class="empty">Click a boson or fermion to inspect its Q-neighbors.</div>'; return; }
+  const es = edgesFor(n.id).filter(activeEdge).sort((a,b)=>a.color-b.color);
+  box.innerHTML = `<div class="label">Selected node</div><div class="node-title">${n.label}</div>
+    <span class="pill"><span class="swatch" style="background:${n.kind==='boson'?BOSON:FERMION}"></span>${n.kind}</span>
+    <div class="kv"><span>class:</span> ${n.classIndex}</div><div class="kv"><span>rep:</span> ${n.repHex}</div><div class="kv"><span>degree:</span> ${n.degree}</div>
+    <div class="label" style="margin-top:14px">Q-neighbors (${es.length})</div>` +
+    es.map(e => { const other = nodeById(e.src === n.id ? e.dst : e.src); return `<button style="display:block;width:100%;text-align:left;margin:5px 0" onclick="selectNode('${other.id}')"><span class="swatch" style="background:${EDGE_COLORS[e.color]}"></span> Q${e.color+1} ${signSymbol(e.sign)} → ${other.label}</button>`; }).join('');
+}
+window.selectNode = function(id){ selectedId = id; updateDetails(); render(); };
+
+function setupColorFilters(){
+  const box = $('colorFilters'); box.innerHTML = ''; activeColors = new Set([...Array(current.n).keys()]);
+  for(let i=0;i<current.n;i++){
+    const b = document.createElement('button'); b.textContent = `Q${i+1}`; b.style.borderColor = EDGE_COLORS[i]; b.style.color = EDGE_COLORS[i]; b.onclick = () => { activeColors.has(i) ? activeColors.delete(i) : activeColors.add(i); b.style.opacity = activeColors.has(i) ? '1' : '.25'; updateDetails(); render(); };
+    box.appendChild(b);
+  }
+}
+function loadGraph(idx){ current = data.graphs[idx]; selectedId = null; setupColorFilters(); updateDetails(); render(); }
+
+fetch('adinkra_graph_data.json').then(r=>r.json()).then(json => {
+  data = json;
+  const sel = $('graphSelect');
+  data.graphs.forEach((g,i) => { const o=document.createElement('option'); o.value=i; o.textContent=g.label; sel.appendChild(o); });
+  sel.onchange = () => loadGraph(Number(sel.value));
+  ['showEdges','showNegative','showNeighborhood','edgeOpacity','edgeWidth'].forEach(id => $(id).oninput = render);
+  $('resetBtn').onclick = () => render();
+  $('clearBtn').onclick = () => { selectedId = null; updateDetails(); render(); };
+  loadGraph(2);
+  document.getElementById('plot').on('plotly_click', ev => { const p = ev.points && ev.points[0]; if(!p || !p.customdata) return; selectedId = selectedId === p.customdata ? null : p.customdata; updateDetails(); render(); });
+});
+</script>
+</body>
+</html>

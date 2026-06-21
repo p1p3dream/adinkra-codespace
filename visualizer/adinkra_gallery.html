@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Adinkra Graph Gallery</title>
+<style>
+body{margin:0;background:#0b1020;color:#e5e7eb;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;}
+header{position:sticky;top:0;background:rgba(11,16,32,.92);backdrop-filter:blur(12px);padding:18px 24px;border-bottom:1px solid #1f2937;z-index:5}
+h1{margin:0 0 6px;font-size:22px}.sub{color:#9ca3af;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:18px;padding:24px}
+.card{background:#111827;border:1px solid #263244;border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.card h2{font-size:15px;margin:0;padding:12px 14px;border-bottom:1px solid #263244;color:#f9fafb}
+.card img{display:block;width:100%;height:auto;background:#050816;cursor:zoom-in}
+.card a{color:#93c5fd;text-decoration:none}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:20;padding:24px}
+.viewer img{max-width:96vw;max-height:92vh;object-fit:contain}.viewer.show{display:flex}.hint{position:fixed;bottom:12px;color:#aaa;font-size:12px}
+</style></head><body>
+<header><h1>Adinkra graph renders</h1><div class="sub">Click any image to zoom. N=16 D16 and E8xE8 have multiple camera angles.</div></header>
+<main class="grid">
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_d16.png" target="_blank">n16 d16</a></h2><img src="../viz/adinkra_3d_n16_d16.png" alt="n16 d16"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_d16_e10_a0.png" target="_blank">n16 d16 e10 a0</a></h2><img src="../viz/adinkra_3d_n16_d16_e10_a0.png" alt="n16 d16 e10 a0"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_d16_e45_a90.png" target="_blank">n16 d16 e45 a90</a></h2><img src="../viz/adinkra_3d_n16_d16_e45_a90.png" alt="n16 d16 e45 a90"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_d16_e80_a180.png" target="_blank">n16 d16 e80 a180</a></h2><img src="../viz/adinkra_3d_n16_d16_e80_a180.png" alt="n16 d16 e80 a180"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_e8xe8.png" target="_blank">n16 e8xe8</a></h2><img src="../viz/adinkra_3d_n16_e8xe8.png" alt="n16 e8xe8"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_e8xe8_e10_a0.png" target="_blank">n16 e8xe8 e10 a0</a></h2><img src="../viz/adinkra_3d_n16_e8xe8_e10_a0.png" alt="n16 e8xe8 e10 a0"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_e8xe8_e45_a90.png" target="_blank">n16 e8xe8 e45 a90</a></h2><img src="../viz/adinkra_3d_n16_e8xe8_e45_a90.png" alt="n16 e8xe8 e45 a90"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n16_e8xe8_e80_a180.png" target="_blank">n16 e8xe8 e80 a180</a></h2><img src="../viz/adinkra_3d_n16_e8xe8_e80_a180.png" alt="n16 e8xe8 e80 a180"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n4.png" target="_blank">n4</a></h2><img src="../viz/adinkra_3d_n4.png" alt="n4"></section>
+<section class="card"><h2><a href="../viz/adinkra_3d_n8.png" target="_blank">n8</a></h2><img src="../viz/adinkra_3d_n8.png" alt="n8"></section>
+</main><div class="viewer" id="viewer"><img id="big"><div class="hint">click or press Esc to close</div></div>
+<script>
+const viewer=document.getElementById('viewer'), big=document.getElementById('big');
+document.querySelectorAll('.card img').forEach(img=>img.onclick=()=>{big.src=img.src; viewer.classList.add('show')});
+viewer.onclick=()=>viewer.classList.remove('show');
+document.addEventListener('keydown',e=>{if(e.key==='Escape')viewer.classList.remove('show')});
+</script></body></html>
