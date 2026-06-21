@@ -77,14 +77,35 @@ relevant module doc-comments).
 
 - **Cigliano, Dahl, Gates (et al.)**, *10D Supergravity Numerical Data Sets for L &
   R Matrices*, arXiv:2512.12157; data repo **github.com/mcmulaz/Super-Sym** ("Garden
-  Algebra" Mathematica file). The split SO(1,9) sigma relation `σ^μ σ̃^ν + σ^ν σ̃^μ
-  = 2 η^μν I_16` and the explicit 82×176 / 176×82 L/R matrices + non-closure tensor
-  E_IJ. Used by: `lorentz.rs` (split-sigma relation), `tendim_data.rs` +
-  `data/tendim_10d_lr.json` (regenerated via `scripts/gen_10d_data.py`).
-  **Provenance note:** our JSON is a numerical *re-implementation* of the published
-  generative Mathematica code, not a literal download. It satisfies the bosonic
-  Garden relation to ~1.7e-12 with a nonzero fermionic remnant; this is evidence of
-  algebraic plausibility, NOT a proof of byte-fidelity to the authors' matrices.
+  Algebra" Mathematica file, commit `8c8df92`). The split SO(1,9) sigma relation
+  `σ^μ σ̃^ν + σ^ν σ̃^μ = 2 η^μν I_16` and the explicit 82×176 / 176×82 L/R matrices +
+  non-closure tensor E_IJ. Used by: `lorentz.rs` (split-sigma relation),
+  `tendim_data.rs` + `data/tendim_10d_lr.json` (regenerated via
+  `scripts/gen_10d_data.py`).
+  **Provenance note:** our JSON is *regenerated from the authors' Garden Algebra
+  generative source* (github.com/mcmulaz/Super-Sym, commit `8c8df92`), not a literal
+  download of the paper's matrices. It satisfies the bosonic Garden relation to
+  ~1.7e-12 in float (exactly 0 in exact arithmetic). The fermionic non-closure
+  remnant E_IJ is nonzero (computed here, NOT a paper-reported figure). This is
+  evidence of algebraic plausibility. Additionally, a SEPARATE exact (sympy) port of
+  the Garden source matches our JSON entrywise (0 mismatches; bosonic relation
+  exactly 0 in exact arithmetic) — see `scripts/eval_garden_exact.py`. (This is a
+  second exact implementation of the same Garden formulas, so it corroborates "our
+  JSON equals the Garden source", not an independent proof of the paper's
+  convention.) The dataset is therefore faithful to the authors' Garden Algebra
+  source; we make NO claim of byte-equality to any matrices typeset in the paper.
+  **Worked-example discrepancy (UNRESOLVED):** the paper's displayed worked examples
+  in Eq 6.0.5 (and the gravitino ψ examples in Eq 6.0.6) disagree with the Garden
+  source / our JSON — both in bracketed spinor indices (e.g. `ψ_1(6)` vs `ψ_1(16)`)
+  and some coefficients (e.g. paper `i/16` vs our assembled `7/16`). Whether this is
+  a transcription error, a primitive-vs-assembled presentation difference, or a
+  convention map is NOT established and needs the authors. No typo claim is made.
+  See PROVENANCE.md §6.
+  **License / citation posture:** the upstream repo carries no LICENSE file. We keep
+  the dataset public as an *academic regeneration* of the authors' published
+  Mathematica, with full citation to arXiv:2512.12157 and the pinned upstream commit.
+  Full hashes, conventions, regen command, and the mismatch status are recorded in
+  **PROVENANCE.md**.
 - Octonionic SO(9) Clifford construction (Fano-plane imaginary-octonion
   left-multiplications) and even-dimensional recursive Clifford construction:
   standard; cf. arXiv:2205.09509 (*Lecture note on Clifford algebra*) and the

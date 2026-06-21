@@ -73,6 +73,25 @@ use crate::signed_perm::SignedPerm;
 /// rewrite, not a dense path.
 pub const MAX_DECOMPOSE_D: usize = 512;
 
+/// Memory budget (bytes) for the dense gadget step of a whole k-stratum. The
+/// `d ≤ MAX_DECOMPOSE_D` guard alone is NOT sufficient: the gadget pairs every
+/// irreducible summand against every other, so it retains one `DenseHoloraumy`
+/// (C(N,2) matrices of dmin × dmin f64 ≈ 15.7 MB at N=16) per summand
+/// SIMULTANEOUSLY. That scales with `num_irreps` (= reps × d/dmin), not `d`:
+/// k=8 ≈ 8 GB (fits), but k=7 ≈ 36 GB and would silently OOM-kill a 64 GB box.
+/// `run_decompose_k` refuses (clean skip) when the estimate exceeds this budget
+/// rather than dying. Tune to the host; the real fix for larger strata is a
+/// blocked/streamed (or GPU) Gram, not raising this.
+pub const MAX_DECOMPOSE_GADGET_BYTES: u64 = 24 * 1024 * 1024 * 1024; // 24 GiB
+
+/// Estimated peak bytes of retained dense holoraumy for `num_irreps` summands at
+/// `n` colours (dmin = dmin(n)): num_irreps × C(n,2) × dmin² × 8.
+pub fn estimated_gadget_bytes(n: usize, num_irreps: usize) -> u64 {
+    let dm = dmin(n) as u64;
+    let pairs = (n as u64) * (n as u64 - 1) / 2;
+    (num_irreps as u64) * pairs * dm * dm * 8
+}
+
 /// Fixed seed for the deterministic PRNG so decomposition is reproducible across
 /// runs and threads (each `decompose_rep` call uses a fresh, identically-seeded
 /// generator).

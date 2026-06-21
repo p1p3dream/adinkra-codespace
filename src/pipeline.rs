@@ -321,6 +321,36 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         };
     }
 
+    // Memory guard (separate from the d-guard above): the dense gadget retains one
+    // DenseHoloraumy per irreducible summand SIMULTANEOUSLY (~15.7 MB each at N=16),
+    // so peak memory scales with num_irreps (= reps x d/dmin), NOT with d. k=8 is
+    // ~8 GB (fits) but k=7 is ~36 GB and would silently OOM-kill the box. Refuse
+    // cleanly here instead of dying.
+    let num_irreps_est = num_valise_reps * (d / dm);
+    let est_bytes = crate::decompose::estimated_gadget_bytes(n, num_irreps_est);
+    if est_bytes > crate::decompose::MAX_DECOMPOSE_GADGET_BYTES {
+        let gib = |b: u64| b as f64 / (1u64 << 30) as f64;
+        let reason = format!(
+            "estimated dense holoraumy {:.1} GiB ({} irreps x {} colour-pairs x {}^2 f64) \
+             exceeds budget {:.1} GiB; would OOM. Needs a blocked/streamed (or GPU) gadget, \
+             not the all-in-memory dense path.",
+            gib(est_bytes), num_irreps_est, n * (n - 1) / 2, dm,
+            gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES)
+        );
+        eprintln!("decompose-k: SKIPPED k={only_k}: {reason}");
+        let stratum = IrrepGadgetStratum {
+            k: only_k, d, dmin: dm, num_valise_reps, num_irreps: num_irreps_est,
+            decomposed: false, skip_reason: Some(reason), max_summand_residual: None,
+            matrix: Vec::new(),
+        };
+        let elapsed = t0.elapsed().as_secs_f64();
+        return FullPipelineOutput {
+            n, num_codes: codes.len(), total_reps: num_valise_reps,
+            results: Vec::new(), gadget_strata: Vec::new(),
+            irrep_strata: vec![stratum], elapsed_secs: elapsed,
+        };
+    }
+
     // Decompose every rep into irreducible summands, in parallel.
     eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {} summands each)...", d / dm);
     let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();

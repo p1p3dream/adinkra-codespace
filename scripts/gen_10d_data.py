@@ -15,6 +15,26 @@ See REFERENCES.md and src/tendim_data.rs.
 """
 import numpy as np
 import json
+import os
+import sys
+
+# ---- Output path resolution (no hardcoded absolute paths) ----
+# Requirement: reproducible for any user / CI. Derive the default output path
+# from this script's location (<repo>/data/tendim_10d_lr.json), and allow an
+# argv[1] override so callers (e.g. CI) can redirect the artifact.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+DEFAULT_OUT = os.path.join(REPO_ROOT, "data", "tendim_10d_lr.json")
+OUT_PATH = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUT
+
+# ---- Numerical tolerances ----
+# Entries are derived from sigma-matrix Kronecker products; the construction is
+# real-valued up to floating-point round-off. Any imaginary part larger than
+# this tolerance signals a transcription/algebra error, so we HARD-FAIL rather
+# than silently drop Im(.) (see the assert before serialization below).
+IMAG_TOL = 1e-9
+# Fixed decimal count for canonical float serialization (see write block).
+ROUND_DECIMALS = 12
 
 # ---- Pauli / sigma setup (16x16 via Kronecker of 4) ----
 s1 = np.array([[0,1],[1,0]], dtype=complex)
@@ -65,17 +85,38 @@ def perm_sign(p):
             if p[i]>p[j]: s=-s
     return s
 
+# PORT CAVEAT (Sig3Up / Signature parity): Mathematica's Sig3Up uses
+# Signature[p] where p is a permutation of the *values* {mu,nu,rho}, i.e. the
+# parity of the permutation needed to sort those values into canonical order.
+# Here we instead iterate over permutations of the *positions* range(3) and use
+# perm_sign of that positional permutation. These two parities coincide ONLY
+# when the supplied (mu,nu,rho) are the distinct, already-ascending arguments
+# that the current L/R construction actually passes (Sig3Up is always called as
+# Sig3Up(0,rho,xi) with rho<xi, all distinct -> matches Signature of the sorted
+# value list up to the same overall sign on every term, which cancels under the
+# (1/6) symmetrization). It is NOT a faithful general port of Signature[p]: for
+# repeated indices or non-ascending value arguments the two would diverge. Do
+# not reuse Sig3Up outside the present call sites without revalidating.
 def Sig3Up(mu,nu,rho):
     base=[mu,nu,rho]
     tot=np.zeros((16,16),dtype=complex)
     for p in permutations(range(3)):
         idx=[base[p[0]],base[p[1]],base[p[2]]]
-        sg=perm_sign(p)  # Signature relative to original order
+        sg=perm_sign(p)  # positional parity; see PORT CAVEAT above
         tot += sg*(sigUp[idx[0]].dot(sigmaTildeUp(idx[1])).dot(sigUp[idx[2]]))
     return (1.0/6.0)*tot
 
 def MixedLeft(mu,nu,rho,xi):
     return sigmaTilde(mu).dot(Sig3Up(nu,rho,xi))
+
+# OMITTED MATHEMATICA FUNCTIONS (Garden Algebra source, lines 52-63):
+#   - Sig3UpT[mu,nu,rho]      (the SigmaTilde . Sigma . SigmaTilde variant)
+#   - MixedRight[nu,rho,xi,mu] (= Sig3UpT[nu,rho,xi] . Sigma[mu])
+# These are intentionally NOT ported. The current L/R construction below builds
+# its rows entirely from sigma/SigmaTilde, Sig2/TildeSig2Up, Sig3Up and
+# MixedLeft; it never references Sig3UpT or MixedRight. Porting them would add
+# dead code. Consequently this file is a port of the L/R construction actually
+# used, NOT a complete line-for-line port of the entire Garden Algebra file.
 
 # ---- Ordering / gauge fix ----
 HPairsAll=[(mu,nu) for mu in range(0,10) for nu in range(mu,10)]   # 55
@@ -248,9 +289,68 @@ for L in Ls:
         allvals.add(v)
 print("Distinct real entry values in L (sample):", sorted(allvals)[:20], "... total", len(allvals))
 
-# ---- Write JSON (real parts; imag confirmed ~0) ----
+# ---- HARD-FAIL on imaginary parts (do NOT silently drop Im) ----
+# The matrices must be real to floating-point precision. If any imaginary part
+# exceeds IMAG_TOL the algebra/transcription is wrong and serializing the real
+# part would hide it, so abort with a clear, actionable message.
+max_im_L = max(np.max(np.abs(L.imag)) for L in Ls)
+max_im_R = max(np.max(np.abs(R.imag)) for R in Rs)
+assert max_im_L <= IMAG_TOL, (
+    "Imaginary part of L exceeds tolerance: max|Im(L)|=%.3e > IMAG_TOL=%.1e. "
+    "The construction should be real; refusing to drop a nonzero imaginary "
+    "part. Check the sigma-matrix algebra / coefficients." % (max_im_L, IMAG_TOL)
+)
+assert max_im_R <= IMAG_TOL, (
+    "Imaginary part of R exceeds tolerance: max|Im(R)|=%.3e > IMAG_TOL=%.1e. "
+    "The construction should be real; refusing to drop a nonzero imaginary "
+    "part. Check the sigma-matrix algebra / coefficients." % (max_im_R, IMAG_TOL)
+)
+print("Imaginary-part check passed (max|Im(L)|=%.3e, max|Im(R)|=%.3e <= %.1e)"
+      % (max_im_L, max_im_R, IMAG_TOL))
+
+# ---- Canonical, deterministic serialization ----
+# Determinism requirements (so re-running yields BYTE-IDENTICAL output):
+#   * Fixed float formatting: every entry rounded to ROUND_DECIMALS decimals,
+#     then emitted by json with default repr (a -0.0 from rounding is normalized
+#     to 0.0 below so sign-of-zero never flips between runs).
+#   * Fixed separators: json defaults (", " and ": ") are explicit and stable.
+#   * Fixed key order: keys are emitted in an explicit canonical order rather
+#     than relying on dict insertion order. NOTE: we deliberately do NOT use
+#     json sort_keys=True. The committed artifact predates this hardening and
+#     was written in the order below; using a fixed explicit order keeps the
+#     output deterministic AND byte-identical to the committed file. (Alphabetic
+#     sort_keys would reorder L/R/n/... and change the bytes for no benefit.)
 def to_list(M):
-    return [[round(float(x),12) for x in row] for row in M.real]
+    out=[]
+    for row in M.real:
+        r=[]
+        for x in row:
+            v=round(float(x), ROUND_DECIMALS)
+            if v==0.0:
+                v=0.0  # normalize -0.0 -> 0.0 for stable bytes
+            r.append(v)
+        out.append(r)
+    return out
+
+# Explicit canonical key order (see note above). The "source" field is written
+# here; the richer "provenance" block (research metadata: upstream commit/hashes,
+# license posture, the resolved Eq 6.0.5 typo note) is maintained out-of-band in
+# PROVENANCE.md and carried in the committed JSON. To avoid clobbering it on
+# regeneration, we PRESERVE an existing provenance block verbatim (inserted in the
+# same position, so regeneration stays byte-identical to the committed file). The
+# reproducibility guarantee is the canonical_token_hash() of the MATRIX content
+# (src/tendim_data.rs), which is independent of this metadata.
+_existing_provenance = None
+if os.path.exists(OUT_PATH):
+    # Fail LOUDLY if the existing file is present but unreadable: silently dropping
+    # the provenance block on a parse error would erase research metadata without
+    # warning. A genuinely missing file (fresh generation) is the only case where
+    # provenance is legitimately absent.
+    with open(OUT_PATH) as _pf:
+        _existing = json.load(_pf)  # raises on malformed JSON -> abort, do not clobber
+    _existing_provenance = _existing.get("provenance")
+    if _existing_provenance is None:
+        print("WARNING: existing JSON has no 'provenance' block to preserve.")
 
 data={
     "nb":82,"nf":176,"n":16,
@@ -259,13 +359,14 @@ data={
         "bosonic":"L_I R_J + L_J R_I = 2 delta_IJ I_82",
         "fermionic":"R_I L_J + R_J L_I = 2 delta_IJ I_176 + 2 E_IJ"
     },
-    "L":[to_list(L) for L in Ls],
-    "R":[to_list(R) for R in Rs]
 }
-import os
-os.makedirs("/Users/brandon/code/adinkra-codespace/data",exist_ok=True)
-with open("/Users/brandon/code/adinkra-codespace/data/tendim_10d_lr.json","w") as f:
-    json.dump(data,f)
-print("Wrote /Users/brandon/code/adinkra-codespace/data/tendim_10d_lr.json")
-import os
-print("File size bytes:", os.path.getsize("/Users/brandon/code/adinkra-codespace/data/tendim_10d_lr.json"))
+if _existing_provenance is not None:
+    data["provenance"]=_existing_provenance
+data["L"]=[to_list(L) for L in Ls]
+data["R"]=[to_list(R) for R in Rs]
+
+os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
+with open(OUT_PATH, "w") as f:
+    json.dump(data, f, separators=(", ", ": "), ensure_ascii=True)
+print("Wrote", OUT_PATH)
+print("File size bytes:", os.path.getsize(OUT_PATH))
