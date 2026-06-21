@@ -359,29 +359,47 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
     // tensors (~15.7 MB/summand) that OOM-killed k=7. See crate::streamed_gadget.
     eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {} summands each)...", d / dm);
     let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();
-    let built: Vec<(f64, Vec<f32>)> = all_reps
-        .par_iter()
-        .flat_map_iter(|rep| {
-            let decomp = decompose_rep(rep).expect("d within guard, decomposition should succeed");
-            let out: Vec<(f64, Vec<f32>)> = decomp
-                .summands
-                .iter()
-                .map(|s| {
-                    (
-                        crate::decompose::summand_residual(s),
-                        crate::streamed_gadget::flatten_summand(s),
-                    )
-                })
-                .collect();
-            out.into_iter()
-        })
-        .collect();
-    let worst_residual = built.iter().map(|(r, _)| *r).fold(0.0f64, f64::max);
-    let vectors: Vec<Vec<f32>> = built.into_iter().map(|(_, w)| w).collect();
-    let num_irreps = vectors.len();
+    let r = d / dm;
+    let l = crate::streamed_gadget::flat_len(n);
+    let num_irreps = all_reps.len() * r;
 
-    eprintln!("decompose-k: computing {num_irreps}x{num_irreps} irreducible gadget matrix (streamed Gram)...");
-    let matrix = crate::streamed_gadget::gram_gadget_matrix(&vectors, n);
+    // Build the contiguous W (num_irreps x l, f32) IN PLACE: one chunk of r*l per
+    // valise rep, written in parallel to disjoint slices. Each rep's f64
+    // Decomposition is dropped at the end of its closure, so peak memory is W
+    // itself (no Vec-of-Vec, no 2x copy). Worst residual is reduced via an atomic.
+    use std::sync::atomic::{AtomicU64, Ordering};
+    let worst_bits = AtomicU64::new(0u64);
+    let mut w: Vec<f32> = vec![0.0f32; num_irreps * l];
+    w.par_chunks_mut(r * l)
+        .enumerate()
+        .for_each(|(rep_i, chunk)| {
+            let decomp = decompose_rep(all_reps[rep_i])
+                .expect("d within guard, decomposition should succeed");
+            debug_assert_eq!(decomp.summands.len(), r);
+            let mut local_worst = 0.0f64;
+            for (s_i, s) in decomp.summands.iter().enumerate() {
+                local_worst = local_worst.max(crate::decompose::summand_residual(s));
+                crate::streamed_gadget::flatten_summand_into(s, &mut chunk[s_i * l..(s_i + 1) * l]);
+            }
+            // atomic max of local_worst into worst_bits (f64 bits, CAS loop)
+            let mut cur = worst_bits.load(Ordering::Relaxed);
+            loop {
+                if f64::from_bits(cur) >= local_worst {
+                    break;
+                }
+                match worst_bits.compare_exchange_weak(
+                    cur, local_worst.to_bits(), Ordering::Relaxed, Ordering::Relaxed,
+                ) {
+                    Ok(_) => break,
+                    Err(observed) => cur = observed,
+                }
+            }
+        });
+    let worst_residual = f64::from_bits(worst_bits.load(Ordering::Relaxed));
+
+    eprintln!("decompose-k: computing {num_irreps}x{num_irreps} irreducible gadget matrix (GEMM Gram)...");
+    let matrix = crate::streamed_gadget::gram_from_contiguous(&w, num_irreps, l, n);
+    drop(w);
 
     // The irreducible self-gadget must be 1.0 (basis-independent). Check in
     // RELEASE too (not just debug_assert): a drifted diagonal means a broken
@@ -423,6 +441,145 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         irrep_strata: vec![stratum],
         elapsed_secs: elapsed,
     }
+}
+
+/// f32 error audit for the GEMM Gram path. Decomposes a SAMPLE of `sample_reps`
+/// valise reps of stratum k (0 = all), then compares, on the resulting summands:
+///   (1) the trusted dense f64 gadget (decompose::dense_gadget_matrix),
+///   (2) the f64 GEMM Gram, and (3) the f32 GEMM Gram (the production path),
+/// plus a Vtilde antisymmetry check. Prints max/mean errors, worst diagonal
+/// drift, the f32-vs-f64 spread, the distinct-value gap vs the f32 error, and the
+/// antisymmetry residual — so f32-vs-f64 is decided from numbers, not asserted.
+pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
+    use crate::decompose::{dense_gadget_matrix, DenseHoloraumy, IrrepSummand};
+
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let dm = dmin(n);
+
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
+
+    // Sample reps (decompose, collect summands).
+    let mut reps_done = 0usize;
+    let mut summands: Vec<IrrepSummand> = Vec::new();
+    'outer: for (_idx, entry) in &codes {
+        let (_d, reps) = build_reps_for_code(n, entry);
+        for rep in &reps {
+            if sample_reps != 0 && reps_done >= sample_reps {
+                break 'outer;
+            }
+            let decomp = decompose_rep(rep).expect("decompose (audit)");
+            summands.extend(decomp.summands);
+            reps_done += 1;
+        }
+    }
+    let ni = summands.len();
+    let d = if ni > 0 { dm } else { 0 };
+    let _ = d;
+    println!("=== decompose-audit: N={n} k={only_k} sample_reps={reps_done} summands={ni} dmin={dm} ===");
+    if ni == 0 {
+        println!("(no summands)");
+        return;
+    }
+
+    // Antisymmetry of every Vtilde over the sampled summands.
+    let mut worst_antisym = 0.0f64;
+    let dense: Vec<DenseHoloraumy> = summands
+        .iter()
+        .map(|s| {
+            let dh = DenseHoloraumy::from_summand(s);
+            for m in &dh.vtilde {
+                let mt = m.transpose();
+                let w = m.data.iter().zip(mt.data.iter())
+                    .map(|(a, b)| (a + b).abs()).fold(0.0f64, f64::max);
+                worst_antisym = worst_antisym.max(w);
+            }
+            dh
+        })
+        .collect();
+
+    // (1) trusted dense f64 reference.
+    let g_dense = dense_gadget_matrix(&dense);
+
+    // Flat vectors, f32 and f64.
+    let l = crate::streamed_gadget::flat_len(n);
+    let mut w32 = vec![0.0f32; ni * l];
+    let mut w64 = vec![0.0f64; ni * l];
+    for (i, s) in summands.iter().enumerate() {
+        crate::streamed_gadget::flatten_summand_into(s, &mut w32[i * l..(i + 1) * l]);
+        let dh = DenseHoloraumy::from_summand(s);
+        let mut idx = i * l;
+        for mm in &dh.vtilde {
+            for &x in &mm.data {
+                w64[idx] = x;
+                idx += 1;
+            }
+        }
+    }
+    // (3) f32 GEMM and (2) f64 GEMM.
+    let g32 = crate::streamed_gadget::gram_from_contiguous(&w32, ni, l, n);
+    let g64 = crate::streamed_gadget::gram_from_contiguous_f64(&w64, ni, l, n);
+
+    // Metrics.
+    let (mut max_df, mut sum_df, mut cnt) = (0.0f64, 0.0f64, 0usize);
+    let (mut max_d64, mut max_3264, mut max_rel) = (0.0f64, 0.0f64, 0.0f64);
+    let mut worst_diag = 0.0f64;
+    for i in 0..ni {
+        worst_diag = worst_diag.max((g32[i][i] - 1.0).abs());
+        for j in 0..ni {
+            let e_df = (g32[i][j] - g_dense[i][j]).abs();
+            max_df = max_df.max(e_df);
+            sum_df += e_df;
+            cnt += 1;
+            max_d64 = max_d64.max((g64[i][j] - g_dense[i][j]).abs());
+            let e = (g32[i][j] - g64[i][j]).abs();
+            max_3264 = max_3264.max(e);
+            if g64[i][j].abs() > 1e-9 {
+                max_rel = max_rel.max(e / g64[i][j].abs());
+            }
+        }
+    }
+    // Distinct off-diagonal values (rounded) + min adjacent gap, from the f64 ref.
+    let round6 = |x: f64| (x * 1e6).round() / 1e6;
+    let mut off64: Vec<f64> = Vec::new();
+    let mut off32: Vec<f64> = Vec::new();
+    for i in 0..ni {
+        for j in 0..ni {
+            if i != j {
+                off64.push(round6(g64[i][j]));
+                off32.push(round6(g32[i][j]));
+            }
+        }
+    }
+    let distinct = |mut v: Vec<f64>| {
+        v.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        v.dedup();
+        v
+    };
+    let d64 = distinct(off64);
+    let d32 = distinct(off32.clone());
+    let min_gap = d64.windows(2).map(|w| w[1] - w[0]).fold(f64::INFINITY, f64::min);
+
+    println!("antisymmetry  : max |Vtilde + Vtilde^T| = {worst_antisym:.3e}");
+    println!("identity check: max |dense_f64 - GEMM_f64| = {max_d64:.3e}  (validates the Gram identity)");
+    println!("f32 vs dense  : max abs = {max_df:.3e}  mean abs = {:.3e}  worst diag drift = {worst_diag:.3e}", sum_df / cnt as f64);
+    println!("f32 vs f64    : max abs = {max_3264:.3e}  max rel = {max_rel:.3e}");
+    println!("distinct off  : f64 = {}  f32 = {}  (rounded 1e-6)", d64.len(), d32.len());
+    println!("nearest gap   : min adjacent f64 gap = {min_gap:.3e}   vs f32 max err = {max_3264:.3e}");
+    let safe = max_3264 < min_gap * 0.5;
+    println!(
+        "VERDICT       : f32 is {} for distinguishing values (max err {} half-gap {:.3e})",
+        if safe { "SAFE" } else { "NOT clearly safe" },
+        if safe { "<" } else { ">=" },
+        min_gap * 0.5
+    );
 }
 
 #[cfg(test)]

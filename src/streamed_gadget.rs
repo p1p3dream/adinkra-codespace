@@ -28,7 +28,6 @@
 
 use crate::decompose::{DenseHoloraumy, IrrepSummand};
 use crate::holoraumy::dmin;
-use rayon::prelude::*;
 
 /// Length of a flattened holoraumy vector: C(n,2) * dmin(n)^2.
 pub fn flat_len(n: usize) -> usize {
@@ -79,29 +78,88 @@ pub fn gadget_from_flat(a: &[f32], b: &[f32], n: usize) -> f64 {
     2.0 * acc / (n * (n - 1) * dmin_val) as f64
 }
 
-/// Symmetric gadget matrix from in-RAM flat f32 vectors, computed in parallel
-/// over rows (upper triangle then mirrored), f64 accumulation. Extra memory is
-/// just the result matrix; the flat vectors are borrowed.
-pub fn gram_gadget_matrix(vectors: &[Vec<f32>], n: usize) -> Vec<Vec<f64>> {
-    let m = vectors.len();
-    // Upper triangle per row, in parallel.
-    let mut mat: Vec<Vec<f64>> = (0..m)
-        .into_par_iter()
-        .map(|i| {
-            let mut row = vec![0.0f64; m];
-            for j in i..m {
-                row[j] = gadget_from_flat(&vectors[i], &vectors[j], n);
-            }
-            row
-        })
-        .collect();
-    // Mirror the lower triangle from the (already-computed) upper triangle.
-    for i in 0..m {
-        for j in 0..i {
-            mat[i][j] = mat[j][i];
+/// Flatten a summand's fermionic holoraumy directly into a preallocated f32 slice
+/// of length `flat_len(n)` (avoids a per-summand `Vec` allocation, so the caller
+/// can fill one big contiguous `W` buffer in place — no Vec-of-Vec, no 2x copy).
+pub fn flatten_summand_into(s: &IrrepSummand, out: &mut [f32]) {
+    let dh = DenseHoloraumy::from_summand(s);
+    let mut idx = 0;
+    for m in &dh.vtilde {
+        for &x in &m.data {
+            out[idx] = x as f32;
+            idx += 1;
         }
     }
-    mat
+    debug_assert_eq!(idx, out.len(), "flatten_summand_into: length mismatch");
+}
+
+/// Gadget matrix from a CONTIGUOUS row-major `W` (`ni x l`, f32) via a
+/// cache-blocked GEMM: `G = c * W Wᵀ`, `c = 2/(N(N-1)dmin)`. This replaces the
+/// bandwidth-bound per-pair dot loop — the GotoBLAS-style blocking in
+/// `matrixmultiply` reuses each tile across many outputs, turning the problem
+/// from memory-bound to compute-bound. Accumulation is f32 (exact for the 0,±1
+/// entries of the k=8 stratum; ~1e-4 for the general-real entries of k<8 — see
+/// `decompose-audit`). Extra memory is the f32 product buffer + the f64 result.
+pub fn gram_from_contiguous(w: &[f32], ni: usize, l: usize, n: usize) -> Vec<Vec<f64>> {
+    assert_eq!(w.len(), ni * l, "gram_from_contiguous: W shape mismatch");
+    let mut prod = vec![0.0f32; ni * ni];
+    // C = W * Wᵀ : A = W (ni x l; row stride l, col stride 1);
+    //              B = Wᵀ (l x ni; element (p,j) = W[j*l+p] => row stride 1, col stride l).
+    if ni > 0 && l > 0 {
+        unsafe {
+            matrixmultiply::sgemm(
+                ni, l, ni,
+                1.0,
+                w.as_ptr(), l as isize, 1,
+                w.as_ptr(), 1, l as isize,
+                0.0,
+                prod.as_mut_ptr(), ni as isize, 1,
+            );
+        }
+    }
+    let scale = 2.0 / (n * (n - 1) * dmin(n)) as f64;
+    (0..ni)
+        .map(|i| (0..ni).map(|j| prod[i * ni + j] as f64 * scale).collect())
+        .collect()
+}
+
+/// f64-accumulation variant of [`gram_from_contiguous`] (input `W` in f64). Used
+/// by the audit to quantify the f32 error against an exact-in-basis reference.
+pub fn gram_from_contiguous_f64(w: &[f64], ni: usize, l: usize, n: usize) -> Vec<Vec<f64>> {
+    assert_eq!(w.len(), ni * l);
+    let mut prod = vec![0.0f64; ni * ni];
+    if ni > 0 && l > 0 {
+        unsafe {
+            matrixmultiply::dgemm(
+                ni, l, ni,
+                1.0,
+                w.as_ptr(), l as isize, 1,
+                w.as_ptr(), 1, l as isize,
+                0.0,
+                prod.as_mut_ptr(), ni as isize, 1,
+            );
+        }
+    }
+    let scale = 2.0 / (n * (n - 1) * dmin(n)) as f64;
+    (0..ni)
+        .map(|i| (0..ni).map(|j| prod[i * ni + j] * scale).collect())
+        .collect()
+}
+
+/// Convenience wrapper (tests / small inputs): build a contiguous `W` from a
+/// slice of flat f32 vectors and call [`gram_from_contiguous`]. The pipeline
+/// builds `W` in place instead (no Vec-of-Vec) to keep peak memory bounded.
+pub fn gram_gadget_matrix(vectors: &[Vec<f32>], n: usize) -> Vec<Vec<f64>> {
+    let ni = vectors.len();
+    if ni == 0 {
+        return Vec::new();
+    }
+    let l = vectors[0].len();
+    let mut w = Vec::with_capacity(ni * l);
+    for v in vectors {
+        w.extend_from_slice(v);
+    }
+    gram_from_contiguous(&w, ni, l, n)
 }
 
 // ===========================================================================

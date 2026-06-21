@@ -44,6 +44,7 @@ fn main() {
         "pipeline" => cmd_pipeline(&args),
         "pipeline-k" => cmd_pipeline_k(&args),
         "decompose-k" => cmd_decompose_k(&args),
+        "decompose-audit" => cmd_decompose_audit(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -71,7 +72,9 @@ fn print_usage(prog: &str) {
     eprintln!("  pipeline <json>         Run the full dimensional lifting pipeline");
     eprintln!("  pipeline-k <k> [json]   Run pipeline for a single k-stratum only");
     eprintln!("  decompose-k <k> [json]  Irreducible-decompose a single k-stratum (F8 route b)");
-    eprintln!("                          and compute the dense gadget on irreducible pieces");
+    eprintln!("                          and compute the gadget on irreducible pieces");
+    eprintln!("  decompose-audit <k> <sample_reps> [json]");
+    eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
     eprintln!("  help                    Print this help message");
 }
 
@@ -512,6 +515,21 @@ fn cmd_decompose_k(args: &[String]) {
     let output = pipeline::run_decompose_k(json_path, k);
     let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
     println!("{}", json);
+}
+
+fn cmd_decompose_audit(args: &[String]) {
+    let k = parse_usize_arg(args, 2, "decompose-audit <k> <sample_reps> [json]");
+    let sample = if args.len() > 3 {
+        args[3].parse::<usize>().unwrap_or(64)
+    } else {
+        64
+    };
+    let json_path = if args.len() > 4 {
+        args[4].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
+    pipeline::run_decompose_audit(json_path, k, sample);
 }
 
 // ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+matrixmultiply = { version = "0.3", features = ["threading"] }
 nauty-pet = "0.14"
 petgraph = "0.8"
 rayon = "1"
