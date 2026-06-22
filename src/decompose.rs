@@ -70,8 +70,14 @@ use crate::signed_perm::SignedPerm;
 /// restriction is ~O(d³) time and O(d²) memory; at N=16 this admits k=8 (d=128,
 /// already irreducible), k=7 (d=256), and k=6 (d=512). Smaller k (d ≥ 1024,
 /// up to d=16384 for k=1) are skipped and logged — they need a sparse/iterative
-/// rewrite, not a dense path.
-pub const MAX_DECOMPOSE_D: usize = 512;
+/// (or GPU) eigensolver, not a dense Jacobi.
+///
+/// Raised to 1024 to admit k=5 decomposition (d=1024) after the `decompose-probe`
+/// feasibility test. The gadget for k=5 still exceeds RAM
+/// (`MAX_DECOMPOSE_GADGET_BYTES`), so `decompose-k 5` decomposes-then-skips at the
+/// memory guard until the disk-backed Gram lands; `decompose-probe 5` exercises
+/// the decomposition alone.
+pub const MAX_DECOMPOSE_D: usize = 1024;
 
 /// RAM budget (bytes) for the gadget step of a whole k-stratum. The
 /// `d ≤ MAX_DECOMPOSE_D` guard alone is NOT sufficient: the gadget pairs every
@@ -87,6 +93,13 @@ pub const MAX_DECOMPOSE_D: usize = 512;
 /// rather than OOM-killing. Tune to the host (lower on a 51 GB Mac); the
 /// disk-backed/GPU tiled Gram (future) removes the RAM dependence entirely.
 pub const MAX_DECOMPOSE_GADGET_BYTES: u64 = 56 * 1024 * 1024 * 1024; // 56 GiB
+
+/// Hard ceiling on the on-disk scratch flat-store W for the disk-backed tiled
+/// Gram (the `decompose-k-disk` / `--disk` path). Above the RAM budget, that path
+/// spills W to disk instead of skipping; this caps the absolute scratch size
+/// regardless of free space (k=5 ≈ 68 GiB and k=4 ≈ 73 GiB fit; absurd runs trip
+/// it). Tune to the scratch volume.
+pub const MAX_DECOMPOSE_DISK_BYTES: u64 = 256 * 1024 * 1024 * 1024; // 256 GiB
 
 /// Estimated peak bytes of the streamed gadget for `num_irreps` summands at `n`
 /// colours: the f32 flat-vector store (num_irreps × C(n,2) × dmin² × 4) PLUS the

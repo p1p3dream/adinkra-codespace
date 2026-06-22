@@ -43,8 +43,10 @@ fn main() {
         "validate-miller" => cmd_validate_miller(&args),
         "pipeline" => cmd_pipeline(&args),
         "pipeline-k" => cmd_pipeline_k(&args),
-        "decompose-k" => cmd_decompose_k(&args),
+        "decompose-k" => cmd_decompose_k(&args, false),
+        "decompose-k-disk" => cmd_decompose_k(&args, true),
         "decompose-audit" => cmd_decompose_audit(&args),
+        "decompose-probe" => cmd_decompose_probe(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -73,6 +75,9 @@ fn print_usage(prog: &str) {
     eprintln!("  pipeline-k <k> [json]   Run pipeline for a single k-stratum only");
     eprintln!("  decompose-k <k> [json]  Irreducible-decompose a single k-stratum (F8 route b)");
     eprintln!("                          and compute the gadget on irreducible pieces");
+    eprintln!("  decompose-k-disk <k> [json]");
+    eprintln!("                          like decompose-k but spills W to a disk scratch file");
+    eprintln!("                          and tiles the Gram (for strata that exceed RAM, e.g. k=5)");
     eprintln!("  decompose-audit <k> <sample_reps> [json]");
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
     eprintln!("  help                    Print this help message");
@@ -504,15 +509,18 @@ fn cmd_pipeline_k(args: &[String]) {
     println!("{}", json);
 }
 
-fn cmd_decompose_k(args: &[String]) {
-    let k = parse_usize_arg(args, 2, "decompose-k <k> [json]");
-    let json_path = if args.len() > 3 {
-        args[3].as_str()
-    } else {
-        "adinkra_codes_n16.json"
-    };
+fn cmd_decompose_k(args: &[String], allow_disk: bool) {
+    let k = parse_usize_arg(args, 2, "decompose-k <k> [json] [--disk]");
+    // First non-flag positional after k is the json path; --disk may appear anywhere.
+    let allow_disk = allow_disk || args.iter().any(|a| a == "--disk");
+    let json_path = args
+        .iter()
+        .skip(3)
+        .find(|a| !a.starts_with("--"))
+        .map(|s| s.as_str())
+        .unwrap_or("adinkra_codes_n16.json");
 
-    let output = pipeline::run_decompose_k(json_path, k);
+    let output = pipeline::run_decompose_k_mode(json_path, k, allow_disk);
     let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
     println!("{}", json);
 }
@@ -530,6 +538,13 @@ fn cmd_decompose_audit(args: &[String]) {
         "adinkra_codes_n16.json"
     };
     pipeline::run_decompose_audit(json_path, k, sample);
+}
+
+fn cmd_decompose_probe(args: &[String]) {
+    let k = parse_usize_arg(args, 2, "decompose-probe <k> <num_reps> [json]");
+    let num = if args.len() > 3 { args[3].parse::<usize>().unwrap_or(8) } else { 8 };
+    let json_path = if args.len() > 4 { args[4].as_str() } else { "adinkra_codes_n16.json" };
+    pipeline::run_decompose_probe(json_path, k, num);
 }
 
 // ---------------------------------------------------------------------------

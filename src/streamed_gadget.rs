@@ -90,16 +90,18 @@ pub fn flatten_summand_into(s: &IrrepSummand, out: &mut [f32]) {
             idx += 1;
         }
     }
-    debug_assert_eq!(idx, out.len(), "flatten_summand_into: length mismatch");
+    assert_eq!(idx, out.len(), "flatten_summand_into: length mismatch");
 }
 
 /// Gadget matrix from a CONTIGUOUS row-major `W` (`ni x l`, f32) via a
 /// cache-blocked GEMM: `G = c * W Wᵀ`, `c = 2/(N(N-1)dmin)`. This replaces the
 /// bandwidth-bound per-pair dot loop — the GotoBLAS-style blocking in
 /// `matrixmultiply` reuses each tile across many outputs, turning the problem
-/// from memory-bound to compute-bound. Accumulation is f32 (exact for the 0,±1
-/// entries of the k=8 stratum; ~1e-4 for the general-real entries of k<8 — see
-/// `decompose-audit`). Extra memory is the f32 product buffer + the f64 result.
+/// from memory-bound to compute-bound. Accumulation is f32: exact for the 0,±1
+/// entries of the k=8 stratum, and ~1e-7 relative for the general-real entries of
+/// k<8 (empirically ~1e-16 for the measured k=5/k=7 summands, whose restricted
+/// operators turn out near-exactly f32-representable — see `decompose-audit`).
+/// Extra memory is the f32 product buffer + the f64 result.
 pub fn gram_from_contiguous(w: &[f32], ni: usize, l: usize, n: usize) -> Vec<Vec<f64>> {
     assert_eq!(w.len(), ni * l, "gram_from_contiguous: W shape mismatch");
     let mut prod = vec![0.0f32; ni * ni];
@@ -160,6 +162,168 @@ pub fn gram_gadget_matrix(vectors: &[Vec<f32>], n: usize) -> Vec<Vec<f64>> {
         w.extend_from_slice(v);
     }
     gram_from_contiguous(&w, ni, l, n)
+}
+
+// ===========================================================================
+// Disk-backed tiled Gram (for strata whose flat store exceeds RAM, e.g. k=5).
+// ===========================================================================
+//
+// The flat store W (num_irreps x l f32) is written to a scratch file (offset of
+// summand g is g*l*4 bytes), then the Gram G = c*W W^T is computed in TILES:
+// only `tile_rows` summands of W are resident at once. Math is identical to
+// gram_from_contiguous (the contraction axis l is never tiled, so there are no
+// cross-tile terms); only the upper triangle is computed and mirrored.
+
+use std::fs::{File, OpenOptions};
+use std::os::unix::fs::FileExt;
+use std::path::{Path, PathBuf};
+
+/// Reinterpret an f32 slice as bytes (native-endian; sound — every bit pattern is
+/// a valid f32). The scratch file is written and read on the same platform (or
+/// little-endian peers: macOS dev + Linux stonkbot are both LE).
+fn f32_as_bytes(s: &[f32]) -> &[u8] {
+    unsafe { std::slice::from_raw_parts(s.as_ptr() as *const u8, std::mem::size_of_val(s)) }
+}
+fn f32_as_bytes_mut(s: &mut [f32]) -> &mut [u8] {
+    unsafe { std::slice::from_raw_parts_mut(s.as_mut_ptr() as *mut u8, std::mem::size_of_val(s)) }
+}
+
+/// RAII handle to the on-disk flat-store W. Removes the file on drop unless
+/// `ADINKRA_KEEP_SCRATCH=1` (kept for debugging). Positioned reads/writes
+/// (`write_at`/`read_exact_at`) use no shared cursor, so disjoint-offset writes
+/// from rayon workers are safe without locking.
+pub struct ScratchW {
+    file: File,
+    path: PathBuf,
+    keep: bool,
+}
+
+impl ScratchW {
+    /// Create + preallocate a scratch file of `len_bytes` (sparse via set_len;
+    /// every byte is overwritten exactly once by `write_summand`).
+    pub fn create(path: PathBuf, len_bytes: u64) -> std::io::Result<Self> {
+        let file = OpenOptions::new()
+            .read(true).write(true).create(true).truncate(true)
+            .open(&path)?;
+        file.set_len(len_bytes)?;
+        let keep = std::env::var("ADINKRA_KEEP_SCRATCH").map(|v| v == "1").unwrap_or(false);
+        Ok(ScratchW { file, path, keep })
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    /// Write summand `g`'s flat vector (length `l`) at byte offset `g*l*4`. Safe
+    /// to call concurrently from multiple threads for distinct `g` (disjoint
+    /// ranges, pwrite has no shared cursor). Handles short writes.
+    pub fn write_summand(&self, g: usize, vec: &[f32], l: usize) -> std::io::Result<()> {
+        assert_eq!(vec.len(), l, "write_summand: vec.len() != l (layout corruption)");
+        let mut buf = f32_as_bytes(vec);
+        let mut off = (g as u64) * (l as u64) * 4;
+        while !buf.is_empty() {
+            match self.file.write_at(buf, off) {
+                Ok(0) => return Err(std::io::Error::new(
+                    std::io::ErrorKind::WriteZero, "write_at returned 0")),
+                Ok(nw) => { buf = &buf[nw..]; off += nw as u64; }
+                Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(())
+    }
+
+    /// Read `rows` summands starting at summand `row0` into `buf` (len rows*l).
+    fn read_rows(&self, row0: usize, rows: usize, l: usize, buf: &mut [f32]) -> std::io::Result<()> {
+        assert_eq!(buf.len(), rows * l, "read_rows: buf.len() != rows*l");
+        let off = (row0 as u64) * (l as u64) * 4;
+        self.file.read_exact_at(f32_as_bytes_mut(buf), off)
+    }
+
+    /// Flush to disk (call between the write phase and the read/Gram phase).
+    pub fn sync(&self) -> std::io::Result<()> {
+        self.file.sync_all()
+    }
+}
+
+impl Drop for ScratchW {
+    fn drop(&mut self) {
+        if !self.keep {
+            let _ = std::fs::remove_file(&self.path);
+        }
+    }
+}
+
+/// Default tile height (summands per W tile). `tile_rows*l*4` bytes per loaded
+/// tile; with l≈1.97M f32 at N=16, tile_rows=1024 ≈ 8 GiB/tile (two tiles ≈ 16
+/// GiB resident).
+pub const DEFAULT_TILE_ROWS: usize = 1024;
+
+/// Tiled Gram `G = c * W Wᵀ` read from a disk scratch (W = `ni x l` f32). Result
+/// is the full `ni x ni` f64 matrix in RAM (the result is small relative to W);
+/// peak extra memory is two W tiles + the result. Upper triangle computed, then
+/// mirrored. The A-block stays resident across the inner loop (read once per
+/// outer tile) to minimize disk re-reads.
+///
+/// Parallelism: the tile loop is sequential, but each `sgemm` is multi-threaded
+/// (matrixmultiply `threading` feature), so all cores are used within a tile.
+/// Cross-tile parallelism is deferred: the mirror writes `g[gj][gi]` would race on
+/// the shared `Vec<Vec<f64>>` rows, so a parallel version needs a flat result with
+/// disjoint-slice writes — a future optimization, not a correctness need.
+pub fn gram_from_disk(
+    scratch: &ScratchW,
+    ni: usize,
+    l: usize,
+    n: usize,
+    tile_rows: usize,
+) -> std::io::Result<Vec<Vec<f64>>> {
+    let scale = 2.0 / (n * (n - 1) * dmin(n)) as f64;
+    let mut g = vec![vec![0.0f64; ni]; ni];
+    if ni == 0 || l == 0 {
+        return Ok(g);
+    }
+    let t = tile_rows.max(1);
+    let num_tiles = ni.div_ceil(t);
+    let mut a = vec![0.0f32; t * l];
+    let mut b = vec![0.0f32; t * l];
+    let mut prod = vec![0.0f32; t * t];
+
+    for bi in 0..num_tiles {
+        let ti = t.min(ni - bi * t);
+        scratch.read_rows(bi * t, ti, l, &mut a[..ti * l])?;
+        for bj in bi..num_tiles {
+            let tj = t.min(ni - bj * t);
+            let bptr = if bj == bi {
+                a.as_ptr()
+            } else {
+                scratch.read_rows(bj * t, tj, l, &mut b[..tj * l])?;
+                b.as_ptr()
+            };
+            // prod (ti x tj) = A(ti x l) * Bᵀ(l x tj), same strides as gram_from_contiguous.
+            unsafe {
+                matrixmultiply::sgemm(
+                    ti, l, tj,
+                    1.0,
+                    a.as_ptr(), l as isize, 1,
+                    bptr, 1, l as isize,
+                    0.0,
+                    prod.as_mut_ptr(), tj as isize, 1,
+                );
+            }
+            for ar in 0..ti {
+                let gi = bi * t + ar;
+                for bc in 0..tj {
+                    let gj = bj * t + bc;
+                    let v = prod[ar * tj + bc] as f64 * scale;
+                    g[gi][gj] = v;
+                    if gi != gj {
+                        g[gj][gi] = v;
+                    }
+                }
+            }
+        }
+    }
+    Ok(g)
 }
 
 // ===========================================================================
@@ -310,5 +474,99 @@ mod tests {
                 );
             }
         }
+    }
+
+    // -- disk-backed tiled Gram --------------------------------------------
+
+    /// Write summands to a scratch file (summand g at offset g*l*4) and return it.
+    fn write_scratch(summands: &[&IrrepSummand], l: usize, tag: &str) -> ScratchW {
+        let path = std::env::temp_dir()
+            .join(format!("adinkra_disktest_{}_{}.f32scratch", tag, std::process::id()));
+        let sc = ScratchW::create(path, (summands.len() as u64) * (l as u64) * 4).unwrap();
+        for (g, s) in summands.iter().enumerate() {
+            sc.write_summand(g, &flatten_summand(s), l).unwrap();
+        }
+        sc.sync().unwrap();
+        sc
+    }
+
+    /// Disk-tiled Gram must equal in-RAM gram and dense, with tile=1 (every block
+    /// a single row/col), on the N=4 irreducibles.
+    #[test]
+    fn disk_tiled_matches_ram_and_dense_tile1() {
+        let cs = decompose_rep(&cs_n4()).unwrap();
+        let vs = decompose_rep(&vs_n4()).unwrap();
+        let summands = [&cs.summands[0], &vs.summands[0]];
+        let l = flat_len(4);
+        let dense: Vec<DenseHoloraumy> =
+            summands.iter().map(|s| DenseHoloraumy::from_summand(s)).collect();
+        let dmat = dense_gadget_matrix(&dense);
+        let vectors: Vec<Vec<f32>> = summands.iter().map(|s| flatten_summand(s)).collect();
+        let gmat = gram_gadget_matrix(&vectors, 4);
+        let sc = write_scratch(&summands, l, "t1");
+        let dmat_disk = gram_from_disk(&sc, 2, l, 4, 1).unwrap();
+        for i in 0..2 {
+            for j in 0..2 {
+                assert_eq!(dmat_disk[i][j], gmat[i][j], "disk != in-RAM gram at [{i}][{j}]");
+                assert!((dmat_disk[i][j] - dmat[i][j]).abs() < 1e-6, "disk != dense at [{i}][{j}]");
+            }
+        }
+        assert!((dmat_disk[0][0] - 1.0).abs() < 1e-6 && dmat_disk[0][1].abs() < 1e-6);
+    }
+
+    /// Partial-tile correctness: 3 summands (CS⊕CS -> 2 dense + VS) tiled by 2,
+    /// so the last block is ragged in both axes. This is the offset/ragged-tile
+    /// stress test. Also uses general-real (non 0,±1) restricted operators.
+    #[test]
+    fn disk_tiled_partial_tile_3summands_tile2() {
+        let rep = block_diag_n4(&cs_n4(), &cs_n4());
+        let decomp = decompose_rep(&rep).unwrap();
+        let vs = decompose_rep(&vs_n4()).unwrap();
+        let summands: Vec<&IrrepSummand> =
+            vec![&decomp.summands[0], &decomp.summands[1], &vs.summands[0]];
+        let l = flat_len(4);
+        let vectors: Vec<Vec<f32>> = summands.iter().map(|s| flatten_summand(s)).collect();
+        let gmat = gram_gadget_matrix(&vectors, 4);
+        let sc = write_scratch(&summands, l, "t2");
+        let dmat_disk = gram_from_disk(&sc, 3, l, 4, 2).unwrap();
+        assert_eq!(dmat_disk.len(), 3);
+        for i in 0..3 {
+            for j in 0..3 {
+                assert_eq!(dmat_disk[i][j], gmat[i][j], "partial-tile disk != in-RAM at [{i}][{j}]");
+                assert!((dmat_disk[i][j] - dmat_disk[j][i]).abs() < 1e-12, "asymmetry at [{i}][{j}]");
+            }
+            assert!((dmat_disk[i][i] - 1.0).abs() < 1e-5, "self-gadget[{i}] != 1");
+        }
+    }
+
+    /// Offset round-trip: bytes read back at g*l*4 equal the written flat vector.
+    #[test]
+    fn disk_offset_round_trip() {
+        let rep = block_diag_n4(&cs_n4(), &cs_n4());
+        let decomp = decompose_rep(&rep).unwrap();
+        let summands: Vec<&IrrepSummand> = decomp.summands.iter().collect();
+        let l = flat_len(4);
+        let flats: Vec<Vec<f32>> = summands.iter().map(|s| flatten_summand(s)).collect();
+        let sc = write_scratch(&summands, l, "rt");
+        for (g, flat) in flats.iter().enumerate() {
+            let mut back = vec![0.0f32; l];
+            sc.read_rows(g, 1, l, &mut back).unwrap();
+            assert_eq!(&back, flat, "summand {g}: read-back != written flat vector");
+        }
+    }
+
+    /// Scratch file is removed on drop (no leaked GiB-scale temp files).
+    #[test]
+    fn disk_scratch_removed_on_drop() {
+        let cs = decompose_rep(&cs_n4()).unwrap();
+        let summands = [&cs.summands[0]];
+        let l = flat_len(4);
+        let path = {
+            let sc = write_scratch(&summands, l, "drop");
+            let p = sc.path().to_path_buf();
+            assert!(p.exists());
+            p
+        }; // sc dropped here
+        assert!(!path.exists(), "scratch not removed on drop: {}", path.display());
     }
 }

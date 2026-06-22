@@ -91,6 +91,15 @@ pub struct IrrepGadgetStratum {
     /// raw little-endian f64 (row-major, num_irreps²) and `matrix` is left empty.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub matrix_binary_path: Option<String>,
+    /// True if the gadget was computed via the disk-backed tiled Gram (W spilled
+    /// to a scratch file) rather than the in-RAM GEMM. None for skipped strata.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub used_disk_path: Option<bool>,
+    /// True if the f32 numeric gate flagged the disk run as SUSPECT (f32 error
+    /// could merge/split distinct off-diagonal values per the gap criterion).
+    /// Some(false) = gate passed; None = gate not run (in-RAM / skipped).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub numeric_suspect: Option<bool>,
     /// Full gadget matrix, embedded in JSON only for small strata (num_irreps ≤
     /// MATRIX_JSON_CAP); otherwise empty (see `matrix_binary_path`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -285,7 +294,86 @@ fn build_reps_for_code(n: usize, entry: &CodeEntry) -> (usize, Vec<AdinkraRep>) 
 /// `d > decompose::MAX_DECOMPOSE_D` (per-rep decomposition infeasible) or when the
 /// estimated gadget memory exceeds `decompose::MAX_DECOMPOSE_GADGET_BYTES`
 /// (num_irreps too large for RAM — needs a disk-backed/GPU tiled Gram).
+/// Free bytes on the filesystem containing `dir`, via `df -k` (dependency-free,
+/// works on Linux + macOS). `None` if `df` is unavailable/unparseable.
+fn available_disk_bytes(dir: &std::path::Path) -> Option<u64> {
+    let out = std::process::Command::new("df").arg("-k").arg(dir).output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = String::from_utf8_lossy(&out.stdout);
+    // Last line: Filesystem 1K-blocks Used Available Capacity% ... ; the 3rd
+    // pure-integer token (blocks, used, available) is Available in KiB.
+    let last = s.lines().last()?;
+    let nums: Vec<u64> = last.split_whitespace().filter_map(|t| t.parse::<u64>().ok()).collect();
+    nums.get(2).map(|kb| kb * 1024)
+}
+
+/// f32 numeric gate for the disk path: decompose a SAMPLE of reps and compare the
+/// f32 GEMM gadget against the trusted dense f64 gadget on those summands.
+///
+/// Verdict uses the GAP-BASED criterion (the one the audit established, not an
+/// arbitrary absolute bound): f32 is SUSPECT iff the max f32-vs-dense error is at
+/// least half the smallest gap between distinct off-diagonal values — i.e. iff
+/// f32 quantization could merge/split genuinely distinct gadget values. Returns
+/// `true` if SUSPECT. Cheap relative to the full run.
+fn disk_f32_gate(all_reps: &[&AdinkraRep], n: usize, sample: usize) -> bool {
+    use crate::decompose::{dense_gadget_matrix, decompose_rep, DenseHoloraumy};
+    let take = sample.min(all_reps.len());
+    if take == 0 {
+        return false;
+    }
+    let mut summands = Vec::new();
+    for rep in &all_reps[..take] {
+        let d = decompose_rep(rep).expect("decompose (f32 gate)");
+        summands.extend(d.summands);
+    }
+    let dense: Vec<DenseHoloraumy> = summands.iter().map(DenseHoloraumy::from_summand).collect();
+    let gd = dense_gadget_matrix(&dense);
+    let vecs: Vec<Vec<f32>> = summands.iter().map(crate::streamed_gadget::flatten_summand).collect();
+    let gf = crate::streamed_gadget::gram_gadget_matrix(&vecs, n);
+    let m = gd.len();
+    let (mut maxe, mut diagdev) = (0.0f64, 0.0f64);
+    let mut off: Vec<f64> = Vec::new();
+    for i in 0..m {
+        diagdev = diagdev.max((gf[i][i] - 1.0).abs());
+        for j in 0..m {
+            maxe = maxe.max((gf[i][j] - gd[i][j]).abs());
+            if i != j {
+                off.push((gd[i][j] * 1e9).round() / 1e9); // round vs f64 reference
+            }
+        }
+    }
+    off.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    off.dedup();
+    let min_gap = off.windows(2).map(|w| w[1] - w[0]).fold(f64::INFINITY, f64::min);
+    // SUSPECT iff f32 error could cross half the nearest value gap.
+    let suspect = maxe >= 0.5 * min_gap;
+    eprintln!(
+        "decompose-k: f32 gate ({} summands from {take} reps): max|f32-dense|={maxe:.2e}, \
+         worst diag dev={diagdev:.2e}, nearest value gap={min_gap:.2e} -> f32 {}",
+        summands.len(),
+        if suspect { "SUSPECT" } else { "SAFE" }
+    );
+    if suspect {
+        eprintln!(
+            "decompose-k: WARNING: f32 error ({maxe:.2e}) >= half the nearest value gap ({:.2e}); \
+             distinct off-diagonal values may be merged/split. Output will be flagged numeric_suspect \
+             and the matrix dump stamped _SUSPECT. Consider an f64 build.",
+            0.5 * min_gap
+        );
+    }
+    suspect
+}
+
 pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
+    run_decompose_k_mode(json_path, only_k, false)
+}
+
+/// `allow_disk = true` routes strata whose flat store exceeds the RAM budget to
+/// the disk-backed tiled Gram instead of skipping (the `decompose-k-disk` /
+/// `--disk` path). `false` preserves the original behavior (in-RAM or skip).
+pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) -> FullPipelineOutput {
     let t0 = Instant::now();
 
     let data = fs::read_to_string(json_path)
@@ -342,6 +430,8 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
             off_max: None,
             off_histogram_top: None,
             matrix_binary_path: None,
+            used_disk_path: None,
+            numeric_suspect: None,
             matrix: Vec::new(),
         };
         let elapsed = t0.elapsed().as_secs_f64();
@@ -356,85 +446,174 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         };
     }
 
-    // Memory guard (separate from the d-guard above): peak memory scales with
-    // num_irreps (= reps x d/dmin), NOT with d. The gadget uses the streamed Gram
-    // path (crate::streamed_gadget), which holds one flat f32 holoraumy vector per
-    // summand (~7.86 MB at N=16): k=8 ~4 GB, k=7 ~18 GB (both fit), but k=6 ~180 GB.
-    // Refuse cleanly here instead of OOM-killing; larger strata need a disk-backed
-    // or GPU tiled Gram.
-    let num_irreps_est = num_valise_reps * (d / dm);
-    let est_bytes = crate::decompose::estimated_gadget_bytes(n, num_irreps_est);
-    if est_bytes > crate::decompose::MAX_DECOMPOSE_GADGET_BYTES {
-        let gib = |b: u64| b as f64 / (1u64 << 30) as f64;
-        let reason = format!(
-            "estimated flat holoraumy store {:.1} GiB ({} irreps x {} colour-pairs x {}^2 f32) \
-             exceeds budget {:.1} GiB; would OOM. Needs a disk-backed/GPU tiled Gram.",
-            gib(est_bytes), num_irreps_est, n * (n - 1) / 2, dm,
-            gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES)
-        );
-        eprintln!("decompose-k: SKIPPED k={only_k}: {reason}");
-        let stratum = IrrepGadgetStratum {
-            k: only_k, d, dmin: dm, num_valise_reps, num_irreps: num_irreps_est,
-            decomposed: false, skip_reason: Some(reason), max_summand_residual: None,
-            diag_worst_dev: None, distinct_off_values: None, off_min: None, off_max: None,
-            off_histogram_top: None, matrix_binary_path: None,
-            matrix: Vec::new(),
-        };
-        let elapsed = t0.elapsed().as_secs_f64();
-        return FullPipelineOutput {
-            n, num_codes: codes.len(), total_reps: num_valise_reps,
-            results: Vec::new(), gadget_strata: Vec::new(),
-            irrep_strata: vec![stratum], elapsed_secs: elapsed,
-        };
-    }
-
-    // Decompose each rep and IMMEDIATELY flatten its summands to compact f32
-    // holoraumy vectors (dropping the f64 Decomposition per rep), so peak memory is
-    // the flat-vector store (~7.86 MB/summand), not the retained dense holoraumy
-    // tensors (~15.7 MB/summand) that OOM-killed k=7. See crate::streamed_gadget.
-    eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {} summands each)...", d / dm);
     let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();
     let r = d / dm;
     let l = crate::streamed_gadget::flat_len(n);
     let num_irreps = all_reps.len() * r;
+    let est_bytes = crate::decompose::estimated_gadget_bytes(n, num_irreps);
+    let gib = |b: u64| b as f64 / (1u64 << 30) as f64;
+    let ram_fits = est_bytes <= crate::decompose::MAX_DECOMPOSE_GADGET_BYTES;
 
-    // Build the contiguous W (num_irreps x l, f32) IN PLACE: one chunk of r*l per
-    // valise rep, written in parallel to disjoint slices. Each rep's f64
-    // Decomposition is dropped at the end of its closure, so peak memory is W
-    // itself (no Vec-of-Vec, no 2x copy). Worst residual is reduced via an atomic.
     use std::sync::atomic::{AtomicU64, Ordering};
-    let worst_bits = AtomicU64::new(0u64);
-    let mut w: Vec<f32> = vec![0.0f32; num_irreps * l];
-    w.par_chunks_mut(r * l)
-        .enumerate()
-        .for_each(|(rep_i, chunk)| {
+    // atomic f64-max helper (CAS loop) shared by both build paths.
+    let atomic_max = |bits: &AtomicU64, v: f64| {
+        let mut cur = bits.load(Ordering::Relaxed);
+        loop {
+            if f64::from_bits(cur) >= v {
+                break;
+            }
+            match bits.compare_exchange_weak(cur, v.to_bits(), Ordering::Relaxed, Ordering::Relaxed) {
+                Ok(_) => break,
+                Err(o) => cur = o,
+            }
+        }
+    };
+
+    // A one-shot helper to return a skipped stratum (RAM budget / disk cap).
+    let skip = |reason: String| -> FullPipelineOutput {
+        eprintln!("decompose-k: SKIPPED k={only_k}: {reason}");
+        FullPipelineOutput {
+            n,
+            num_codes: codes.len(),
+            total_reps: num_valise_reps,
+            results: Vec::new(),
+            gadget_strata: Vec::new(),
+            irrep_strata: vec![IrrepGadgetStratum {
+                k: only_k, d, dmin: dm, num_valise_reps, num_irreps,
+                decomposed: false, skip_reason: Some(reason), max_summand_residual: None,
+                diag_worst_dev: None, distinct_off_values: None, off_min: None, off_max: None,
+                off_histogram_top: None, matrix_binary_path: None, used_disk_path: None,
+                numeric_suspect: None,
+                matrix: Vec::new(),
+            }],
+            elapsed_secs: t0.elapsed().as_secs_f64(),
+        }
+    };
+
+    if !ram_fits && !allow_disk {
+        return skip(format!(
+            "estimated flat holoraumy store {:.1} GiB ({num_irreps} irreps) exceeds RAM budget {:.1} GiB; \
+             re-run with `decompose-k-disk` (--disk) to spill W to a scratch file.",
+            gib(est_bytes), gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES)
+        ));
+    }
+    // ADINKRA_FORCE_DISK=1 routes a RAM-fitting stratum through the disk path too
+    // (for disk-vs-RAM parity validation, e.g. k=6). Requires --disk.
+    let force_disk = std::env::var("ADINKRA_FORCE_DISK").map(|v| v == "1").unwrap_or(false);
+    let use_disk = allow_disk && (!ram_fits || force_disk);
+
+    // Build path: in-RAM contiguous W + GEMM when it fits the RAM budget;
+    // otherwise (use_disk) stream W to a scratch file and tile the Gram off disk.
+    let (matrix, worst_residual, used_disk, numeric_suspect) = if !use_disk {
+        eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each), in-RAM GEMM Gram...");
+        let worst_bits = AtomicU64::new(0u64);
+        let mut w: Vec<f32> = vec![0.0f32; num_irreps * l];
+        w.par_chunks_mut(r * l).enumerate().for_each(|(rep_i, chunk)| {
             let decomp = decompose_rep(all_reps[rep_i])
                 .expect("d within guard, decomposition should succeed");
-            debug_assert_eq!(decomp.summands.len(), r);
-            let mut local_worst = 0.0f64;
+            assert_eq!(decomp.summands.len(), r, "decomposition produced != r summands");
+            let mut lw = 0.0f64;
             for (s_i, s) in decomp.summands.iter().enumerate() {
-                local_worst = local_worst.max(crate::decompose::summand_residual(s));
+                lw = lw.max(crate::decompose::summand_residual(s));
                 crate::streamed_gadget::flatten_summand_into(s, &mut chunk[s_i * l..(s_i + 1) * l]);
             }
-            // atomic max of local_worst into worst_bits (f64 bits, CAS loop)
-            let mut cur = worst_bits.load(Ordering::Relaxed);
-            loop {
-                if f64::from_bits(cur) >= local_worst {
-                    break;
-                }
-                match worst_bits.compare_exchange_weak(
-                    cur, local_worst.to_bits(), Ordering::Relaxed, Ordering::Relaxed,
-                ) {
-                    Ok(_) => break,
-                    Err(observed) => cur = observed,
+            atomic_max(&worst_bits, lw);
+        });
+        let wr = f64::from_bits(worst_bits.load(Ordering::Relaxed));
+        eprintln!("decompose-k: computing {num_irreps}x{num_irreps} gadget matrix (GEMM Gram)...");
+        let m = crate::streamed_gadget::gram_from_contiguous(&w, num_irreps, l, n);
+        (m, wr, false, None)
+    } else {
+        // Disk-backed path (allow_disk == true, doesn't fit RAM).
+        let flat_bytes = crate::streamed_gadget::flat_store_bytes(n, num_irreps);
+        if flat_bytes > crate::decompose::MAX_DECOMPOSE_DISK_BYTES {
+            return skip(format!(
+                "flat store {:.1} GiB exceeds MAX_DECOMPOSE_DISK_BYTES {:.1} GiB.",
+                gib(flat_bytes), gib(crate::decompose::MAX_DECOMPOSE_DISK_BYTES)
+            ));
+        }
+        let scratch_dir = match std::env::var("ADINKRA_SCRATCH_DIR") {
+            Ok(d) => std::path::PathBuf::from(d),
+            Err(_) => {
+                let d = std::env::temp_dir();
+                eprintln!(
+                    "decompose-k: WARNING: ADINKRA_SCRATCH_DIR not set; using {} for the {:.1} GiB \
+                     scratch. If that is a tmpfs/RAM-backed dir (common for /tmp on Linux), this \
+                     defeats the disk path and may OOM — set ADINKRA_SCRATCH_DIR to a real disk.",
+                    d.display(), gib(flat_bytes)
+                );
+                d
+            }
+        };
+        // Free-space preflight (via `df`): refuse before the expensive decomposition
+        // if the volume can't hold the scratch + an 8 GiB margin.
+        match available_disk_bytes(&scratch_dir) {
+            Some(avail) if avail < flat_bytes + (8u64 << 30) => {
+                return skip(format!(
+                    "scratch dir {} has only {:.1} GiB free; need {:.1} GiB + 8 GiB margin.",
+                    scratch_dir.display(), gib(avail), gib(flat_bytes)
+                ));
+            }
+            Some(_) => {}
+            None => eprintln!("decompose-k: WARNING: could not determine free space on {}", scratch_dir.display()),
+        }
+        // Unique filename (pid) so concurrent runs don't collide on one scratch file.
+        let scratch_path = scratch_dir.join(format!(
+            "adinkra_holoraumy_n{n}_k{only_k}_irreps{num_irreps}_l{l}_pid{}.f32scratch",
+            std::process::id()
+        ));
+        eprintln!(
+            "decompose-k: DISK path (flat store {:.1} GiB > RAM budget {:.1} GiB): spilling W to {} ...",
+            gib(flat_bytes), gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES), scratch_path.display()
+        );
+        eprintln!(
+            "decompose-k: (the scratch is removed on normal exit; if you Ctrl-C, reap it with: \
+             rm -f {}/adinkra_holoraumy_*_pid*.f32scratch)",
+            scratch_dir.display()
+        );
+        // f32 numeric gate on a sample BEFORE committing to the full 68 GiB run.
+        let suspect = disk_f32_gate(&all_reps, n, 32);
+
+        let scratch = crate::streamed_gadget::ScratchW::create(scratch_path, flat_bytes)
+            .unwrap_or_else(|e| panic!("decompose-k: failed to create scratch file: {e}"));
+
+        eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each) -> disk...");
+        let worst_bits = AtomicU64::new(0u64);
+        let write_err: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+        (0..all_reps.len()).into_par_iter().for_each(|rep_i| {
+            if write_err.lock().unwrap().is_some() {
+                return;
+            }
+            let decomp = decompose_rep(all_reps[rep_i])
+                .expect("d within guard, decomposition should succeed");
+            assert_eq!(decomp.summands.len(), r, "decomposition produced != r summands");
+            let mut buf = vec![0.0f32; l];
+            let mut lw = 0.0f64;
+            for (s_i, s) in decomp.summands.iter().enumerate() {
+                lw = lw.max(crate::decompose::summand_residual(s));
+                crate::streamed_gadget::flatten_summand_into(s, &mut buf);
+                let g = rep_i * r + s_i;
+                if let Err(e) = scratch.write_summand(g, &buf, l) {
+                    write_err.lock().unwrap().get_or_insert_with(|| format!("write_summand g={g}: {e}"));
+                    return;
                 }
             }
+            atomic_max(&worst_bits, lw);
         });
-    let worst_residual = f64::from_bits(worst_bits.load(Ordering::Relaxed));
-
-    eprintln!("decompose-k: computing {num_irreps}x{num_irreps} irreducible gadget matrix (GEMM Gram)...");
-    let matrix = crate::streamed_gadget::gram_from_contiguous(&w, num_irreps, l, n);
-    drop(w);
+        if let Some(msg) = write_err.into_inner().unwrap() {
+            panic!("decompose-k: disk write failed (scratch kept if ADINKRA_KEEP_SCRATCH=1): {msg}");
+        }
+        scratch.sync().unwrap_or_else(|e| panic!("decompose-k: scratch sync failed: {e}"));
+        let wr = f64::from_bits(worst_bits.load(Ordering::Relaxed));
+        let tile = std::env::var("ADINKRA_GRAM_TILE")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .unwrap_or(crate::streamed_gadget::DEFAULT_TILE_ROWS);
+        eprintln!("decompose-k: tiled GEMM Gram from disk ({num_irreps}x{num_irreps}, tile_rows={tile})...");
+        let m = crate::streamed_gadget::gram_from_disk(&scratch, num_irreps, l, n, tile)
+            .unwrap_or_else(|e| panic!("decompose-k: gram_from_disk failed: {e}"));
+        (m, wr, true, Some(suspect)) // `scratch` drops here -> file removed (unless ADINKRA_KEEP_SCRATCH=1)
+    };
 
     // The irreducible self-gadget must be 1.0 (basis-independent). Check in
     // RELEASE too (not just debug_assert): a drifted diagonal means a broken
@@ -482,7 +661,8 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
     let mut matrix_binary_path = None;
     let mut matrix_out = matrix;
     if num_irreps > MATRIX_JSON_CAP {
-        let path = format!("decompose_k{only_k}_gadget_{num_irreps}.f64bin");
+        let suspect_tag = if numeric_suspect == Some(true) { "_SUSPECT" } else { "" };
+        let path = format!("decompose_k{only_k}_gadget_{num_irreps}{suspect_tag}.f64bin");
         let mut bytes = Vec::with_capacity(num_irreps * num_irreps * 8);
         for row in &matrix_out {
             for &v in row {
@@ -514,6 +694,8 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         off_max: if omax.is_finite() { Some(omax) } else { None },
         off_histogram_top: Some(hist),
         matrix_binary_path,
+        used_disk_path: Some(used_disk),
+        numeric_suspect,
         matrix: matrix_out,
     };
 
@@ -688,6 +870,77 @@ pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
         if safe { "SAFE" } else { "NOT clearly safe" },
         if safe { "<" } else { ">=" },
         min_gap * 0.5
+    );
+}
+
+/// Decomposition-only feasibility probe: decompose the first `num_reps` valise
+/// reps of stratum k and report per-rep time, summand count, max residual, and
+/// worst self-gadget deviation — WITHOUT building the full gadget matrix (so no
+/// num_irreps² memory). Used to test whether large-d decomposition (e.g. d=1024
+/// at k=5) is feasible before committing to it.
+pub fn run_decompose_probe(json_path: &str, only_k: usize, num_reps: usize) {
+    use crate::decompose::{dense_gadget, decompose_rep, summand_residual, DenseHoloraumy};
+
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let dm = dmin(n);
+    let codes: Vec<&CodeEntry> = catalog.codes.iter().filter(|e| e.k == only_k).collect();
+    let d = if only_k <= 15 { 1usize << (n - only_k - 1) } else { 0 };
+    println!(
+        "=== decompose-probe N={n} k={only_k} d={d} dmin={dm} r={} (probing {num_reps} reps) ===",
+        d / dm.max(1)
+    );
+
+    let mut done = 0usize;
+    let mut times: Vec<f64> = Vec::new();
+    let (mut worst_res, mut worst_dev) = (0.0f64, 0.0f64);
+    'outer: for entry in &codes {
+        let (_d, reps) = build_reps_for_code(n, entry);
+        for rep in &reps {
+            if done >= num_reps {
+                break 'outer;
+            }
+            let t = Instant::now();
+            let decomp = match decompose_rep(rep) {
+                Some(x) => x,
+                None => {
+                    println!("rep {done}: decompose_rep returned None — d={} exceeds MAX_DECOMPOSE_D", rep.d);
+                    return;
+                }
+            };
+            let dt = t.elapsed().as_secs_f64();
+            let (mut res, mut dev) = (0.0f64, 0.0f64);
+            for s in &decomp.summands {
+                res = res.max(summand_residual(s));
+                let dh = DenseHoloraumy::from_summand(s);
+                dev = dev.max((dense_gadget(&dh, &dh) - 1.0).abs());
+            }
+            worst_res = worst_res.max(res);
+            worst_dev = worst_dev.max(dev);
+            times.push(dt);
+            println!(
+                "rep {done}: {dt:.2}s  summands={}  max_resid={res:.2e}  self-gadget dev={dev:.2e}",
+                decomp.summands.len()
+            );
+            done += 1;
+        }
+    }
+    if times.is_empty() {
+        println!("(no reps for k={only_k})");
+        return;
+    }
+    let avg = times.iter().sum::<f64>() / times.len() as f64;
+    let mx = times.iter().cloned().fold(0.0, f64::max);
+    let full_reps = codes.len() * (1usize << only_k); // num_valise_reps = codes * 2^k
+    println!(
+        "=== {done} reps: avg {avg:.2}s/rep  max {mx:.2}s/rep  worst residual {worst_res:.2e}  worst self-gadget dev {worst_dev:.2e} ===",
+    );
+    println!(
+        "=== extrapolated decomposition of all {full_reps} k={only_k} valise reps: ~{:.0}s ({:.1} min) sequential; /cores in parallel ===",
+        avg * full_reps as f64,
+        avg * full_reps as f64 / 60.0
     );
 }
 
