@@ -72,8 +72,35 @@ pub struct IrrepGadgetStratum {
     /// Maximum Garden-algebra / V²=-I residual over all summands (numerical
     /// health check; ~0 when decomposition is clean). `None` when skipped.
     pub max_summand_residual: Option<f64>,
+    /// Worst |self-gadget − 1| over the diagonal (basis-independent; should be ~0).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diag_worst_dev: Option<f64>,
+    /// Number of distinct off-diagonal values (rounded to 1e-6). NOTE: for k<8
+    /// these are orientation-dependent and f32-quantized — a run fingerprint, not
+    /// a classification.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub distinct_off_values: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub off_min: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub off_max: Option<f64>,
+    /// Most common off-diagonal values: (rounded value, count), top 50 by count.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub off_histogram_top: Option<Vec<(f64, usize)>>,
+    /// When the full matrix is too large to embed in JSON, it is written here as
+    /// raw little-endian f64 (row-major, num_irreps²) and `matrix` is left empty.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub matrix_binary_path: Option<String>,
+    /// Full gadget matrix, embedded in JSON only for small strata (num_irreps ≤
+    /// MATRIX_JSON_CAP); otherwise empty (see `matrix_binary_path`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub matrix: Vec<Vec<f64>>,
 }
+
+/// Above this num_irreps the full matrix is dumped to a binary file rather than
+/// embedded in the (otherwise multi-hundred-MB) JSON. k=8 (512) embeds; k=7
+/// (2304) and k=6 (5888) dump + summarize.
+const MATRIX_JSON_CAP: usize = 1024;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct FullPipelineOutput {
@@ -309,6 +336,12 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
             decomposed: false,
             skip_reason: Some(reason),
             max_summand_residual: None,
+            diag_worst_dev: None,
+            distinct_off_values: None,
+            off_min: None,
+            off_max: None,
+            off_histogram_top: None,
+            matrix_binary_path: None,
             matrix: Vec::new(),
         };
         let elapsed = t0.elapsed().as_secs_f64();
@@ -343,6 +376,8 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         let stratum = IrrepGadgetStratum {
             k: only_k, d, dmin: dm, num_valise_reps, num_irreps: num_irreps_est,
             decomposed: false, skip_reason: Some(reason), max_summand_residual: None,
+            diag_worst_dev: None, distinct_off_values: None, off_min: None, off_max: None,
+            off_histogram_top: None, matrix_binary_path: None,
             matrix: Vec::new(),
         };
         let elapsed = t0.elapsed().as_secs_f64();
@@ -417,6 +452,53 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         eprintln!("decompose-k: self-gadget diagonal OK (worst dev {worst_diag_dev:.3e}).");
     }
 
+    // Off-diagonal summary (rounded to 1e-6). For k<8 these values are
+    // orientation-dependent + f32-quantized — a run fingerprint, not a
+    // classification — but the histogram/extents are a useful at-a-glance signal.
+    let round6 = |x: f64| (x * 1e6).round() / 1e6;
+    let mut counts: std::collections::HashMap<i64, usize> = std::collections::HashMap::new();
+    let (mut omin, mut omax) = (f64::INFINITY, f64::NEG_INFINITY);
+    for (i, row) in matrix.iter().enumerate() {
+        for (j, &v) in row.iter().enumerate() {
+            if i != j {
+                let r = round6(v);
+                *counts.entry((r * 1e6).round() as i64).or_insert(0) += 1;
+                omin = omin.min(v);
+                omax = omax.max(v);
+            }
+        }
+    }
+    let distinct_off = counts.len();
+    let mut hist: Vec<(f64, usize)> =
+        counts.iter().map(|(&k, &c)| (k as f64 / 1e6, c)).collect();
+    hist.sort_by(|a, b| b.1.cmp(&a.1)); // by count desc
+    hist.truncate(50);
+    eprintln!(
+        "decompose-k: off-diagonal: {distinct_off} distinct values (rounded 1e-6), range [{omin:.6}, {omax:.6}]"
+    );
+
+    // Embed the full matrix in JSON only for small strata; otherwise dump it to a
+    // binary file (raw LE f64, row-major) and keep the JSON to the summary.
+    let mut matrix_binary_path = None;
+    let mut matrix_out = matrix;
+    if num_irreps > MATRIX_JSON_CAP {
+        let path = format!("decompose_k{only_k}_gadget_{num_irreps}.f64bin");
+        let mut bytes = Vec::with_capacity(num_irreps * num_irreps * 8);
+        for row in &matrix_out {
+            for &v in row {
+                bytes.extend_from_slice(&v.to_le_bytes());
+            }
+        }
+        match fs::write(&path, &bytes) {
+            Ok(_) => {
+                eprintln!("decompose-k: wrote {num_irreps}x{num_irreps} matrix to {path} ({} MiB, raw LE f64)", bytes.len() / (1 << 20));
+                matrix_binary_path = Some(path);
+            }
+            Err(e) => eprintln!("decompose-k: WARNING: failed to write matrix binary {path}: {e}; leaving matrix out of JSON"),
+        }
+        matrix_out = Vec::new(); // keep JSON small regardless
+    }
+
     let stratum = IrrepGadgetStratum {
         k: only_k,
         d,
@@ -426,7 +508,13 @@ pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
         decomposed: true,
         skip_reason: None,
         max_summand_residual: Some(worst_residual),
-        matrix,
+        diag_worst_dev: Some(worst_diag_dev),
+        distinct_off_values: Some(distinct_off),
+        off_min: if omin.is_finite() { Some(omin) } else { None },
+        off_max: if omax.is_finite() { Some(omax) } else { None },
+        off_histogram_top: Some(hist),
+        matrix_binary_path,
+        matrix: matrix_out,
     };
 
     let elapsed = t0.elapsed().as_secs_f64();
@@ -526,6 +614,27 @@ pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
     // (3) f32 GEMM and (2) f64 GEMM.
     let g32 = crate::streamed_gadget::gram_from_contiguous(&w32, ni, l, n);
     let g64 = crate::streamed_gadget::gram_from_contiguous_f64(&w64, ni, l, n);
+
+    // Entry-level f32 cast error: max |(x as f32) as f64 - x| over every flat
+    // holoraumy entry. This is the ONLY metric that decides whether f32 is truly
+    // lossless. ~1e-16 => every entry is exactly f32-representable (f32 loses
+    // nothing at the entry level; the gadget's 1e-16 is pure accumulation
+    // rounding). ~1e-7 => the entries are NOT f32-representable and f32 loses
+    // real precision that only happens to cancel in the gadget sum.
+    let nflat = ni * l;
+    let (mut max_cast, mut sum_cast, mut worst_cast_entry) = (0.0f64, 0.0f64, 0.0f64);
+    for k in 0..nflat {
+        let e = (w32[k] as f64 - w64[k]).abs();
+        if e > max_cast {
+            max_cast = e;
+            worst_cast_entry = w64[k];
+        }
+        sum_cast += e;
+    }
+    println!(
+        "entry cast    : max |(x as f32) as f64 - x| = {max_cast:.3e}  mean = {:.3e}  (worst entry x={worst_cast_entry:.6e})",
+        sum_cast / nflat as f64
+    );
 
     // Metrics.
     let (mut max_df, mut sum_df, mut cnt) = (0.0f64, 0.0f64, 0usize);

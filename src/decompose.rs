@@ -78,13 +78,15 @@ pub const MAX_DECOMPOSE_D: usize = 512;
 /// irreducible summand against every other, so the holoraumy of every summand is
 /// retained SIMULTANEOUSLY, scaling with `num_irreps` (= reps × d/dmin), not `d`.
 ///
-/// `run_decompose_k` uses the memory-bounded streamed Gram path
-/// (`crate::streamed_gadget`), which stores one flat f32 holoraumy vector per
-/// summand (C(N,2) × dmin² × 4 bytes ≈ 7.86 MB at N=16). At N=16 that is
-/// k=8 ≈ 4 GB, k=7 ≈ 18 GB (both fit a 64 GB box), but k=6 ≈ 180 GB. When the
-/// estimate exceeds this budget the stratum is refused (clean skip) instead of
-/// OOM-killing; the next step for larger strata is a disk-backed/GPU tiled Gram.
-pub const MAX_DECOMPOSE_GADGET_BYTES: u64 = 40 * 1024 * 1024 * 1024; // 40 GiB
+/// `run_decompose_k` uses the GEMM Gram path (`crate::streamed_gadget`), holding
+/// one flat f32 holoraumy vector per summand (C(N,2) × dmin² × 4 ≈ 7.5 MiB at
+/// N=16) in RAM. Measured at N=16: k=8 = 512 irreps (~4 GB), k=7 = 2304 (~18 GB),
+/// k=6 = 5888 (~44 GB) — all fit a 64 GB box. k≤5 (d≥1024) is blocked earlier by
+/// the decomposition d-guard (`MAX_DECOMPOSE_D`), so this budget's only live job
+/// is to admit k=6 in-RAM while refusing anything that would exceed host RAM
+/// rather than OOM-killing. Tune to the host (lower on a 51 GB Mac); the
+/// disk-backed/GPU tiled Gram (future) removes the RAM dependence entirely.
+pub const MAX_DECOMPOSE_GADGET_BYTES: u64 = 56 * 1024 * 1024 * 1024; // 56 GiB
 
 /// Estimated peak bytes of the streamed gadget for `num_irreps` summands at `n`
 /// colours: the f32 flat-vector store (num_irreps × C(n,2) × dmin² × 4) PLUS the
