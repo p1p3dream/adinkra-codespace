@@ -75,8 +75,9 @@ fn print_usage(prog: &str) {
     eprintln!("  pipeline-k <k> [json]   Run pipeline for a single k-stratum only");
     eprintln!("  decompose-k <k> [json]  Irreducible-decompose a single k-stratum (F8 route b)");
     eprintln!("                          and compute the gadget on irreducible pieces");
-    eprintln!("  decompose-k-disk <k> [json]");
+    eprintln!("  decompose-k-disk <k> [json] [--f64]");
     eprintln!("                          like decompose-k but spills W to a disk scratch file");
+    eprintln!("                          (--f64 = exact f64 store + Gram; trustworthy value count)");
     eprintln!("                          and tiles the Gram (for strata that exceed RAM, e.g. k=5)");
     eprintln!("  decompose-audit <k> <sample_reps> [json]");
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
@@ -510,9 +511,11 @@ fn cmd_pipeline_k(args: &[String]) {
 }
 
 fn cmd_decompose_k(args: &[String], allow_disk: bool) {
-    let k = parse_usize_arg(args, 2, "decompose-k <k> [json] [--disk]");
-    // First non-flag positional after k is the json path; --disk may appear anywhere.
-    let allow_disk = allow_disk || args.iter().any(|a| a == "--disk");
+    let k = parse_usize_arg(args, 2, "decompose-k <k> [json] [--disk] [--f64]");
+    // First non-flag positional after k is the json path; flags may appear anywhere.
+    let disk_f64 = args.iter().any(|a| a == "--f64");
+    // --f64 implies the disk path (the f64 store is too large for RAM).
+    let allow_disk = allow_disk || disk_f64 || args.iter().any(|a| a == "--disk");
     let json_path = args
         .iter()
         .skip(3)
@@ -520,7 +523,7 @@ fn cmd_decompose_k(args: &[String], allow_disk: bool) {
         .map(|s| s.as_str())
         .unwrap_or("adinkra_codes_n16.json");
 
-    let output = pipeline::run_decompose_k_mode(json_path, k, allow_disk);
+    let output = pipeline::run_decompose_k_mode(json_path, k, allow_disk, disk_f64);
     let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
     println!("{}", json);
 }

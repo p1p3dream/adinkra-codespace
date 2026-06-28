@@ -367,13 +367,25 @@ fn disk_f32_gate(all_reps: &[&AdinkraRep], n: usize, sample: usize) -> bool {
 }
 
 pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
-    run_decompose_k_mode(json_path, only_k, false)
+    run_decompose_k_mode(json_path, only_k, false, false)
 }
 
 /// `allow_disk = true` routes strata whose flat store exceeds the RAM budget to
 /// the disk-backed tiled Gram instead of skipping (the `decompose-k-disk` /
 /// `--disk` path). `false` preserves the original behavior (in-RAM or skip).
-pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) -> FullPipelineOutput {
+///
+/// `disk_f64 = true` (the `--f64` build) stores W as exact f64 on disk and
+/// accumulates the Gram with `dgemm`, so the gadget values are exact to ~1e-13 and
+/// the distinct-off-diagonal-value count is trustworthy (vs the f32 path's ~1e-7
+/// quantization, which flags `numeric_suspect`). f64 always uses the disk path
+/// (the f64 store is double the f32 store and would not fit RAM); it requires
+/// `allow_disk`.
+pub fn run_decompose_k_mode(
+    json_path: &str,
+    only_k: usize,
+    allow_disk: bool,
+    disk_f64: bool,
+) -> FullPipelineOutput {
     let t0 = Instant::now();
 
     let data = fs::read_to_string(json_path)
@@ -490,6 +502,13 @@ pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) ->
         }
     };
 
+    if disk_f64 && !allow_disk {
+        return skip(
+            "the exact f64 build (--f64) requires the disk path; re-run with \
+             `decompose-k-disk <k> --f64`."
+                .to_string(),
+        );
+    }
     if !ram_fits && !allow_disk {
         return skip(format!(
             "estimated flat holoraumy store {:.1} GiB ({num_irreps} irreps) exceeds RAM budget {:.1} GiB; \
@@ -498,9 +517,10 @@ pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) ->
         ));
     }
     // ADINKRA_FORCE_DISK=1 routes a RAM-fitting stratum through the disk path too
-    // (for disk-vs-RAM parity validation, e.g. k=6). Requires --disk.
+    // (for disk-vs-RAM parity validation, e.g. k=6). Requires --disk. The exact
+    // f64 build always uses the disk path (the f64 store is too large for RAM).
     let force_disk = std::env::var("ADINKRA_FORCE_DISK").map(|v| v == "1").unwrap_or(false);
-    let use_disk = allow_disk && (!ram_fits || force_disk);
+    let use_disk = allow_disk && (!ram_fits || force_disk || disk_f64);
 
     // Build path: in-RAM contiguous W + GEMM when it fits the RAM budget;
     // otherwise (use_disk) stream W to a scratch file and tile the Gram off disk.
@@ -524,8 +544,14 @@ pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) ->
         let m = crate::streamed_gadget::gram_from_contiguous(&w, num_irreps, l, n);
         (m, wr, false, None)
     } else {
-        // Disk-backed path (allow_disk == true, doesn't fit RAM).
-        let flat_bytes = crate::streamed_gadget::flat_store_bytes(n, num_irreps);
+        // Disk-backed path (allow_disk == true; doesn't fit RAM, is forced, or is
+        // the exact f64 build). f64 doubles the store (8 bytes/element).
+        let elem = if disk_f64 { "f64" } else { "f32" };
+        let flat_bytes = if disk_f64 {
+            crate::streamed_gadget::flat_store_bytes_f64(n, num_irreps)
+        } else {
+            crate::streamed_gadget::flat_store_bytes(n, num_irreps)
+        };
         if flat_bytes > crate::decompose::MAX_DECOMPOSE_DISK_BYTES {
             return skip(format!(
                 "flat store {:.1} GiB exceeds MAX_DECOMPOSE_DISK_BYTES {:.1} GiB.",
@@ -559,25 +585,32 @@ pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) ->
         }
         // Unique filename (pid) so concurrent runs don't collide on one scratch file.
         let scratch_path = scratch_dir.join(format!(
-            "adinkra_holoraumy_n{n}_k{only_k}_irreps{num_irreps}_l{l}_pid{}.f32scratch",
+            "adinkra_holoraumy_n{n}_k{only_k}_irreps{num_irreps}_l{l}_pid{}.{elem}scratch",
             std::process::id()
         ));
         eprintln!(
-            "decompose-k: DISK path (flat store {:.1} GiB > RAM budget {:.1} GiB): spilling W to {} ...",
-            gib(flat_bytes), gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES), scratch_path.display()
+            "decompose-k: DISK path ({elem} store {:.1} GiB): spilling W to {} ...",
+            gib(flat_bytes), scratch_path.display()
         );
         eprintln!(
             "decompose-k: (the scratch is removed on normal exit; if you Ctrl-C, reap it with: \
-             rm -f {}/adinkra_holoraumy_*_pid*.f32scratch)",
+             rm -f {}/adinkra_holoraumy_*_pid*.{elem}scratch)",
             scratch_dir.display()
         );
-        // f32 numeric gate on a sample BEFORE committing to the full 68 GiB run.
-        let suspect = disk_f32_gate(&all_reps, n, 32);
+        // f32 numeric gate on a sample BEFORE committing to the full run. The f64
+        // build is exact (~1e-13) by construction, so the gate is skipped there and
+        // the stratum is not flagged numeric_suspect.
+        let suspect = if disk_f64 {
+            eprintln!("decompose-k: f64 disk build (exact ~1e-13); skipping f32 gate.");
+            false
+        } else {
+            disk_f32_gate(&all_reps, n, 32)
+        };
 
         let scratch = crate::streamed_gadget::ScratchW::create(scratch_path, flat_bytes)
             .unwrap_or_else(|e| panic!("decompose-k: failed to create scratch file: {e}"));
 
-        eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each) -> disk...");
+        eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each) -> {elem} disk...");
         let worst_bits = AtomicU64::new(0u64);
         let write_err: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
         (0..all_reps.len()).into_par_iter().for_each(|rep_i| {
@@ -587,13 +620,21 @@ pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) ->
             let decomp = decompose_rep(all_reps[rep_i])
                 .expect("d within guard, decomposition should succeed");
             assert_eq!(decomp.summands.len(), r, "decomposition produced != r summands");
-            let mut buf = vec![0.0f32; l];
+            // f64 build stores exact entries; f32 build halves the disk footprint.
+            let mut buf32 = if disk_f64 { Vec::new() } else { vec![0.0f32; l] };
+            let mut buf64 = if disk_f64 { vec![0.0f64; l] } else { Vec::new() };
             let mut lw = 0.0f64;
             for (s_i, s) in decomp.summands.iter().enumerate() {
                 lw = lw.max(crate::decompose::summand_residual(s));
-                crate::streamed_gadget::flatten_summand_into(s, &mut buf);
                 let g = rep_i * r + s_i;
-                if let Err(e) = scratch.write_summand(g, &buf, l) {
+                let res = if disk_f64 {
+                    crate::streamed_gadget::flatten_summand_into_f64(s, &mut buf64);
+                    scratch.write_summand_f64(g, &buf64, l)
+                } else {
+                    crate::streamed_gadget::flatten_summand_into(s, &mut buf32);
+                    scratch.write_summand(g, &buf32, l)
+                };
+                if let Err(e) = res {
                     write_err.lock().unwrap().get_or_insert_with(|| format!("write_summand g={g}: {e}"));
                     return;
                 }
@@ -605,13 +646,24 @@ pub fn run_decompose_k_mode(json_path: &str, only_k: usize, allow_disk: bool) ->
         }
         scratch.sync().unwrap_or_else(|e| panic!("decompose-k: scratch sync failed: {e}"));
         let wr = f64::from_bits(worst_bits.load(Ordering::Relaxed));
+        // f64 tiles are double the bytes of f32 tiles, so halve the default tile to
+        // keep the same peak RAM (two 512-row f64 tiles ≈ two 1024-row f32 tiles).
+        let default_tile = if disk_f64 {
+            crate::streamed_gadget::DEFAULT_TILE_ROWS / 2
+        } else {
+            crate::streamed_gadget::DEFAULT_TILE_ROWS
+        };
         let tile = std::env::var("ADINKRA_GRAM_TILE")
             .ok()
             .and_then(|s| s.parse::<usize>().ok())
-            .unwrap_or(crate::streamed_gadget::DEFAULT_TILE_ROWS);
-        eprintln!("decompose-k: tiled GEMM Gram from disk ({num_irreps}x{num_irreps}, tile_rows={tile})...");
-        let m = crate::streamed_gadget::gram_from_disk(&scratch, num_irreps, l, n, tile)
-            .unwrap_or_else(|e| panic!("decompose-k: gram_from_disk failed: {e}"));
+            .unwrap_or(default_tile);
+        eprintln!("decompose-k: tiled {elem} GEMM Gram from disk ({num_irreps}x{num_irreps}, tile_rows={tile})...");
+        let m = if disk_f64 {
+            crate::streamed_gadget::gram_from_disk_f64(&scratch, num_irreps, l, n, tile)
+        } else {
+            crate::streamed_gadget::gram_from_disk(&scratch, num_irreps, l, n, tile)
+        }
+        .unwrap_or_else(|e| panic!("decompose-k: gram_from_disk failed: {e}"));
         (m, wr, true, Some(suspect)) // `scratch` drops here -> file removed (unless ADINKRA_KEEP_SCRATCH=1)
     };
 

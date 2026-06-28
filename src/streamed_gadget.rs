@@ -39,6 +39,12 @@ pub fn flat_store_bytes(n: usize, num_irreps: usize) -> u64 {
     (num_irreps as u64) * (flat_len(n) as u64) * 4
 }
 
+/// f64 bytes of the full flat-vector store (the `--f64` exact disk build, double
+/// the f32 store: ~145 GiB for the k=5 stratum at N=16).
+pub fn flat_store_bytes_f64(n: usize, num_irreps: usize) -> u64 {
+    (num_irreps as u64) * (flat_len(n) as u64) * 8
+}
+
 /// Flatten a summand's fermionic holoraumy (all C(n,2) `Vtilde` matrices,
 /// row-major, in the same I>J pair order as `DenseHoloraumy::from_summand`) into
 /// one contiguous f32 vector. The transient `DenseHoloraumy` is dropped on return,
@@ -91,6 +97,22 @@ pub fn flatten_summand_into(s: &IrrepSummand, out: &mut [f32]) {
         }
     }
     assert_eq!(idx, out.len(), "flatten_summand_into: length mismatch");
+}
+
+/// f64 counterpart of [`flatten_summand_into`]: stores the holoraumy entries as
+/// EXACT f64 (no f32 cast), so the disk Gram is exact to ~1e-13 and the distinct
+/// off-diagonal value count is trustworthy (the `--f64` build, vs the f32 store
+/// whose ~1e-7 quantization can merge/split nearby values).
+pub fn flatten_summand_into_f64(s: &IrrepSummand, out: &mut [f64]) {
+    let dh = DenseHoloraumy::from_summand(s);
+    let mut idx = 0;
+    for m in &dh.vtilde {
+        for &x in &m.data {
+            out[idx] = x;
+            idx += 1;
+        }
+    }
+    assert_eq!(idx, out.len(), "flatten_summand_into_f64: length mismatch");
 }
 
 /// Gadget matrix from a CONTIGUOUS row-major `W` (`ni x l`, f32) via a
@@ -187,6 +209,14 @@ fn f32_as_bytes(s: &[f32]) -> &[u8] {
 fn f32_as_bytes_mut(s: &mut [f32]) -> &mut [u8] {
     unsafe { std::slice::from_raw_parts_mut(s.as_mut_ptr() as *mut u8, std::mem::size_of_val(s)) }
 }
+/// f64 byte views (same native-endian soundness as the f32 casts; used by the
+/// exact `--f64` disk build).
+fn f64_as_bytes(s: &[f64]) -> &[u8] {
+    unsafe { std::slice::from_raw_parts(s.as_ptr() as *const u8, std::mem::size_of_val(s)) }
+}
+fn f64_as_bytes_mut(s: &mut [f64]) -> &mut [u8] {
+    unsafe { std::slice::from_raw_parts_mut(s.as_mut_ptr() as *mut u8, std::mem::size_of_val(s)) }
+}
 
 /// RAII handle to the on-disk flat-store W. Removes the file on drop unless
 /// `ADINKRA_KEEP_SCRATCH=1` (kept for debugging). Positioned reads/writes
@@ -214,13 +244,10 @@ impl ScratchW {
         &self.path
     }
 
-    /// Write summand `g`'s flat vector (length `l`) at byte offset `g*l*4`. Safe
-    /// to call concurrently from multiple threads for distinct `g` (disjoint
-    /// ranges, pwrite has no shared cursor). Handles short writes.
-    pub fn write_summand(&self, g: usize, vec: &[f32], l: usize) -> std::io::Result<()> {
-        assert_eq!(vec.len(), l, "write_summand: vec.len() != l (layout corruption)");
-        let mut buf = f32_as_bytes(vec);
-        let mut off = (g as u64) * (l as u64) * 4;
+    /// Positioned byte write with short-write + EINTR handling. The element-typed
+    /// `write_summand*` methods delegate here; `write_at` has no shared cursor, so
+    /// disjoint-offset writes from rayon workers are safe without locking.
+    fn write_bytes_at(&self, mut off: u64, mut buf: &[u8]) -> std::io::Result<()> {
         while !buf.is_empty() {
             match self.file.write_at(buf, off) {
                 Ok(0) => return Err(std::io::Error::new(
@@ -233,11 +260,33 @@ impl ScratchW {
         Ok(())
     }
 
+    /// Write summand `g`'s flat vector (length `l`) at byte offset `g*l*4`. Safe
+    /// to call concurrently from multiple threads for distinct `g` (disjoint
+    /// ranges). Handles short writes.
+    pub fn write_summand(&self, g: usize, vec: &[f32], l: usize) -> std::io::Result<()> {
+        assert_eq!(vec.len(), l, "write_summand: vec.len() != l (layout corruption)");
+        self.write_bytes_at((g as u64) * (l as u64) * 4, f32_as_bytes(vec))
+    }
+
+    /// f64 counterpart of [`write_summand`] (byte offset `g*l*8`). Used by the
+    /// exact `--f64` disk build.
+    pub fn write_summand_f64(&self, g: usize, vec: &[f64], l: usize) -> std::io::Result<()> {
+        assert_eq!(vec.len(), l, "write_summand_f64: vec.len() != l (layout corruption)");
+        self.write_bytes_at((g as u64) * (l as u64) * 8, f64_as_bytes(vec))
+    }
+
     /// Read `rows` summands starting at summand `row0` into `buf` (len rows*l).
     fn read_rows(&self, row0: usize, rows: usize, l: usize, buf: &mut [f32]) -> std::io::Result<()> {
         assert_eq!(buf.len(), rows * l, "read_rows: buf.len() != rows*l");
         let off = (row0 as u64) * (l as u64) * 4;
         self.file.read_exact_at(f32_as_bytes_mut(buf), off)
+    }
+
+    /// f64 counterpart of [`read_rows`] (8-byte stride).
+    fn read_rows_f64(&self, row0: usize, rows: usize, l: usize, buf: &mut [f64]) -> std::io::Result<()> {
+        assert_eq!(buf.len(), rows * l, "read_rows_f64: buf.len() != rows*l");
+        let off = (row0 as u64) * (l as u64) * 8;
+        self.file.read_exact_at(f64_as_bytes_mut(buf), off)
     }
 
     /// Flush to disk (call between the write phase and the read/Gram phase).
@@ -315,6 +364,68 @@ pub fn gram_from_disk(
                 for bc in 0..tj {
                     let gj = bj * t + bc;
                     let v = prod[ar * tj + bc] as f64 * scale;
+                    g[gi][gj] = v;
+                    if gi != gj {
+                        g[gj][gi] = v;
+                    }
+                }
+            }
+        }
+    }
+    Ok(g)
+}
+
+/// Exact f64 counterpart of [`gram_from_disk`] (the `--f64` build): identical
+/// tiling, but the scratch holds f64 (8-byte stride) and the per-tile product is a
+/// `dgemm` with f64 accumulation, so the gadget values are exact to ~1e-13 and the
+/// distinct-off-diagonal-value count is trustworthy (no f32 merge/split). Doubles
+/// the disk store and the resident tile bytes vs the f32 path, so callers should
+/// halve `tile_rows` to keep the same peak RAM (two f64 tiles of 512 rows ≈ the
+/// 16 GiB of two f32 tiles of 1024 rows at N=16).
+pub fn gram_from_disk_f64(
+    scratch: &ScratchW,
+    ni: usize,
+    l: usize,
+    n: usize,
+    tile_rows: usize,
+) -> std::io::Result<Vec<Vec<f64>>> {
+    let scale = 2.0 / (n * (n - 1) * dmin(n)) as f64;
+    let mut g = vec![vec![0.0f64; ni]; ni];
+    if ni == 0 || l == 0 {
+        return Ok(g);
+    }
+    let t = tile_rows.max(1);
+    let num_tiles = ni.div_ceil(t);
+    let mut a = vec![0.0f64; t * l];
+    let mut b = vec![0.0f64; t * l];
+    let mut prod = vec![0.0f64; t * t];
+
+    for bi in 0..num_tiles {
+        let ti = t.min(ni - bi * t);
+        scratch.read_rows_f64(bi * t, ti, l, &mut a[..ti * l])?;
+        for bj in bi..num_tiles {
+            let tj = t.min(ni - bj * t);
+            let bptr = if bj == bi {
+                a.as_ptr()
+            } else {
+                scratch.read_rows_f64(bj * t, tj, l, &mut b[..tj * l])?;
+                b.as_ptr()
+            };
+            unsafe {
+                matrixmultiply::dgemm(
+                    ti, l, tj,
+                    1.0,
+                    a.as_ptr(), l as isize, 1,
+                    bptr, 1, l as isize,
+                    0.0,
+                    prod.as_mut_ptr(), tj as isize, 1,
+                );
+            }
+            for ar in 0..ti {
+                let gi = bi * t + ar;
+                for bc in 0..tj {
+                    let gj = bj * t + bc;
+                    let v = prod[ar * tj + bc] * scale;
                     g[gi][gj] = v;
                     if gi != gj {
                         g[gj][gi] = v;
@@ -568,5 +679,69 @@ mod tests {
             p
         }; // sc dropped here
         assert!(!path.exists(), "scratch not removed on drop: {}", path.display());
+    }
+
+    // -- exact f64 disk-backed tiled Gram (--f64 build) --------------------
+
+    /// Write summands as f64 (summand g at offset g*l*8) and return the scratch.
+    fn write_scratch_f64(summands: &[&IrrepSummand], l: usize, tag: &str) -> ScratchW {
+        let path = std::env::temp_dir()
+            .join(format!("adinkra_disktest_{}_{}.f64scratch", tag, std::process::id()));
+        let sc = ScratchW::create(path, (summands.len() as u64) * (l as u64) * 8).unwrap();
+        let mut buf = vec![0.0f64; l];
+        for (g, s) in summands.iter().enumerate() {
+            flatten_summand_into_f64(s, &mut buf);
+            sc.write_summand_f64(g, &buf, l).unwrap();
+        }
+        sc.sync().unwrap();
+        sc
+    }
+
+    /// The f64 disk Gram must match the trusted dense f64 gadget to ~1e-12 (far
+    /// tighter than the f32 path's ~1e-6), on a genuinely reducible decomposition
+    /// (CS⊕CS -> 2 dense summands + VS) tiled by 2 to exercise ragged tiles.
+    #[test]
+    fn disk_f64_tiled_matches_dense() {
+        let rep = block_diag_n4(&cs_n4(), &cs_n4());
+        let decomp = decompose_rep(&rep).unwrap();
+        let vs = decompose_rep(&vs_n4()).unwrap();
+        let summands: Vec<&IrrepSummand> =
+            vec![&decomp.summands[0], &decomp.summands[1], &vs.summands[0]];
+        let l = flat_len(4);
+        let dense: Vec<DenseHoloraumy> =
+            summands.iter().map(|s| DenseHoloraumy::from_summand(s)).collect();
+        let dmat = dense_gadget_matrix(&dense);
+        let sc = write_scratch_f64(&summands, l, "f64t2");
+        let disk = gram_from_disk_f64(&sc, 3, l, 4, 2).unwrap();
+        assert_eq!(disk.len(), 3);
+        for i in 0..3 {
+            for j in 0..3 {
+                assert!(
+                    (disk[i][j] - dmat[i][j]).abs() < 1e-12,
+                    "f64 disk[{i}][{j}]={} != dense={} (diff {:e})",
+                    disk[i][j], dmat[i][j], (disk[i][j] - dmat[i][j]).abs()
+                );
+                assert!((disk[i][j] - disk[j][i]).abs() < 1e-13, "asymmetry at [{i}][{j}]");
+            }
+            assert!((disk[i][i] - 1.0).abs() < 1e-12, "f64 self-gadget[{i}] != 1");
+        }
+    }
+
+    /// f64 offset round-trip: bytes read back at g*l*8 equal the written f64 flat
+    /// vector exactly (no quantization).
+    #[test]
+    fn disk_f64_offset_round_trip() {
+        let rep = block_diag_n4(&cs_n4(), &cs_n4());
+        let decomp = decompose_rep(&rep).unwrap();
+        let summands: Vec<&IrrepSummand> = decomp.summands.iter().collect();
+        let l = flat_len(4);
+        let sc = write_scratch_f64(&summands, l, "f64rt");
+        let mut buf = vec![0.0f64; l];
+        for (g, s) in summands.iter().enumerate() {
+            let mut expect = vec![0.0f64; l];
+            flatten_summand_into_f64(s, &mut expect);
+            sc.read_rows_f64(g, 1, l, &mut buf).unwrap();
+            assert_eq!(buf, expect, "summand {g}: f64 read-back != written flat vector");
+        }
     }
 }
