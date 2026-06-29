@@ -1241,6 +1241,134 @@ pub fn run_decompose_structure(json_path: &str, only_k: usize) {
     println!("{}", serde_json::to_string_pretty(&stratum).expect("serialize structure"));
 }
 
+/// One (code, dashing) record for the chromocharacter Q-scan experiment.
+#[derive(serde::Serialize)]
+pub struct QScanRecord {
+    /// Index of the code in the catalog (join key for weight_distribution etc.).
+    pub code_index: usize,
+    pub k: usize,
+    pub d: usize,
+    pub dashing: usize,
+    /// Q scaled by 24² (= Σ X²); compare to 0 for color confinement (scale-free).
+    pub q_scaled: i64,
+    /// #{(I<J<K<L) : X_IJKL != 0} — the sign-aware richness Q discards.
+    pub x_support: usize,
+    pub commutant_dim: usize,
+    pub isotypic: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schur_e: Option<usize>,
+}
+
+/// Chromocharacter Q-scan: for every (code, dashing) of a k-stratum, emit the
+/// basis-invariant scalar Q (and the signed-tensor support count) joined with the
+/// commutant/Schur structural label. This is the data layer for the
+/// characterization experiment — NOT a liftability test (no oracle exists): it
+/// supports the decisive measurements (does Q vary across dashings? is Q redundant
+/// with the code combinatorics? does Q or the X-support align with the
+/// isotypic/non-isotypic split? is Q=0 ever attained?). Q and support are exact
+/// integers, conjugation-invariant (gated by a unit test); commutant_dim is the
+/// O(d²) integer union-find, run in memory-bounded parallel batches.
+pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
+    use crate::chromochar::chromochar_support_and_q;
+    use crate::decompose::commutant_dim;
+    use rayon::prelude::*;
+
+    let t0 = Instant::now();
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let dm = dmin(n);
+
+    // Keep the GLOBAL catalog index (join key) while filtering by k.
+    let codes: Vec<(usize, &CodeEntry)> =
+        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
+    eprintln!("q-scan: {} codes with k={only_k} (N={n}, dmin={dm})", codes.len());
+
+    // Flatten to (code_index, dashing, rep).
+    let per_code: Vec<(usize, usize, Vec<AdinkraRep>)> = codes
+        .par_iter()
+        .map(|&(idx, e)| {
+            let (d, reps) = build_reps_for_code(n, e);
+            (idx, d, reps)
+        })
+        .collect();
+    let d = per_code.first().map(|(_, d, _)| *d).unwrap_or(0);
+    let r = if dm > 0 { d / dm } else { 0 };
+    let r2 = r * r;
+    let flat: Vec<(usize, usize, &AdinkraRep)> = per_code
+        .iter()
+        .flat_map(|(idx, _, reps)| reps.iter().enumerate().map(move |(di, rep)| (*idx, di, rep)))
+        .collect();
+    eprintln!("q-scan: {} (code,dashing) reps (d={d}, r={r}); Q + support + commutant...", flat.len());
+
+    // Q + support: cheap trace arithmetic, full parallelism.
+    let qs: Vec<(usize, i128)> =
+        flat.par_iter().map(|(_, _, rep)| chromochar_support_and_q(rep)).collect();
+
+    // commutant_dim: O(d²) DSU per rep, memory-bounded batches (default 24 GiB).
+    // Skipped under --no-struct (Q + support alone, fast at every k).
+    let cdims: Vec<usize> = if compute_struct {
+        let dsu_bytes = (d as u64) * (d as u64) * 6;
+        let budget_gib: u64 = std::env::var("ADINKRA_STRUCT_MEM_GIB")
+            .ok().and_then(|s| s.parse().ok()).unwrap_or(24);
+        let max_par = (((budget_gib << 30) / dsu_bytes.max(1)).max(1) as usize).min(flat.len().max(1));
+        let mut out: Vec<usize> = Vec::with_capacity(flat.len());
+        for chunk in flat.chunks(max_par) {
+            let part: Vec<usize> = chunk.par_iter().map(|(_, _, rep)| commutant_dim(rep)).collect();
+            out.extend(part);
+        }
+        out
+    } else {
+        vec![0usize; flat.len()] // structural label omitted
+    };
+
+    // Assemble records.
+    let records: Vec<QScanRecord> = flat
+        .iter()
+        .zip(qs.iter())
+        .zip(cdims.iter())
+        .map(|(((code_index, dashing, _), &(support, q)), &cd)| {
+            let e = if r2 > 0 && cd % r2 == 0 {
+                let e = cd / r2;
+                if e == 1 || e == 2 || e == 4 { Some(e) } else { None }
+            } else {
+                None
+            };
+            QScanRecord {
+                code_index: *code_index,
+                k: only_k,
+                d,
+                dashing: *dashing,
+                q_scaled: q as i64,
+                x_support: support,
+                commutant_dim: cd,
+                isotypic: e.is_some(),
+                schur_e: e,
+            }
+        })
+        .collect();
+
+    // Anti-bug diagnostic: raw-trace activity of the first rep. If Q is uniformly
+    // 0 but this is > 0, the traces are nonzero and the antisymmetric channel
+    // genuinely cancels; if 0, every 4-distinct-colour trace is itself zero. Either
+    // confirms a vanishing X is real, not a broken evaluator.
+    if let Some((_, _, rep0)) = flat.first() {
+        let activity = crate::chromochar::chromochar_trace_activity(rep0);
+        eprintln!("q-scan: sample raw-trace activity (Sum Tr^2) = {activity} (>0 => traces nonzero, X cancels; 0 => traces vanish)");
+    }
+
+    // Stderr summary (the headline decisive numbers).
+    let q0 = records.iter().filter(|r| r.q_scaled == 0).count();
+    let distinct_q: std::collections::BTreeSet<i64> = records.iter().map(|r| r.q_scaled).collect();
+    let distinct_sup: std::collections::BTreeSet<usize> = records.iter().map(|r| r.x_support).collect();
+    eprintln!(
+        "q-scan: {} reps, Q=0 in {q0}, {} distinct Q, {} distinct support; done in {:.1}s",
+        records.len(), distinct_q.len(), distinct_sup.len(), t0.elapsed().as_secs_f64()
+    );
+    println!("{}", serde_json::to_string(&records).expect("serialize q-scan"));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -47,6 +47,7 @@ fn main() {
         "decompose-k" => cmd_decompose_k(&args, false),
         "decompose-k-disk" => cmd_decompose_k(&args, true),
         "decompose-structure" => cmd_decompose_structure(&args),
+        "q-scan" => cmd_q_scan(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
@@ -536,6 +537,15 @@ fn cmd_decompose_structure(args: &[String]) {
     let k = parse_usize_arg(args, 2, "decompose-structure <k> [json]");
     let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
     pipeline::run_decompose_structure(json_path, k);
+}
+
+fn cmd_q_scan(args: &[String]) {
+    let k = parse_usize_arg(args, 2, "q-scan <k> [json] [--no-struct]");
+    // --no-struct skips the commutant_dim/Schur label (Q + support only, fast).
+    let compute_struct = !args.iter().any(|a| a == "--no-struct");
+    let json_path = args.iter().skip(3).find(|a| !a.starts_with("--")).map(|s| s.as_str())
+        .unwrap_or("adinkra_codes_n16.json");
+    pipeline::run_q_scan(json_path, k, compute_struct);
 }
 
 fn cmd_decompose_audit(args: &[String]) {

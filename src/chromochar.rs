@@ -76,6 +76,34 @@ pub fn chromochar_antisym(rep: &AdinkraRep, i: usize, j: usize, k: usize, l: usi
     acc
 }
 
+/// Raw-trace activity: `Σ_{i<j<k<l} Σ_{σ∈S₄} Tr(L_{σi} R_{σj} L_{σk} R_{σl})²`,
+/// the UNSIGNED magnitude of the chromocharacter traces. Diagnostic for the
+/// experiment: if `Q = Σ X² = 0` (antisymmetric part vanishes) while this is `> 0`,
+/// the individual traces are nonzero and the antisymmetric channel genuinely
+/// cancels; if this is also `0`, every four-distinct-colour trace is itself zero
+/// at N=16 (each `Tr(L_I R_J L_K R_L)` vanishes — either the permutation part has
+/// no fixed points, or the signed/Clifford structure cancels the signed diagonal;
+/// the mechanism varies by code and is not asserted here).
+/// Either way confirms a vanishing X is real structure, not a broken evaluator.
+pub fn chromochar_trace_activity(rep: &AdinkraRep) -> i128 {
+    let n = rep.n;
+    let mut acc: i128 = 0;
+    for i in 0..n {
+        for j in (i + 1)..n {
+            for k in (j + 1)..n {
+                for l in (k + 1)..n {
+                    let idx = [i, j, k, l];
+                    for (p, _sgn) in ALL_S4.iter() {
+                        let t = tr_lrlr(rep, idx[p[0]], idx[p[1]], idx[p[2]], idx[p[3]]) as i128;
+                        acc += t * t;
+                    }
+                }
+            }
+        }
+    }
+    acc
+}
+
 /// The N=4 χ₀ scalar (single quadruple {0,1,2,3}), normalized to ±1 for valise
 /// cis/trans adinkras. `χ₀ = (Σ_σ sign(σ) Tr(...)) / 96`.
 pub fn chi0_n4(rep: &AdinkraRep) -> f64 {
@@ -109,6 +137,31 @@ pub fn closability_q_scaled(rep: &AdinkraRep) -> i128 {
 /// Convenience: is the representation χ₀-"color-confined" (Q == 0)?
 pub fn is_color_confined(rep: &AdinkraRep) -> bool {
     closability_q_scaled(rep) == 0
+}
+
+/// One pass over the C(n,4) antisymmetric chromocharacter components, returning
+/// `(support, q_scaled)` where `support = #{(I<J<K<L) : X_IJKL != 0}` and
+/// `q_scaled = Σ X² = 24²·Q`. The SUPPORT is the cheap signal Q discards: Q squares
+/// X (so it is sign-blind — the N=4 cis/trans pair share Q), whereas the support
+/// count and the signed X-vector can distinguish reps that Q cannot. Both are exact
+/// integers and conjugation-invariant (X is a sum of traces).
+pub fn chromochar_support_and_q(rep: &AdinkraRep) -> (usize, i128) {
+    let n = rep.n;
+    let (mut support, mut q): (usize, i128) = (0, 0);
+    for i in 0..n {
+        for j in (i + 1)..n {
+            for k in (j + 1)..n {
+                for l in (k + 1)..n {
+                    let x = chromochar_antisym(rep, i, j, k, l) as i128;
+                    if x != 0 {
+                        support += 1;
+                    }
+                    q += x * x;
+                }
+            }
+        }
+    }
+    (support, q)
 }
 
 // ===========================================================================
@@ -172,5 +225,40 @@ mod tests {
         // a cis with a trans so the ε-pieces cancel).
         assert!(closability_q_scaled(&cs_n4()) > 0);
         assert!(!is_color_confined(&cs_n4()));
+    }
+
+    /// The evaluator produces NONZERO four-colour traces at N=4 (d=4): the
+    /// raw-trace activity is positive, so a zero activity at N=16 reflects real
+    /// structure (the four-colour traces genuinely vanish there), not a broken
+    /// evaluator.
+    #[test]
+    fn trace_activity_nonzero_at_n4() {
+        assert!(chromochar_trace_activity(&cs_n4()) > 0, "N=4 raw-trace activity must be > 0");
+        assert!(chromochar_trace_activity(&vs_n4()) > 0);
+    }
+
+    /// The must-pass gate for the Q-scan experiment: Q is basis-invariant, i.e.
+    /// conjugating every L_I by a fixed signed permutation P (L_I -> P L_I P⁻¹, a
+    /// change of vertex basis) leaves Q and the support exactly unchanged. If this
+    /// failed, Q would not be the invariant it is claimed to be.
+    #[test]
+    fn q_and_support_are_conjugation_invariant() {
+        // compose is a right action: a.compose(b) = b·a, so P·L·P⁻¹ is built as
+        // Pinv.compose(L).compose(P).
+        let p = SignedPerm::from_parts(vec![2, 0, 3, 1], vec![1, -1, -1, 1]).unwrap();
+        let pinv = p.inverse();
+        for rep in [cs_n4(), vs_n4()] {
+            let conj_l: Vec<SignedPerm> = rep
+                .l_matrices
+                .iter()
+                .map(|l| pinv.compose(l).compose(&p))
+                .collect();
+            let conj = AdinkraRep { n: rep.n, d: rep.d, l_matrices: conj_l };
+            assert_eq!(
+                chromochar_support_and_q(&rep),
+                chromochar_support_and_q(&conj),
+                "Q/support not invariant under signed-perm conjugation"
+            );
+        }
     }
 }
