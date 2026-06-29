@@ -996,6 +996,251 @@ pub fn run_decompose_probe(json_path: &str, only_k: usize, num_reps: usize) {
     );
 }
 
+/// One inferred Schur class for a distinct commutant dimension seen in a stratum.
+#[derive(serde::Serialize)]
+pub struct StructureClass {
+    /// The basis-invariant commutant dimension (`= m²·e` when isotypic).
+    pub commutant_dim: usize,
+    /// How many of the stratum's valise reps have this commutant dimension.
+    pub count: usize,
+    /// True iff `commutant_dim == r²·e` for `e ∈ {1,2,4}` (a single irreducible
+    /// type with multiplicity `r` over a real/complex/quaternionic division algebra).
+    pub isotypic: bool,
+    /// `e = commutant_dim / r²` when isotypic (real dimension of the division algebra).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub division_algebra_dim: Option<usize>,
+    /// `"R"`, `"C"`, or `"H"` when isotypic.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub division_algebra: Option<String>,
+    /// The unique real-type (e=1) multiplicity pattern `m_t` (sorted descending,
+    /// `Σ m_t = r`, `Σ m_t² = commutant_dim`) when one exists — i.e. how many
+    /// INEQUIVALENT irreducible adinkra classes appear and with what multiplicity.
+    /// `None` when no such pattern or when it is ambiguous (then see `note`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub multiplicity_pattern: Option<Vec<usize>>,
+    /// Number of inequivalent irreducible classes (`multiplicity_pattern.len()`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num_irreducible_types: Option<usize>,
+    pub note: String,
+}
+
+/// All real-type (e=1) multiplicity patterns: partitions of `r` (sorted parts,
+/// descending) whose squares sum to `target = commutant_dim`. For the N=16 minimal
+/// irrep (real, e=1; verified at k=8) these are the candidate decompositions of a
+/// reducible rep into `Σ m_t` copies across `len()` inequivalent classes.
+fn real_multiplicity_patterns(r: usize, target: usize) -> Vec<Vec<usize>> {
+    fn rec(rem: usize, sq: usize, max_part: usize, cur: &mut Vec<usize>, out: &mut Vec<Vec<usize>>) {
+        if rem == 0 {
+            if sq == 0 {
+                out.push(cur.clone());
+            }
+            return;
+        }
+        for p in (1..=max_part.min(rem)).rev() {
+            if p * p > sq {
+                continue;
+            }
+            cur.push(p);
+            rec(rem - p, sq - p * p, p, cur, out);
+            cur.pop();
+        }
+    }
+    let mut out = Vec::new();
+    rec(r, target, r, &mut Vec::new(), &mut out);
+    out
+}
+
+/// Basis-invariant structural summary of a single k-stratum.
+#[derive(serde::Serialize)]
+pub struct StructureStratum {
+    pub k: usize,
+    pub d: usize,
+    pub dmin: usize,
+    pub r: usize,
+    pub num_codes: usize,
+    pub num_valise_reps: usize,
+    /// Distinct commutant dimensions across the stratum's valise reps, with counts.
+    pub commutant_dim_histogram: Vec<(usize, usize)>,
+    pub classes: Vec<StructureClass>,
+    pub elapsed_secs: f64,
+}
+
+/// Compute the BASIS-INVARIANT structural results of a k-stratum WITHOUT the dense
+/// eigendecomposition or the (orientation-dependent) gadget matrix: the commutant
+/// dimension of each valise rep (exact integer union-find, [`commutant_dim`]), and
+/// the multiplicity / division-algebra (Schur) type it implies. Because it never
+/// decomposes or forms the gadget, it scales to the high-k strata (k ≤ 3, d up to
+/// 16384) that the dense path cannot reach — and it reports exactly the invariant
+/// content that survives the orientation gauge (see [`crate::orientation`]): the
+/// cross-summand gadget below k=8 is gauge, so the honest classification of a
+/// reducible stratum is its multiplicity and Schur structure, not a value spectrum.
+pub fn run_decompose_structure(json_path: &str, only_k: usize) {
+    use crate::decompose::commutant_dim;
+    use rayon::prelude::*;
+
+    let t0 = Instant::now();
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let dm = dmin(n);
+    let codes: Vec<&CodeEntry> = catalog.codes.iter().filter(|e| e.k == only_k).collect();
+
+    eprintln!(
+        "decompose-structure: {} codes with k={only_k} (N={n}, dmin={dm}); commutant only, no eig/gadget",
+        codes.len()
+    );
+
+    // Build every valise rep of the stratum (parallel per code).
+    let per_code: Vec<(usize, Vec<AdinkraRep>)> =
+        codes.par_iter().map(|e| build_reps_for_code(n, e)).collect();
+    let d = per_code.first().map(|(d, _)| *d).unwrap_or(0);
+    let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();
+    let num_valise_reps = all_reps.len();
+    let r = if dm > 0 { d / dm } else { 0 };
+
+    // Each commutant_dim allocates a d² signed disjoint-set (~6 bytes/cell:
+    // u32 parent + i8 rel + bool consistent). Cap concurrency so the peak across
+    // workers stays under a memory budget (default 24 GiB, env-overridable): at
+    // k=1 (d=16384) one DSU is ~1.6 GiB, so unbounded rayon over 8 reps would need
+    // ~13 GiB. Batches run in parallel; batches themselves are sequential.
+    let dsu_bytes = (d as u64) * (d as u64) * 6;
+    let budget_gib: u64 = std::env::var("ADINKRA_STRUCT_MEM_GIB")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(24);
+    let budget = budget_gib << 30;
+    let max_par = ((budget / dsu_bytes.max(1)).max(1) as usize).min(num_valise_reps.max(1));
+    eprintln!(
+        "decompose-structure: {num_valise_reps} valise reps (d={d}, r={r}); commutant dims, \
+         <= {max_par} concurrent (~{:.1} GiB/DSU, {budget_gib} GiB budget)...",
+        dsu_bytes as f64 / (1u64 << 30) as f64
+    );
+
+    // Commutant dimension per valise rep, in memory-bounded parallel batches.
+    let mut dims: Vec<usize> = Vec::with_capacity(num_valise_reps);
+    for chunk in all_reps.chunks(max_par) {
+        let part: Vec<usize> = chunk.par_iter().map(|rep| commutant_dim(rep)).collect();
+        dims.extend(part);
+    }
+
+    // Histogram of distinct commutant dimensions.
+    let mut counts: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+    for &cd in &dims {
+        *counts.entry(cd).or_insert(0) += 1;
+    }
+    let commutant_dim_histogram: Vec<(usize, usize)> =
+        counts.iter().map(|(&k, &v)| (k, v)).collect();
+
+    // Infer the Schur class for each distinct commutant dim. Isotypic iff
+    // commutant_dim == r²·e with e ∈ {1,2,4}.
+    let r2 = r * r;
+    let classes: Vec<StructureClass> = commutant_dim_histogram
+        .iter()
+        .map(|&(cd, count)| {
+            let e_opt = if r2 > 0 && cd % r2 == 0 {
+                let e = cd / r2;
+                if e == 1 || e == 2 || e == 4 {
+                    Some(e)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+            // Real-type (e=1) multiplicity pattern: the MINIMAL-class decomposition
+            // (fewest inequivalent irreducible types whose squared multiplicities
+            // sum to the commutant dim). Reported when that minimal partition is
+            // unique. The commutant dimension does not in general fix the pattern
+            // (larger r admits several partitions of the same square-sum), so this
+            // is the minimal-complexity decomposition consistent with it — which
+            // matches the fully-determined small strata (k=7 [1,1], k=6 [2,2]).
+            let patterns = real_multiplicity_patterns(r, cd);
+            let (pattern, ambiguous_count) = if patterns.is_empty() {
+                (None, 0)
+            } else {
+                let min_parts = patterns.iter().map(|p| p.len()).min().unwrap();
+                let minimal: Vec<&Vec<usize>> =
+                    patterns.iter().filter(|p| p.len() == min_parts).collect();
+                if minimal.len() == 1 {
+                    (Some(minimal[0].clone()), patterns.len())
+                } else {
+                    (None, patterns.len())
+                }
+            };
+            let num_types = pattern.as_ref().map(|p| p.len());
+
+            let (isotypic, da_dim, da, note) = match e_opt {
+                Some(e) => {
+                    let label = match e {
+                        1 => "R",
+                        2 => "C",
+                        _ => "H",
+                    };
+                    (
+                        true,
+                        Some(e),
+                        Some(label.to_string()),
+                        format!("isotypic: {r} copies of one GR({dm},{n}) irreducible over {label} (commutant M_{r}({label}))"),
+                    )
+                }
+                None => {
+                    let detail = match &pattern {
+                        Some(p) => format!(
+                            "minimal real (e=1) decomposition: {} inequivalent class(es) with multiplicities {:?}{}",
+                            p.len(), p,
+                            if ambiguous_count > 1 {
+                                format!(" (commutant dim alone admits {ambiguous_count} partitions; this is the fewest-class one)")
+                            } else {
+                                String::new()
+                            }
+                        ),
+                        None => format!(
+                            "no unique minimal real (e=1) pattern; {ambiguous_count} candidate partition(s) tie on class count"
+                        ),
+                    };
+                    (
+                        false,
+                        None,
+                        None,
+                        format!(
+                            "non-isotypic: commutant_dim {cd} = sum_t m_t²·e_t (r={r}); {detail}"
+                        ),
+                    )
+                }
+            };
+            StructureClass {
+                commutant_dim: cd,
+                count,
+                isotypic,
+                division_algebra_dim: da_dim,
+                division_algebra: da,
+                multiplicity_pattern: pattern,
+                num_irreducible_types: num_types,
+                note,
+            }
+        })
+        .collect();
+
+    let stratum = StructureStratum {
+        k: only_k,
+        d,
+        dmin: dm,
+        r,
+        num_codes: codes.len(),
+        num_valise_reps,
+        commutant_dim_histogram,
+        classes,
+        elapsed_secs: t0.elapsed().as_secs_f64(),
+    };
+    eprintln!(
+        "decompose-structure: done in {:.2}s ({} distinct commutant dim(s))",
+        stratum.elapsed_secs,
+        stratum.classes.len()
+    );
+    println!("{}", serde_json::to_string_pretty(&stratum).expect("serialize structure"));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

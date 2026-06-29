@@ -46,6 +46,7 @@ fn main() {
         "pipeline-k" => cmd_pipeline_k(&args),
         "decompose-k" => cmd_decompose_k(&args, false),
         "decompose-k-disk" => cmd_decompose_k(&args, true),
+        "decompose-structure" => cmd_decompose_structure(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
@@ -79,7 +80,9 @@ fn print_usage(prog: &str) {
     eprintln!("  decompose-k-disk <k> [json] [--f64]");
     eprintln!("                          like decompose-k but spills W to a disk scratch file");
     eprintln!("                          (--f64 = exact f64 store + Gram; trustworthy value count)");
-    eprintln!("                          and tiles the Gram (for strata that exceed RAM, e.g. k=5)");
+    eprintln!("  decompose-structure <k> [json]");
+    eprintln!("                          basis-invariant Schur structure (commutant only, no eig;");
+    eprintln!("                          scales to k<=3 where the dense path cannot reach)");
     eprintln!("  decompose-audit <k> <sample_reps> [json]");
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
     eprintln!("  help                    Print this help message");
@@ -527,6 +530,12 @@ fn cmd_decompose_k(args: &[String], allow_disk: bool) {
     let output = pipeline::run_decompose_k_mode(json_path, k, allow_disk, disk_f64);
     let json = serde_json::to_string_pretty(&output).expect("Failed to serialize output");
     println!("{}", json);
+}
+
+fn cmd_decompose_structure(args: &[String]) {
+    let k = parse_usize_arg(args, 2, "decompose-structure <k> [json]");
+    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    pipeline::run_decompose_structure(json_path, k);
 }
 
 fn cmd_decompose_audit(args: &[String]) {

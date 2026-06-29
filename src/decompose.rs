@@ -370,11 +370,14 @@ impl SignedDsu {
 /// Compute the commutant of `rep` (matrices commuting with every `L_I`) as a
 /// list of integer basis matrices, encoded as sign-consistent orbits over the
 /// `d²` matrix cells. `dim(commutant) == orbits.len()`.
-pub fn commutant_orbits(rep: &AdinkraRep) -> Vec<Orbit> {
+/// Build the signed disjoint-set of commutant cell constraints: cell `(a,b)` is
+/// tied to `(p[a],p[b])` with sign `s[a]·s[b]` for every generator `L`. Shared by
+/// [`commutant_orbits`] (which materializes the orbits) and [`commutant_dim`]
+/// (which only counts them). Returns `(dsu, cells = d²)`.
+fn build_commutant_dsu(rep: &AdinkraRep) -> (SignedDsu, usize) {
     let d = rep.d;
     let cells = d * d;
     let mut dsu = SignedDsu::new(cells);
-
     for l in &rep.l_matrices {
         // value(a,b) = s[a]*s[b] * value(p[a], p[b])
         for a in 0..d {
@@ -383,12 +386,35 @@ pub fn commutant_orbits(rep: &AdinkraRep) -> Vec<Orbit> {
             for b in 0..d {
                 let pb = l.perm[b] as usize;
                 let r = sa * l.sign[b];
-                let cell = a * d + b;
-                let cell2 = pa * d + pb;
-                dsu.union(cell, cell2, r);
+                dsu.union(a * d + b, pa * d + pb, r);
             }
         }
     }
+    (dsu, cells)
+}
+
+/// Dimension of the real commutant WITHOUT materializing the orbits: counts the
+/// distinct sign-consistent roots. Memory is the `d²` disjoint-set only (no
+/// per-orbit cell lists), so this scales to the high-k strata (d up to 16384 at
+/// k=1) where the full [`commutant_orbits`] cell lists would be many GiB. The
+/// commutant dimension is a basis-invariant: for `m` copies of an irreducible over
+/// a division algebra of real dimension `e`, `dim = m²·e`, so it reveals the
+/// isotypic / Schur structure (multiplicity and R/C/H type) of a stratum.
+pub fn commutant_dim(rep: &AdinkraRep) -> usize {
+    let (mut dsu, cells) = build_commutant_dsu(rep);
+    use std::collections::HashSet;
+    let mut roots: HashSet<usize> = HashSet::new();
+    for cell in 0..cells {
+        let (root, _) = dsu.find(cell);
+        if dsu.consistent[root] {
+            roots.insert(root);
+        }
+    }
+    roots.len()
+}
+
+pub fn commutant_orbits(rep: &AdinkraRep) -> Vec<Orbit> {
+    let (mut dsu, cells) = build_commutant_dsu(rep);
 
     // Collect sign-consistent orbits. Use a BTreeMap keyed by root so the orbit
     // order is DETERMINISTIC (ascending root cell index); this is required for
@@ -1035,6 +1061,26 @@ mod tests {
         assert_eq!(single, 4, "single N=4 irrep commutant should be 4 (quaternionic H)");
         assert_eq!(cv, 8, "CS⊕VS commutant should be H⊕H = 8");
         assert_eq!(cc, 16, "CS⊕CS commutant should be M_2(H) = 16");
+    }
+
+    /// The lightweight `commutant_dim` (no orbit materialization) must equal
+    /// `commutant_orbits(rep).len()` exactly — the refactor that lets the structural
+    /// path scale to high-k strata without building per-orbit cell lists.
+    #[test]
+    fn commutant_dim_matches_orbits_len() {
+        for rep in [
+            cs_n4(),
+            vs_n4(),
+            block_diag_n4(&cs_n4(), &cs_n4()),
+            block_diag_n4(&cs_n4(), &vs_n4()),
+        ] {
+            assert_eq!(
+                commutant_dim(&rep),
+                commutant_orbits(&rep).len(),
+                "commutant_dim != orbits.len() (d={})",
+                rep.d
+            );
+        }
     }
 
     // -- Basis invariance of the self-gadget -----------------------------------
