@@ -11,6 +11,7 @@ mod holoraumy;
 mod lorentz;
 mod lr_matrix;
 mod nauty_canonical;
+mod orientation;
 mod pipeline;
 mod ranking;
 mod search;
