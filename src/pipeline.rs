@@ -1369,6 +1369,102 @@ pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
     println!("{}", serde_json::to_string(&records).expect("serialize q-scan"));
 }
 
+/// One code class's worldsheet-liftability result.
+#[derive(serde::Serialize)]
+pub struct LiftRecord {
+    pub code_index: usize,
+    pub k: usize,
+    pub d: usize,
+    /// Number of hangings tried (valise + source-raised samples).
+    pub num_rankings: usize,
+    /// Most balanced worldsheet split found over those hangings.
+    pub best_p: usize,
+    pub best_q: usize,
+    /// `min(best_p, best_q)`: 0 = only the trivial unidextrous (N,0) extension.
+    pub best_min: usize,
+    /// Number of height levels of the hanging achieving `best_min` (2 = valise).
+    pub best_levels: usize,
+}
+
+/// Worldsheet-lift oracle over a k-stratum: for each code class, generate hangings
+/// (the valise plus source-raised non-valise rankings) and, on each, compute the
+/// most balanced `(p,q)` worldsheet supersymmetry the proven Gates-Hübsch spin-sum
+/// predicate admits ([`crate::filters::max_balanced_worldsheet`]). Reports, per
+/// code, the best nontrivial worldsheet extension reachable. This is the first
+/// application of the decidable (necessary-AND-sufficient) worldsheet-lift test to
+/// genuinely HUNG N=16 adinkras — the valise alone only ever yields the trivial
+/// (N,0) split (Corollary 2.2), so any `best_min > 0` is a worldsheet supersymmetry
+/// only the hanging exposes. NOTE: the hanging set is SAMPLED (source-raising), so
+/// `best_min` is a LOWER BOUND on the true maximum over all hangings.
+pub fn run_lift_scan(json_path: &str, only_k: usize) {
+    use crate::filters::max_balanced_worldsheet;
+    use crate::ranking::Ranking;
+    use rayon::prelude::*;
+
+    let chains: usize = std::env::var("ADINKRA_LIFT_CHAINS").ok().and_then(|s| s.parse().ok()).unwrap_or(32);
+    let max_rank: usize = std::env::var("ADINKRA_LIFT_MAXRANK").ok().and_then(|s| s.parse().ok()).unwrap_or(512);
+
+    let t0 = Instant::now();
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let codes: Vec<(usize, &CodeEntry)> =
+        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
+    eprintln!(
+        "lift-scan: {} codes with k={only_k} (N={n}); worldsheet (p,q) over valise + source-raised hangings",
+        codes.len()
+    );
+
+    let recs: Vec<LiftRecord> = codes
+        .par_iter()
+        .map(|&(idx, e)| {
+            let code = DoublyEvenCode::new(n, e.generators_raw.clone());
+            let chromo = Chromotopology::from_code(&code);
+            let mut rankings = vec![Ranking::valise(&chromo)];
+            rankings.extend(Ranking::raised_samples(&chromo, chains, max_rank));
+            let (mut best, mut best_min, mut best_levels) = ((n, 0usize), 0usize, 2usize);
+            for r in &rankings {
+                let (p, q) = max_balanced_worldsheet(&chromo, r);
+                if p == 0 && q == 0 {
+                    continue; // ranking admits no extension at all
+                }
+                let m = p.min(q);
+                if m > best_min {
+                    best_min = m;
+                    best = (p, q);
+                    best_levels = r.num_levels();
+                }
+            }
+            LiftRecord {
+                code_index: idx,
+                k: only_k,
+                d: chromo.d(),
+                num_rankings: rankings.len(),
+                best_p: best.0,
+                best_q: best.1,
+                best_min,
+                best_levels,
+            }
+        })
+        .collect();
+
+    let nontrivial = recs.iter().filter(|r| r.best_min > 0).count();
+    let max_min = recs.iter().map(|r| r.best_min).max().unwrap_or(0);
+    let mut hist: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+    for r in &recs {
+        *hist.entry(r.best_min).or_insert(0) += 1;
+    }
+    eprintln!(
+        "lift-scan: nontrivial worldsheet extension FOUND for {}/{} classes (sampled LOWER BOUND: \
+         best_min=0 means none found at chains={chains}/max_rank={max_rank}, NOT a proof of none — \
+         larger graphs need a bigger budget); max balanced min(p,q)={max_min}; \
+         best_min histogram {:?}; done in {:.1}s",
+        nontrivial, recs.len(), hist, t0.elapsed().as_secs_f64()
+    );
+    println!("{}", serde_json::to_string(&recs).expect("serialize lift-scan"));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -109,6 +109,63 @@ impl Ranking {
         levels.len()
     }
 
+    /// Vertices that are local minima under this ranking: every incident edge
+    /// goes UP (all neighbours are higher). These "sources" are the vertices that
+    /// can be raised. A vertex with no edges is not a source.
+    pub fn sources(&self, adj: &[Vec<usize>]) -> Vec<usize> {
+        (0..self.height.len())
+            .filter(|&v| !adj[v].is_empty() && adj[v].iter().all(|&w| self.height[w] > self.height[v]))
+            .collect()
+    }
+
+    /// The node-lifting / vertex-raising operation (arXiv:math-ph/0512016 §5):
+    /// raise a source vertex by +2. This preserves the bipartite parity and the
+    /// `|Δh| = 1` edge condition (the source sat one below all neighbours; +2 puts
+    /// it one above them), turning the source into a target. Caller must ensure
+    /// `v` is currently a source.
+    pub fn raise_vertex(&mut self, v: usize) {
+        self.height[v] += 2;
+    }
+
+    /// Produce a polynomial-size family of genuinely multi-level (non-valise)
+    /// hangings by source-raising from the valise — usable at N=16 where
+    /// [`enumerate`](Ranking::enumerate) is infeasible. Each "chain" repeatedly
+    /// raises ONE source (rotating the starting index by the chain number for
+    /// diversity) and records every intermediate canonical ranking, until no
+    /// raisable source remains. Returns the deduplicated union over `chains`
+    /// chains (always includes some 3+-level rankings as soon as a single source
+    /// is raised out of the valise's 2 levels).
+    pub fn raised_samples(chromo: &Chromotopology, chains: usize, max_out: usize) -> Vec<Ranking> {
+        let adj = chromo.vertex_adjacency();
+        let nv = chromo.num_vertices();
+        let mut seen: std::collections::HashSet<Vec<i32>> = std::collections::HashSet::new();
+        let mut out: Vec<Ranking> = Vec::new();
+        for chain in 0..chains.max(1) {
+            if out.len() >= max_out {
+                break;
+            }
+            let mut cur = Ranking::valise(chromo).height;
+            for step in 0..(nv * 4) {
+                if out.len() >= max_out {
+                    break;
+                }
+                let srcs = Ranking { height: cur.clone() }.sources(&adj);
+                // Raising ONE rotated source at a time (not all at once, which
+                // would just invert the valise) builds genuine 3+-level hangings.
+                if srcs.is_empty() {
+                    break;
+                }
+                let pick = srcs[(chain + step) % srcs.len()];
+                cur[pick] += 2;
+                let r = Ranking::from_heights(cur.clone());
+                if seen.insert(r.height.clone()) {
+                    out.push(r);
+                }
+            }
+        }
+        out
+    }
+
     /// Enumerate ALL valid rankings of the chromotopology, modulo a global
     /// shift (each result is canonicalized so `min == 0`), deduplicated.
     ///

@@ -170,6 +170,138 @@ pub fn worldsheet_spin_sum(
     true
 }
 
+/// For a FIXED ranking, the most balanced `(p,q)` worldsheet chirality split that
+/// the Gates-Hübsch spin-sum predicate admits (maximizing `min(p,q)`). EXACT, not
+/// sampled: the spin-sum condition around the 2-coloured 4-cycles of a colour pair
+/// `(I,J)` depends only on the product `s_I·s_J` (`A + (s_I s_J)·B = 0` per cycle),
+/// so the `2^N` chirality search reduces to a signed 2-colouring over the N
+/// colours via union-find, then a subset-sum over the resulting sign-components.
+///
+/// Returns `(N,0)` when only the trivial unidextrous extension is consistent
+/// (e.g. every valise), and `(0,0)` when NO chirality assignment is consistent
+/// (the ranking admits no worldsheet extension at all). A returned `(p,q)` with
+/// `p,q>0` is a genuine nontrivial `(p,q)` worldsheet supersymmetry.
+pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (usize, usize) {
+    let n = chromo.n();
+    let d = chromo.d();
+    let h = &ranking.height;
+
+    // Per colour pair: is s_I*s_J = +1 (plus) and/or -1 (minus) consistent across
+    // ALL its 2-coloured 4-cycles? (A + t*B = 0 with t in {+1,-1}: +1 needs A+B=0,
+    // -1 needs A-B=0.) `constrained` marks pairs that have at least one cycle.
+    let mut plus_ok = vec![true; n * n];
+    let mut minus_ok = vec![true; n * n];
+    let mut constrained = vec![false; n * n];
+    for i in 0..n {
+        let i_fwd = chromo.color_perm(i);
+        for j in (i + 1)..n {
+            let j_inv = chromo.color_perm_inverse(j);
+            let idx = i * n + j;
+            for b1 in 0..d {
+                let f1 = i_fwd[b1];
+                let b2 = j_inv[f1];
+                let f2 = i_fwd[b2];
+                if j_inv[f2] != b1 || b2 == b1 {
+                    continue;
+                }
+                let (vb1, vf1) = chromo.edge_vertices(i, b1);
+                let (vb2, vf2) = chromo.edge_vertices(i, b2);
+                let a = (h[vf1] - h[vb1]) as i64 + (h[vf2] - h[vb2]) as i64; // colour-I steps
+                let b = (h[vb2] - h[vf1]) as i64 + (h[vb1] - h[vf2]) as i64; // colour-J steps
+                constrained[idx] = true;
+                if a + b != 0 {
+                    plus_ok[idx] = false;
+                }
+                if a - b != 0 {
+                    minus_ok[idx] = false;
+                }
+            }
+        }
+    }
+
+    // Signed union-find over the N colours: s_i = rel[i] * s_root(i).
+    let mut parent: Vec<usize> = (0..n).collect();
+    let mut rel = vec![1i64; n];
+    fn find(x: usize, parent: &mut [usize], rel: &mut [i64]) -> (usize, i64) {
+        if parent[x] == x {
+            return (x, 1);
+        }
+        let (r, s) = find(parent[x], parent, rel);
+        rel[x] *= s;
+        parent[x] = r;
+        (r, rel[x])
+    }
+    for i in 0..n {
+        for j in (i + 1)..n {
+            let idx = i * n + j;
+            if !constrained[idx] {
+                continue;
+            }
+            let t = match (plus_ok[idx], minus_ok[idx]) {
+                (true, true) => continue,    // free pair, no constraint
+                (true, false) => 1i64,       // s_i*s_j = +1
+                (false, true) => -1i64,      // s_i*s_j = -1
+                (false, false) => return (0, 0), // pair impossible -> no extension
+            };
+            let (ri, si) = find(i, &mut parent, &mut rel);
+            let (rj, sj) = find(j, &mut parent, &mut rel);
+            if ri == rj {
+                if si * sj != t {
+                    return (0, 0); // sign conflict -> infeasible
+                }
+            } else {
+                parent[rj] = ri;
+                rel[rj] = t * si * sj; // s_rj = (t*si*sj) * s_ri
+            }
+        }
+    }
+
+    // Each sign-component can be globally flipped for free. With its root at +1 a
+    // component contributes `c_plus` to p (members with rel +1); flipped it
+    // contributes `size - c_plus`. Subset-sum the reachable values of p.
+    use std::collections::HashMap;
+    let (mut cplus, mut csize): (HashMap<usize, usize>, HashMap<usize, usize>) =
+        (HashMap::new(), HashMap::new());
+    for x in 0..n {
+        let (r, s) = find(x, &mut parent, &mut rel);
+        *csize.entry(r).or_insert(0) += 1;
+        if s == 1 {
+            *cplus.entry(r).or_insert(0) += 1;
+        }
+    }
+    let mut reach = vec![false; n + 1];
+    reach[0] = true;
+    for (r, &sz) in &csize {
+        let a = *cplus.get(r).unwrap_or(&0);
+        let b = sz - a;
+        let mut next = vec![false; n + 1];
+        for p in 0..=n {
+            if reach[p] {
+                if p + a <= n {
+                    next[p + a] = true;
+                }
+                if p + b <= n {
+                    next[p + b] = true;
+                }
+            }
+        }
+        reach = next;
+    }
+    // Most balanced reachable split.
+    let (mut best, mut best_min) = ((n, 0usize), usize::MAX);
+    for p in 0..=n {
+        if reach[p] {
+            let q = n - p;
+            let m = p.min(q);
+            if best_min == usize::MAX || m > best_min {
+                best_min = m;
+                best = (p, q);
+            }
+        }
+    }
+    best
+}
+
 // ===========================================================================
 // Tests
 // ===========================================================================
@@ -187,6 +319,78 @@ mod tests {
             .map(|v| if chromo.is_boson_vertex(v) { 0 } else { 1 })
             .collect();
         Ranking { height }
+    }
+
+    /// THE NON-VACUITY EXPERIMENT: on a VALISE every nontrivial (p,q) split fails
+    /// (Cor 2.2), but does some HUNG (non-valise) ranking unlock a nontrivial
+    /// worldsheet extension? Enumerate ALL N=4 [4,1] rankings (complete ground
+    /// truth) x all 2^4 chirality splits and count nontrivial passes. If this is
+    /// zero the whole worldsheet oracle is vacuous; it must be > 0.
+    #[test]
+    fn some_hung_ranking_unlocks_nontrivial_worldsheet_n4() {
+        let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
+        let rankings = Ranking::enumerate(&chromo);
+        let mut nontrivial_passes = 0usize;
+        let mut best: Option<(usize, usize, Vec<i32>, Vec<i8>)> = None;
+        for r in &rankings {
+            for bits in 0u32..(1 << 4) {
+                let chir: Vec<i8> = (0..4).map(|c| if bits & (1 << c) != 0 { 1 } else { -1 }).collect();
+                let p = chir.iter().filter(|&&s| s == 1).count();
+                let q = 4 - p;
+                if p == 0 || q == 0 {
+                    continue; // trivial unidextrous
+                }
+                if worldsheet_spin_sum(&chromo, r, &chir) {
+                    nontrivial_passes += 1;
+                    if best.is_none() {
+                        best = Some((p, q, r.height.clone(), chir.clone()));
+                    }
+                }
+            }
+        }
+        assert!(
+            nontrivial_passes > 0,
+            "no hung ranking admits a nontrivial worldsheet split -> oracle vacuous"
+        );
+        // The producer (usable at N=16) must also reach at least one such ranking.
+        let produced = Ranking::raised_samples(&chromo, 4, 200);
+        let producer_hits = produced.iter().any(|r| {
+            (0u32..(1 << 4)).any(|bits| {
+                let chir: Vec<i8> = (0..4).map(|c| if bits & (1 << c) != 0 { 1 } else { -1 }).collect();
+                let p = chir.iter().filter(|&&s| s == 1).count();
+                p != 0 && p != 4 && worldsheet_spin_sum(&chromo, r, &chir)
+            })
+        });
+        eprintln!(
+            "N=4 worldsheet: {} nontrivial (ranking,split) passes over {} rankings; example {:?}; producer reaches a pass: {}",
+            nontrivial_passes, rankings.len(), best, producer_hits
+        );
+    }
+
+    /// The fast union-find `max_balanced_worldsheet` must agree with brute force
+    /// over all 2^N splits, on EVERY N=4 ranking (valise + all hung). This is the
+    /// correctness gate for the catalog oracle.
+    #[test]
+    fn max_balanced_matches_bruteforce_n4() {
+        let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
+        for r in &Ranking::enumerate(&chromo) {
+            // Brute force: best min(p,q) over all chirality assignments that pass.
+            let mut bf_best_min: i64 = -1; // -1 = nothing passes
+            for bits in 0u32..(1 << 4) {
+                let chir: Vec<i8> = (0..4).map(|c| if bits & (1 << c) != 0 { 1 } else { -1 }).collect();
+                if worldsheet_spin_sum(&chromo, r, &chir) {
+                    let p = chir.iter().filter(|&&s| s == 1).count();
+                    bf_best_min = bf_best_min.max(p.min(4 - p) as i64);
+                }
+            }
+            let (p, q) = max_balanced_worldsheet(&chromo, r);
+            let fast_min: i64 = if (p, q) == (0, 0) { -1 } else { p.min(q) as i64 };
+            assert_eq!(
+                fast_min, bf_best_min,
+                "ranking {:?}: fast min {} != brute-force min {}",
+                r.height, fast_min, bf_best_min
+            );
+        }
     }
 
     #[test]
