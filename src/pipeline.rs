@@ -1384,20 +1384,33 @@ pub struct LiftRecord {
     pub best_min: usize,
     /// Number of height levels of the hanging achieving `best_min` (2 = valise).
     pub best_levels: usize,
+    /// The chirality split (s_I in {+1,-1}) of the certificate achieving (best_p,
+    /// best_q). Together with the achieving hanging it is a checkable witness.
+    pub best_chirality: Vec<i8>,
+    /// The reported (best_p,best_q) was re-checked by an INDEPENDENT verifier
+    /// (valid hanging + spin-sum) — so it is a PROVEN existence result, not just a
+    /// found value. (Trivial best_min=0 is vacuously verified.)
+    pub verified: bool,
 }
 
 /// Worldsheet-lift oracle over a k-stratum: for each code class, generate hangings
 /// (the valise plus source-raised non-valise rankings) and, on each, compute the
 /// most balanced `(p,q)` worldsheet supersymmetry the proven Gates-Hübsch spin-sum
-/// predicate admits ([`crate::filters::max_balanced_worldsheet`]). Reports, per
-/// code, the best nontrivial worldsheet extension reachable. This is the first
-/// application of the decidable (necessary-AND-sufficient) worldsheet-lift test to
-/// genuinely HUNG N=16 adinkras — the valise alone only ever yields the trivial
-/// (N,0) split (Corollary 2.2), so any `best_min > 0` is a worldsheet supersymmetry
-/// only the hanging exposes. NOTE: the hanging set is SAMPLED (source-raising), so
-/// `best_min` is a LOWER BOUND on the true maximum over all hangings.
+/// predicate admits, WITH an explicit chirality witness
+/// ([`crate::filters::max_balanced_worldsheet_witness`]). The best nontrivial
+/// result is then re-checked by an INDEPENDENT verifier
+/// ([`crate::filters::verify_worldsheet_witness`]), so each reported `best_min > 0`
+/// is a PROVEN existence result (a checkable certificate), not just a found value —
+/// the valise alone only ever yields the trivial (N,0) split (Corollary 2.2).
+///
+/// Two honesty bounds remain: (1) the reported `(p,q)` is a PROVEN-ACHIEVABLE LOWER
+/// BOUND on the true maximum over all hangings — existence is certified, but the
+/// maximum over the (super-exponentially many) hangings is not claimed; (2) the
+/// hanging set is SAMPLED (source-raising), so `best_min = 0` means "none found at
+/// this budget" (raise ADINKRA_LIFT_CHAINS / ADINKRA_LIFT_MAXRANK), NOT a proof of
+/// none.
 pub fn run_lift_scan(json_path: &str, only_k: usize) {
-    use crate::filters::max_balanced_worldsheet;
+    use crate::filters::{max_balanced_worldsheet_witness, verify_worldsheet_witness};
     use crate::ranking::Ranking;
     use rayon::prelude::*;
 
@@ -1424,8 +1437,9 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
             let mut rankings = vec![Ranking::valise(&chromo)];
             rankings.extend(Ranking::raised_samples(&chromo, chains, max_rank));
             let (mut best, mut best_min, mut best_levels) = ((n, 0usize), 0usize, 2usize);
+            let mut best_witness: Option<(Vec<i32>, Vec<i8>)> = None;
             for r in &rankings {
-                let (p, q) = max_balanced_worldsheet(&chromo, r);
+                let (p, q, chir) = max_balanced_worldsheet_witness(&chromo, r);
                 if p == 0 && q == 0 {
                     continue; // ranking admits no extension at all
                 }
@@ -1434,8 +1448,14 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
                     best_min = m;
                     best = (p, q);
                     best_levels = r.num_levels();
+                    best_witness = Some((r.height.clone(), chir));
                 }
             }
+            // Independently certify the best nontrivial result (the proof step).
+            let (verified, best_chirality) = match &best_witness {
+                Some((h, c)) => (verify_worldsheet_witness(&chromo, h, c) == Some(best), c.clone()),
+                None => (true, Vec::new()), // trivial (N,0) only: nothing to certify
+            };
             LiftRecord {
                 code_index: idx,
                 k: only_k,
@@ -1445,22 +1465,30 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
                 best_q: best.1,
                 best_min,
                 best_levels,
+                best_chirality,
+                verified,
             }
         })
         .collect();
 
     let nontrivial = recs.iter().filter(|r| r.best_min > 0).count();
+    let verified_nontrivial = recs.iter().filter(|r| r.best_min > 0 && r.verified).count();
+    let unverified = nontrivial - verified_nontrivial;
     let max_min = recs.iter().map(|r| r.best_min).max().unwrap_or(0);
     let mut hist: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
     for r in &recs {
         *hist.entry(r.best_min).or_insert(0) += 1;
     }
+    if unverified > 0 {
+        eprintln!("lift-scan: WARNING: {unverified} nontrivial results FAILED witness verification (bug!)");
+    }
     eprintln!(
-        "lift-scan: nontrivial worldsheet extension FOUND for {}/{} classes (sampled LOWER BOUND: \
-         best_min=0 means none found at chains={chains}/max_rank={max_rank}, NOT a proof of none — \
-         larger graphs need a bigger budget); max balanced min(p,q)={max_min}; \
-         best_min histogram {:?}; done in {:.1}s",
-        nontrivial, recs.len(), hist, t0.elapsed().as_secs_f64()
+        "lift-scan: nontrivial worldsheet extension PROVEN (independently verified witness) for {}/{} \
+         classes ({} of them re-checked OK); max balanced min(p,q)={max_min}; best_min histogram {:?}. \
+         NOTE: each best_min>0 is a PROVEN-achievable lower bound on the true max (existence is certified; \
+         the maximum over ALL hangings is not claimed). best_min=0 means none found at \
+         chains={chains}/max_rank={max_rank} (raise the budget), NOT a proof of none. done in {:.1}s",
+        nontrivial, recs.len(), verified_nontrivial, hist, t0.elapsed().as_secs_f64()
     );
     println!("{}", serde_json::to_string(&recs).expect("serialize lift-scan"));
 }

@@ -170,18 +170,59 @@ pub fn worldsheet_spin_sum(
     true
 }
 
+/// Independently VERIFY a worldsheet-lift witness: given an explicit height vector
+/// and chirality split, return `Some((p,q))` iff (a) the heights are a valid
+/// hanging (`|Δh|=1` on every edge) and (b) the Gates-Hübsch spin-sum predicate
+/// passes for that chirality. This is the poly-time certificate checker that turns
+/// a found `(p,q)` into a PROVEN existence result: a passing witness is a theorem
+/// ("this class admits a (p,q) worldsheet extension"), independent of how it was
+/// produced. `p = #{+1}`, `q = #{-1}`.
+pub fn verify_worldsheet_witness(
+    chromo: &Chromotopology,
+    height: &[i32],
+    chirality: &[i8],
+) -> Option<(usize, usize)> {
+    if height.len() != chromo.num_vertices() || chirality.len() != chromo.n() {
+        return None;
+    }
+    if !chirality.iter().all(|&s| s == 1 || s == -1) {
+        return None;
+    }
+    let ranking = Ranking { height: height.to_vec() };
+    if ranking.is_valid(chromo).is_err() {
+        return None;
+    }
+    if !worldsheet_spin_sum(chromo, &ranking, chirality) {
+        return None;
+    }
+    let p = chirality.iter().filter(|&&s| s == 1).count();
+    Some((p, chromo.n() - p))
+}
+
 /// For a FIXED ranking, the most balanced `(p,q)` worldsheet chirality split that
 /// the Gates-Hübsch spin-sum predicate admits (maximizing `min(p,q)`). EXACT, not
 /// sampled: the spin-sum condition around the 2-coloured 4-cycles of a colour pair
-/// `(I,J)` depends only on the product `s_I·s_J` (`A + (s_I s_J)·B = 0` per cycle),
-/// so the `2^N` chirality search reduces to a signed 2-colouring over the N
-/// colours via union-find, then a subset-sum over the resulting sign-components.
+/// `(I,J)` depends only on the product `s_I·s_J` (`A + (s_I s_J)·B = 0` per cycle;
+/// and since `A+B≡0` around a closed 4-cycle this is always satisfiable for equal
+/// chirality, so the constraint is "must share chirality" for non-flat pairs), so
+/// the `2^N` chirality search reduces to a signed 2-colouring over the N colours
+/// via union-find, then a subset-sum over the resulting sign-components.
 ///
 /// Returns `(N,0)` when only the trivial unidextrous extension is consistent
-/// (e.g. every valise), and `(0,0)` when NO chirality assignment is consistent
-/// (the ranking admits no worldsheet extension at all). A returned `(p,q)` with
-/// `p,q>0` is a genuine nontrivial `(p,q)` worldsheet supersymmetry.
+/// (e.g. every valise). A returned `(p,q)` with `p,q>0` is a genuine nontrivial
+/// `(p,q)` worldsheet supersymmetry.
 pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (usize, usize) {
+    let (p, q, _) = max_balanced_worldsheet_witness(chromo, ranking);
+    (p, q)
+}
+
+/// Like [`max_balanced_worldsheet`] but also returns the explicit chirality split
+/// `s_I ∈ {±1}` achieving the reported `(p,q)`. The triple `(height, chirality)`
+/// is a checkable certificate (see [`verify_worldsheet_witness`]).
+pub fn max_balanced_worldsheet_witness(
+    chromo: &Chromotopology,
+    ranking: &Ranking,
+) -> (usize, usize, Vec<i8>) {
     let n = chromo.n();
     let d = chromo.d();
     let h = &ranking.height;
@@ -241,13 +282,13 @@ pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (u
                 (true, true) => continue,    // free pair, no constraint
                 (true, false) => 1i64,       // s_i*s_j = +1
                 (false, true) => -1i64,      // s_i*s_j = -1
-                (false, false) => return (0, 0), // pair impossible -> no extension
+                (false, false) => return (0, 0, vec![1i8; n]), // impossible (dead: A+B≡0 keeps +1 feasible)
             };
             let (ri, si) = find(i, &mut parent, &mut rel);
             let (rj, sj) = find(j, &mut parent, &mut rel);
             if ri == rj {
                 if si * sj != t {
-                    return (0, 0); // sign conflict -> infeasible
+                    return (0, 0, vec![1i8; n]); // sign conflict -> infeasible
                 }
             } else {
                 parent[rj] = ri;
@@ -269,37 +310,63 @@ pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (u
             *cplus.entry(r).or_insert(0) += 1;
         }
     }
-    let mut reach = vec![false; n + 1];
-    reach[0] = true;
-    for (r, &sz) in &csize {
-        let a = *cplus.get(r).unwrap_or(&0);
-        let b = sz - a;
-        let mut next = vec![false; n + 1];
+    // Subset-sum over components WITH a DP table so we can backtrack to recover
+    // which components are flipped (for the explicit chirality witness). Component
+    // i contributes `a = cplus` to p when its root is +1, or `b = size - cplus`
+    // when flipped (root = -1).
+    let roots: Vec<usize> = csize.keys().cloned().collect();
+    let m = roots.len();
+    let mut dp = vec![vec![false; n + 1]; m + 1];
+    dp[0][0] = true;
+    for i in 0..m {
+        let r = roots[i];
+        let a = *cplus.get(&r).unwrap_or(&0);
+        let b = csize[&r] - a;
         for p in 0..=n {
-            if reach[p] {
+            if dp[i][p] {
                 if p + a <= n {
-                    next[p + a] = true;
+                    dp[i + 1][p + a] = true;
                 }
                 if p + b <= n {
-                    next[p + b] = true;
+                    dp[i + 1][p + b] = true;
                 }
             }
         }
-        reach = next;
     }
-    // Most balanced reachable split.
-    let (mut best, mut best_min) = ((n, 0usize), usize::MAX);
+    // Most balanced reachable p.
+    let (mut best_p, mut best_min) = (n, usize::MAX);
     for p in 0..=n {
-        if reach[p] {
-            let q = n - p;
-            let m = p.min(q);
-            if best_min == usize::MAX || m > best_min {
-                best_min = m;
-                best = (p, q);
+        if dp[m][p] {
+            let mm = p.min(n - p);
+            if best_min == usize::MAX || mm > best_min {
+                best_min = mm;
+                best_p = p;
             }
         }
     }
-    best
+    // Backtrack the DP to recover each component's flip choice.
+    let mut flipped: HashMap<usize, bool> = HashMap::new();
+    let mut cur = best_p;
+    for i in (0..m).rev() {
+        let r = roots[i];
+        let a = *cplus.get(&r).unwrap_or(&0);
+        let b = csize[&r] - a;
+        if cur >= a && dp[i][cur - a] {
+            flipped.insert(r, false);
+            cur -= a;
+        } else {
+            flipped.insert(r, true);
+            cur -= b;
+        }
+    }
+    // Build the chirality witness: s_x = root_sign(root(x)) * rel(x).
+    let mut chirality = vec![1i8; n];
+    for x in 0..n {
+        let (r, s) = find(x, &mut parent, &mut rel);
+        let root_sign: i64 = if *flipped.get(&r).unwrap_or(&false) { -1 } else { 1 };
+        chirality[x] = (root_sign * s) as i8;
+    }
+    (best_p, n - best_p, chirality)
 }
 
 // ===========================================================================
@@ -365,6 +432,46 @@ mod tests {
             "N=4 worldsheet: {} nontrivial (ranking,split) passes over {} rankings; example {:?}; producer reaches a pass: {}",
             nontrivial_passes, rankings.len(), best, producer_hits
         );
+    }
+
+    /// Every (p,q) the oracle reports must come with a chirality witness that
+    /// INDEPENDENTLY passes verification (valid hanging + spin-sum) for the same
+    /// (p,q). This is what makes a reported extension a PROVEN existence result.
+    #[test]
+    fn witness_verifies_for_every_n4_ranking() {
+        let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
+        for r in &Ranking::enumerate(&chromo) {
+            let (p, q, chir) = max_balanced_worldsheet_witness(&chromo, r);
+            // Trivial (4,0)/(0,*) always holds; nontrivial must verify too.
+            let v = verify_worldsheet_witness(&chromo, &r.height, &chir);
+            assert_eq!(
+                v, Some((p, q)),
+                "witness for ranking {:?} chir {:?} failed to verify (got {:?}, claimed ({},{}))",
+                r.height, chir, v, p, q
+            );
+        }
+    }
+
+    /// De-risk the sampled producer: at N=4 the source-raising sample must reach
+    /// the SAME maximum balanced (p,q) as exhaustive `enumerate` (true max over ALL
+    /// hangings). If this gap is 0, sampling saturates here; if not, sampling
+    /// provably misses the max and an exact method is required.
+    #[test]
+    fn sampling_saturates_true_max_n4() {
+        for gens in [vec![0b1111u32], vec![]] {
+            let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, gens));
+            let true_max = Ranking::enumerate(&chromo)
+                .iter()
+                .map(|r| { let (p, q) = max_balanced_worldsheet(&chromo, r); p.min(q) })
+                .max()
+                .unwrap_or(0);
+            let mut sampled = { let (p, q) = max_balanced_worldsheet(&chromo, &Ranking::valise(&chromo)); p.min(q) };
+            for r in Ranking::raised_samples(&chromo, 8, 500) {
+                let (p, q) = max_balanced_worldsheet(&chromo, &r);
+                sampled = sampled.max(p.min(q));
+            }
+            assert_eq!(sampled, true_max, "sampled max {sampled} != true max {true_max} (sampling missed it)");
+        }
     }
 
     /// The fast union-find `max_balanced_worldsheet` must agree with brute force
