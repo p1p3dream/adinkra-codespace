@@ -50,6 +50,7 @@ fn main() {
         "q-scan" => cmd_q_scan(&args),
         "lift-scan" => cmd_lift_scan(&args),
         "lift-construct" => cmd_lift_construct(&args),
+        "lift-attack" => cmd_lift_attack(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
@@ -551,6 +552,14 @@ fn cmd_lift_construct(args: &[String]) {
     let k = parse_usize_arg(args, 2, "lift-construct <k> [json]");
     let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
     pipeline::run_lift_construct(json_path, k);
+}
+
+fn cmd_lift_attack(args: &[String]) {
+    let code_index = parse_usize_arg(args, 2, "lift-attack <code_index> [iters] [seed] [json]");
+    let iters = if args.len() > 3 { args[3].parse().unwrap_or(20000) } else { 20000 };
+    let seed = if args.len() > 4 { args[4].parse().unwrap_or(1) } else { 1 };
+    let json_path = if args.len() > 5 { args[5].as_str() } else { "adinkra_codes_n16.json" };
+    pipeline::run_lift_attack(json_path, code_index, iters, seed);
 }
 
 fn cmd_q_scan(args: &[String]) {
