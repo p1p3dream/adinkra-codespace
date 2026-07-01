@@ -166,6 +166,63 @@ impl Ranking {
         out
     }
 
+    /// Stronger producer for LARGE chromotopologies (k<=4) where
+    /// [`raised_samples`](Ranking::raised_samples) undersamples: raise a correlated
+    /// SUBSET of sources per step instead of one at a time. Sources are a local-
+    /// minima set, hence pairwise NON-ADJACENT (an independent set), so raising any
+    /// subset by +2 simultaneously preserves `|Δh|=1` on every edge. Raising ~half
+    /// the bottom level at once builds deep, globally-varied hangings in O(diameter)
+    /// steps rather than O(vertices) — which is what unlocks balanced worldsheet
+    /// splits on the catalog's biggest graphs (k=1, 32768 vertices). `chains`
+    /// independent restart chains (different raise fractions/seeds); capped output.
+    pub fn structured_raises(chromo: &Chromotopology, chains: usize, max_out: usize) -> Vec<Ranking> {
+        let adj = chromo.vertex_adjacency();
+        let nv = chromo.num_vertices();
+        let mut seen: std::collections::HashSet<Vec<i32>> = std::collections::HashSet::new();
+        let mut out: Vec<Ranking> = Vec::new();
+        for chain in 0..chains.max(1) {
+            if out.len() >= max_out {
+                break;
+            }
+            // Per-chain xorshift PRNG and raise fraction (~1/2 .. 1/7 of sources).
+            let mut state =
+                0x9E37_79B9_7F4A_7C15u64 ^ (chain as u64).wrapping_mul(0xD1B5_4A32_D192_ED03).wrapping_add(1);
+            let mut rng = move || {
+                state ^= state << 13;
+                state ^= state >> 7;
+                state ^= state << 17;
+                state
+            };
+            let frac_den = 2 + (chain % 6) as u64;
+            let mut cur = Ranking::valise(chromo).height;
+            for _ in 0..nv {
+                if out.len() >= max_out {
+                    break;
+                }
+                let srcs = Ranking { height: cur.clone() }.sources(&adj);
+                if srcs.is_empty() {
+                    break;
+                }
+                // Raise a pseudo-random ~1/frac_den subset of the (independent) sources.
+                let mut raised_any = false;
+                for &v in &srcs {
+                    if rng() % frac_den == 0 {
+                        cur[v] += 2;
+                        raised_any = true;
+                    }
+                }
+                if !raised_any {
+                    cur[srcs[(rng() as usize) % srcs.len()]] += 2; // guarantee progress
+                }
+                let r = Ranking::from_heights(cur.clone());
+                if seen.insert(r.height.clone()) {
+                    out.push(r);
+                }
+            }
+        }
+        out
+    }
+
     /// Enumerate ALL valid rankings of the chromotopology, modulo a global
     /// shift (each result is canonicalized so `min == 0`), deduplicated.
     ///
@@ -368,6 +425,23 @@ mod tests {
         let mut seen = std::collections::HashSet::new();
         for r in &all {
             assert!(seen.insert(r.height.clone()), "duplicate ranking {:?}", r.height);
+        }
+    }
+
+    #[test]
+    fn structured_raises_only_valid_and_multilevel() {
+        for (n, gens) in [(4usize, vec![0b1111u32]), (8, vec![0b11110000, 0b00001111])] {
+            let ct = Chromotopology::from_code(&DoublyEvenCode::new(n, gens));
+            let rs = Ranking::structured_raises(&ct, 6, 200);
+            assert!(!rs.is_empty(), "structured_raises produced nothing for n={n}");
+            let mut saw_multilevel = false;
+            for r in &rs {
+                assert!(r.is_valid(&ct).is_ok(), "invalid ranking {:?}: {}", r.height, r.is_valid(&ct).unwrap_err());
+                if r.num_levels() > 2 {
+                    saw_multilevel = true;
+                }
+            }
+            assert!(saw_multilevel, "structured_raises should reach 3+ levels for n={n}");
         }
     }
 

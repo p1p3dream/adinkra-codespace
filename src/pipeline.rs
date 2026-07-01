@@ -1436,6 +1436,9 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
             let chromo = Chromotopology::from_code(&code);
             let mut rankings = vec![Ranking::valise(&chromo)];
             rankings.extend(Ranking::raised_samples(&chromo, chains, max_rank));
+            // Stronger correlated-subset producer (closes the large k<=4 graphs that
+            // the one-at-a-time raised_samples undersamples).
+            rankings.extend(Ranking::structured_raises(&chromo, chains, max_rank));
             let (mut best, mut best_min, mut best_levels) = ((n, 0usize), 0usize, 2usize);
             let mut best_witness: Option<(Vec<i32>, Vec<i8>)> = None;
             for r in &rankings {
