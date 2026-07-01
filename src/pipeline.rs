@@ -1497,6 +1497,127 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
 }
 
 #[cfg(test)]
+mod construct_tests {
+    use super::*;
+    use crate::filters::verify_worldsheet_witness;
+
+    /// The constructive factorized witness must INDEPENDENTLY VERIFY and give a
+    /// nontrivial (p,q) for factorizable codes at several N — including a big one
+    /// (N=16, weight-4 gen: the k=1 index-0 chromotopology, 32768 vertices) that
+    /// sampling could not close. Fully-coupled codes return None.
+    #[test]
+    fn constructive_witness_verifies() {
+        let cases: Vec<(usize, Vec<u32>, bool)> = vec![
+            (6, vec![0b001111], true),      // [4,1] core + 2 free
+            (8, vec![0b00001111], true),    // [4,1] core + 4 free
+            (16, vec![0xf], true),          // k=1 index 0: [4,1] core + 12 free (the hard one)
+            (16, vec![0xff], true),         // k=1 index 6: [8,1] core + 8 free
+            (16, vec![0xfff], true),        // k=1 index 23: [12,1] core + 4 free
+            (16, vec![0xffff], false),      // k=1 index 113: [16,1] fully coupled -> None
+        ];
+        for (n, gens, expect_some) in cases {
+            let w = construct_factorized_witness(n, &gens);
+            assert_eq!(w.is_some(), expect_some, "n={n} gens={gens:?}: some={}", w.is_some());
+            if let Some((height, chir)) = w {
+                let chromo = Chromotopology::from_code(&DoublyEvenCode::new(n, gens.clone()));
+                let v = verify_worldsheet_witness(&chromo, &height, &chir);
+                let (p, q) = v.unwrap_or_else(|| panic!("n={n} gens={gens:?}: witness FAILED to verify"));
+                assert!(p > 0 && q > 0, "n={n}: trivial split ({p},{q})");
+            }
+        }
+    }
+}
+
+/// CONSTRUCTIVE worldsheet witness for a code whose chromotopology FACTORIZES as
+/// `core □ free-cube` (i.e. the code has "free" colours = columns no generator
+/// touches). This closes the large strata that sampling cannot reach (e.g. the
+/// k=1 codes at d=16384) by BUILDING a witness directly instead of searching:
+///
+///   h(v) = (popcount(v & support) & 1) + popcount(v & free)
+///
+/// (core valise on the support columns + a linear height on the free hypercube;
+/// coset-invariant because a doubly-even generator has even support weight, and
+/// `|Δh|=1` on every edge). Chirality: put ALL core (support) colours on one side
+/// and split the free colours to balance. Every colour pair is then flat:
+/// core-core share chirality (no constraint); core-free are auto-flat (the free
+/// coordinate does not shift a core colour's height step, so A ≡ 0); free-free are
+/// flat because in any hypercube square one colour edge goes up and the other down
+/// (A = σ_i + (−σ_i) = 0). Returns `(height, chirality)` for
+/// [`crate::filters::verify_worldsheet_witness`], or `None` if the code is fully
+/// coupled (no free columns).
+pub fn construct_factorized_witness(n: usize, generators: &[u32]) -> Option<(Vec<i32>, Vec<i8>)> {
+    let support_mask: u32 = generators.iter().fold(0u32, |a, &g| a | g);
+    let free_mask: u32 = ((1u32 << n) - 1) & !support_mask;
+    if free_mask == 0 {
+        return None; // fully coupled (e.g. the weight-16 [16,1] code) — no free cube
+    }
+    let chromo = Chromotopology::from_code(&DoublyEvenCode::new(n, generators.to_vec()));
+    // Height, well-defined per coset (evaluated on any representative).
+    let mut height = vec![i32::MIN; chromo.num_vertices()];
+    for v in 0u32..(1u32 << n) {
+        let idx = chromo.coset_of(v);
+        if height[idx] != i32::MIN {
+            continue;
+        }
+        let core_parity = ((v & support_mask).count_ones() & 1) as i32;
+        let free_h = (v & free_mask).count_ones() as i32;
+        height[idx] = core_parity + free_h;
+    }
+    // Chirality: all core colours +1; free colours split to balance overall p≈n/2.
+    let mut chirality = vec![1i8; n];
+    let core_pos = (support_mask.count_ones()) as usize; // all core = +1
+    let mut free_plus_budget = (n / 2).saturating_sub(core_pos);
+    for c in 0..n {
+        if free_mask & (1 << c) != 0 {
+            if free_plus_budget > 0 {
+                chirality[c] = 1;
+                free_plus_budget -= 1;
+            } else {
+                chirality[c] = -1;
+            }
+        }
+    }
+    Some((height, chirality))
+}
+
+/// Try the constructive route on every code of a k-stratum: build a factorized
+/// witness and CERTIFY it with the independent verifier. Reports, per code, the
+/// PROVEN (p,q) (or that the code is fully coupled / did not verify). Closes the
+/// large strata (k=1) that `lift-scan` sampling leaves at 0.
+pub fn run_lift_construct(json_path: &str, only_k: usize) {
+    use crate::filters::verify_worldsheet_witness;
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let codes: Vec<(usize, &CodeEntry)> =
+        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
+    eprintln!("lift-construct: {} codes with k={only_k} (N={n}); constructive factorized witnesses", codes.len());
+
+    let (mut proven, mut coupled) = (0usize, 0usize);
+    for (idx, e) in &codes {
+        let chromo = Chromotopology::from_code(&DoublyEvenCode::new(n, e.generators_raw.clone()));
+        match construct_factorized_witness(n, &e.generators_raw) {
+            None => {
+                coupled += 1;
+                eprintln!("  code {idx}: FULLY COUPLED (no free columns) — factorized route N/A");
+            }
+            Some((height, chirality)) => match verify_worldsheet_witness(&chromo, &height, &chirality) {
+                Some((p, q)) if p > 0 && q > 0 => {
+                    proven += 1;
+                    eprintln!("  code {idx}: PROVEN worldsheet ({p},{q}) via constructed+VERIFIED witness");
+                }
+                other => eprintln!("  code {idx}: construction did NOT verify ({other:?}) — not claimed"),
+            },
+        }
+    }
+    eprintln!(
+        "lift-construct: {proven}/{} codes PROVEN constructively; {coupled} fully-coupled (factorized route N/A)",
+        codes.len()
+    );
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
