@@ -288,6 +288,139 @@ fn snap(v: f64, table: &[(f64, &'static str)]) -> Option<&'static str> {
     None
 }
 
+/// Tolerances for [`verify_lift`] (Default: all 1e-9).
+#[derive(Debug, Clone)]
+pub struct LiftTolerances {
+    pub bosonic: f64,
+    pub entrywise: f64,
+    pub partner: f64,
+}
+impl Default for LiftTolerances {
+    fn default() -> Self {
+        LiftTolerances { bosonic: 1e-9, entrywise: 1e-9, partner: 1e-9 }
+    }
+}
+
+/// Outcome of [`verify_lift`].
+#[derive(Debug, Clone)]
+pub struct LiftVerification {
+    pub shape_ok: bool,
+    /// Candidate's own bosonic Garden residual (must be < tol.bosonic).
+    pub bosonic_residual: f64,
+    /// ENTRYWISE max |candidate - target| over every L and R entry (must be
+    /// < tol.entrywise). Anchored entrywise, NOT per-pair Frobenius norm, which is
+    /// orthogonally degenerate and admits false positives (adversarial review).
+    pub max_lr_diff: f64,
+    pub value_set_ok: bool,
+    pub partner_ok: bool,
+    /// Worst |L_I R_I − I_nb| entry over all I.
+    pub partner_worst: f64,
+    /// `Some(true/false)` when a `pinned_hash` was supplied; `None` otherwise.
+    pub token_hash_match: Option<bool>,
+    pub passed: bool,
+}
+
+/// Verify a candidate 10D lift against a reference `target` dataset: entrywise L/R
+/// match, candidate bosonic Garden closure, value-set legality, the partner
+/// relation `L_I R_I = I_nb`, and (optionally) the exact `canonical_token_hash`.
+///
+/// HONEST SCOPE (do not overclaim): with no lift PRODUCER yet, this is a REGRESSION
+/// ORACLE. Exercised on the dataset's own L/R it certifies self-consistency of the
+/// known 10D N=1 SUPERGRAVITY multiplet (82×176; NOT super-Yang-Mills, NOT
+/// basis-independent). A pass means "entrywise-matches the pinned reference", never
+/// "a new higher-dimensional multiplet was constructed or discovered". The token
+/// hash pins only this dataset's specific basis/ordering.
+pub fn verify_lift(
+    candidate: &TenDimData,
+    target: &TenDimData,
+    tol: &LiftTolerances,
+    pinned_hash: Option<&str>,
+) -> LiftVerification {
+    // Shape: counts AND per-matrix dims (nb×nf for L, nf×nb for R), so the
+    // entrywise comparison below is index-safe and never panics.
+    let dims_ok = |mats: &[Vec<Vec<f64>>], rows: usize, cols: usize| {
+        mats.iter().all(|m| m.len() == rows && m.iter().all(|row| row.len() == cols))
+    };
+    // Validate BOTH candidate and target dims (a caller may pass a malformed
+    // target), so the entrywise zip below is always index-safe.
+    let shape_ok = candidate.nb == target.nb
+        && candidate.nf == target.nf
+        && candidate.n == target.n
+        && candidate.l.len() == target.l.len()
+        && candidate.r.len() == target.r.len()
+        && candidate.l.len() == candidate.n
+        && candidate.r.len() == candidate.n
+        && dims_ok(&candidate.l, candidate.nb, candidate.nf)
+        && dims_ok(&candidate.r, candidate.nf, candidate.nb)
+        && dims_ok(&target.l, target.nb, target.nf)
+        && dims_ok(&target.r, target.nf, target.nb);
+    if !shape_ok {
+        return LiftVerification {
+            shape_ok: false,
+            bosonic_residual: f64::INFINITY,
+            max_lr_diff: f64::INFINITY,
+            value_set_ok: false,
+            partner_ok: false,
+            partner_worst: f64::INFINITY,
+            token_hash_match: pinned_hash.map(|_| false),
+            passed: false,
+        };
+    }
+
+    let (bosonic_residual, _fermionic) = candidate.verify_garden();
+
+    let mut max_lr_diff = 0.0f64;
+    for i in 0..candidate.l.len() {
+        for (a, b) in candidate.l[i].iter().flatten().zip(target.l[i].iter().flatten()) {
+            max_lr_diff = max_lr_diff.max((a - b).abs());
+        }
+        for (a, b) in candidate.r[i].iter().flatten().zip(target.r[i].iter().flatten()) {
+            max_lr_diff = max_lr_diff.max((a - b).abs());
+        }
+    }
+
+    let value_set_ok = candidate.validate_value_sets().is_ok();
+
+    // Partner relation L_I R_I = I_nb.
+    let mut partner_worst = 0.0f64;
+    for i in 0..candidate.n {
+        let prod = matmul(&candidate.l[i], &candidate.r[i]); // nb×nb
+        for (a, row) in prod.iter().enumerate() {
+            for (b, &v) in row.iter().enumerate() {
+                let want = if a == b { 1.0 } else { 0.0 };
+                partner_worst = partner_worst.max((v - want).abs());
+            }
+        }
+    }
+    let partner_ok = partner_worst < tol.partner;
+
+    // The token hash is exact-content; only meaningful (and only non-panicking)
+    // when every entry snaps to a legal token, i.e. value_set_ok.
+    let token_hash_match = match pinned_hash {
+        Some(h) if value_set_ok => Some(candidate.canonical_token_hash() == h),
+        Some(_) => Some(false), // illegal values -> cannot match the pinned hash
+        None => None,
+    };
+
+    let passed = shape_ok
+        && bosonic_residual < tol.bosonic
+        && max_lr_diff < tol.entrywise
+        && value_set_ok
+        && partner_ok
+        && token_hash_match != Some(false);
+
+    LiftVerification {
+        shape_ok,
+        bosonic_residual,
+        max_lr_diff,
+        value_set_ok,
+        partner_ok,
+        partner_worst,
+        token_hash_match,
+        passed,
+    }
+}
+
 /// Dense matrix multiply: (m x k) * (k x n) -> (m x n). Hand-rolled, no deps.
 fn matmul(a: &[Vec<f64>], b: &[Vec<f64>]) -> Vec<Vec<f64>> {
     let m = a.len();
@@ -447,6 +580,26 @@ fn sha256_hex(input: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// verify_lift as a regression oracle: the dataset self-verifies (entrywise +
+    /// hash), and any perturbation is rejected.
+    #[test]
+    fn verify_lift_self_and_perturbation() {
+        const PINNED: &str =
+            "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244";
+        let data = load(&dataset_path());
+        let v = verify_lift(&data, &data, &LiftTolerances::default(), Some(PINNED));
+        assert!(v.passed, "dataset must self-verify: {v:?}");
+        assert_eq!(v.token_hash_match, Some(true));
+        assert!(v.max_lr_diff == 0.0 && v.partner_ok && v.value_set_ok);
+
+        // Perturb one L entry: breaks entrywise, value-set, bosonic, and hash.
+        let mut bad = load(&dataset_path());
+        bad.l[0][0][0] += 0.1;
+        let vb = verify_lift(&bad, &data, &LiftTolerances::default(), Some(PINNED));
+        assert!(!vb.passed, "perturbed candidate must be rejected: {vb:?}");
+        assert!(vb.max_lr_diff > 1e-3, "entrywise diff should catch the perturbation");
+    }
 
     fn dataset_path() -> String {
         // Resolve relative to the crate root regardless of test cwd.

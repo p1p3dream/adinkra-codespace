@@ -81,12 +81,14 @@
 //! VALIDATED vs EXPERIMENTAL. The 16×16 SO(1,9) sigma matrices and the split
 //! Clifford relation `σ^μ σ̃^ν + σ^ν σ̃^μ = 2 η^μν I` are explicitly constructed
 //! and numerically verified (`verify_clifford` == 0). The `assemble_and_check`
-//! non-closure metric `e_norm`, however, is EXPERIMENTAL and NOT yet a calibrated
-//! off-shell diagnostic: adversarial review showed the current residual target is
-//! mis-normalized (an exactly closed input does not map to `e_norm == 0`), so DO
-//! NOT interpret `e_norm` as an off-shell/on-shell certificate. It is a raw
-//! assembled-residual probe pending re-derivation against a known positive and
-//! negative fixture (e.g. the on-shell 10D dataset in `crate::tendim_data`).
+//! non-closure metric `e_norm` is now CONSTANT-CALIBRATED — it subtracts the metric
+//! trace `Σ_μ η^μμ = 8` (not the prior 2), so a bosonic-Garden-closed input maps to
+//! `e_norm = 0` — but it is STILL EXPERIMENTAL and NOT a certificate: `E_IJ` is a
+//! lossy linear image of the bosonic non-closure `B` alone (the spatial linkages
+//! are γ^a-rotations of the temporal one), so `e_norm` is redundant with
+//! `max_residual_bosonic` and can vanish without `B = 0`. Do NOT interpret it as an
+//! off-shell/on-shell certificate. The genuine lift check for this track is
+//! `crate::tendim_data::verify_lift` against the real 10D dataset.
 //!
 //! This module is deliberately self-contained: it carries its own minimal dense
 //! matrix [`Mat`] (mirroring the API of [`crate::decompose::DenseMat`]) so it has
@@ -538,11 +540,21 @@ pub fn assemble_and_check(l: &[Mat]) -> NonClosureReport {
     }
 
     // --- Non-closure tensor E_IJ across all ten linkage directions ----------
-    // E_IJ = ½ Σ_μ η^μμ (Δ^μ_I (Δ^μ_J)ᵀ + Δ^μ_J (Δ^μ_I)ᵀ) − 2 δ_IJ I .
-    // EXPERIMENTAL: this residual's normalization is NOT yet calibrated (a fully
-    // closed input does not map to 0 under the current target), so the returned
-    // e_norm is a raw probe, not an off-shell certificate. Re-derive against a
-    // known fixture before any physical interpretation.
+    // E_IJ = ½ Σ_μ η^μμ (Δ^μ_I (Δ^μ_J)ᵀ + Δ^μ_J (Δ^μ_I)ᵀ) − 8 δ_IJ I .
+    // CALIBRATED CONSTANT: for a bosonic-Garden-closed input the per-direction
+    // symmetrized closure is C^μ_IJ = δ_IJ I for every μ (the spatial linkages are
+    // orthogonal γ^a-rotations of the temporal one), so Σ_μ η^μμ C^μ = (Σ_μ η^μμ)
+    // δ_IJ I = (−1 + 9) δ_IJ I = 8 δ_IJ I. Subtracting 8 (the metric trace, NOT 2)
+    // makes a closed input map to e_norm = 0. (Verified by adversarial rederivation.)
+    //
+    // STILL EXPERIMENTAL — keep it a probe, not a certificate: because Δ^a = −γ^a·L,
+    // E_IJ = −B_IJ + Σ_a (γ^a B γ^aᵀ)_IJ is a LOSSY LINEAR IMAGE of the bosonic
+    // non-closure B alone (B = ½(L_I L_Jᵀ+L_J L_Iᵀ) − δI). So e_norm carries no
+    // independent 10D information (it is redundant with `max_residual_bosonic`) and
+    // its kernel is nontrivial (e_norm can vanish without B = 0). A true positive
+    // control needs a genuine d≥128 Garden rep — none exists in 16×16 — so the real
+    // calibration of this track is `tendim_data::verify_lift` against the actual 10D
+    // dataset. Do NOT read e_norm as an off-shell/on-shell certificate.
     let mut e_sq = 0.0f64;
     let dt: Vec<Vec<Mat>> = delta
         .iter()
@@ -559,7 +571,7 @@ pub fn assemble_and_check(l: &[Mat]) -> NonClosureReport {
                 acc = acc.add(&term.scale(0.5 * eta));
             }
             if ii == jj {
-                acc = acc.add(&id.scale(-2.0));
+                acc = acc.add(&id.scale(-8.0));
             }
             let f = acc.frobenius();
             e_sq += f * f;
