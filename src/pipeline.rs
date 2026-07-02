@@ -1643,6 +1643,54 @@ pub fn run_lift_construct(json_path: &str, only_k: usize) {
 /// (|Δh| = 1 per edge) and coset-invariant for the all-ones code (|·| absorbs the
 /// v ↔ ~v flip). It flattens EVERY cross pair except on the "crease" shell
 /// `popcount(v & L) == popcount(v & R)`; the attack below raises that shell.
+/// Central-charge scan: per code of a k-stratum, the number of independent central
+/// charges = dim of the ANTISYMMETRIC part of the commutant
+/// ([`crate::decompose::antisymmetric_commutant_dim`]). This is the exact algebraic
+/// realization of the central-charge Garden extension: a worldline central charge is
+/// a central (commutes with the whole rep), antisymmetric-in-color operator, and the
+/// antisymmetric commutant is exactly that space. Physics anchor: an irreducible over
+/// R gives 0 (Siegel-Rocek regime, e.g. the N=16 minimal / k=8 E16-D16 irreducibles),
+/// over C gives 1, over H gives 3 (the 3 imaginary units = the 3 reduced spatial
+/// momenta of a 4D->1D shadow). HONEST SCOPE: this is the exact central-extension
+/// structure, NOT an off-shell-liftability certificate; the physical Z = gamma^a P_a
+/// enhancement (which momenta actually realize a higher-D lift) is the separate,
+/// open FIL obstruction.
+pub fn run_central_charge(json_path: &str, only_k: usize) {
+    use crate::decompose::{antisymmetric_commutant_dim, commutant_dim};
+    use rayon::prelude::*;
+
+    let t0 = Instant::now();
+    let data = fs::read_to_string(json_path)
+        .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
+    let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
+    let n = catalog.n;
+    let codes: Vec<(usize, &CodeEntry)> =
+        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
+    eprintln!("central-charge: {} codes with k={only_k} (N={n}); antisymmetric commutant = # central charges", codes.len());
+
+    // One valise rep per code (commutant structure is dashing-independent).
+    let recs: Vec<(usize, usize, usize, usize)> = codes
+        .par_iter()
+        .map(|&(idx, e)| {
+            let (d, reps) = build_reps_for_code(n, e);
+            let rep = &reps[0];
+            (idx, d, commutant_dim(rep), antisymmetric_commutant_dim(rep))
+        })
+        .collect();
+
+    let mut hist: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+    for &(_, _, _, z) in &recs { *hist.entry(z).or_insert(0) += 1; }
+    let with_cc = recs.iter().filter(|r| r.3 > 0).count();
+    for &(idx, d, cd, z) in recs.iter().take(6) {
+        eprintln!("  code {idx}: d={d} commutant_dim={cd} central_charges={z}");
+    }
+    eprintln!(
+        "central-charge: k={only_k}: {with_cc}/{} codes admit a nonzero central charge; \
+         central-charge-count histogram {:?}; done in {:.1}s",
+        recs.len(), hist, t0.elapsed().as_secs_f64()
+    );
+}
+
 /// The WINNING coset-invariant hanging for a balanced split `L|R`, valid for ANY
 /// code including the fully-coupled all-ones one:
 ///

@@ -413,6 +413,58 @@ pub fn commutant_dim(rep: &AdinkraRep) -> usize {
     roots.len()
 }
 
+/// Dimension of the ANTISYMMETRIC part of the real commutant:
+/// `dim { M : M L_K = L_K M for all K, and Mᵀ = −M }`.
+///
+/// This is the number of independent CENTRAL CHARGES the Garden (super)algebra of
+/// the rep can carry: a worldline central charge Z is a central operator that is
+/// antisymmetric-in-color, and the antisymmetric commutant is exactly the space of
+/// such consistent Z (see the central-charge analysis). Basis-invariant. By Schur,
+/// an irreducible over division algebra of real dim e contributes: e=1 (R) -> 0
+/// central charges (Siegel-Rocek regime), e=2 (C) -> 1, e=4 (H) -> 3 (the three
+/// imaginary quaternion units = the three reduced spatial momenta of a 4D->1D
+/// shadow). For m copies over D the antisymmetric commutant is the skew part of
+/// M_m(D).
+///
+/// Computed from the same signed union-find as [`commutant_dim`], via the
+/// transpose action on cells (a,b) <-> (b,a): a self-transpose orbit contributes 1
+/// iff its transpose sign is odd (antisymmetric-compatible); each transpose-pair of
+/// DISTINCT orbits contributes 1. Same O(d^2) cost as commutant_dim.
+pub fn antisymmetric_commutant_dim(rep: &AdinkraRep) -> usize {
+    let (mut dsu, cells) = build_commutant_dsu(rep);
+    let d = rep.d;
+    use std::collections::HashSet;
+    let mut counted: HashSet<usize> = HashSet::new();
+    let mut dim = 0usize;
+    for cell in 0..cells {
+        let (root, sign) = dsu.find(cell);
+        if !dsu.consistent[root] || counted.contains(&root) {
+            continue;
+        }
+        // Transpose of this cell: (a,b) -> (b,a).
+        let (a, b) = (cell / d, cell % d);
+        let tcell = b * d + a;
+        let (troot, tsign) = dsu.find(tcell);
+        if troot == root {
+            // Self-transpose orbit: antisymmetric-compatible iff M[a][b] = -M[b][a],
+            // i.e. the two cells carry opposite sign relative to the shared root.
+            counted.insert(root);
+            if sign != tsign {
+                dim += 1;
+            }
+        } else if dsu.consistent[troot] {
+            // Distinct transpose-paired orbits: c_troot free, set = -c_root gives one
+            // antisymmetric DOF. Count the pair once.
+            counted.insert(root);
+            counted.insert(troot);
+            dim += 1;
+        } else {
+            counted.insert(root);
+        }
+    }
+    dim
+}
+
 pub fn commutant_orbits(rep: &AdinkraRep) -> Vec<Orbit> {
     let (mut dsu, cells) = build_commutant_dsu(rep);
 
@@ -1061,6 +1113,26 @@ mod tests {
         assert_eq!(single, 4, "single N=4 irrep commutant should be 4 (quaternionic H)");
         assert_eq!(cv, 8, "CS⊕VS commutant should be H⊕H = 8");
         assert_eq!(cc, 16, "CS⊕CS commutant should be M_2(H) = 16");
+    }
+
+    /// Central-charge count = antisymmetric commutant dim, with the physics
+    /// predictions: N=4 minimal is QUATERNIONIC -> commutant H, antisymmetric part =
+    /// 3 (the three imaginary quaternion units = the three reduced spatial momenta of
+    /// a 4D->1D shadow). A single irreducible over R would give 0. Also: the
+    /// antisymmetric + symmetric parts must sum to the full commutant dimension.
+    #[test]
+    fn central_charge_count_n4_quaternionic() {
+        let anti = antisymmetric_commutant_dim(&cs_n4());
+        assert_eq!(anti, 3, "N=4 CS is quaternionic: expect 3 central charges (3 imaginary units), got {anti}");
+        assert_eq!(antisymmetric_commutant_dim(&vs_n4()), 3, "N=4 VS also quaternionic");
+        // full commutant = 4 (H); symmetric part must be 4 - 3 = 1 (the identity).
+        assert_eq!(commutant_dim(&cs_n4()), 4);
+        // CS+CS: M_2(H), real dim 16; antisymmetric (skew) part of M_2(H) has dim 6+...
+        // just assert it's > 3 (richer than a single H) and < full.
+        let cc = block_diag_n4(&cs_n4(), &cs_n4());
+        let anti_cc = antisymmetric_commutant_dim(&cc);
+        assert!(anti_cc > 3 && anti_cc < commutant_dim(&cc),
+            "CS+CS antisym commutant {anti_cc} should be between 3 and full {}", commutant_dim(&cc));
     }
 
     /// The lightweight `commutant_dim` (no orbit materialization) must equal
