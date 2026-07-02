@@ -333,6 +333,135 @@ impl Sieve10D {
         let r = self.omega_residuals(chromo, height, dashing);
         (r.spatial_worst, r.mu0)
     }
+
+    /// SPARSE Ω residuals — mathematically identical to [`omega_residuals`] but
+    /// O(d·nnz) instead of O(d³) dense. The linkages u/d are signed PARTIAL
+    /// PERMUTATIONS (≤1 nonzero per row) and every Ω^a_AB stays sparse (≤~32
+    /// nonzeros/row), so this scales to the largest strata (k=1, d=16384) on CPU
+    /// where the dense path is infeasible. No GPU needed: the problem is O(d), not
+    /// O(d³). Validated against the dense path (test sparse_matches_dense_e16).
+    pub fn omega_residuals_sparse(&self, chromo: &Chromotopology, height: &[i32], dashing: &[i8]) -> OmegaResiduals {
+        type Sp = Vec<Vec<(usize, f64)>>; // row-sparse: rows[i] = [(col, val), ...]
+        let n = chromo.n();
+        let d = chromo.d();
+
+        // Build u/d (≤1 entry per row) and their transposes.
+        let mut u: Vec<Sp> = vec![vec![Vec::new(); d]; n];
+        let mut dn: Vec<Sp> = vec![vec![Vec::new(); d]; n];
+        for a in 0..n {
+            let fwd = chromo.color_perm(a);
+            for i in 0..d {
+                let fj = fwd[i];
+                let (bv, fv) = chromo.edge_vertices(a, i);
+                let s = dashing[a * d + i] as f64;
+                if height[fv] > height[bv] { u[a][i].push((fj, s)); } else { dn[a][i].push((fj, s)); }
+            }
+        }
+        let transpose = |m: &Sp| -> Sp {
+            let mut t = vec![Vec::new(); d];
+            for (i, row) in m.iter().enumerate() { for &(j, v) in row { t[j].push((i, v)); } }
+            t
+        };
+        let utilde: Vec<Sp> = dn.iter().map(&transpose).collect(); // ũ = dᵀ
+        let dtilde: Vec<Sp> = u.iter().map(&transpose).collect();  // d̃ = uᵀ
+
+        // Reusable dense accumulator (size d) with a dirty-list to keep it O(nnz).
+        let mut acc = vec![0.0f64; d];
+        let mut dirty: Vec<usize> = Vec::new();
+        // Accumulate  scale*(A·B)[row_i][*]  into acc, using B row-oriented.
+        let accum = |a_row: &[(usize, f64)], b: &Sp, scale: f64, acc: &mut [f64], dirty: &mut Vec<usize>| {
+            for &(k, av) in a_row {
+                for &(j, bv) in &b[k] {
+                    if acc[j] == 0.0 { dirty.push(j); }
+                    acc[j] += scale * av * bv;
+                }
+            }
+        };
+
+        // Merge a scratch list of (col,val) into a deduped sparse row.
+        let merge = |raw: &[(usize, f64)]| -> Vec<(usize, f64)> {
+            if raw.len() <= 1 { return raw.to_vec(); }
+            let mut m: std::collections::HashMap<usize, f64> = std::collections::HashMap::new();
+            for &(j, v) in raw { *m.entry(j).or_insert(0.0) += v; }
+            m.into_iter().filter(|&(_, v)| v != 0.0).collect()
+        };
+
+        // One (Ω, Ω̃) block sweep over all A,B with given (delta, deltat, lam).
+        // Returns (worst, on_lambda_worst, fro_sq).
+        let mut sweep = |delta: &[Sp], deltat: &[Sp], lam: &dyn Fn(usize, usize) -> f64,
+                         u: &[Sp], dn: &[Sp], utilde: &[Sp], dtilde: &[Sp],
+                         acc: &mut Vec<f64>, dirty: &mut Vec<usize>| -> (f64, f64, f64) {
+            let (mut worst, mut onlam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
+            for aa in 0..n {
+                for bb in 0..n {
+                    let l = lam(aa, bb);
+                    // Boson block Ω, then fermion block Ω̃; both symmetrized ½(A,B).
+                    for block in 0..2 {
+                        for i in 0..d {
+                            dirty.clear(); // acc is left all-zero by the previous row's scan
+                            if block == 0 {
+                                // ½(u_A Δ̃_B + u_B Δ̃_A + Δ_A ũ_B + Δ_B ũ_A)
+                                accum(&u[aa][i], &deltat[bb], 0.5, acc, dirty);
+                                accum(&u[bb][i], &deltat[aa], 0.5, acc, dirty);
+                                accum(&delta[aa][i], &utilde[bb], 0.5, acc, dirty);
+                                accum(&delta[bb][i], &utilde[aa], 0.5, acc, dirty);
+                            } else {
+                                // ½(ũ_A Δ_B + ũ_B Δ_A + Δ̃_A u_B + Δ̃_B u_A)
+                                accum(&utilde[aa][i], &delta[bb], 0.5, acc, dirty);
+                                accum(&utilde[bb][i], &delta[aa], 0.5, acc, dirty);
+                                accum(&deltat[aa][i], &u[bb], 0.5, acc, dirty);
+                                accum(&deltat[bb][i], &u[aa], 0.5, acc, dirty);
+                            }
+                            if l != 0.0 {
+                                if acc[i] == 0.0 { dirty.push(i); }
+                                acc[i] -= l; // − Λ^a_AB I on the diagonal
+                            }
+                            for &j in dirty.iter() {
+                                let v = acc[j].abs();
+                                if v > worst { worst = v; }
+                                if l != 0.0 && v > onlam { onlam = v; }
+                                fro2 += acc[j] * acc[j];
+                                acc[j] = 0.0;
+                            }
+                        }
+                    }
+                }
+            }
+            (worst, onlam, fro2)
+        };
+
+        // μ=0 anchor: Δ^0 = d, Δ̃^0 = d̃, Λ^0 = δ_AB.
+        let (mu0, _, _) = sweep(&dn, &dtilde, &|a, b| if a == b { 1.0 } else { 0.0 },
+                                &u, &dn, &utilde, &dtilde, &mut acc, &mut dirty);
+
+        // Spatial a=1..9.
+        let (mut worst, mut onlam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
+        for ai in 0..9usize {
+            // Δ^a_A = −Σ_B gg[A][B] d_B ; Δ̃^a_A = −Σ_B gg[A][B] d̃_B.
+            let mut delta: Vec<Sp> = vec![vec![Vec::new(); d]; n];
+            let mut deltat: Vec<Sp> = vec![vec![Vec::new(); d]; n];
+            for aa in 0..n {
+                for i in 0..d {
+                    let (mut rd, mut rt): (Vec<(usize, f64)>, Vec<(usize, f64)>) = (Vec::new(), Vec::new());
+                    for b in 0..n {
+                        let c = self.gg[ai][aa][b];
+                        if c == 0.0 { continue; }
+                        for &(j, v) in &dn[b][i] { rd.push((j, -c * v)); }
+                        for &(j, v) in &dtilde[b][i] { rt.push((j, -c * v)); }
+                    }
+                    delta[aa][i] = merge(&rd);
+                    deltat[aa][i] = merge(&rt);
+                }
+            }
+            let lam = self.lam[ai];
+            let (w, ol, f2) = sweep(&delta, &deltat, &|a, b| lam[a][b],
+                                    &u, &dn, &utilde, &dtilde, &mut acc, &mut dirty);
+            worst = worst.max(w);
+            onlam = onlam.max(ol);
+            fro2 += f2;
+        }
+        OmegaResiduals { spatial_worst: worst, spatial_on_lambda: onlam, spatial_frobenius: fro2.sqrt(), mu0 }
+    }
 }
 
 /// DIAGNOSTIC (4D control): worst spatial |Ω| (max-abs) and Frobenius for one
@@ -470,6 +599,31 @@ mod tests {
         assert_eq!(total, 60, "expected 60 minimal N=4 adinkras (30 rankings x 2 dashings), got {total}");
         assert_eq!(passed, 4, "FIL: exactly 4 of 60 must pass the enhancement sieve, got {passed}");
         assert_eq!(valise_pass, 0, "both valises must FAIL the sieve, got {valise_pass} passing");
+    }
+
+    /// The O(d) sparse sieve must EXACTLY match the O(d³) dense one (this is the
+    /// entire trust basis for using sparse at scale). Checked on E16 (d=128) for the
+    /// valise and a raised hanging, on all four residual metrics.
+    #[test]
+    #[ignore] // builds a d=128 rep; fast but exercises the heavy path
+    fn sparse_matches_dense_e16() {
+        use crate::code::DoublyEvenCode;
+        let gens = vec![0xb01, 0x3440, 0x5410, 0x6408, 0x7020, 0x8302, 0x8980, 0x8a04];
+        let code = DoublyEvenCode::new(16, gens);
+        let chromo = Chromotopology::from_code(&code);
+        let de = DashingEnumerator::new(&code);
+        let dashing = de.get_dashing_for_chromotopology(0, &chromo.boson_reps());
+        let sieve = Sieve10D::new();
+        let mut hs = vec![Ranking::valise(&chromo).height];
+        if let Some(r) = Ranking::structured_raises(&chromo, 4, 2).into_iter().next() { hs.push(r.height); }
+        for h in &hs {
+            let dsr = sieve.omega_residuals(&chromo, h, &dashing);
+            let spr = sieve.omega_residuals_sparse(&chromo, h, &dashing);
+            assert!((dsr.spatial_worst - spr.spatial_worst).abs() < 1e-9, "worst: {} vs {}", dsr.spatial_worst, spr.spatial_worst);
+            assert!((dsr.mu0 - spr.mu0).abs() < 1e-9, "mu0: {} vs {}", dsr.mu0, spr.mu0);
+            assert!((dsr.spatial_on_lambda - spr.spatial_on_lambda).abs() < 1e-9, "onlam");
+            assert!((dsr.spatial_frobenius - spr.spatial_frobenius).abs() < 1e-6, "fro: {} vs {}", dsr.spatial_frobenius, spr.spatial_frobenius);
+        }
     }
 
     /// N=16 non-vacuity + internal-consistency pre-test on E16 (k=8, d=128).

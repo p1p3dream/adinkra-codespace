@@ -1660,73 +1660,71 @@ pub fn run_lift_construct(json_path: &str, only_k: usize) {
 /// the internal-consistency gates per stratum (μ=0 anchor and Λ-support residual,
 /// both must be ~0) and the Frobenius residual range (must vary = sieve responsive).
 ///
-/// FEASIBILITY: dense d×d, so guarded by ADINKRA_ENHANCE_MAXD (default 512, i.e.
-/// k>=6). Larger d (k<=5) is dense-infeasible here — raise the guard only with the
-/// time/RAM for it. HONEST SCOPE: sampled hangings, non-gauge sieve only; "no class
-/// passes" is consistent with (not a proof of) Siegel-Rocek; only pass/fail is
-/// FIL-grounded (Frobenius magnitude is heuristic). First evaluation of the FIL
-/// sieve beyond N=4.
+/// FEASIBILITY: uses the SPARSE O(d) sieve (omega_residuals_sparse, validated to
+/// match the dense path exactly), so the whole catalog including k=1 (d=16384) runs
+/// on CPU in seconds — no GPU/dense d×d needed. HONEST SCOPE: sampled hangings,
+/// non-gauge sieve only; "no class passes" is consistent with (not a proof of)
+/// Siegel-Rocek; only pass/fail is FIL-grounded (Frobenius magnitude is heuristic).
+/// First evaluation of the FIL sieve beyond N=4, over the full N=16 catalog.
 pub fn run_enhance_scan(json_path: &str, only_k: usize) {
     use crate::enhance::Sieve10D;
     use crate::ranking::Ranking;
+    use rayon::prelude::*;
 
     let t0 = Instant::now();
     let data = fs::read_to_string(json_path)
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
     let n = catalog.n;
-    let maxd: usize = std::env::var("ADINKRA_ENHANCE_MAXD").ok().and_then(|s| s.parse().ok()).unwrap_or(512);
     let codes: Vec<(usize, &CodeEntry)> =
         catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
     let sieve = Sieve10D::new();
     let full = ((1u64 << n) - 1) as u32;
-    eprintln!("enhance-scan: {} codes with k={only_k} (N={n}); FIL 10D sieve, maxd={maxd}", codes.len());
+    eprintln!("enhance-scan: {} codes with k={only_k} (N={n}); FIL 10D sieve (SPARSE, O(d))", codes.len());
 
-    let (mut evaluated, mut skipped, mut passing) = (0usize, 0usize, 0usize);
-    let (mut worst_mu0, mut worst_onlam) = (0.0f64, 0.0f64);
-    let (mut fro_min, mut fro_max) = (f64::INFINITY, 0.0f64);
-    for (idx, e) in &codes {
-        let code = DoublyEvenCode::new(n, e.generators_raw.clone());
-        let chromo = Chromotopology::from_code(&code);
-        let d = chromo.d();
-        if d > maxd {
-            skipped += 1;
-            eprintln!("  code {idx}: d={d} > maxd={maxd} — SKIPPED (dense-infeasible)");
-            continue;
-        }
-        let de = DashingEnumerator::new(&code);
-        let dashing = de.get_dashing_for_chromotopology(0, &chromo.boson_reps());
-        // Physically-motivated hanging set. Only VALID hangings (|Δh|=1 on every
-        // edge) are kept: the engineered parity-gradient is coset-invariant only for
-        // all-ones-type codes, so it is dropped for general codes (else it feeds a
-        // non-hanging to the sieve and breaks the μ=0 anchor).
-        let mut raw = vec![Ranking::valise(&chromo).height];
-        raw.push(engineered_height(&chromo, n, 0x00ff, full & !0x00ff));
-        for r in Ranking::structured_raises(&chromo, 12, 8) { raw.push(r.height); }
-        let hangings: Vec<Vec<i32>> = raw
-            .into_iter()
-            .filter(|h| Ranking { height: h.clone() }.is_valid(&chromo).is_ok())
-            .collect();
+    // Per-code result: (idx, d, min spatial_worst, worst mu0, worst on_lambda, fro_min, fro_max).
+    let recs: Vec<(usize, usize, f64, f64, f64, f64, f64)> = codes
+        .par_iter()
+        .map(|&(idx, e)| {
+            let code = DoublyEvenCode::new(n, e.generators_raw.clone());
+            let chromo = Chromotopology::from_code(&code);
+            let d = chromo.d();
+            let de = DashingEnumerator::new(&code);
+            let dashing = de.get_dashing_for_chromotopology(0, &chromo.boson_reps());
+            // Physically-motivated hanging set, filtered to VALID hangings (|Δh|=1);
+            // the engineered parity-gradient is coset-invariant only for all-ones
+            // codes, so it is dropped elsewhere (else it breaks the μ=0 anchor).
+            let mut raw = vec![Ranking::valise(&chromo).height];
+            raw.push(engineered_height(&chromo, n, 0x00ff, full & !0x00ff));
+            for r in Ranking::structured_raises(&chromo, 12, 8) { raw.push(r.height); }
+            let (mut best, mut wmu0, mut wonl, mut fmin, mut fmax) =
+                (f64::INFINITY, 0.0f64, 0.0f64, f64::INFINITY, 0.0f64);
+            for h in raw.iter().filter(|h| Ranking { height: (*h).clone() }.is_valid(&chromo).is_ok()) {
+                let r = sieve.omega_residuals_sparse(&chromo, h, &dashing);
+                best = best.min(r.spatial_worst);
+                wmu0 = wmu0.max(r.mu0);
+                wonl = wonl.max(r.spatial_on_lambda);
+                fmin = fmin.min(r.spatial_frobenius);
+                fmax = fmax.max(r.spatial_frobenius);
+            }
+            (idx, d, best, wmu0, wonl, fmin, fmax)
+        })
+        .collect();
 
-        let mut code_best = f64::INFINITY; // min spatial_worst (0 = passes)
-        for h in &hangings {
-            let r = sieve.omega_residuals(&chromo, h, &dashing);
-            code_best = code_best.min(r.spatial_worst);
-            worst_mu0 = worst_mu0.max(r.mu0);
-            worst_onlam = worst_onlam.max(r.spatial_on_lambda);
-            fro_min = fro_min.min(r.spatial_frobenius);
-            fro_max = fro_max.max(r.spatial_frobenius);
-        }
-        evaluated += 1;
-        if code_best < 1e-9 { passing += 1; eprintln!("  code {idx} (d={d}): PASSES — a hanging enhances!"); }
-        else { eprintln!("  code {idx} (d={d}): no pass ({} hangings, min worst|Ω|={code_best:.3})", hangings.len()); }
+    let mut passing = 0usize;
+    let (mut worst_mu0, mut worst_onlam, mut fro_min, mut fro_max) = (0.0f64, 0.0f64, f64::INFINITY, 0.0f64);
+    for &(idx, d, best, wmu0, wonl, fmin, fmax) in &recs {
+        worst_mu0 = worst_mu0.max(wmu0);
+        worst_onlam = worst_onlam.max(wonl);
+        fro_min = fro_min.min(fmin);
+        fro_max = fro_max.max(fmax);
+        if best < 1e-9 { passing += 1; eprintln!("  code {idx} (d={d}): PASSES — a hanging enhances!"); }
     }
-
     eprintln!(
-        "enhance-scan k={only_k}: {passing}/{evaluated} classes pass (skipped {skipped} as d>maxd); \
-         gates: max μ0={worst_mu0:.1e} max on-Λ={worst_onlam:.1e} (both must be ~0); \
-         Frobenius range [{fro_min:.1},{fro_max:.1}] (varies={}); done in {:.1}s",
-        (fro_max - fro_min) > 1e-6, t0.elapsed().as_secs_f64()
+        "enhance-scan k={only_k}: {passing}/{} classes pass; gates: max μ0={worst_mu0:.1e} \
+         max on-Λ={worst_onlam:.1e} (both ~0); Frobenius range [{fro_min:.1},{fro_max:.1}] (varies={}); \
+         done in {:.1}s",
+        recs.len(), (fro_max - fro_min) > 1e-6, t0.elapsed().as_secs_f64()
     );
 }
 
