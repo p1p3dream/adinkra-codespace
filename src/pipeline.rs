@@ -1510,14 +1510,14 @@ mod construct_tests {
     fn allones_fully_coupled_worldsheet_proven() {
         // N=16 all-ones [16,1] (catalog index 113), L = first 8 colours.
         let chromo16 = Chromotopology::from_code(&DoublyEvenCode::new(16, vec![0xffff]));
-        let h16 = engineered_height(&chromo16, 16, 0x00ff, 0xff00, 0);
+        let h16 = engineered_height(&chromo16, 16, 0x00ff, 0xff00);
         let chir16: Vec<i8> = (0..16).map(|c| if c < 8 { 1 } else { -1 }).collect();
         let v16 = verify_worldsheet_witness(&chromo16, &h16, &chir16);
         assert_eq!(v16, Some((8, 8)), "all-ones [16,1] must prove worldsheet (8,8), got {v16:?}");
 
         // N=4 all-ones [4,1], L = {0,1} -> (2,2).
         let chromo4 = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
-        let h4 = engineered_height(&chromo4, 4, 0b0011, 0b1100, 0);
+        let h4 = engineered_height(&chromo4, 4, 0b0011, 0b1100);
         let chir4: Vec<i8> = vec![1, 1, -1, -1];
         assert_eq!(verify_worldsheet_witness(&chromo4, &h4, &chir4), Some((2, 2)));
     }
@@ -1691,8 +1691,8 @@ pub fn run_central_charge(json_path: &str, only_k: usize) {
     );
 }
 
-/// The WINNING coset-invariant hanging for a balanced split `L|R`, valid for ANY
-/// code including the fully-coupled all-ones one:
+/// The coset-invariant hanging for a balanced split `L|R` that cracks the all-ones
+/// [16,1] code:
 ///
 ///   h(v) = (popcount(v & L) mod 2) + min(popcount(v & R), |R| − popcount(v & R))
 ///
@@ -1701,11 +1701,16 @@ pub fn run_central_charge(json_path: &str, only_k: usize) {
 /// depends ONLY on that parity; the cross-pair partner σ_IJ(b) = b⊕e_I⊕e_J flips
 /// bit I ∈ L, hence flips the parity, hence negates g_I — so the color-I steps
 /// around every 2-coloured 4-cycle cancel (A = 0) for every J ∈ R. Same-side pairs
-/// never constrain (they share chirality). It is coset-invariant (popcount(v&L) mod
-/// 2 is antipode-invariant; the folded R-weight min(·,|R|−·) is too) and |Δh| = 1
-/// per edge (flip an L bit → parity flips → ±1; flip an R bit → folded R-weight
-/// moves ±1). `variant` picks the R-height flavour.
-fn engineered_height(chromo: &Chromotopology, _n: usize, lmask: u32, rmask: u32, _variant: u32) -> Vec<i32> {
+/// never constrain (they share chirality). It is |Δh| = 1 per edge always.
+///
+/// COSET-INVARIANCE CAVEAT: it is a well-defined function on the chromotopology
+/// (h(v) = h(v ⊕ codeword)) only when every codeword has EVEN weight inside L (so
+/// the popcount(·&L) mod 2 term is codeword-invariant) and folds trivially in R —
+/// which holds for the all-ones code (the whole point) but NOT for a general code.
+/// For codes where it is not coset-invariant this returns a NON-hanging, which the
+/// independent `verify_worldsheet_witness` then correctly REJECTS (no false PROVEN).
+/// So it is a targeted construction, not a universal one.
+fn engineered_height(chromo: &Chromotopology, _n: usize, lmask: u32, rmask: u32) -> Vec<i32> {
     let lbits = lmask.count_ones() as i32;
     let rbits = rmask.count_ones() as i32;
     let mut height = vec![i32::MIN; chromo.num_vertices()];
@@ -1742,34 +1747,47 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
         entry.k, chromo.d(), chromo.num_vertices()
     );
 
-    let eval = |h: &[i32]| -> (usize, usize, Vec<i8>) {
-        max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() })
+    // Heuristic landscape value for guiding the search (may be garbage on a
+    // non-hanging; only used to steer moves, never to claim a result).
+    let eval = |h: &[i32]| -> (usize, usize) {
+        let (p, q, _) = max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() });
+        (p, q)
+    };
+    // A candidate is only ever accepted as "best" if it INDEPENDENTLY VERIFIES, so
+    // best_min is always a genuine proven lower bound (never a garbage eval from a
+    // construction that was not a valid coset-invariant hanging for this code).
+    let verified_min = |h: &[i32]| -> Option<(usize, usize)> {
+        let (_, _, chir) = max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() });
+        verify_worldsheet_witness(&chromo, h, &chir).filter(|&(p, q)| p > 0 && q > 0)
     };
 
-    // --- Weapon 1: engineered coset-invariant heights (cheap: a few dozen evals) ---
+    // --- Weapon 1: engineered heights (cheap; verified, so non-coset-invariant
+    // constructions for a general code are silently discarded, not misreported). ---
     let full = ((1u64 << n) - 1) as u32;
     let lmasks: [u32; 6] = [0x00ff, 0x0f0f, 0x3333, 0x5555, 0xaa55, 0xc3c3];
     let (mut best_min, mut best) = (0usize, (n, 0usize));
     let mut best_h: Vec<i32> = Ranking::valise(&chromo).height;
     for &lm in &lmasks {
         if lm.count_ones() as usize != n / 2 { continue; }
-        for variant in 0..4u32 {
-            let h = engineered_height(&chromo, n, lm, full & !lm, variant);
-            let (p, q, _) = eval(&h);
-            let m = p.min(q);
-            eprintln!("  engineered L={lm:#06x} variant {variant}: ({p},{q}) [min={m}]");
-            if m > best_min { best_min = m; best = (p, q); best_h = h; }
+        let h = engineered_height(&chromo, n, lm, full & !lm);
+        match verified_min(&h) {
+            Some((p, q)) => {
+                eprintln!("  engineered L={lm:#06x}: VERIFIED ({p},{q}) [min={}]", p.min(q));
+                if p.min(q) > best_min { best_min = p.min(q); best = (p, q); best_h = h; }
+            }
+            None => eprintln!("  engineered L={lm:#06x}: not a valid witness for this code (skipped)"),
         }
     }
 
-    // --- Weapon 2: poset-move search seeded from the best engineered height ---
+    // --- Weapon 2: poset-move search seeded from the best verified height (or the
+    // valise). Uses the heuristic eval to steer; commits to best only on verify. ---
     let mut st = seed | 1;
     let mut rng = move || { st ^= st << 13; st ^= st >> 7; st ^= st << 17; st };
     let sinks = |h: &[i32]| -> Vec<usize> {
         (0..h.len()).filter(|&v| !adj[v].is_empty() && adj[v].iter().all(|&w| h[w] < h[v])).collect()
     };
     let mut cur = best_h.clone();
-    let mut cur_min = best_min;
+    let mut cur_min = eval(&cur).0.min(eval(&cur).1);
     for _ in 0..iters {
         let raise = rng() & 1 == 0;
         let pts = if raise { Ranking { height: cur.clone() }.sources(&adj) } else { sinks(&cur) };
@@ -1780,22 +1798,27 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
         for &v in &pts { if rng() % frac == 0 { cand[v] += if raise { 2 } else { -2 }; moved = true; } }
         if !moved { cand[pts[(rng() as usize) % pts.len()]] += if raise { 2 } else { -2 }; }
         cand = Ranking::from_heights(cand).height;
-        let (np, nq, _) = eval(&cand);
+        let (np, nq) = eval(&cand);
         let nm = np.min(nq);
-        if nm >= cur_min || rng() % 20 == 0 { cur = cand; cur_min = nm; }
-        if nm > best_min { best_min = nm; best = (np, nq); best_h = cur.clone();
-            eprintln!("  anneal: NEW BEST ({np},{nq}) [min={nm}]"); }
+        if nm >= cur_min || rng() % 20 == 0 { cur = cand.clone(); cur_min = nm; }
+        if nm > best_min {
+            if let Some((p, q)) = verified_min(&cand) {
+                best_min = p.min(q); best = (p, q); best_h = cand;
+                eprintln!("  anneal: NEW VERIFIED BEST ({p},{q}) [min={}]", p.min(q));
+            }
+        }
     }
 
-    // Certify.
+    // Report (best_h/best_min are always verified by construction of the loops).
     if best_min > 0 {
-        let (_, _, chir) = eval(&best_h);
-        match verify_worldsheet_witness(&chromo, &best_h, &chir) {
-            Some((p, q)) => eprintln!("lift-attack: code {code_index} PROVEN worldsheet ({p},{q}) — VERIFIED witness (buried alive: ESCAPED)"),
-            None => eprintln!("lift-attack: BUG — best witness failed to verify"),
-        }
+        eprintln!("lift-attack: code {code_index} PROVEN worldsheet {best:?} — VERIFIED witness (buried alive: ESCAPED)");
     } else {
-        eprintln!("lift-attack: code {code_index}: NO nontrivial split found (best balanced {best:?}); strong evidence of a genuine obstruction");
+        eprintln!(
+            "lift-attack: code {code_index}: no verified witness from these constructions at iters={iters} \
+             (best {best:?}). This is NOT a proof of non-existence — try `lift-scan {}` at a larger \
+             ADINKRA_LIFT_CHAINS/ADINKRA_LIFT_MAXRANK budget.",
+            entry.k
+        );
     }
 }
 
