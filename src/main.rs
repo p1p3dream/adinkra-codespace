@@ -5,6 +5,7 @@ mod chromotopology;
 mod code;
 mod dashing;
 mod decompose;
+mod enhance;
 mod eval;
 mod filters;
 mod holoraumy;
