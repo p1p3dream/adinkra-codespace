@@ -1,3 +1,5 @@
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 /// L/R matrix construction and Garden algebra verification for Adinkra
 /// representations.
 ///

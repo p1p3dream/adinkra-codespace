@@ -1,3 +1,5 @@
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 use crate::code::DoublyEvenCode;
 
 /// The quotient graph I^N / C for a doubly-even code C.
@@ -233,11 +235,6 @@ impl Chromotopology {
     /// Return the coset index for an element of (Z/2Z)^N.
     pub fn coset_of(&self, v: u32) -> usize {
         self.coset_map[v as usize]
-    }
-
-    /// Return the raw F_2^N representative of the boson at a given rank.
-    pub fn boson_rep(&self, rank: usize) -> u32 {
-        self.coset_reps[self.boson_indices[rank]]
     }
 
     /// Return the raw F_2^N representatives of all bosons, indexed by rank.

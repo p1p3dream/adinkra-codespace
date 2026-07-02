@@ -80,6 +80,13 @@ fn print_usage(prog: &str) {
     eprintln!("                          reference (available: N=4, N=8, N=12, N=16)");
     eprintln!("  pipeline <json>         Run the full dimensional lifting pipeline");
     eprintln!("  pipeline-k <k> [json]   Run pipeline for a single k-stratum only");
+    eprintln!("  lift-scan <k> [json]    Worldsheet (p,q) lift-scan over a single k-stratum;");
+    eprintln!("                          emits a re-checkable JSON witness per code class.");
+    eprintln!("                          Budget env vars (hangings are SAMPLED):");
+    eprintln!("                            ADINKRA_LIFT_CHAINS   source-raise chains (default 32)");
+    eprintln!("                            ADINKRA_LIFT_MAXRANK  max hangings/code   (default 512)");
+    eprintln!("                          Low-k strata (k<=4) need a larger budget to reach 145/145:");
+    eprintln!("                            ADINKRA_LIFT_CHAINS=128 ADINKRA_LIFT_MAXRANK=8000");
     eprintln!("  decompose-k <k> [json]  Irreducible-decompose a single k-stratum (F8 route b)");
     eprintln!("                          and compute the gadget on irreducible pieces");
     eprintln!("  decompose-k-disk <k> [json] [--f64]");

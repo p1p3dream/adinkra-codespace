@@ -1,3 +1,5 @@
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 /// Holoraumy tensors and gadget inner products for Adinkra representations.
 ///
 /// Computes the bosonic holoraumy matrices V_IJ = L_I * R_J and the fermionic

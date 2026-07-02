@@ -1,4 +1,4 @@
-use crate::baselines::{self, EvolutionConfig};
+use crate::baselines;
 use crate::canonical::{compute_invariants, is_decomposable};
 use crate::code::{enumerate_codes, DoublyEvenCode};
 
@@ -50,85 +50,6 @@ impl Default for SearchConfig {
             seed: 42,
         }
     }
-}
-
-/// Fast canonical form for high-N codes: sort columns by codeword weight profile,
-/// then RREF. This is O(2^k * n + n log n + k^2 * n) instead of the exponential
-/// permutation search. It's a heuristic: two truly equivalent codes might get
-/// different forms if they have identical column weight profiles but different
-/// higher-order structure. The result is an upper bound on equivalence classes.
-fn fast_canonical(code: &DoublyEvenCode) -> Vec<u32> {
-    let n = code.n;
-    if code.k() == 0 || n == 0 {
-        return vec![];
-    }
-
-    let codewords = code.all_codewords();
-
-    // Compute column weight for each position
-    let mut col_weights = vec![0usize; n];
-    for &cw in &codewords {
-        for j in 0..n {
-            if cw & (1 << j) != 0 {
-                col_weights[j] += 1;
-            }
-        }
-    }
-
-    // Sort columns by weight (ascending)
-    let mut cols_sorted: Vec<(usize, usize)> = col_weights
-        .iter()
-        .copied()
-        .enumerate()
-        .map(|(i, w)| (w, i))
-        .collect();
-    cols_sorted.sort();
-
-    // Build the permutation: perm[dest] = src
-    let perm: Vec<usize> = cols_sorted.iter().map(|&(_, c)| c).collect();
-
-    // Apply permutation to generators
-    let mut permuted: Vec<u32> = code
-        .generators
-        .iter()
-        .map(|&row| {
-            let mut out = 0u32;
-            for (dest, &src) in perm.iter().enumerate() {
-                if row & (1 << src) != 0 {
-                    out |= 1 << dest;
-                }
-            }
-            out
-        })
-        .collect();
-
-    // RREF
-    let k = permuted.len();
-    let mut pivot_row = 0;
-    for col in 0..32u32 {
-        if pivot_row >= k {
-            break;
-        }
-        let mut found = None;
-        for r in pivot_row..k {
-            if permuted[r] & (1 << col) != 0 {
-                found = Some(r);
-                break;
-            }
-        }
-        let Some(r) = found else { continue };
-        permuted.swap(pivot_row, r);
-        let pivot_val = permuted[pivot_row];
-        for r in 0..k {
-            if r != pivot_row && permuted[r] & (1 << col) != 0 {
-                permuted[r] ^= pivot_val;
-            }
-        }
-        pivot_row += 1;
-    }
-    permuted.retain(|&r| r != 0);
-    permuted.sort();
-    permuted
 }
 
 struct SearchState {

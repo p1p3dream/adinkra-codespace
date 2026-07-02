@@ -206,6 +206,7 @@ impl DenseMat {
     }
 
     /// Trace (sum of the diagonal); requires a square matrix.
+    #[allow(dead_code)] // used by #[cfg(test)] gadget checks
     pub fn trace(&self) -> f64 {
         assert_eq!(self.rows, self.cols, "trace of non-square matrix");
         (0..self.rows).map(|i| self.get(i, i)).sum()
@@ -617,6 +618,7 @@ pub struct IrrepSummand {
     pub n: usize,
     pub dmin: usize,
     /// Column-orthonormal d×dmin basis of the invariant subspace.
+    #[allow(dead_code)] // read by the orientation.rs intertwiner API + tests
     pub basis: DenseMat,
     /// The N restricted dense L-operators, each dmin×dmin.
     pub l_restricted: Vec<DenseMat>,
@@ -624,6 +626,7 @@ pub struct IrrepSummand {
 
 /// Result of decomposing one (reducible or irreducible) valise rep.
 #[derive(Debug, Clone)]
+#[allow(dead_code)] // result-struct metadata (n/d/dmin/commutant_dim) read by tests/consumers
 pub struct Decomposition {
     pub n: usize,
     pub d: usize,
@@ -771,12 +774,6 @@ pub fn decompose_rep(rep: &AdinkraRep) -> Option<Decomposition> {
 // ===========================================================================
 // Dense holoraumy and gadget on irreducible summands.
 // ===========================================================================
-
-/// Maps a pair `(i, j)` with `i > j` to a linear index in `0..C(N,2)`.
-/// Identical convention to [`crate::holoraumy`].
-fn pair_index(i: usize, j: usize) -> usize {
-    i * (i - 1) / 2 + j
-}
 
 /// Dense holoraumy data for one irreducible summand (mirrors
 /// [`crate::holoraumy::HoloraumyData`] but over dense restricted operators).

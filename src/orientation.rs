@@ -50,6 +50,10 @@
 //! intertwiner ([`intertwiner_orthogonal`]), and the machine-checked tests that
 //! establish the statements above.
 
+// Gauge/intertwiner proof-support module: the whole API is exercised only by this
+// module's own #[cfg(test)] tests, so the non-test binary sees it as dead.
+#![allow(dead_code)]
+
 use crate::decompose::{commutant_orbits, DenseMat, IrrepSummand};
 use crate::lr_matrix::AdinkraRep;
 

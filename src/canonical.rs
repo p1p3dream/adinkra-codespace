@@ -1,3 +1,5 @@
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 /// Canonical form computation and equivalence class deduplication for doubly-even codes.
 ///
 /// Two codes are equivalent if one can be obtained from the other by permuting

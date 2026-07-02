@@ -366,10 +366,6 @@ fn disk_f32_gate(all_reps: &[&AdinkraRep], n: usize, sample: usize) -> bool {
     suspect
 }
 
-pub fn run_decompose_k(json_path: &str, only_k: usize) -> FullPipelineOutput {
-    run_decompose_k_mode(json_path, only_k, false, false)
-}
-
 /// `allow_disk = true` routes strata whose flat store exceeds the RAM budget to
 /// the disk-backed tiled Gram instead of skipping (the `decompose-k-disk` /
 /// `--disk` path). `false` preserves the original behavior (in-RAM or skip).
@@ -1384,6 +1380,11 @@ pub struct LiftRecord {
     pub best_min: usize,
     /// Number of height levels of the hanging achieving `best_min` (2 = valise).
     pub best_levels: usize,
+    /// The hanging (height vector) achieving (best_p, best_q). Together with
+    /// `best_chirality` this is a STANDALONE witness: feed both straight into
+    /// [`crate::filters::verify_worldsheet_witness`] to re-check the reported split
+    /// without re-running the scan. For the trivial (N,0) case this is the valise.
+    pub best_height: Vec<i32>,
     /// The chirality split (s_I in {+1,-1}) of the certificate achieving (best_p,
     /// best_q). Together with the achieving hanging it is a checkable witness.
     pub best_chirality: Vec<i8>,
@@ -1455,9 +1456,9 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
                 }
             }
             // Independently certify the best nontrivial result (the proof step).
-            let (verified, best_chirality) = match &best_witness {
-                Some((h, c)) => (verify_worldsheet_witness(&chromo, h, c) == Some(best), c.clone()),
-                None => (true, Vec::new()), // trivial (N,0) only: nothing to certify
+            let (verified, best_chirality, best_height) = match &best_witness {
+                Some((h, c)) => (verify_worldsheet_witness(&chromo, h, c) == Some(best), c.clone(), h.clone()),
+                None => (true, Vec::new(), rankings[0].height.clone()), // trivial (N,0): valise (rankings[0])
             };
             LiftRecord {
                 code_index: idx,
@@ -1468,6 +1469,7 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
                 best_q: best.1,
                 best_min,
                 best_levels,
+                best_height,
                 best_chirality,
                 verified,
             }
@@ -1803,7 +1805,7 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
         if nm >= cur_min || rng() % 20 == 0 { cur = cand.clone(); cur_min = nm; }
         if nm > best_min {
             if let Some((p, q)) = verified_min(&cand) {
-                best_min = p.min(q); best = (p, q); best_h = cand;
+                best_min = p.min(q); best = (p, q);
                 eprintln!("  anneal: NEW VERIFIED BEST ({p},{q}) [min={}]", p.min(q));
             }
         }

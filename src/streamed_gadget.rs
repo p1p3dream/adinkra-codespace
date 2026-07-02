@@ -26,6 +26,8 @@
 //! rewrite. Peak extra memory is the flat vectors (`num_irreps * C(N,2) * dmin^2 *
 //! 4` bytes) plus the result matrix, NOT the f64 holoraumy tensors.
 
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 use crate::decompose::{DenseHoloraumy, IrrepSummand};
 use crate::holoraumy::dmin;
 

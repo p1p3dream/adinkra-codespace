@@ -9,6 +9,7 @@ pub struct WorldsheetResult {
     pub p: usize,
     pub q: usize,
     pub passes: bool,
+    #[allow(dead_code)] // part of the public result record; read by callers/tests
     pub left_colors: Vec<usize>,
 }
 
@@ -211,6 +212,7 @@ pub fn verify_worldsheet_witness(
 /// Returns `(N,0)` when only the trivial unidextrous extension is consistent
 /// (e.g. every valise). A returned `(p,q)` with `p,q>0` is a genuine nontrivial
 /// `(p,q)` worldsheet supersymmetry.
+#[allow(dead_code)] // production uses max_balanced_worldsheet_witness; this thin wrapper is test-only
 pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (usize, usize) {
     let (p, q, _) = max_balanced_worldsheet_witness(chromo, ranking);
     (p, q)

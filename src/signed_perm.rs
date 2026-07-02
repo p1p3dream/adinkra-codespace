@@ -1,3 +1,5 @@
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 /// Signed permutation algebra for Adinkra color-twist representations.
 ///
 /// A signed permutation of dimension d is a pair (perm, sign) encoding a

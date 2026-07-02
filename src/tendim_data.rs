@@ -30,6 +30,11 @@
 //! (no external linear-algebra crate) and SHA-256 is vendored below (no new
 //! dependency added). It is registered in main.rs.
 
+// Self-contained 10D-dataset validation/verifier module: every entry point is
+// exercised only by this module's own #[cfg(test)] suite (and verify_lift), so the
+// non-test binary sees it as dead. Kept as the lift-verifier research surface.
+#![allow(dead_code)]
+
 use serde::Deserialize;
 
 /// Raw parsed dataset. `L[i]` is a 82x176 matrix (Vec of 82 rows, each 176

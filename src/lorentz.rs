@@ -94,6 +94,11 @@
 //! matrix [`Mat`] (mirroring the API of [`crate::decompose::DenseMat`]) so it has
 //! no dependence on the decomposition internals.
 
+// SO(1,9) lift-verifier research module: the Clifford/assembly API is exercised
+// only by this module's own #[cfg(test)] tests (not yet wired into a main() path),
+// so the non-test binary sees it as dead.
+#![allow(dead_code)]
+
 // ===========================================================================
 // Minimal dense real matrix (row-major). Mirrors decompose::DenseMat's API so
 // the rest of the crate's conventions carry over, but is kept local for

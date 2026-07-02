@@ -27,6 +27,8 @@
 //!     dashings (H¹) are distinct from rankings.
 //!   - Adinkra height functions / "hanging gardens" context: arXiv:2410.11137.
 
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 use crate::chromotopology::Chromotopology;
 
 /// A height assignment over the vertices of a chromotopology.
@@ -116,15 +118,6 @@ impl Ranking {
         (0..self.height.len())
             .filter(|&v| !adj[v].is_empty() && adj[v].iter().all(|&w| self.height[w] > self.height[v]))
             .collect()
-    }
-
-    /// The node-lifting / vertex-raising operation (arXiv:math-ph/0512016 §5):
-    /// raise a source vertex by +2. This preserves the bipartite parity and the
-    /// `|Δh| = 1` edge condition (the source sat one below all neighbours; +2 puts
-    /// it one above them), turning the source into a target. Caller must ensure
-    /// `v` is currently a source.
-    pub fn raise_vertex(&mut self, v: usize) {
-        self.height[v] += 2;
     }
 
     /// Produce a polynomial-size family of genuinely multi-level (non-valise)

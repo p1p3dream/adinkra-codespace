@@ -36,7 +36,10 @@
 //! finite-component/linear-realization assumptions, not an absolute theorem in
 //! every sense.
 
+#![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
+
 use crate::lr_matrix::AdinkraRep;
+#[allow(unused_imports)] // used by the #[cfg(test)] module via `use super::*`
 use crate::signed_perm::SignedPerm;
 
 /// `Tr(L_I R_J L_K R_L)` computed exactly in integers, with R = L^{-1} = L^T.
