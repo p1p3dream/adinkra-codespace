@@ -388,9 +388,9 @@ impl Sieve10D {
 
         // One (Ω, Ω̃) block sweep over all A,B with given (delta, deltat, lam).
         // Returns (worst, on_lambda_worst, fro_sq).
-        let mut sweep = |delta: &[Sp], deltat: &[Sp], lam: &dyn Fn(usize, usize) -> f64,
-                         u: &[Sp], dn: &[Sp], utilde: &[Sp], dtilde: &[Sp],
-                         acc: &mut Vec<f64>, dirty: &mut Vec<usize>| -> (f64, f64, f64) {
+        let sweep = |delta: &[Sp], deltat: &[Sp], lam: &dyn Fn(usize, usize) -> f64,
+                     u: &[Sp], utilde: &[Sp],
+                     acc: &mut Vec<f64>, dirty: &mut Vec<usize>| -> (f64, f64, f64) {
             let (mut worst, mut onlam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
             for aa in 0..n {
                 for bb in 0..n {
@@ -432,7 +432,7 @@ impl Sieve10D {
 
         // μ=0 anchor: Δ^0 = d, Δ̃^0 = d̃, Λ^0 = δ_AB.
         let (mu0, _, _) = sweep(&dn, &dtilde, &|a, b| if a == b { 1.0 } else { 0.0 },
-                                &u, &dn, &utilde, &dtilde, &mut acc, &mut dirty);
+                                &u, &utilde, &mut acc, &mut dirty);
 
         // Spatial a=1..9.
         let (mut worst, mut onlam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
@@ -455,7 +455,7 @@ impl Sieve10D {
             }
             let lam = self.lam[ai];
             let (w, ol, f2) = sweep(&delta, &deltat, &|a, b| lam[a][b],
-                                    &u, &dn, &utilde, &dtilde, &mut acc, &mut dirty);
+                                    &u, &utilde, &mut acc, &mut dirty);
             worst = worst.max(w);
             onlam = onlam.max(ol);
             fro2 += f2;
