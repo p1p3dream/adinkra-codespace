@@ -53,6 +53,7 @@ fn main() {
         "lift-construct" => cmd_lift_construct(&args),
         "lift-attack" => cmd_lift_attack(&args),
         "central-charge" => cmd_central_charge(&args),
+        "enhance-scan" => cmd_enhance_scan(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
@@ -561,6 +562,12 @@ fn cmd_lift_construct(args: &[String]) {
     let k = parse_usize_arg(args, 2, "lift-construct <k> [json]");
     let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
     pipeline::run_lift_construct(json_path, k);
+}
+
+fn cmd_enhance_scan(args: &[String]) {
+    let k = parse_usize_arg(args, 2, "enhance-scan <k> [json]");
+    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    pipeline::run_enhance_scan(json_path, k);
 }
 
 fn cmd_central_charge(args: &[String]) {
