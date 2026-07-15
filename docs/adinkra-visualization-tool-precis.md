@@ -86,7 +86,7 @@ sign for four reference examples.
 
 ## Reproduction
 
-Repository: <https://github.com/p1p3dream/adinkra-codespace/tree/research/siegel-rocek-hole>
+Repository: <https://github.com/p1p3dream/adinkra-codespace>
 
 From the repository root, serve the files over HTTP:
 
