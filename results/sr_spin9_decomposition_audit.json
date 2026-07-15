@@ -1,0 +1,125 @@
+{
+  "source": "results/sr_hole_minimal.json",
+  "source_sha256": "033662faead8a90ddf25798ddc86f0d113ae69f9794689b572274a1e2681a579",
+  "normalization": "Cartan matrices and weights are scaled by four",
+  "cartan_labels": [
+    "M_01",
+    "M_23",
+    "M_45",
+    "M_67"
+  ],
+  "cartan_matrices_commute_exactly": true,
+  "cartan_matrices_are_skew_exactly": true,
+  "separation_argument": "Each exact coordinate characteristic polynomial bounds every scaled weight coordinate by eight. Base 32 is injective on that integer box, and the exact separating characteristic polynomial therefore determines the joint weight multiset.",
+  "bosons": {
+    "claimed_decomposition": "Sym^2_0(9) + Lambda^3(9) = 44 + 84",
+    "highest_weights_scaled_by_four": [
+      [
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        4,
+        4,
+        4,
+        0
+      ]
+    ],
+    "dimension": 128,
+    "distinct_joint_weights": 73,
+    "maximum_scaled_weight_coordinate": 8,
+    "coordinate_characteristic_polynomials": [
+      {
+        "axis": 0,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "5ad9ce39dbfce01512f8cefa3748b04d323eb5d2bed541048a375a0e21f27481"
+      },
+      {
+        "axis": 1,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "5ad9ce39dbfce01512f8cefa3748b04d323eb5d2bed541048a375a0e21f27481"
+      },
+      {
+        "axis": 2,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "5ad9ce39dbfce01512f8cefa3748b04d323eb5d2bed541048a375a0e21f27481"
+      },
+      {
+        "axis": 3,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "5ad9ce39dbfce01512f8cefa3748b04d323eb5d2bed541048a375a0e21f27481"
+      }
+    ],
+    "separating_characteristic_polynomial": {
+      "coefficients": [
+        1,
+        32,
+        1024,
+        32768
+      ],
+      "matches": true,
+      "degree": 128,
+      "coefficient_sha256": "15134f603aaee828494fe54fd0e9c07f76f457f2b4494920f4b4e3ac0c0e0a70"
+    },
+    "joint_weight_character_matches_exactly": true
+  },
+  "fermions": {
+    "claimed_decomposition": "(9 tensor 16) - 16 = 128",
+    "highest_weight_scaled_by_four": [
+      6,
+      2,
+      2,
+      2
+    ],
+    "dimension": 128,
+    "distinct_joint_weights": 80,
+    "maximum_scaled_weight_coordinate": 6,
+    "coordinate_characteristic_polynomials": [
+      {
+        "axis": 0,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "86eff2b5829c78d29939a79989170b3a66779dffc6aeb0a4a11c77a62a1bd170"
+      },
+      {
+        "axis": 1,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "86eff2b5829c78d29939a79989170b3a66779dffc6aeb0a4a11c77a62a1bd170"
+      },
+      {
+        "axis": 2,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "86eff2b5829c78d29939a79989170b3a66779dffc6aeb0a4a11c77a62a1bd170"
+      },
+      {
+        "axis": 3,
+        "matches": true,
+        "degree": 128,
+        "coefficient_sha256": "86eff2b5829c78d29939a79989170b3a66779dffc6aeb0a4a11c77a62a1bd170"
+      }
+    ],
+    "separating_characteristic_polynomial": {
+      "coefficients": [
+        1,
+        32,
+        1024,
+        32768
+      ],
+      "matches": true,
+      "degree": 128,
+      "coefficient_sha256": "9fb08ac4a3f21ea35590c08d12a612ee0deee41fefee56b8b564e375d414d30f"
+    },
+    "joint_weight_character_matches_exactly": true
+  },
+  "identified_massless_little_group_content": "44 + 84 | 128, the Spin(9) representation content familiar from the eleven-dimensional supergravity multiplet",
+  "gate_passed": true,
+  "conclusion": "The fixed Garden module is exactly 44+84 on bosons and the gamma-traceless vector-spinor 128 on fermions as a Spin(9) module."
+}

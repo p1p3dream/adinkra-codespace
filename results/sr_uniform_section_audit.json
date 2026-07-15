@@ -1,0 +1,28 @@
+{
+  "source": "results/sr_hole_minimal.json",
+  "method": "exact rational rank and Gauss-Jordan elimination over QQ",
+  "audits": [
+    {
+      "catalog_index": 75,
+      "section": "J_F = (1/8) P_F^T",
+      "right_inverse_verified_by_rust": true,
+      "equations": 265,
+      "unknowns_per_output": 128,
+      "outputs": 9,
+      "rank_a_over_Q": 128,
+      "rank_augmented_over_Q": 137,
+      "rank_augmented_per_output_over_Q": [
+        129,
+        129,
+        129,
+        129,
+        129,
+        129,
+        129,
+        129,
+        129
+      ],
+      "consistent": false
+    }
+  ]
+}

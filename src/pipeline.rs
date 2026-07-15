@@ -1365,15 +1365,15 @@ pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
     println!("{}", serde_json::to_string(&records).expect("serialize q-scan"));
 }
 
-/// One code class's worldsheet-liftability result.
-#[derive(serde::Serialize)]
+/// One code class's result for the implemented worldsheet spin-sum obstruction.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct LiftRecord {
     pub code_index: usize,
     pub k: usize,
     pub d: usize,
     /// Number of hangings tried (valise + source-raised samples).
     pub num_rankings: usize,
-    /// Most balanced worldsheet split found over those hangings.
+    /// Most balanced chirality split found over those hangings.
     pub best_p: usize,
     pub best_q: usize,
     /// `min(best_p, best_q)`: 0 = only the trivial unidextrous (N,0) extension.
@@ -1388,24 +1388,160 @@ pub struct LiftRecord {
     /// The chirality split (s_I in {+1,-1}) of the certificate achieving (best_p,
     /// best_q). Together with the achieving hanging it is a checkable witness.
     pub best_chirality: Vec<i8>,
-    /// The reported (best_p,best_q) was re-checked by an INDEPENDENT verifier
-    /// (valid hanging + spin-sum) — so it is a PROVEN existence result, not just a
-    /// found value. (Trivial best_min=0 is vacuously verified.)
+    /// The reported `(best_p,best_q)` was re-checked by an independent verifier
+    /// for a valid hanging and the implemented spin-sum predicate. This proves that
+    /// the explicit witness passes the predicate. It does not construct worldsheet
+    /// transformation laws or turn the paper's sufficiency conjecture into a proof.
     pub verified: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorldsheetCertificateRecord {
+    pub code_index: usize,
+    pub k: usize,
+    pub generators_raw: Vec<u32>,
+    pub bosons: usize,
+    pub fermions: usize,
+    pub p: usize,
+    pub q: usize,
+    pub height_levels: usize,
+    pub height: Vec<i32>,
+    pub chirality: Vec<i8>,
+    pub construction: String,
+    pub candidates_examined: usize,
+    pub verified: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorldsheetCatalogCertificate {
+    pub schema_version: usize,
+    pub artifact: String,
+    pub source_catalog: String,
+    pub n: usize,
+    pub total_code_classes: usize,
+    pub literature_basis: String,
+    pub scope: String,
+    pub records: Vec<WorldsheetCertificateRecord>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct WorldsheetCertificateSummary {
+    pub n: usize,
+    pub verified_records: usize,
+    pub nontrivial_records: usize,
+    pub construction_counts: BTreeMap<String, usize>,
+    pub split_counts: BTreeMap<String, usize>,
+}
+
+/// Verify the retained catalog-wide spin-sum certificate against the catalog and
+/// the independent height/spin-sum checker. A successful result proves only that
+/// every explicit witness passes the implemented Gates-Hubsch obstruction. It does
+/// not construct worldsheet transformation laws or prove the source paper's
+/// sufficiency conjecture.
+pub fn verify_worldsheet_catalog_certificate(
+    catalog_json: &str,
+    certificate_json: &str,
+) -> Result<WorldsheetCertificateSummary, String> {
+    use crate::filters::verify_worldsheet_witness;
+    use crate::ranking::Ranking;
+
+    let catalog: Catalog = serde_json::from_str(catalog_json)
+        .map_err(|e| format!("parse catalog: {e}"))?;
+    let certificate: WorldsheetCatalogCertificate = serde_json::from_str(certificate_json)
+        .map_err(|e| format!("parse worldsheet certificate: {e}"))?;
+
+    if certificate.schema_version != 1 {
+        return Err(format!("unsupported schema version {}", certificate.schema_version));
+    }
+    if certificate.n != catalog.n {
+        return Err(format!("certificate N={} does not match catalog N={}", certificate.n, catalog.n));
+    }
+    if certificate.total_code_classes != catalog.total_classes
+        || certificate.records.len() != catalog.codes.len()
+    {
+        return Err(format!(
+            "certificate covers {} records and declares {}; catalog declares {} and contains {}",
+            certificate.records.len(),
+            certificate.total_code_classes,
+            catalog.total_classes,
+            catalog.codes.len()
+        ));
+    }
+
+    let mut by_index = BTreeMap::new();
+    for record in &certificate.records {
+        if by_index.insert(record.code_index, record).is_some() {
+            return Err(format!("duplicate certificate record {}", record.code_index));
+        }
+    }
+
+    let mut construction_counts = BTreeMap::new();
+    let mut split_counts = BTreeMap::new();
+    let mut nontrivial_records = 0usize;
+    for (code_index, entry) in catalog.codes.iter().enumerate() {
+        let record = by_index
+            .get(&code_index)
+            .ok_or_else(|| format!("missing certificate record {code_index}"))?;
+        if record.k != entry.k || record.generators_raw != entry.generators_raw {
+            return Err(format!("record {code_index} does not match the catalog code"));
+        }
+        let chromo = Chromotopology::from_code(&DoublyEvenCode::new(
+            catalog.n,
+            entry.generators_raw.clone(),
+        ));
+        if record.bosons != chromo.d() || record.fermions != chromo.d() {
+            return Err(format!("record {code_index} has incorrect field dimensions"));
+        }
+        if !record.verified || record.p == 0 || record.q == 0 || record.p + record.q != catalog.n {
+            return Err(format!("record {code_index} does not declare a verified nontrivial split"));
+        }
+        if Ranking::from_heights(record.height.clone()).num_levels() != record.height_levels {
+            return Err(format!("record {code_index} has incorrect height-level metadata"));
+        }
+        let checked = verify_worldsheet_witness(&chromo, &record.height, &record.chirality);
+        if checked != Some((record.p, record.q)) {
+            return Err(format!(
+                "record {code_index} failed independent verification: expected ({},{}), got {checked:?}",
+                record.p, record.q
+            ));
+        }
+        nontrivial_records += 1;
+        *construction_counts.entry(record.construction.clone()).or_insert(0) += 1;
+        *split_counts.entry(format!("{},{}", record.p, record.q)).or_insert(0) += 1;
+    }
+
+    Ok(WorldsheetCertificateSummary {
+        n: catalog.n,
+        verified_records: certificate.records.len(),
+        nontrivial_records,
+        construction_counts,
+        split_counts,
+    })
+}
+
+pub fn run_worldsheet_certificate_verification(catalog_path: &str, certificate_path: &str) {
+    let catalog_json = fs::read_to_string(catalog_path)
+        .unwrap_or_else(|e| panic!("read catalog {catalog_path:?}: {e}"));
+    let certificate_json = fs::read_to_string(certificate_path)
+        .unwrap_or_else(|e| panic!("read certificate {certificate_path:?}: {e}"));
+    let summary = verify_worldsheet_catalog_certificate(&catalog_json, &certificate_json)
+        .unwrap_or_else(|e| panic!("worldsheet certificate verification failed: {e}"));
+    println!("{}", serde_json::to_string_pretty(&summary).expect("serialize certificate summary"));
 }
 
 /// Worldsheet-lift oracle over a k-stratum: for each code class, generate hangings
 /// (the valise plus source-raised non-valise rankings) and, on each, compute the
-/// most balanced `(p,q)` worldsheet supersymmetry the proven Gates-Hübsch spin-sum
-/// predicate admits, WITH an explicit chirality witness
+/// most balanced `(p,q)` split admitted by the Gates-Hübsch spin-sum predicate,
+/// with an explicit chirality witness
 /// ([`crate::filters::max_balanced_worldsheet_witness`]). The best nontrivial
-/// result is then re-checked by an INDEPENDENT verifier
-/// ([`crate::filters::verify_worldsheet_witness`]), so each reported `best_min > 0`
-/// is a PROVEN existence result (a checkable certificate), not just a found value —
-/// the valise alone only ever yields the trivial (N,0) split (Corollary 2.2).
+/// result is then re-checked by an independent verifier
+/// ([`crate::filters::verify_worldsheet_witness`]). Each reported `best_min > 0`
+/// is therefore a checkable certificate for the implemented necessary obstruction.
+/// It is not a construction of the corresponding worldsheet representation. The
+/// valise alone only ever yields the trivial `(N,0)` split (Corollary 2.2).
 ///
-/// Two honesty bounds remain: (1) the reported `(p,q)` is a PROVEN-ACHIEVABLE LOWER
-/// BOUND on the true maximum over all hangings — existence is certified, but the
+/// Two scope bounds remain: (1) the reported `(p,q)` is an achieved lower bound on
+/// the maximum over all hangings — predicate satisfaction is certified, but the
 /// maximum over the (super-exponentially many) hangings is not claimed; (2) the
 /// hanging set is SAMPLED (source-raising), so `best_min = 0` means "none found at
 /// this budget" (raise ADINKRA_LIFT_CHAINS / ADINKRA_LIFT_MAXRANK), NOT a proof of
@@ -1488,9 +1624,9 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
         eprintln!("lift-scan: WARNING: {unverified} nontrivial results FAILED witness verification (bug!)");
     }
     eprintln!(
-        "lift-scan: nontrivial worldsheet extension PROVEN (independently verified witness) for {}/{} \
+        "lift-scan: nontrivial worldsheet spin-sum witness VERIFIED for {}/{} \
          classes ({} of them re-checked OK); max balanced min(p,q)={max_min}; best_min histogram {:?}. \
-         NOTE: each best_min>0 is a PROVEN-achievable lower bound on the true max (existence is certified; \
+         NOTE: each best_min>0 is an achieved lower bound on the true max (the predicate is certified; \
          the maximum over ALL hangings is not claimed). best_min=0 means none found at \
          chains={chains}/max_rank={max_rank} (raise the budget), NOT a proof of none. done in {:.1}s",
         nontrivial, recs.len(), verified_nontrivial, hist, t0.elapsed().as_secs_f64()
@@ -1503,19 +1639,17 @@ mod construct_tests {
     use super::*;
     use crate::filters::verify_worldsheet_witness;
 
-    /// The parity+folded-weight height PROVES the fully-coupled all-ones code (k=1
-    /// index 113, the last worldsheet holdout) admits the maximal balanced (8,8)
-    /// worldsheet extension — via an INDEPENDENTLY VERIFIED witness. Also checks the
-    /// N=4 all-ones (=[4,1]) analogue. This is the construction that took the
-    /// catalog to 145/145.
+    /// The parity+folded-weight height supplies a verified balanced spin-sum
+    /// witness for the fully-coupled all-ones code (k=1, index 113). Also checks
+    /// the N=4 all-ones (=[4,1]) analogue.
     #[test]
-    fn allones_fully_coupled_worldsheet_proven() {
+    fn allones_fully_coupled_spin_sum_witness_verifies() {
         // N=16 all-ones [16,1] (catalog index 113), L = first 8 colours.
         let chromo16 = Chromotopology::from_code(&DoublyEvenCode::new(16, vec![0xffff]));
         let h16 = engineered_height(&chromo16, 16, 0x00ff, 0xff00);
         let chir16: Vec<i8> = (0..16).map(|c| if c < 8 { 1 } else { -1 }).collect();
         let v16 = verify_worldsheet_witness(&chromo16, &h16, &chir16);
-        assert_eq!(v16, Some((8, 8)), "all-ones [16,1] must prove worldsheet (8,8), got {v16:?}");
+        assert_eq!(v16, Some((8, 8)), "all-ones [16,1] must verify the (8,8) predicate, got {v16:?}");
 
         // N=4 all-ones [4,1], L = {0,1} -> (2,2).
         let chromo4 = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
@@ -1604,9 +1738,10 @@ pub fn construct_factorized_witness(n: usize, generators: &[u32]) -> Option<(Vec
 }
 
 /// Try the constructive route on every code of a k-stratum: build a factorized
-/// witness and CERTIFY it with the independent verifier. Reports, per code, the
-/// PROVEN (p,q) (or that the code is fully coupled / did not verify). Closes the
-/// large strata (k=1) that `lift-scan` sampling leaves at 0.
+/// witness and check it with the independent verifier. Reports, per code, the
+/// verified `(p,q)` spin-sum witness, or that the construction does not apply.
+/// This closes the sampling gap for large strata without claiming that the
+/// corresponding worldsheet transformation laws have been constructed.
 pub fn run_lift_construct(json_path: &str, only_k: usize) {
     use crate::filters::verify_worldsheet_witness;
     let data = fs::read_to_string(json_path)
@@ -1617,7 +1752,8 @@ pub fn run_lift_construct(json_path: &str, only_k: usize) {
         catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
     eprintln!("lift-construct: {} codes with k={only_k} (N={n}); constructive factorized witnesses", codes.len());
 
-    let (mut proven, mut coupled) = (0usize, 0usize);
+    let (mut verified_count, mut coupled) = (0usize, 0usize);
+    let mut records = Vec::new();
     for (idx, e) in &codes {
         let chromo = Chromotopology::from_code(&DoublyEvenCode::new(n, e.generators_raw.clone()));
         match construct_factorized_witness(n, &e.generators_raw) {
@@ -1627,24 +1763,39 @@ pub fn run_lift_construct(json_path: &str, only_k: usize) {
             }
             Some((height, chirality)) => match verify_worldsheet_witness(&chromo, &height, &chirality) {
                 Some((p, q)) if p > 0 && q > 0 => {
-                    proven += 1;
-                    eprintln!("  code {idx}: PROVEN worldsheet ({p},{q}) via constructed+VERIFIED witness");
+                    verified_count += 1;
+                    let levels = crate::ranking::Ranking::from_heights(height.clone()).num_levels();
+                    records.push(LiftRecord {
+                        code_index: *idx,
+                        k: only_k,
+                        d: chromo.d(),
+                        num_rankings: 1,
+                        best_p: p,
+                        best_q: q,
+                        best_min: p.min(q),
+                        best_levels: levels,
+                        best_height: height,
+                        best_chirality: chirality,
+                        verified: true,
+                    });
+                    eprintln!("  code {idx}: VERIFIED spin-sum witness ({p},{q}) via the factorized construction");
                 }
                 other => eprintln!("  code {idx}: construction did NOT verify ({other:?}) — not claimed"),
             },
         }
     }
     eprintln!(
-        "lift-construct: {proven}/{} codes PROVEN constructively; {coupled} fully-coupled (factorized route N/A)",
+        "lift-construct: {verified_count}/{} codes have verified constructive witnesses; {coupled} fully-coupled (factorized route N/A)",
         codes.len()
     );
+    println!("{}", serde_json::to_string(&records).expect("serialize lift-construct"));
 }
 
 /// Coset-invariant "folded" seed height `h(v) = |popcount(v & L) − popcount(v & R)|`
 /// for a balanced bipartition `L|R` of the colours (|L| = |R| = n/2). Valid hanging
 /// (|Δh| = 1 per edge) and coset-invariant for the all-ones code (|·| absorbs the
 /// v ↔ ~v flip). It flattens EVERY cross pair except on the "crease" shell
-/// `popcount(v & L) == popcount(v & R)`; the attack below raises that shell.
+/// `popcount(v & L) == popcount(v & R)`; the analysis below raises that shell.
 /// Central-charge scan: per code of a k-stratum, the number of independent central
 /// charges = dim of the ANTISYMMETRIC part of the commutant
 /// ([`crate::decompose::antisymmetric_commutant_dim`]). This is the exact algebraic
@@ -1821,7 +1972,7 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
     let chromo = Chromotopology::from_code(&DoublyEvenCode::new(n, entry.generators_raw.clone()));
     let adj = chromo.vertex_adjacency();
     eprintln!(
-        "lift-attack: code {code_index} (N={n}, k={}, d={}, {} vertices), {iters} anneal iters",
+        "lift-search: code {code_index} (N={n}, k={}, d={}, {} vertices), {iters} anneal iters",
         entry.k, chromo.d(), chromo.num_vertices()
     );
 
@@ -1831,33 +1982,43 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
         let (p, q, _) = max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() });
         (p, q)
     };
-    // A candidate is only ever accepted as "best" if it INDEPENDENTLY VERIFIES, so
-    // best_min is always a genuine proven lower bound (never a garbage eval from a
-    // construction that was not a valid coset-invariant hanging for this code).
+    // A candidate is only accepted as "best" if the independent checker verifies
+    // the hanging and spin-sum predicate. Thus best_min is an achieved lower bound,
+    // never a value from an invalid coset construction.
     let verified_min = |h: &[i32]| -> Option<(usize, usize)> {
         let (_, _, chir) = max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() });
         verify_worldsheet_witness(&chromo, h, &chir).filter(|&(p, q)| p > 0 && q > 0)
     };
 
-    // --- Weapon 1: engineered heights (cheap; verified, so non-coset-invariant
+    // --- Method 1: engineered heights (cheap; verified, so non-coset-invariant
     // constructions for a general code are silently discarded, not misreported). ---
     let full = ((1u64 << n) - 1) as u32;
     let lmasks: [u32; 6] = [0x00ff, 0x0f0f, 0x3333, 0x5555, 0xaa55, 0xc3c3];
     let (mut best_min, mut best) = (0usize, (n, 0usize));
     let mut best_h: Vec<i32> = Ranking::valise(&chromo).height;
+    let mut best_chirality = Vec::new();
     for &lm in &lmasks {
         if lm.count_ones() as usize != n / 2 { continue; }
         let h = engineered_height(&chromo, n, lm, full & !lm);
         match verified_min(&h) {
             Some((p, q)) => {
                 eprintln!("  engineered L={lm:#06x}: VERIFIED ({p},{q}) [min={}]", p.min(q));
-                if p.min(q) > best_min { best_min = p.min(q); best = (p, q); best_h = h; }
+                if p.min(q) > best_min {
+                    let (_, _, chirality) = max_balanced_worldsheet_witness(
+                        &chromo,
+                        &Ranking { height: h.clone() },
+                    );
+                    best_min = p.min(q);
+                    best = (p, q);
+                    best_h = h;
+                    best_chirality = chirality;
+                }
             }
             None => eprintln!("  engineered L={lm:#06x}: not a valid witness for this code (skipped)"),
         }
     }
 
-    // --- Weapon 2: poset-move search seeded from the best verified height (or the
+    // --- Method 2: poset-move search seeded from the best verified height (or the
     // valise). Uses the heuristic eval to steer; commits to best only on verify. ---
     let mut st = seed | 1;
     let mut rng = move || { st ^= st << 13; st ^= st >> 7; st ^= st << 17; st };
@@ -1881,18 +2042,40 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
         if nm >= cur_min || rng() % 20 == 0 { cur = cand.clone(); cur_min = nm; }
         if nm > best_min {
             if let Some((p, q)) = verified_min(&cand) {
-                best_min = p.min(q); best = (p, q);
+                let (_, _, chirality) = max_balanced_worldsheet_witness(
+                    &chromo,
+                    &Ranking { height: cand.clone() },
+                );
+                best_min = p.min(q);
+                best = (p, q);
+                best_h = cand;
+                best_chirality = chirality;
                 eprintln!("  anneal: NEW VERIFIED BEST ({p},{q}) [min={}]", p.min(q));
             }
         }
     }
 
-    // Report (best_h/best_min are always verified by construction of the loops).
+    // Report a standalone verified witness when one was found.
     if best_min > 0 {
-        eprintln!("lift-attack: code {code_index} PROVEN worldsheet {best:?} — VERIFIED witness (buried alive: ESCAPED)");
+        let levels = Ranking::from_heights(best_h.clone()).num_levels();
+        let record = LiftRecord {
+            code_index,
+            k: entry.k,
+            d: chromo.d(),
+            num_rankings: lmasks.len() + iters,
+            best_p: best.0,
+            best_q: best.1,
+            best_min,
+            best_levels: levels,
+            best_height: best_h,
+            best_chirality,
+            verified: true,
+        };
+        eprintln!("lift-search: code {code_index}: verified spin-sum witness {best:?}");
+        println!("{}", serde_json::to_string(&record).expect("serialize lift-search"));
     } else {
         eprintln!(
-            "lift-attack: code {code_index}: no verified witness from these constructions at iters={iters} \
+            "lift-search: code {code_index}: no verified witness from these constructions at iters={iters} \
              (best {best:?}). This is NOT a proof of non-existence — try `lift-scan {}` at a larger \
              ADINKRA_LIFT_CHAINS/ADINKRA_LIFT_MAXRANK budget.",
             entry.k
@@ -1912,6 +2095,20 @@ mod tests {
         assert_eq!(catalog.codes.len(), 1);
         assert_eq!(catalog.codes[0].k, 1);
         assert_eq!(catalog.codes[0].generators_raw, vec![15]);
+    }
+
+    #[test]
+    fn catalog_worldsheet_spin_sum_certificate_verifies_all_145_records() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let catalog = fs::read_to_string(root.join("adinkra_codes_n16.json")).unwrap();
+        let certificate = fs::read_to_string(
+            root.join("results/worldsheet_spin_sum_witnesses_n16.json"),
+        )
+        .unwrap();
+        let summary = verify_worldsheet_catalog_certificate(&catalog, &certificate).unwrap();
+        assert_eq!(summary.n, 16);
+        assert_eq!(summary.verified_records, 145);
+        assert_eq!(summary.nontrivial_records, 145);
     }
 }
 

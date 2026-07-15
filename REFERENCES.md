@@ -9,10 +9,14 @@ relevant module doc-comments).
 
 ## Enumeration and codes (foundational)
 
+- **Doran, Faux, Gates, Hübsch, Iga, Landweber, Miller**, *Topology Types of
+  Adinkras and the Corresponding Representations of N-Extended Supersymmetry*,
+  arXiv:0806.0050. Enumeration of code and Adinkra-topology equivalence classes.
+  Used by: `code.rs`, `canonical.rs`, `search.rs`.
 - **Doran, Faux, Gates, Hübsch, Iga, Landweber**, *Relating Doubly-Even
   Error-Correcting Codes, Graphs, and Irreducible Representations of N-Extended
-  Supersymmetry*, arXiv:0806.0050. Doubly-even codes ↔ adinkra chromotopologies;
-  the N=4/N=8 reference counts. Used by: `code.rs`, `canonical.rs`, `search.rs`.
+  Supersymmetry*, arXiv:0806.0051. Doubly-even codes and Adinkra
+  chromotopologies.
 - **Doran, Faux, Gates, Hübsch, Iga, Landweber**, *Adinkras for Clifford Algebras,
   and Worldline Supermultiplets*, arXiv:0811.3410; **Faux, Gates**, *Adinkras: A
   Graphical Technology for Supersymmetric Representation Theory*, hep-th/0408004.
@@ -51,19 +55,24 @@ relevant module doc-comments).
 
 - **Gates, Hübsch**, *On Dimensional Extension of Supersymmetry: From Worldlines to
   Worldsheets*, arXiv:1104.0722. The worldsheet bow-tie / height-weighted spin-sum
-  predicate (Thm 2.1/2.2, Cor 2.2). Used by: `filters.rs` (`worldsheet_spin_sum`,
-  and the weight-2 necessary condition).
+  obstruction (Thm 2.1/2.2, Cor 2.2). The paper describes evasion of the
+  obstruction as conjectured to be sufficient. Used by: `filters.rs`
+  (`worldsheet_spin_sum`, the certificate verifier, and the weight-2 condition).
 - **Faux, Iga, Landweber**, *Dimensional Enhancement via Supersymmetry*,
   arXiv:0907.3605. The Ω = 0 enhancement obstruction (N=4; not yet generalized to
   N=16). Referenced for the (deferred) 4D non-gauge filter.
 - **Calkins, Gates, Gates, McPeak**, *Is It Possible To Embed A 4D N=4 SUSY Vector
   Multiplet Within A Completely Off-Shell Adinkra Hologram?*, arXiv:1402.5765
-  (JHEP 05(2014)057). Off-shell N=4 as a linear-algebra closure problem.
+  (JHEP 05(2014)057). Off-shell N=4 as a linear-algebra closure problem; explicitly
+  isolates the paired-auxiliary-spinor premise and asks what changes if it is
+  removed. Used by: `sr_hole.rs` (the minimal unpaired arithmetic audit).
 - **Gates et al.**, *Think Different: ... the SUSY Auxiliary Field Problem*,
   arXiv:1502.04164 (JHEP 04(2015)056). The counting/Diophantine framing of the
   off-shell no-go.
 - **Siegel, Roček**, *On off-shell supermultiplets*, Phys. Lett. B 105 (1981) 275.
-  The auxiliary-field counting no-go (finite aux fields ⇒ ≤ 4 supercharges).
+  The auxiliary-field counting argument. Its contradiction uses the additional
+  conventional premise that auxiliary spinors occur in pairs; it is not an
+  algebra-only exclusion of every finite representation. Used by: `sr_hole.rs`.
 - **Arunseangroj, Bedessem, Gates, Yerger**, *Adinkras & Genomics in Sixteen Color
   Systems (I)*, arXiv:2503.13797 (2025). N=16 k=8 D16/E8×E8 distance-spectrum
   validation; "naive off-shell route closed for 4D N=4 Maxwell." Used as the
@@ -74,6 +83,13 @@ relevant module doc-comments).
   result). Calibration target for the (designed) Closure-Defect classifier.
 
 ## 10D Clifford / supergravity data
+
+- **Plefka, Waldron**, *Asymptotic Supergraviton States in Matrix Theory*,
+  arXiv:hep-th/9801093. The SO(9) supergraviton state content is
+  `44 + 84 | 128`, with symmetric-traceless tensor, three-form, and
+  gamma-traceless vector-spinor sectors. Used as the identification target for
+  `scripts/check_sr_spin9_decomposition.py`; the decomposition itself is
+  verified there by exact Cartan characteristic polynomials.
 
 - **Cigliano, Dahl, Gates (et al.)**, *10D Supergravity Numerical Data Sets for L &
   R Matrices*, arXiv:2512.12157; data repo **github.com/mcmulaz/Super-Sym** ("Garden
@@ -109,7 +125,7 @@ relevant module doc-comments).
 - Octonionic SO(9) Clifford construction (Fano-plane imaginary-octonion
   left-multiplications) and even-dimensional recursive Clifford construction:
   standard; cf. arXiv:2205.09509 (*Lecture note on Clifford algebra*) and the
-  Brink-Schwarz-Scherk 10D SYM construction. Used by: `lorentz.rs`.
+  Brink-Schwarz-Scherk 10D SYM construction. Used by: `lorentz.rs`, `sr_hole.rs`.
 
 ## Scope honesty (what is NOT claimed)
 
@@ -121,5 +137,7 @@ relevant module doc-comments).
   construction is rectangular, matching the 82×176 dataset, and is future work).
 - The `lorentz::assemble_and_check` `e_norm` is an EXPERIMENTAL residual, not a
   calibrated off-shell/on-shell certificate.
-- No positive off-shell lift of 4D N=4 / 10D N=1 is claimed; the counting no-go
-  stands. The pipeline's contribution is obstruction/classification computation.
+- No positive off-shell lift of 4D N=4 / 10D N=1 is claimed. The existing
+  Siegel-Rocek argument excludes its stated conventional paired-auxiliary ansatz,
+  not every finite algebraic representation. `sr_hole.rs` tests a narrower exact
+  minimal adinkraic embedding ansatz and labels that boundary explicitly.

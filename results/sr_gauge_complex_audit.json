@@ -1,0 +1,163 @@
+{
+  "sources": {
+    "decomposition": "results/sr_spin9_decomposition_audit.json",
+    "decomposition_sha256": "9b95fe4051be190d019350630bf59edcacab4f5d4668da632d41da7ef990eef8",
+    "so9": "results/sr_so9_equivariance_audit.json",
+    "so9_sha256": "c75f41dac3920ae06bcfe04859ce46ef9a1f65d16d2da396351055261de036f1"
+  },
+  "ring": "R[D,p_1,...,p_9]",
+  "complex": "Lambda^0 -> Lambda^1 -> Lambda^2 -> Lambda^3",
+  "matrix_shapes": [
+    [
+      10,
+      1
+    ],
+    [
+      45,
+      10
+    ],
+    [
+      120,
+      45
+    ]
+  ],
+  "d_squared_is_exactly_zero": true,
+  "exact_ranks": {
+    "generic_nonzero_momentum": [
+      1,
+      9,
+      36
+    ],
+    "zero_spatial_momentum_with_D_equal_1": [
+      1,
+      9,
+      36
+    ],
+    "zero_total_momentum": [
+      0,
+      0,
+      0
+    ],
+    "expected_nonzero_koszul_ranks": [
+      1,
+      9,
+      36
+    ]
+  },
+  "ranks_match_koszul_complex": true,
+  "so9_cochains": {
+    "C0_gauge_parameter": {
+      "dimension": 1,
+      "so9": [
+        "1"
+      ],
+      "casimirs": [
+        0
+      ]
+    },
+    "C1_potential": {
+      "dimension": 10,
+      "so9": [
+        "1 (A_0)",
+        "9 (A_i)"
+      ],
+      "casimirs": [
+        0,
+        8
+      ]
+    },
+    "C2_field_strength": {
+      "dimension": 45,
+      "so9": [
+        "9 (F_0i)",
+        "36 (F_ij)"
+      ],
+      "casimirs": [
+        8,
+        14
+      ]
+    },
+    "C3_bianchi": {
+      "dimension": 120,
+      "so9": [
+        "36 (B_0ij)",
+        "84 (B_ijk)"
+      ],
+      "casimirs": [
+        14,
+        18
+      ]
+    }
+  },
+  "fixed_module": {
+    "bosons": [
+      "44",
+      "84"
+    ],
+    "fermions": [
+      "128_gamma_traceless_vector_spinor"
+    ]
+  },
+  "missing_representation_inventory": {
+    "from_fixed_bosons": [
+      "1",
+      "9",
+      "36"
+    ],
+    "from_fixed_fermions_for_SYM_seed": [
+      "16_spinor"
+    ],
+    "already_present": [
+      "84_spatial_three_form"
+    ]
+  },
+  "chain_homotopy_retract_test": {
+    "identity": "P J - I = d H + H d",
+    "all_derivative_differentials_vanish_at_total_momentum_zero": true,
+    "zero_momentum_reduces_to_strict_retract": true,
+    "strict_9_and_16_retract_excluded_by_casimir": true,
+    "fixed_module_chain_homotopy_retract_possible": false,
+    "scope": "This excludes complexes whose differentials are built only from derivatives, for arbitrary local polynomial homotopies. Algebraic differentials or added representations that survive at total momentum zero remain open."
+  },
+  "garden_dimension_constraint": {
+    "reason": "At nonzero time frequency a strict N=16 Garden representation is a graded real Cl(16,0) module.",
+    "boson_dimension_is_multiple_of": 128,
+    "fermion_dimension_is_multiple_of": 128,
+    "next_size_retaining_current_block": 256
+  },
+  "minimal_target_inventory": {
+    "at_128_each_from_scratch": {
+      "bosons": "9 physical vector dimensions + 119 auxiliary dimensions",
+      "fermions": "16 physical spinor dimensions + 112 auxiliary dimensions",
+      "fermion_spinor_bookkeeping": "112 = 7 x 16"
+    },
+    "at_256_each_retaining_current_128_block": {
+      "added_bosons": "128 dimensions, including a 9",
+      "added_fermions": "128 dimensions, including a 16 and 112 remaining dimensions"
+    }
+  },
+  "strict_256_valise_candidates": {
+    "A_plus_A": {
+      "bosons": "2 x (44+84)",
+      "fermions": "2 x 128",
+      "contains_9_boson_and_16_fermion": false
+    },
+    "A_plus_parity_reverse_A": {
+      "bosons": "(44+84) + 128",
+      "fermions": "128 + (44+84)",
+      "contains_9_boson_and_16_fermion": false
+    },
+    "parity_reverse_A_plus_parity_reverse_A": {
+      "bosons": "2 x 128",
+      "fermions": "2 x (44+84)",
+      "contains_9_boson_and_16_fermion": false
+    }
+  },
+  "strict_256_valise_candidate_survives": false,
+  "surviving_candidate_classes": [
+    "a genuinely nonvalise or gauge-extended module whose zero-momentum field representation directly contains 9|16",
+    "a complex with algebraic differentials or homotopies that remain nonzero at total momentum zero"
+  ],
+  "gate_passed": true,
+  "conclusion": "The ordinary ten-dimensional exterior differential closes and has the expected nonzero-momentum ranks, but it does not rescue the fixed module: its derivative homotopies vanish at total momentum zero, where the 9|16 Casimir obstruction returns. Enlarging to 256|256 by direct sums of strict valise blocks also fails. A survivor must change the zero-mode representation to contain 9|16 or introduce an algebraic zero-mode differential."
+}

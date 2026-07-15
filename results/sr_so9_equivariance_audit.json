@@ -1,0 +1,119 @@
+{
+  "source": "results/sr_hole_minimal.json",
+  "candidate": "results/sr_joint_section_candidate.npz",
+  "input_sha256": "033662faead8a90ddf25798ddc86f0d113ae69f9794689b572274a1e2681a579",
+  "candidate_sha256": "4b63d42178e8cb98f8c6484a1c8b999ced1da49d399f7c37ef163b1f9242b56f",
+  "catalog_index": 75,
+  "dashing_index": 0,
+  "rotation_generators": 36,
+  "homogeneous_covariant_pair_dimension": 1,
+  "unique_skew_field_action_lift": true,
+  "exact_checks": {
+    "full_garden_so9_covariance": {
+      "scale": 4,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "physical_seed_so9_covariance": {
+      "scale": 2,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "full_boson_generators_skew": {
+      "scale": 4,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "full_fermion_generators_skew": {
+      "scale": 4,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "physical_spinor_so9_closure": {
+      "scale": 4,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "full_boson_so9_closure": {
+      "scale": 16,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "full_fermion_so9_closure": {
+      "scale": 16,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "fixed_boson_injection_intertwines": {
+      "scale": 4,
+      "maximum_scaled_residual": 4,
+      "nonzero_scaled_entries": 2486,
+      "failing_generators": 36,
+      "exactly_zero": false
+    },
+    "fixed_fermion_projection_intertwines": {
+      "scale": 4,
+      "maximum_scaled_residual": 7,
+      "nonzero_scaled_entries": 24656,
+      "failing_generators": 36,
+      "exactly_zero": false
+    }
+  },
+  "quadratic_casimir_checks": {
+    "physical_vector": {
+      "scale": 1,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "physical_spinor_scaled_by_4": {
+      "scale": 4,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "full_bosons_scaled_by_16": {
+      "scale": 16,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    },
+    "full_fermions_scaled_by_16": {
+      "scale": 16,
+      "maximum_scaled_residual": 0,
+      "nonzero_scaled_entries": 0,
+      "failing_generators": 0,
+      "exactly_zero": true
+    }
+  },
+  "quadratic_casimir_eigenvalues": {
+    "physical_vector": 8,
+    "physical_spinor": 9,
+    "full_bosons": 18,
+    "full_fermions": 18
+  },
+  "casimir_forces_all_so9_retract_maps_zero": true,
+  "stored_dense_candidate_checks": {
+    "boson_projection_maximum_residual": 2.6937286627831254,
+    "fermion_section_maximum_residual": 0.2565107434790641
+  },
+  "fixed_retract_so9_equivariant": false,
+  "conclusion": "No nonzero SO(9)-equivariant retract maps exist for this valise Garden module: the full boson and fermion spaces have quadratic Casimir 18, while the physical vector and spinor have Casimirs 8 and 9. The fixed witness fails explicitly, and the Casimir mismatch excludes every alternative choice of J_B, P_B, J_F, and P_F under the unique skew field-action lift."
+}

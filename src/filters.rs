@@ -67,9 +67,10 @@ pub fn worldsheet_all_splits(code: &DoublyEvenCode) -> Vec<WorldsheetResult> {
 /// -1.
 ///
 /// THE CONDITION
-/// A 1D (worldline) Adinkra extends to a 2D (p, q) worldsheet iff, around EVERY
-/// 2-colored quadrangle (4-cycle using exactly two colors I, J), the
-/// height-weighted spin sum vanishes and there is no ambidextrous bow-tie.
+/// Theorems 2.1 and 2.2 give a worldline-to-worldsheet obstruction in terms of
+/// every 2-colored quadrangle. The paper conjectures that evading this obstruction
+/// is sufficient for extension. This function checks the stated local spin-sum
+/// predicate; it does not construct worldsheet transformation laws.
 ///
 /// Following the paper, the relevant local object is
 ///     sigma-hat_{I,B}^A = spin(D_I) * ( [F_B] - [F_A] )
@@ -99,8 +100,8 @@ pub fn worldsheet_all_splits(code: &DoublyEvenCode) -> Vec<WorldsheetResult> {
 /// on every nontrivial (p, q) split. This matches Corollary 2.2 and reproduces
 /// the existing `worldsheet_weight2_obstruction` behavior for doubly-even codes.
 ///
-/// Returns true iff the chirality assignment yields a consistent (p, q)
-/// worldsheet extension.
+/// Returns true exactly when the chirality assignment satisfies the implemented
+/// `(p,q)` spin-sum predicate.
 pub fn worldsheet_spin_sum(
     chromo: &Chromotopology,
     ranking: &Ranking,
@@ -175,9 +176,9 @@ pub fn worldsheet_spin_sum(
 /// and chirality split, return `Some((p,q))` iff (a) the heights are a valid
 /// hanging (`|Δh|=1` on every edge) and (b) the Gates-Hübsch spin-sum predicate
 /// passes for that chirality. This is the poly-time certificate checker that turns
-/// a found `(p,q)` into a PROVEN existence result: a passing witness is a theorem
-/// ("this class admits a (p,q) worldsheet extension"), independent of how it was
-/// produced. `p = #{+1}`, `q = #{-1}`.
+/// a found `(p,q)` into a verified predicate result, independent of how the witness
+/// was produced. It does not prove the paper's sufficiency conjecture or construct
+/// the corresponding worldsheet representation. `p = #{+1}`, `q = #{-1}`.
 pub fn verify_worldsheet_witness(
     chromo: &Chromotopology,
     height: &[i32],
@@ -211,7 +212,7 @@ pub fn verify_worldsheet_witness(
 ///
 /// Returns `(N,0)` when only the trivial unidextrous extension is consistent
 /// (e.g. every valise). A returned `(p,q)` with `p,q>0` is a genuine nontrivial
-/// `(p,q)` worldsheet supersymmetry.
+/// `(p,q)` split passing the implemented obstruction.
 #[allow(dead_code)] // production uses max_balanced_worldsheet_witness; this thin wrapper is test-only
 pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (usize, usize) {
     let (p, q, _) = max_balanced_worldsheet_witness(chromo, ranking);
@@ -392,7 +393,7 @@ mod tests {
 
     /// THE NON-VACUITY EXPERIMENT: on a VALISE every nontrivial (p,q) split fails
     /// (Cor 2.2), but does some HUNG (non-valise) ranking unlock a nontrivial
-    /// worldsheet extension? Enumerate ALL N=4 [4,1] rankings (complete ground
+    /// spin-sum predicate? Enumerate all N=4 [4,1] rankings (complete ground
     /// truth) x all 2^4 chirality splits and count nontrivial passes. If this is
     /// zero the whole worldsheet oracle is vacuous; it must be > 0.
     #[test]
@@ -438,7 +439,7 @@ mod tests {
 
     /// Every (p,q) the oracle reports must come with a chirality witness that
     /// INDEPENDENTLY passes verification (valid hanging + spin-sum) for the same
-    /// (p,q). This is what makes a reported extension a PROVEN existence result.
+    /// `(p,q)`. This makes the predicate result independently checkable.
     #[test]
     fn witness_verifies_for_every_n4_ranking() {
         let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));

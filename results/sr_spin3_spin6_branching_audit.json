@@ -1,0 +1,226 @@
+{
+  "source": "results/sr_hole_minimal.json",
+  "source_sha256": "033662faead8a90ddf25798ddc86f0d113ae69f9794689b572274a1e2681a579",
+  "prerequisite_spin9_audit": "results/sr_spin9_decomposition_audit.json",
+  "prerequisite_spin9_audit_sha256": "9b95fe4051be190d019350630bf59edcacab4f5d4668da632d41da7ef990eef8",
+  "subgroup_embedding": "R^9 = R^3 + R^6, with indices 0..2 and 3..8",
+  "normalization": "Field generators and quadratic Casimirs are scaled by 4 and 16 respectively",
+  "cross_subgroups_commute_exactly": true,
+  "subgroup_generators_are_skew_exactly": true,
+  "subgroup_casimirs_commute_exactly": true,
+  "branching": {
+    "bosons": [
+      {
+        "source": "44",
+        "irrep": "(5,1)",
+        "dimension": 5
+      },
+      {
+        "source": "44",
+        "irrep": "(3,6)",
+        "dimension": 18
+      },
+      {
+        "source": "44",
+        "irrep": "(1,20')",
+        "dimension": 20
+      },
+      {
+        "source": "44",
+        "irrep": "(1,1)",
+        "dimension": 1
+      },
+      {
+        "source": "84",
+        "irrep": "(1,1)",
+        "dimension": 1
+      },
+      {
+        "source": "84",
+        "irrep": "(3,6)",
+        "dimension": 18
+      },
+      {
+        "source": "84",
+        "irrep": "(3,15)",
+        "dimension": 45
+      },
+      {
+        "source": "84",
+        "irrep": "(1,20)",
+        "dimension": 20
+      }
+    ],
+    "fermions_after_complexification": [
+      {
+        "source": "128",
+        "irrep": "(4,4)",
+        "dimension": 16
+      },
+      {
+        "source": "128",
+        "irrep": "(4,4bar)",
+        "dimension": 16
+      },
+      {
+        "source": "128",
+        "irrep": "(2,4)",
+        "dimension": 8
+      },
+      {
+        "source": "128",
+        "irrep": "(2,4bar)",
+        "dimension": 8
+      },
+      {
+        "source": "128",
+        "irrep": "(2,20)",
+        "dimension": 40
+      },
+      {
+        "source": "128",
+        "irrep": "(2,20bar)",
+        "dimension": 40
+      }
+    ]
+  },
+  "restricted_cartan_character_audit": {
+    "bosons": {
+      "dimension": 128,
+      "distinct_restricted_weights": 73,
+      "separating_coefficients": [
+        1,
+        32,
+        1024,
+        32768
+      ],
+      "exact_characteristic_polynomial_matches": true,
+      "coefficient_sha256": "15134f603aaee828494fe54fd0e9c07f76f457f2b4494920f4b4e3ac0c0e0a70"
+    },
+    "fermions": {
+      "dimension": 128,
+      "distinct_restricted_weights": 80,
+      "separating_coefficients": [
+        1,
+        32,
+        1024,
+        32768
+      ],
+      "exact_characteristic_polynomial_matches": true,
+      "coefficient_sha256": "9fb08ac4a3f21ea35590c08d12a612ee0deee41fefee56b8b564e375d414d30f"
+    }
+  },
+  "joint_casimir_eigenspaces": {
+    "bosons": [
+      {
+        "spin3_casimir_scaled_by_16": 96,
+        "spin6_casimir_scaled_by_16": 0,
+        "expected_dimension": 5,
+        "actual_exact_dimension": 5,
+        "content": "(5,1)",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 32,
+        "spin6_casimir_scaled_by_16": 80,
+        "expected_dimension": 36,
+        "actual_exact_dimension": 36,
+        "content": "two copies of (3,6)",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 0,
+        "spin6_casimir_scaled_by_16": 192,
+        "expected_dimension": 20,
+        "actual_exact_dimension": 20,
+        "content": "(1,20')",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 0,
+        "spin6_casimir_scaled_by_16": 0,
+        "expected_dimension": 2,
+        "actual_exact_dimension": 2,
+        "content": "two copies of (1,1)",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 32,
+        "spin6_casimir_scaled_by_16": 128,
+        "expected_dimension": 45,
+        "actual_exact_dimension": 45,
+        "content": "(3,15)",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 0,
+        "spin6_casimir_scaled_by_16": 144,
+        "expected_dimension": 20,
+        "actual_exact_dimension": 20,
+        "content": "(1,20)",
+        "matches": true
+      }
+    ],
+    "fermions": [
+      {
+        "spin3_casimir_scaled_by_16": 60,
+        "spin6_casimir_scaled_by_16": 60,
+        "expected_dimension": 32,
+        "actual_exact_dimension": 32,
+        "content": "(4,4) + (4,4bar)",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 12,
+        "spin6_casimir_scaled_by_16": 60,
+        "expected_dimension": 16,
+        "actual_exact_dimension": 16,
+        "content": "(2,4) + (2,4bar)",
+        "matches": true
+      },
+      {
+        "spin3_casimir_scaled_by_16": 12,
+        "spin6_casimir_scaled_by_16": 156,
+        "expected_dimension": 80,
+        "actual_exact_dimension": 80,
+        "content": "(2,20) + (2,20bar)",
+        "matches": true
+      }
+    ]
+  },
+  "direct_4d_target_test": {
+    "physical_bosons": {
+      "spatial_vector_(3,1)": {
+        "joint_casimir_scaled_by_16": [
+          32,
+          0
+        ],
+        "exact_multiplet_space_dimension": 0,
+        "required_dimension": 3
+      },
+      "six_scalars_(1,6)": {
+        "joint_casimir_scaled_by_16": [
+          0,
+          80
+        ],
+        "exact_multiplet_space_dimension": 0,
+        "required_dimension": 6
+      }
+    },
+    "physical_fermions": {
+      "real_gaugino_16_complexification": "(2,4) + (2,4bar)",
+      "joint_casimir_scaled_by_16": [
+        12,
+        60
+      ],
+      "exact_multiplet_space_dimension": 16,
+      "required_dimension": 16
+    },
+    "physical_bosonic_representation_absent": true,
+    "physical_gaugino_representation_present_once": true,
+    "strict_compact_group_retract_possible": false,
+    "reason": "The real gaugino 16 occurs once, but neither the spatial vector (3,1) nor the six scalars (1,6) occur in the bosonic 128. Compact-group complete reducibility therefore forbids a strict Spin(3) x Spin(6)-equivariant retract onto the full 9|16 target."
+  },
+  "scope": "This excludes a strict direct-4D retract of the fixed valise field representation. It does not exclude a nonvalise gauge or auxiliary complex whose algebraic zero-momentum maps change the representation.",
+  "gate_passed": true
+}

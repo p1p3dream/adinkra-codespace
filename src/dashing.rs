@@ -283,6 +283,26 @@ impl DashingEnumerator {
         1 << self.k
     }
 
+    /// Return two bytes per chromotopology edge in `edge_list` order.
+    ///
+    /// The first byte is the base dashing bit. The second byte is a bit mask
+    /// over the `k` cohomology generators. For dashing class `d`, the edge is
+    /// dashed when `base ^ parity(mask & d)` is one.
+    pub fn packed_edge_dashings(&self) -> Vec<u8> {
+        let mut packed = Vec::with_capacity(self.num_edges * 2);
+        for edge in 0..self.num_edges {
+            let mut mask = 0u8;
+            for (j, cocycle) in self.cocycle_basis.iter().enumerate() {
+                if cocycle[edge] != 0 {
+                    mask |= 1u8 << j;
+                }
+            }
+            packed.push(self.base_dashing[edge]);
+            packed.push(mask);
+        }
+        packed
+    }
+
     pub fn get_dashing(&self, class_index: usize) -> Vec<i8> {
         assert!(
             class_index < self.num_classes(),
@@ -441,6 +461,24 @@ mod tests {
         assert!(de.verify_odd(&d0), "class 0 dashing should be odd");
         assert!(de.verify_odd(&d1), "class 1 dashing should be odd");
         assert_ne!(d0, d1, "the two classes should produce distinct dashings");
+    }
+
+    #[test]
+    fn packed_edge_dashings_reconstruct_every_class() {
+        let de = DashingEnumerator::new(&hamming_8_4());
+        let packed = de.packed_edge_dashings();
+        assert_eq!(packed.len(), de.num_edges * 2);
+
+        for class in 0..de.num_classes() {
+            let reconstructed: Vec<i8> = packed
+                .chunks_exact(2)
+                .map(|pair| {
+                    let parity = (pair[1] & class as u8).count_ones() as u8 & 1;
+                    if pair[0] ^ parity == 0 { 1 } else { -1 }
+                })
+                .collect();
+            assert_eq!(reconstructed, de.get_dashing(class));
+        }
     }
 
     #[test]

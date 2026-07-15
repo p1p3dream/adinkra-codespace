@@ -17,8 +17,10 @@ mod pipeline;
 mod ranking;
 mod search;
 mod signed_perm;
+mod sr_hole;
 mod streamed_gadget;
 mod tendim_data;
+mod viz_export;
 
 use std::time::Instant;
 
@@ -51,9 +53,12 @@ fn main() {
         "q-scan" => cmd_q_scan(&args),
         "lift-scan" => cmd_lift_scan(&args),
         "lift-construct" => cmd_lift_construct(&args),
-        "lift-attack" => cmd_lift_attack(&args),
+        "lift-search" | "lift-attack" => cmd_lift_attack(&args),
+        "worldsheet-verify" => cmd_worldsheet_verify(&args),
         "central-charge" => cmd_central_charge(&args),
         "enhance-scan" => cmd_enhance_scan(&args),
+        "sr-investigation" | "sr-hole" => cmd_sr_hole(&args),
+        "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
@@ -89,6 +94,8 @@ fn print_usage(prog: &str) {
     eprintln!("                            ADINKRA_LIFT_MAXRANK  max hangings/code   (default 512)");
     eprintln!("                          Low-k strata (k<=4) need a larger budget to reach 145/145:");
     eprintln!("                            ADINKRA_LIFT_CHAINS=128 ADINKRA_LIFT_MAXRANK=8000");
+    eprintln!("  worldsheet-verify [catalog] [certificate]");
+    eprintln!("                          Verify the retained 145-class spin-sum witnesses");
     eprintln!("  decompose-k <k> [json]  Irreducible-decompose a single k-stratum (F8 route b)");
     eprintln!("                          and compute the gadget on irreducible pieces");
     eprintln!("  decompose-k-disk <k> [json] [--f64]");
@@ -99,7 +106,30 @@ fn print_usage(prog: &str) {
     eprintln!("                          scales to k<=3 where the dense path cannot reach)");
     eprintln!("  decompose-audit <k> <sample_reps> [json]");
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
+    eprintln!("  sr-investigation [json] Analyze the minimal unpaired Siegel-Rocek case");
+    eprintln!("                          (default: adinkra_codes_n16.json)");
+    eprintln!("  export-3d-assets [json] [output-dir]");
+    eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
+}
+
+fn cmd_sr_hole(args: &[String]) {
+    let path = args.get(2).map(String::as_str).unwrap_or("adinkra_codes_n16.json");
+    let report = sr_hole::run(path);
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_export_3d_assets(args: &[String]) {
+    let catalog = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("adinkra_codes_n16.json");
+    let output = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("visualizer/adinkra_dashing");
+    let manifest = viz_export::export(catalog, output);
+    println!("{}", serde_json::to_string_pretty(&manifest).unwrap());
 }
 
 // ---------------------------------------------------------------------------
@@ -564,6 +594,15 @@ fn cmd_lift_construct(args: &[String]) {
     pipeline::run_lift_construct(json_path, k);
 }
 
+fn cmd_worldsheet_verify(args: &[String]) {
+    let catalog_path = args.get(2).map(String::as_str).unwrap_or("adinkra_codes_n16.json");
+    let certificate_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/worldsheet_spin_sum_witnesses_n16.json");
+    pipeline::run_worldsheet_certificate_verification(catalog_path, certificate_path);
+}
+
 fn cmd_enhance_scan(args: &[String]) {
     let k = parse_usize_arg(args, 2, "enhance-scan <k> [json]");
     let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
@@ -577,7 +616,7 @@ fn cmd_central_charge(args: &[String]) {
 }
 
 fn cmd_lift_attack(args: &[String]) {
-    let code_index = parse_usize_arg(args, 2, "lift-attack <code_index> [iters] [seed] [json]");
+    let code_index = parse_usize_arg(args, 2, "lift-search <code_index> [iters] [seed] [json]");
     let iters = if args.len() > 3 { args[3].parse().unwrap_or(20000) } else { 20000 };
     let seed = if args.len() > 4 { args[4].parse().unwrap_or(1) } else { 1 };
     let json_path = if args.len() > 5 { args[5].as_str() } else { "adinkra_codes_n16.json" };

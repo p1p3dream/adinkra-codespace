@@ -1,0 +1,51 @@
+{
+  "source": "results/sr_so9_equivariance_audit.json",
+  "source_sha256": "c75f41dac3920ae06bcfe04859ce46ef9a1f65d16d2da396351055261de036f1",
+  "assumptions": [
+    "the full field spaces and SO(9) action are unchanged",
+    "spatial SO(9) commutes with the time derivative D",
+    "retract maps are matrices over a characteristic-zero derivative ring",
+    "equivariance is strict rather than modulo gauge transformations"
+  ],
+  "rings_checked": [
+    "R[D] (finite local differential operators)",
+    "R[D,D^-1] (Laurent operators allowing inverse derivatives)"
+  ],
+  "coefficient_argument": "For T(D)=sum_k T_k D^k, C_target T(D)=T(D) C_source gives (c_target-c_source) T_k=0 for every k. Each displayed difference is a nonzero real scalar and hence a unit in both rings.",
+  "maps": {
+    "J_B_physical_vector_to_full_bosons": {
+      "source_casimir": 8,
+      "target_casimir": 18,
+      "casimir_difference": 10,
+      "difference_is_nonzero": true,
+      "all_derivative_coefficients_forced_zero": true
+    },
+    "P_B_full_bosons_to_physical_vector": {
+      "source_casimir": 18,
+      "target_casimir": 8,
+      "casimir_difference": -10,
+      "difference_is_nonzero": true,
+      "all_derivative_coefficients_forced_zero": true
+    },
+    "J_F_physical_spinor_to_full_fermions": {
+      "source_casimir": 9,
+      "target_casimir": 18,
+      "casimir_difference": 9,
+      "difference_is_nonzero": true,
+      "all_derivative_coefficients_forced_zero": true
+    },
+    "P_F_full_fermions_to_physical_spinor": {
+      "source_casimir": 18,
+      "target_casimir": 9,
+      "casimir_difference": -9,
+      "difference_is_nonzero": true,
+      "all_derivative_coefficients_forced_zero": true
+    }
+  },
+  "source_casimir_gate_passed": true,
+  "all_equivariant_derivative_maps_forced_zero": true,
+  "ordinary_node_raising_can_remove_obstruction": false,
+  "inverse_time_derivatives_can_remove_obstruction": false,
+  "gate_passed": true,
+  "conclusion": "Ordinary node raising, lowering, and even Laurent powers of the time derivative cannot cure the SO(9) Casimir mismatch while the 128|128 field module is fixed. A surviving route must change the representation content or weaken strict equivariance through a gauge/Bianchi quotient."
+}

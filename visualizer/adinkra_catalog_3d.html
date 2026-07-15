@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>N=16 Adinkra Catalog 3D Viewer</title>
+  <style>
+    *{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden;background:#070b16;color:#e5e7eb;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+    #app{height:100vh;display:grid;grid-template-columns:340px 1fr}aside{display:flex;flex-direction:column;min-width:0;background:#111827;border-right:1px solid #293548;overflow:hidden}header{padding:16px 18px;border-bottom:1px solid #293548}h1{font-size:17px;line-height:1.2;margin:0 0 5px;color:#fff}.sub{font-size:11px;color:#9ca3af;line-height:1.45}.section{padding:13px 18px;border-bottom:1px solid #293548}.label{font-size:10px;color:#7c879a;font-weight:750;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px}select,input,button{font:inherit}select,input[type=search],input[type=number]{width:100%;border:1px solid #3b4658;border-radius:7px;background:#0a1020;color:#e5e7eb;padding:8px;font-size:12px}input[type=range]{width:100%}button{border:1px solid #3b4658;border-radius:7px;background:#1f2937;color:#d1d5db;padding:7px 9px;font-size:12px;cursor:pointer}button:hover{background:#374151;color:#fff}button:disabled{opacity:.4;cursor:default}.buttons{display:flex;gap:7px;flex-wrap:wrap}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;color:#cbd5e1;font-size:12px}.row input[type=checkbox]{accent-color:#8b5cf6}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.stat{background:#0a1020;border:1px solid #293548;border-radius:7px;padding:7px}.stat .value{font:700 14px ui-monospace,SFMono-Regular,Menlo,monospace;color:#fff}.stat .key{font-size:9px;color:#7c879a;text-transform:uppercase}.dash-row{display:grid;grid-template-columns:42px 1fr 42px;gap:7px}.status{font-size:11px;color:#93c5fd;margin-top:8px;min-height:16px}.status.error{color:#fca5a5}.q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.q-grid button{padding:5px 3px}.q-grid button.off{opacity:.25}.details{padding:13px 18px;overflow:auto;flex:1}.empty{color:#7c879a;font-size:12px;line-height:1.5}.kv{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#d1d5db;margin:5px 0}.kv span{color:#7c879a}.neighbor{display:block;width:100%;text-align:left;margin:5px 0}.swatch{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.viewer{position:relative;min-width:0;min-height:0}.viewer canvas{display:block}.badge{position:absolute;top:13px;left:14px;max-width:min(620px,80%);border:1px solid rgba(148,163,184,.3);border-radius:9px;background:rgba(7,11,22,.76);backdrop-filter:blur(10px);padding:8px 10px;color:#dbeafe;font-size:12px;line-height:1.4;pointer-events:none}.help{position:absolute;left:14px;bottom:12px;border:1px solid rgba(148,163,184,.25);border-radius:999px;background:rgba(7,11,22,.72);padding:6px 10px;color:#aeb8c8;font-size:11px;pointer-events:none}.loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,11,22,.58);font-size:13px;color:#dbeafe;z-index:3}.loading.on{display:flex}
+  </style>
+</head>
+<body>
+<div id="app">
+  <aside>
+    <header>
+      <h1>N=16 Adinkra Catalog 3D Viewer</h1>
+      <div class="sub">145 code classes and 5,128 code-and-dashing representatives. Graphs are constructed when selected.</div>
+    </header>
+    <div class="section">
+      <div class="label">Code class</div>
+      <input id="codeSearch" type="search" placeholder="Filter by index, k, distance, or generator">
+      <select id="codeSelect" size="6" style="margin-top:7px"></select>
+      <div class="stats">
+        <div class="stat"><div id="kStat" class="value">0</div><div class="key">k</div></div>
+        <div class="stat"><div id="nodeStat" class="value">0</div><div class="key">nodes</div></div>
+        <div class="stat"><div id="edgeStat" class="value">0</div><div class="key">edges</div></div>
+        <div class="stat"><div id="dashStat" class="value">0</div><div class="key">dashings</div></div>
+        <div class="stat"><div id="distanceStat" class="value">0</div><div class="key">distance</div></div>
+        <div class="stat"><div id="shownStat" class="value">0</div><div class="key">shown edges</div></div>
+      </div>
+      <div id="loadStatus" class="status">Loading catalog</div>
+    </div>
+    <div class="section">
+      <div class="label">Dashing class</div>
+      <div class="dash-row"><button id="dashPrev" aria-label="Previous dashing">-</button><input id="dashing" type="number" min="0" value="0"><button id="dashNext" aria-label="Next dashing">+</button></div>
+      <div class="row"><span>Class range</span><span id="dashRange">0 to 0</span></div>
+    </div>
+    <div class="section">
+      <div class="label">Display</div>
+      <label class="row"><span>Edge budget</span><select id="edgeBudget" style="width:150px"><option value="16384">16,384</option><option value="65536" selected>65,536</option><option value="131072">131,072</option><option value="full">Full graph</option></select></label>
+      <label class="row"><span>Show edges</span><input id="showEdges" type="checkbox" checked></label>
+      <label class="row"><span>Dash negative edges</span><input id="dashNegative" type="checkbox" checked></label>
+      <label class="row"><span>Edge opacity <b id="opacityValue">0.18</b></span></label>
+      <input id="edgeOpacity" type="range" min="0.02" max="0.8" step="0.02" value="0.18">
+      <label class="row"><span>Node size <b id="nodeSizeValue">0.075</b></span></label>
+      <input id="nodeSize" type="range" min="0.025" max="0.18" step="0.005" value="0.075">
+      <div class="buttons" style="margin-top:10px"><button id="resetView">Reset view</button><button id="clearSelection">Clear selection</button></div>
+    </div>
+    <div class="section"><div class="label">Generators</div><div id="qButtons" class="q-grid"></div></div>
+    <div id="details" class="details"><div class="empty">Select a node to inspect its sixteen colored neighbors.</div></div>
+  </aside>
+  <main id="viewer" class="viewer">
+    <div id="badge" class="badge">Loading</div>
+    <div class="help">Drag to rotate, scroll to zoom, click a node to inspect</div>
+    <div id="loading" class="loading">Constructing graph</div>
+  </main>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { buildTopology, edgeIsDashed, otherEndpoint, parseDashingAsset, popcount16, sampledEdge } from './adinkra_graph_core.mjs';
+
+const EDGE_COLORS=[0x60a5fa,0xf87171,0x34d399,0xfbbf24,0xa78bfa,0xf472b6,0x22d3ee,0xa3e635,0xfb923c,0x818cf8,0x2dd4bf,0xe11d48,0x0ea5e9,0xc084fc,0xfde047,0x10b981];
+const EDGE_CSS=EDGE_COLORS.map((value)=>`#${value.toString(16).padStart(6,'0')}`);
+const $=(id)=>document.getElementById(id);
+const viewer=$('viewer');
+let catalog,manifest,entry,asset,topology,positions,partitionRank;
+let scene,camera,renderer,controls,graphRoot,edgeRoot,nodeRoot,selectionRoot,raycaster,pointer;
+let activeColors=new Set(),selectedVertex=null,pointClouds=[];
+
+function formatCount(value){return Number(value).toLocaleString('en-US')}
+function setStatus(text,error=false){$('loadStatus').textContent=text;$('loadStatus').classList.toggle('error',error)}
+function setLoading(on,text='Constructing graph'){$('loading').textContent=text;$('loading').classList.toggle('on',on)}
+
+function initThree(){
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x070b16);scene.fog=new THREE.FogExp2(0x070b16,.018);
+  camera=new THREE.PerspectiveCamera(55,viewer.clientWidth/viewer.clientHeight,.01,200);
+  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(2,devicePixelRatio));renderer.setSize(viewer.clientWidth,viewer.clientHeight);viewer.prepend(renderer.domElement);
+  controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.08;controls.minDistance=2;controls.maxDistance=40;
+  graphRoot=new THREE.Group();edgeRoot=new THREE.Group();nodeRoot=new THREE.Group();selectionRoot=new THREE.Group();graphRoot.add(edgeRoot,nodeRoot,selectionRoot);scene.add(graphRoot);
+  raycaster=new THREE.Raycaster();raycaster.params.Points.threshold=.12;pointer=new THREE.Vector2();
+  window.addEventListener('resize',resize);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('click',selectAtPointer);animate();resetCamera();
+}
+function resize(){camera.aspect=viewer.clientWidth/viewer.clientHeight;camera.updateProjectionMatrix();renderer.setSize(viewer.clientWidth,viewer.clientHeight)}
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
+function resetCamera(){camera.position.set(7,-8,5);controls.target.set(0,0,0);controls.update()}
+function disposeGroup(group){while(group.children.length){const child=group.children[0];group.remove(child);child.geometry?.dispose();if(Array.isArray(child.material)){for(const material of child.material){material.map?.dispose();material.dispose()}}else{child.material?.map?.dispose();child.material?.dispose()}}}
+
+function codeLabel(code){return `#${String(code.index).padStart(3,'0')}  k=${code.k}  d=${code.min_distance}  nodes=${formatCount(1<<(16-code.k))}`}
+function rebuildCodeOptions(){
+  const query=$('codeSearch').value.trim().toLowerCase();const selected=entry?.index;
+  $('codeSelect').innerHTML='';
+  for(const code of catalog.codes){const text=`${codeLabel(code)} ${code.generators_hex.join(' ')}`;if(query&&!text.toLowerCase().includes(query))continue;const option=document.createElement('option');option.value=code.index;option.textContent=codeLabel(code);option.selected=code.index===selected;$('codeSelect').appendChild(option)}
+}
+
+function parseHash(){const params=new URLSearchParams(location.hash.replace(/^#/,''));return{code:Number(params.get('code')??75),dashing:Number(params.get('dashing')??0)}}
+function updateHash(){if(!entry)return;history.replaceState(null,'',`#code=${entry.index}&dashing=${Number($('dashing').value)}`)}
+
+async function loadCode(index,dashing=0){
+  const next=catalog.codes.find((code)=>code.index===index);const record=manifest.assets.find((item)=>item.code_index===index);if(!next||!record)return;
+  setLoading(true,`Constructing code ${index}`);setStatus(`Loading code ${index}`);await new Promise((resolve)=>setTimeout(resolve,0));
+  try{
+    const response=await fetch(`adinkra_dashing/${record.file}`);if(!response.ok)throw new Error(`${response.status} ${response.statusText}`);
+    asset=parseDashingAsset(await response.arrayBuffer());if(asset.codeIndex!==index)throw new Error('Asset code index mismatch');
+    entry=next;topology=buildTopology(16,entry.generators_raw,asset);buildPositions();selectedVertex=null;activeColors=new Set(Array.from({length:16},(_,color)=>color));
+    $('codeSelect').value=String(index);const max=(1<<entry.k)-1;$('dashing').max=String(max);$('dashing').value=String(Math.max(0,Math.min(max,dashing)));$('dashRange').textContent=`0 to ${max}`;
+    updateStats();setupGeneratorButtons();rebuildNodes();rebuildEdges();updateDetails();resetCamera();updateHash();setStatus(`Code ${index} loaded`);
+  }catch(error){console.error(error);setStatus(`Load failed: ${error.message}`,true);$('badge').textContent=`Load failed: ${error.message}`}
+  finally{setLoading(false)}
+}
+
+function buildPositions(){
+  positions=new Float32Array(asset.vertices*3);partitionRank=new Uint32Array(asset.vertices);const bosons=[],fermions=[];
+  for(let vertex=0;vertex<asset.vertices;vertex+=1)(popcount16(topology.reps[vertex])%2===0?bosons:fermions).push(vertex);
+  fillSphere(bosons,-1.35,3.2,0);fillSphere(fermions,1.35,3.2,Math.PI/7);
+  function fillSphere(vertices,centerZ,radius,phase){const golden=(1+Math.sqrt(5))/2;for(let rank=0;rank<vertices.length;rank+=1){const vertex=vertices[rank];partitionRank[vertex]=rank;const theta=2*Math.PI*rank/golden+phase;const phi=Math.acos(1-2*(rank+.5)/vertices.length);positions[3*vertex]=radius*Math.sin(phi)*Math.cos(theta);positions[3*vertex+1]=radius*Math.sin(phi)*Math.sin(theta);positions[3*vertex+2]=radius*Math.cos(phi)+centerZ}}
+}
+
+function pointTexture(ring){const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,64,64);ctx.beginPath();ctx.arc(32,32,ring?23:20,0,2*Math.PI);if(ring){ctx.strokeStyle='#fff';ctx.lineWidth=8;ctx.stroke()}else{ctx.fillStyle='#fff';ctx.fill()}return new THREE.CanvasTexture(canvas)}
+function rebuildNodes(){
+  disposeGroup(nodeRoot);pointClouds=[];const groups=[{parity:0,color:0x88bbff,ring:true},{parity:1,color:0xff9f66,ring:false}];
+  for(const group of groups){const vertices=[];for(let vertex=0;vertex<asset.vertices;vertex+=1)if(popcount16(topology.reps[vertex])%2===group.parity)vertices.push(vertex);const data=new Float32Array(vertices.length*3);for(let local=0;local<vertices.length;local+=1){const vertex=vertices[local];data.set(positions.subarray(3*vertex,3*vertex+3),3*local)}const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(data,3));const material=new THREE.PointsMaterial({color:group.color,size:Number($('nodeSize').value),map:pointTexture(group.ring),transparent:true,alphaTest:.08,depthWrite:false,sizeAttenuation:true});const cloud=new THREE.Points(geometry,material);cloud.userData.vertices=vertices;nodeRoot.add(cloud);pointClouds.push(cloud)}
+  $('nodeSizeValue').textContent=Number($('nodeSize').value).toFixed(3);
+}
+
+function edgeBudget(){return $('edgeBudget').value==='full'?Infinity:Number($('edgeBudget').value)}
+function rebuildEdges(){
+  disposeGroup(edgeRoot);const opacity=Number($('edgeOpacity').value);$('opacityValue').textContent=opacity.toFixed(2);if(!$('showEdges').checked||!topology){$('shownStat').textContent='0';updateBadge(0);return}
+  const budget=edgeBudget();let shown=0;
+  for(let color=0;color<16;color+=1){if(!activeColors.has(color))continue;for(const dashed of [false,true]){let count=0;for(let edge=0;edge<asset.edges;edge+=1){if(topology.edgeColor[edge]!==color||!sampledEdge(edge,asset.edges,budget))continue;if(edgeIsDashed(topology.baseAt(edge),topology.maskAt(edge),Number($('dashing').value))===dashed)count+=1}if(count===0)continue;const data=new Float32Array(count*6);let offset=0;for(let edge=0;edge<asset.edges;edge+=1){if(topology.edgeColor[edge]!==color||!sampledEdge(edge,asset.edges,budget))continue;if(edgeIsDashed(topology.baseAt(edge),topology.maskAt(edge),Number($('dashing').value))!==dashed)continue;const a=topology.edgeA[edge],b=topology.edgeB[edge];data.set(positions.subarray(3*a,3*a+3),offset);data.set(positions.subarray(3*b,3*b+3),offset+3);offset+=6}const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(data,3));let material;if(dashed&&$('dashNegative').checked){material=new THREE.LineDashedMaterial({color:EDGE_COLORS[color],transparent:true,opacity,dashSize:.08,gapSize:.055})}else{material=new THREE.LineBasicMaterial({color:EDGE_COLORS[color],transparent:true,opacity: dashed?opacity*.7:opacity})}const lines=new THREE.LineSegments(geometry,material);if(dashed&&$('dashNegative').checked)lines.computeLineDistances();edgeRoot.add(lines);shown+=count}}
+  $('shownStat').textContent=formatCount(shown);updateBadge(shown);rebuildSelection();
+}
+
+function updateStats(){const dashes=1<<entry.k;$('kStat').textContent=entry.k;$('nodeStat').textContent=formatCount(asset.vertices);$('edgeStat').textContent=formatCount(asset.edges);$('dashStat').textContent=formatCount(dashes);$('distanceStat').textContent=entry.min_distance}
+function updateBadge(shown=Number($('shownStat').textContent.replaceAll(',',''))||0){const dashing=Number($('dashing').value);const sampling=shown<asset.edges?`${formatCount(shown)} of ${formatCount(asset.edges)} edges shown`:`${formatCount(asset.edges)} edges shown`;$('badge').textContent=`Code ${entry.index}, [16,${entry.k},${entry.min_distance}], dashing ${dashing}/${(1<<entry.k)-1}. ${sampling}.`}
+function setupGeneratorButtons(){$('qButtons').innerHTML='';for(let color=0;color<16;color+=1){const button=document.createElement('button');button.textContent=`Q${color+1}`;button.style.borderColor=EDGE_CSS[color];button.style.color=EDGE_CSS[color];button.onclick=()=>{activeColors.has(color)?activeColors.delete(color):activeColors.add(color);button.classList.toggle('off',!activeColors.has(color));rebuildEdges()};$('qButtons').appendChild(button)}}
+
+function pointerMove(event){const rect=renderer.domElement.getBoundingClientRect();pointer.x=((event.clientX-rect.left)/rect.width)*2-1;pointer.y=-((event.clientY-rect.top)/rect.height)*2+1}
+function selectAtPointer(event){if(!topology)return;pointerMove(event);raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(pointClouds,false)[0];if(!hit)return;selectedVertex=hit.object.userData.vertices[hit.index];updateDetails();rebuildSelection()}
+function rebuildSelection(){disposeGroup(selectionRoot);if(selectedVertex===null||!topology)return;const sphere=new THREE.Mesh(new THREE.SphereGeometry(.13,16,12),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true}));sphere.position.fromArray(positions,3*selectedVertex);selectionRoot.add(sphere);const data=new Float32Array(16*6);let offset=0;for(let color=0;color<16;color+=1){const edge=topology.edgeIndexByVertexColor[selectedVertex*16+color];const other=otherEndpoint(topology,edge,selectedVertex);data.set(positions.subarray(3*selectedVertex,3*selectedVertex+3),offset);data.set(positions.subarray(3*other,3*other+3),offset+3);offset+=6}const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(data,3));selectionRoot.add(new THREE.LineSegments(geometry,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.9})))}
+function selectVertex(vertex){selectedVertex=vertex;updateDetails();rebuildSelection()}
+window.selectCatalogVertex=selectVertex;
+function updateDetails(){const box=$('details');if(selectedVertex===null){box.innerHTML='<div class="empty">Select a node to inspect its sixteen colored neighbors.</div>';return}const boson=popcount16(topology.reps[selectedVertex])%2===0;let html=`<div class="label">Selected node</div><div style="font-weight:700;color:white;margin-bottom:8px">${boson?'Boson':'Fermion'} ${partitionRank[selectedVertex]}</div><div class="kv"><span>vertex:</span> ${selectedVertex}</div><div class="kv"><span>representative:</span> 0x${topology.reps[selectedVertex].toString(16).padStart(4,'0')}</div><div class="kv"><span>dashing:</span> ${$('dashing').value}</div><div class="label" style="margin-top:14px">Neighbors</div>`;for(let color=0;color<16;color+=1){const edge=topology.edgeIndexByVertexColor[selectedVertex*16+color];const other=otherEndpoint(topology,edge,selectedVertex);const dashed=edgeIsDashed(topology.baseAt(edge),topology.maskAt(edge),Number($('dashing').value));html+=`<button class="neighbor" onclick="selectCatalogVertex(${other})"><span class="swatch" style="background:${EDGE_CSS[color]}"></span>Q${color+1} ${dashed?'dashed':'solid'} to ${popcount16(topology.reps[other])%2===0?'B':'F'}${partitionRank[other]}</button>`}box.innerHTML=html}
+
+function setDashing(value){if(!entry)return;const max=(1<<entry.k)-1;const next=Math.max(0,Math.min(max,Number(value)||0));$('dashing').value=String(next);updateHash();rebuildEdges();updateDetails()}
+
+async function init(){
+  initThree();
+  try{const [catalogResponse,manifestResponse]=await Promise.all([fetch('../adinkra_codes_n16.json'),fetch('adinkra_dashing/manifest.json')]);if(!catalogResponse.ok||!manifestResponse.ok)throw new Error('Catalog or dashing manifest is unavailable');catalog=await catalogResponse.json();manifest=await manifestResponse.json();if(catalog.codes.length!==145||manifest.code_count!==145)throw new Error('Catalog coverage is not 145 classes');rebuildCodeOptions();const initial=parseHash();await loadCode(catalog.codes.some((code)=>code.index===initial.code)?initial.code:75,initial.dashing)}catch(error){console.error(error);setStatus(error.message,true);$('badge').textContent=error.message}
+}
+
+$('codeSearch').oninput=rebuildCodeOptions;$('codeSelect').onchange=()=>loadCode(Number($('codeSelect').value),0);$('dashing').onchange=()=>setDashing($('dashing').value);$('dashPrev').onclick=()=>setDashing(Number($('dashing').value)-1);$('dashNext').onclick=()=>setDashing(Number($('dashing').value)+1);$('edgeBudget').onchange=rebuildEdges;$('showEdges').onchange=rebuildEdges;$('dashNegative').onchange=rebuildEdges;$('edgeOpacity').oninput=rebuildEdges;$('nodeSize').oninput=rebuildNodes;$('resetView').onclick=resetCamera;$('clearSelection').onclick=()=>{selectedVertex=null;updateDetails();rebuildSelection()};
+init();
+</script>
+</body>
+</html>
