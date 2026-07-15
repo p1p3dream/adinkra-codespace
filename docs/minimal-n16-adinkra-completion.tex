@@ -69,8 +69,8 @@ implementation of the associated Adinkra calculations.  On 14 July,
 the minimal $128\vert128$ valise suggested by relaxing the conventional paired
 auxiliary-spinor count was tested.
 For catalog entry 75 and dashing class 0, the projected one-dimensional linkage
-equations have a real solution.  A computer-assisted Banach contraction
-certificate establishes its existence under the stated arithmetic assumptions.  The tested
+equations have a real solution.  A Banach contraction calculation with final
+rational bounds establishes its existence under the stated arithmetic assumptions.  The tested
 valise does not satisfy any of the higher-dimensional covariance conditions
 examined here.  Its Spin(9) content is $44+84\vert128$, and therefore does not
 contain the $9\vert16$ vector and spinor representations of ten-dimensional
@@ -243,7 +243,7 @@ For catalog entry 75 and dashing class 0, removing those section restrictions
 leaves 2,304 bilinear equations in 2,863 affine variables.  This unrestricted
 bilinear solve was not repeated for the other 511 minimal dashings.  A numerical
 root has maximum residual $1.11\times10^{-15}$ and a Jacobian of full row rank.
-A separate computer-assisted a posteriori Banach contraction certificate uses
+A separate a posteriori Banach contraction calculation uses
 an IEEE-754 round-to-nearest error audit and final rational inequalities.  Under
 those stated arithmetic assumptions, it establishes a real zero within radius
 $3\times10^{-11}$ of the numerical solution.  The final contraction bound is
@@ -479,7 +479,7 @@ the project roadmap included with the repository.
 \section{Computational artifacts and reproduction}
 
 The tested command-line pipeline performs the catalog construction,
-representation calculations, minimal-valise search, and certificate
+representation calculations, minimal-valise search, and contraction-bound
 verification.  Standalone programs perform the symbolic and numerical audits
 listed below.  The retained outputs and corresponding reproduction commands
 are given below.
@@ -497,8 +497,8 @@ minimal embedding calculation. \\
 chirality records for all 145 code classes.  The
 \pathcode{worldsheet-verify} command performs the catalog, dimension, height,
 chirality, and spin-sum checks. \\
-\artifactpath{results/sr_joint_root_audit.json} & Computer-assisted Banach
-contraction bounds for the projected linkage equations. \\
+\artifactpath{results/sr_joint_root_audit.json} & Banach contraction bounds for
+the projected linkage equations. \\
 \artifactpath{results/sr_so9_equivariance_audit.json} & Symbolic field action,
 covariance, Lie closure, and Casimir obstruction. \\
 \artifactpath{results/sr_nonvalise_locality_audit.json} & Time-derivative ring
