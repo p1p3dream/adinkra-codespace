@@ -58,8 +58,60 @@ This scaffold does NOT:
   enumerator). Tells us the code/gadget structure of the BBBM shadow.
 - Route B (BBBM-specific, higher value): extract the arXiv:0705.2002
   transformation rules, build the actual 9 supercharge matrices, and compute the
-  non-closure of the unclosed 7. The non-closure functions are the
-  off-shell-sector equation of motion, the equation-shaped object.
+  non-closure of the unclosed 7. See the Route B verdict below.
+
+## Route A results (done)
+
+`src/bbbm_holoraumy.rs` (subcommand `bbbm-holoraumy`) computes the holoraumy and
+gadget invariants of the N=9 valise, and `src/bbbm.rs::crosscheck` re-derives
+them and the code invariants through a fully independent dense-matrix path.
+Both agree exactly. Findings, for all 16 dashing classes:
+
+- Holoraumy is purely antisymmetric and traceless: every V_IJ and Vtilde_IJ has
+  trace 0, V_IJ = -V_JI, and V_IJ^2 = -I_16.
+- Self-gadget G[R,R] = 1.0 for every dashing class, matching d/d_min = 16/16
+  (irreducible).
+- The self-gadget is dashing-invariant, but the cross-gadget between distinct
+  dashings takes exactly three values: 1/8, 1/6, 7/24. So the 16 dashings carry
+  a non-trivial gadget inner-product structure (never orthogonal here).
+- The [9,4] code: weight enumerator {0:1, 4:14, 8:1} (identical to extended
+  Hamming[8,4]), self-orthogonal, |Aut| = 1344 = |AGL(3,2)|, classical d_min 4;
+  k = 4 is maximal (a doubly-even length-9 code has k <= 4). The 9th coordinate
+  is a trivial (support-free) color; mathematically the code is Hamming[8,4] plus
+  a trivial coordinate, though the codebase's support-only decomposition routines
+  report it as indecomposable.
+
+These characterize the GENERIC minimal N=9 valise. They are not BBBM-specific
+(the BBBM twist is not built here); they are the code/gadget structure of the
+N=9 shadow.
+
+## Route B verdict (retired as an equation route)
+
+Two independent agents (one from the paper's equations, one adversarial) found
+Route B does not yield a new off-shell equation, for concrete reasons:
+
+- The 7 supercharges that close only on-shell are never written in
+  arXiv:0705.2002; the paper explicitly discards the antiselfdual tensor charge
+  and calls the invariance under the residual 7 "accidental." There are no
+  transformation rules and no non-closure tensor for them to extract; they would
+  have to be reconstructed, so any computed answer is a function of solver
+  choices, not of BBBM.
+- "Non-closure of the 7 = equation of motion" is a category slip. The
+  non-closure of on-shell charges is proportional to the fermionic equation of
+  motion, which is an input (the BBBM Lagrangian), not a new output. The
+  off-shell sector (the 9) has no equation of motion, which is the point of
+  making it off-shell; the on-shell sector (the 7) has the ordinary equation of
+  motion one started with.
+- The 9-vs-7 split is a 10D SO(1,1)xSpin(7) twist phenomenon (needs the spatial
+  derivatives, the field strength, and the nonabelian connection). A 1D valise is
+  free, abelian, and closes all its charges by construction, so the worldline
+  reduction trivializes exactly the structure Route B wanted to interrogate.
+
+The one honest, untouched contribution that remains is to metabolize BBBM's
+9-off-shell construction into adinkra/holoraumy language at the field-theory
+level (using Eqs. 22-23, the Spin(7) 4-form, the constrained spinors), not in the
+valise. That is a translation exercise, genuinely not done before, but it is not
+a new equation and not off-shell.
 
 ## Context
 
