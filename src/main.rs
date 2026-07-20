@@ -1,4 +1,5 @@
 mod baselines;
+mod bbbm;
 mod canonical;
 mod chromochar;
 mod chromotopology;
@@ -58,6 +59,7 @@ fn main() {
         "central-charge" => cmd_central_charge(&args),
         "enhance-scan" => cmd_enhance_scan(&args),
         "sr-investigation" | "sr-hole" => cmd_sr_hole(&args),
+        "bbbm" => cmd_bbbm(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -116,6 +118,11 @@ fn print_usage(prog: &str) {
 fn cmd_sr_hole(args: &[String]) {
     let path = args.get(2).map(String::as_str).unwrap_or("adinkra_codes_n16.json");
     let report = sr_hole::run(path);
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_bbbm(_args: &[String]) {
+    let report = bbbm::run();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
 
