@@ -1,5 +1,6 @@
 mod baselines;
 mod bbbm;
+mod bbbm_closure;
 mod bbbm_holoraumy;
 mod canonical;
 mod chromochar;
@@ -61,6 +62,7 @@ fn main() {
         "enhance-scan" => cmd_enhance_scan(&args),
         "sr-investigation" | "sr-hole" => cmd_sr_hole(&args),
         "bbbm" => cmd_bbbm(&args),
+        "bbbm-closure" => cmd_bbbm_closure(&args),
         "bbbm-holoraumy" => cmd_bbbm_holoraumy(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
@@ -131,6 +133,11 @@ fn cmd_bbbm(_args: &[String]) {
 fn cmd_bbbm_holoraumy(_args: &[String]) {
     let report = bbbm_holoraumy::compute();
     println!("{:#?}", report);
+}
+
+fn cmd_bbbm_closure(_args: &[String]) {
+    let report = bbbm_closure::run();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

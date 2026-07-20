@@ -107,11 +107,23 @@ Route B does not yield a new off-shell equation, for concrete reasons:
   free, abelian, and closes all its charges by construction, so the worldline
   reduction trivializes exactly the structure Route B wanted to interrogate.
 
-The one honest, untouched contribution that remains is to metabolize BBBM's
-9-off-shell construction into adinkra/holoraumy language at the field-theory
-level (using Eqs. 22-23, the Spin(7) 4-form, the constrained spinors), not in the
-valise. That is a translation exercise, genuinely not done before, but it is not
-a new equation and not off-shell.
+What was done instead (the honest, positive half). `src/bbbm_closure.rs`
+(subcommand `bbbm-closure`) verifies exactly, in the reduced 9-theta superspace
+(not the trivializing 1D valise), that the 9 = 1 + 8 supercharges close
+off-shell: the flat covariant derivatives of Eq. (33), built as exact operators
+on the 2^9 = 512-dimensional Grassmann module, satisfy Eq. (34) with every
+anticommutator a pure translation (max_residual_terms = 0), and the component
+delta_0^2 = d_+ + gauge(A_+) (Eq. 22-24) closes with zero equation-of-motion
+residue. It also builds the exact Spin(7) antiselfdual projector (rank 7,
+symmetric, idempotent) that the 7 tensor charges live in. This is BBBM's
+9-off-shell closure metabolized into the codebase apparatus for the first time,
+a translation, not a new equation.
+
+The 7 antiselfdual tensor charges are reported (not fabricated) as
+underspecified by arXiv:0705.2002: the paper drops them (nu^{ij} = 0, Eq. 17) and
+prints no delta^-_{ij} transformation laws, so their explicit non-closure/EOM
+functions are not extractable from the printed equations. This is asserted by the
+test `seven_charges_reported_underspecified_not_fabricated`.
 
 ## Context
 
