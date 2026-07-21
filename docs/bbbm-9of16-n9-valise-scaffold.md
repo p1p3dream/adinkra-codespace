@@ -214,3 +214,6 @@ Additional references:
   "Infinite-Dimensional Algebraic Spin(N) Structure in Extended/Higher
   Dimensional SUSY Holoraumy for Valise and On-Shell Supermultiplet
   Representations," arXiv:2010.06124, *JHEP* 05 (2022) 173.
+
+The research consequences and ordered next steps are recorded in
+[`from-bbbm-closure-to-adynkrafield-equations.md`](from-bbbm-closure-to-adynkrafield-equations.md).
