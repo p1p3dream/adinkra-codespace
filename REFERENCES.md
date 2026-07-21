@@ -91,35 +91,35 @@ relevant module doc-comments).
   `scripts/check_sr_spin9_decomposition.py`; the decomposition itself is
   verified there by exact Cartan characteristic polynomials.
 
-- **Cigliano, Dahl, Gates (et al.)**, *10D Supergravity Numerical Data Sets for L &
-  R Matrices*, arXiv:2512.12157; data repo **github.com/mcmulaz/Super-Sym** ("Garden
+- **Jacob Cigliano, Bergen Dahl, S. James Gates, Jr.**, *10D Supergravity Numerical
+  Data Sets for L & R Matrices*, arXiv:2512.12157v1; data repo
+  **github.com/mcmulaz/Super-Sym** ("Garden
   Algebra" Mathematica file, commit `8c8df92`). The split SO(1,9) sigma relation
   `σ^μ σ̃^ν + σ^ν σ̃^μ = 2 η^μν I_16` and the explicit 82×176 / 176×82 L/R matrices +
   non-closure tensor E_IJ. Used by: `lorentz.rs` (split-sigma relation),
   `tendim_data.rs` + `data/tendim_10d_lr.json` (regenerated via
   `scripts/gen_10d_data.py`).
-  **Provenance note:** our JSON is *regenerated from the authors' Garden Algebra
-  generative source* (github.com/mcmulaz/Super-Sym, commit `8c8df92`), not a literal
-  download of the paper's matrices. It satisfies the bosonic Garden relation to
+  **Provenance note:** our JSON is a deterministic 12-decimal serialization from
+  a Python transcription of the authors' Garden Algebra source at commit
+  `8c8df92`, not a literal download. It satisfies the bosonic Garden relation to
   ~1.7e-12 in float (exactly 0 in exact arithmetic). The fermionic non-closure
   remnant E_IJ is nonzero (computed here, NOT a paper-reported figure). This is
-  evidence of algebraic plausibility. Additionally, a SEPARATE exact (sympy) port of
-  the Garden source matches our JSON entrywise (0 mismatches; bosonic relation
-  exactly 0 in exact arithmetic) — see `scripts/eval_garden_exact.py`. (This is a
-  second exact implementation of the same Garden formulas, so it corroborates "our
-  JSON equals the Garden source", not an independent proof of the paper's
-  convention.) The dataset is therefore faithful to the authors' Garden Algebra
-  source; we make NO claim of byte-equality to any matrices typeset in the paper.
-  **Worked-example discrepancy (UNRESOLVED):** the paper's displayed worked examples
-  in Eq 6.0.5 (and the gravitino ψ examples in Eq 6.0.6) disagree with the Garden
-  source / our JSON — both in bracketed spinor indices (e.g. `ψ_1(6)` vs `ψ_1(16)`)
-  and some coefficients (e.g. paper `i/16` vs our assembled `7/16`). Whether this is
-  a transcription error, a primitive-vs-assembled presentation difference, or a
-  convention map is NOT established and needs the authors. No typo claim is made.
-  See PROVENANCE.md §6.
-  **License / citation posture:** the upstream repo carries no LICENSE file. We keep
-  the dataset public as an *academic regeneration* of the authors' published
-  Mathematica, with full citation to arXiv:2512.12157 and the pinned upstream commit.
+  evidence of algebraic plausibility. A separate exact SymPy transcription matches
+  the JSON entrywise with zero mismatches and gives an exact zero bosonic residual;
+  see `scripts/eval_garden_exact.py`. The two transcriptions agree, but neither
+  executes Wolfram Language and neither establishes the authors' intended convention.
+  **Paper/source inconsistency:** the audit checks all 13 displayed equations in
+  Eqs. 6.0.5-6.0.6. Four equations and seven of 26 terms match directly. No fixed
+  shared permutation of the displayed spinor labels reconciles the sampled
+  equations with the generator. Appendix A's
+  printed sigma basis supports the generator's `Q_1 h_11 = 2 ψ_1(16)`, not the
+  displayed `ψ_1(6)`. The executable source uses `1/16 MixedLeft`, while its nearby
+  comment says `1/8`. The two local transcriptions agree; the intended L rows and
+  assembled R coefficients still require author confirmation. See PROVENANCE.md §6 and run
+  `cargo run --release -- tendim-reproduce`.
+  **License / citation posture:** the upstream repo carries no LICENSE file. The
+  local artifact is a cited academic transcription of published generative formulas,
+  not a copied upstream matrix file.
   Full hashes, conventions, regen command, and the mismatch status are recorded in
   **PROVENANCE.md**.
 - Octonionic SO(9) Clifford construction (Fano-plane imaginary-octonion

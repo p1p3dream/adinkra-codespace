@@ -80,6 +80,7 @@ fn main() {
         "bbbm-holoraumy" => cmd_bbbm_holoraumy(&args),
         "bbbm-nonabelian" => cmd_bbbm_nonabelian(&args),
         "bbbm-sixteen-onshell" => cmd_bbbm_sixteen_onshell(&args),
+        "tendim-reproduce" => cmd_tendim_reproduce(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -135,6 +136,7 @@ fn print_usage(prog: &str) {
     eprintln!("  bbbm-closure            Verify BBBM component closure and worldline reduction");
     eprintln!("  bbbm-nonabelian         Verify the full nonabelian BBBM component algebra");
     eprintln!("  bbbm-sixteen-onshell    Verify full 16-charge closure modulo the Dirac equation");
+    eprintln!("  tendim-reproduce [json] Audit the pinned 10D supergravity L/R reproduction");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -169,6 +171,16 @@ fn cmd_bbbm_nonabelian(_args: &[String]) {
 fn cmd_bbbm_sixteen_onshell(_args: &[String]) {
     let report = bbbm_sixteen_onshell::run();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_tendim_reproduce(args: &[String]) {
+    let default_path = format!("{}/data/tendim_10d_lr.json", env!("CARGO_MANIFEST_DIR"));
+    let path = args.get(2).map(String::as_str).unwrap_or(&default_path);
+    let report = tendim_data::reproduction_audit(path);
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

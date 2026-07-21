@@ -1,0 +1,723 @@
+{
+  "schema_version": "tendim-reproduction-audit-v1",
+  "input_path": "data/tendim_10d_lr.json",
+  "paper_revision": "arXiv:2512.12157v1",
+  "paper_pdf_sha256": "4b3adbda34bf4ba870713ccddad285d8de70c5608fb53ec0dd6f6ae6dcfd4602",
+  "declared_upstream_repository": "https://github.com/mcmulaz/Super-Sym",
+  "declared_upstream_commit": "8c8df92dac17853d7f6cb5b136ef2aec0efdea70",
+  "declared_upstream_source_sha256": "d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c",
+  "raw_json_sha256": "2f2468932b1d488b1cce69b472e77452a3cce0e93eb6bf6aab73419d3ec4e1f3",
+  "raw_json_sha256_matches": true,
+  "canonical_matrix_token_hash": "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244",
+  "canonical_matrix_token_hash_matches": true,
+  "canonical_token_tolerance": 1e-9,
+  "dimensions": {
+    "colors": 16,
+    "bosons": 82,
+    "fermions": 176
+  },
+  "matrix_content": {
+    "l_entries": 230912,
+    "r_entries": 230912,
+    "combined_entries": 461824,
+    "l_nonzero_entries": 3040,
+    "r_nonzero_entries": 7648,
+    "l_nonzero_per_color": [
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190,
+      190
+    ],
+    "r_nonzero_per_color": [
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478,
+      478
+    ]
+  },
+  "boson_order": [
+    "h11",
+    "h12",
+    "h13",
+    "h14",
+    "h15",
+    "h16",
+    "h17",
+    "h18",
+    "h19",
+    "h22",
+    "h23",
+    "h24",
+    "h25",
+    "h26",
+    "h27",
+    "h28",
+    "h29",
+    "h33",
+    "h34",
+    "h35",
+    "h36",
+    "h37",
+    "h38",
+    "h39",
+    "h44",
+    "h45",
+    "h46",
+    "h47",
+    "h48",
+    "h49",
+    "h55",
+    "h56",
+    "h57",
+    "h58",
+    "h59",
+    "h66",
+    "h67",
+    "h68",
+    "h69",
+    "h77",
+    "h78",
+    "h79",
+    "h88",
+    "h89",
+    "h99",
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B23",
+    "B24",
+    "B25",
+    "B26",
+    "B27",
+    "B28",
+    "B29",
+    "B34",
+    "B35",
+    "B36",
+    "B37",
+    "B38",
+    "B39",
+    "B45",
+    "B46",
+    "B47",
+    "B48",
+    "B49",
+    "B56",
+    "B57",
+    "B58",
+    "B59",
+    "B67",
+    "B68",
+    "B69",
+    "B78",
+    "B79",
+    "B89",
+    "phi"
+  ],
+  "fermion_order": [
+    "psi0(1)",
+    "psi0(2)",
+    "psi0(3)",
+    "psi0(4)",
+    "psi0(5)",
+    "psi0(6)",
+    "psi0(7)",
+    "psi0(8)",
+    "psi0(9)",
+    "psi0(10)",
+    "psi0(11)",
+    "psi0(12)",
+    "psi0(13)",
+    "psi0(14)",
+    "psi0(15)",
+    "psi0(16)",
+    "psi1(1)",
+    "psi1(2)",
+    "psi1(3)",
+    "psi1(4)",
+    "psi1(5)",
+    "psi1(6)",
+    "psi1(7)",
+    "psi1(8)",
+    "psi1(9)",
+    "psi1(10)",
+    "psi1(11)",
+    "psi1(12)",
+    "psi1(13)",
+    "psi1(14)",
+    "psi1(15)",
+    "psi1(16)",
+    "psi2(1)",
+    "psi2(2)",
+    "psi2(3)",
+    "psi2(4)",
+    "psi2(5)",
+    "psi2(6)",
+    "psi2(7)",
+    "psi2(8)",
+    "psi2(9)",
+    "psi2(10)",
+    "psi2(11)",
+    "psi2(12)",
+    "psi2(13)",
+    "psi2(14)",
+    "psi2(15)",
+    "psi2(16)",
+    "psi3(1)",
+    "psi3(2)",
+    "psi3(3)",
+    "psi3(4)",
+    "psi3(5)",
+    "psi3(6)",
+    "psi3(7)",
+    "psi3(8)",
+    "psi3(9)",
+    "psi3(10)",
+    "psi3(11)",
+    "psi3(12)",
+    "psi3(13)",
+    "psi3(14)",
+    "psi3(15)",
+    "psi3(16)",
+    "psi4(1)",
+    "psi4(2)",
+    "psi4(3)",
+    "psi4(4)",
+    "psi4(5)",
+    "psi4(6)",
+    "psi4(7)",
+    "psi4(8)",
+    "psi4(9)",
+    "psi4(10)",
+    "psi4(11)",
+    "psi4(12)",
+    "psi4(13)",
+    "psi4(14)",
+    "psi4(15)",
+    "psi4(16)",
+    "psi5(1)",
+    "psi5(2)",
+    "psi5(3)",
+    "psi5(4)",
+    "psi5(5)",
+    "psi5(6)",
+    "psi5(7)",
+    "psi5(8)",
+    "psi5(9)",
+    "psi5(10)",
+    "psi5(11)",
+    "psi5(12)",
+    "psi5(13)",
+    "psi5(14)",
+    "psi5(15)",
+    "psi5(16)",
+    "psi6(1)",
+    "psi6(2)",
+    "psi6(3)",
+    "psi6(4)",
+    "psi6(5)",
+    "psi6(6)",
+    "psi6(7)",
+    "psi6(8)",
+    "psi6(9)",
+    "psi6(10)",
+    "psi6(11)",
+    "psi6(12)",
+    "psi6(13)",
+    "psi6(14)",
+    "psi6(15)",
+    "psi6(16)",
+    "psi7(1)",
+    "psi7(2)",
+    "psi7(3)",
+    "psi7(4)",
+    "psi7(5)",
+    "psi7(6)",
+    "psi7(7)",
+    "psi7(8)",
+    "psi7(9)",
+    "psi7(10)",
+    "psi7(11)",
+    "psi7(12)",
+    "psi7(13)",
+    "psi7(14)",
+    "psi7(15)",
+    "psi7(16)",
+    "psi8(1)",
+    "psi8(2)",
+    "psi8(3)",
+    "psi8(4)",
+    "psi8(5)",
+    "psi8(6)",
+    "psi8(7)",
+    "psi8(8)",
+    "psi8(9)",
+    "psi8(10)",
+    "psi8(11)",
+    "psi8(12)",
+    "psi8(13)",
+    "psi8(14)",
+    "psi8(15)",
+    "psi8(16)",
+    "psi9(1)",
+    "psi9(2)",
+    "psi9(3)",
+    "psi9(4)",
+    "psi9(5)",
+    "psi9(6)",
+    "psi9(7)",
+    "psi9(8)",
+    "psi9(9)",
+    "psi9(10)",
+    "psi9(11)",
+    "psi9(12)",
+    "psi9(13)",
+    "psi9(14)",
+    "psi9(15)",
+    "psi9(16)",
+    "chi1",
+    "chi2",
+    "chi3",
+    "chi4",
+    "chi5",
+    "chi6",
+    "chi7",
+    "chi8",
+    "chi9",
+    "chi10",
+    "chi11",
+    "chi12",
+    "chi13",
+    "chi14",
+    "chi15",
+    "chi16"
+  ],
+  "worked_examples": [
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 h11",
+      "paper_terms": [
+        {
+          "field": "psi1(6)",
+          "coefficient": "2"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "psi1(16)",
+          "coefficient": "2"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 0,
+      "support_match": false,
+      "classification": "different_support"
+    },
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 h47",
+      "paper_terms": [
+        {
+          "field": "psi4(4)",
+          "coefficient": "-1"
+        },
+        {
+          "field": "psi7(5)",
+          "coefficient": "-1"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "psi4(10)",
+          "coefficient": "-1"
+        },
+        {
+          "field": "psi7(15)",
+          "coefficient": "-1"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 0,
+      "support_match": false,
+      "classification": "different_support"
+    },
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 h99",
+      "paper_terms": [
+        {
+          "field": "psi9(11)",
+          "coefficient": "2"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "psi9(1)",
+          "coefficient": "2"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 0,
+      "support_match": false,
+      "classification": "different_support"
+    },
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 B12",
+      "paper_terms": [
+        {
+          "field": "psi1(8)",
+          "coefficient": "-1"
+        },
+        {
+          "field": "psi2(6)",
+          "coefficient": "1"
+        },
+        {
+          "field": "chi9",
+          "coefficient": "1"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "psi1(14)",
+          "coefficient": "1"
+        },
+        {
+          "field": "psi2(16)",
+          "coefficient": "1"
+        },
+        {
+          "field": "chi3",
+          "coefficient": "-1"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 0,
+      "support_match": false,
+      "classification": "different_support"
+    },
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 B37",
+      "paper_terms": [
+        {
+          "field": "psi3(4)",
+          "coefficient": "1"
+        },
+        {
+          "field": "psi7(7)",
+          "coefficient": "-1"
+        },
+        {
+          "field": "chi16",
+          "coefficient": "1"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "psi3(10)",
+          "coefficient": "1"
+        },
+        {
+          "field": "psi7(13)",
+          "coefficient": "-1"
+        },
+        {
+          "field": "chi6",
+          "coefficient": "-1"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 0,
+      "support_match": false,
+      "classification": "different_support"
+    },
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 B89",
+      "paper_terms": [
+        {
+          "field": "psi8(11)",
+          "coefficient": "1"
+        },
+        {
+          "field": "psi9(3)",
+          "coefficient": "1"
+        },
+        {
+          "field": "chi3",
+          "coefficient": "1"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "psi8(1)",
+          "coefficient": "-1"
+        },
+        {
+          "field": "psi9(9)",
+          "coefficient": "1"
+        },
+        {
+          "field": "chi9",
+          "coefficient": "-1"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 0,
+      "support_match": false,
+      "classification": "different_support"
+    },
+    {
+      "equation": "6.0.5",
+      "left_hand_side": "Q1 phi",
+      "paper_terms": [
+        {
+          "field": "chi1",
+          "coefficient": "sqrt8"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "chi1",
+          "coefficient": "sqrt8"
+        }
+      ],
+      "direct_match": true,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "direct_match"
+    },
+    {
+      "equation": "6.0.6",
+      "left_hand_side": "Q1 psi1(1)",
+      "paper_terms": [
+        {
+          "field": "h19",
+          "coefficient": "1/2"
+        },
+        {
+          "field": "B19",
+          "coefficient": "1/16"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "h19",
+          "coefficient": "1/2"
+        },
+        {
+          "field": "B19",
+          "coefficient": "-7/16"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "same_support_different_coefficients"
+    },
+    {
+      "equation": "6.0.6",
+      "left_hand_side": "Q1 psi4(16)",
+      "paper_terms": [
+        {
+          "field": "h14",
+          "coefficient": "1/2"
+        },
+        {
+          "field": "B14",
+          "coefficient": "-1/16"
+        },
+        {
+          "field": "B23",
+          "coefficient": "3/16"
+        },
+        {
+          "field": "B56",
+          "coefficient": "3/16"
+        },
+        {
+          "field": "B78",
+          "coefficient": "3/16"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "h14",
+          "coefficient": "1/2"
+        },
+        {
+          "field": "B14",
+          "coefficient": "7/16"
+        },
+        {
+          "field": "B23",
+          "coefficient": "-1/16"
+        },
+        {
+          "field": "B56",
+          "coefficient": "-1/16"
+        },
+        {
+          "field": "B78",
+          "coefficient": "-1/16"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "same_support_different_coefficients"
+    },
+    {
+      "equation": "6.0.6",
+      "left_hand_side": "Q1 psi9(16)",
+      "paper_terms": [
+        {
+          "field": "h19",
+          "coefficient": "1/2"
+        },
+        {
+          "field": "B19",
+          "coefficient": "-1/16"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "h19",
+          "coefficient": "1/2"
+        },
+        {
+          "field": "B19",
+          "coefficient": "7/16"
+        }
+      ],
+      "direct_match": false,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "same_support_different_coefficients"
+    },
+    {
+      "equation": "6.0.6",
+      "left_hand_side": "Q1 chi1",
+      "paper_terms": [
+        {
+          "field": "phi",
+          "coefficient": "1/sqrt8"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "phi",
+          "coefficient": "1/sqrt8"
+        }
+      ],
+      "direct_match": true,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "direct_match"
+    },
+    {
+      "equation": "6.0.6",
+      "left_hand_side": "Q1 chi9",
+      "paper_terms": [
+        {
+          "field": "B89",
+          "coefficient": "-1/8"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "B89",
+          "coefficient": "-1/8"
+        }
+      ],
+      "direct_match": true,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "direct_match"
+    },
+    {
+      "equation": "6.0.6",
+      "left_hand_side": "Q1 chi16",
+      "paper_terms": [
+        {
+          "field": "B19",
+          "coefficient": "-1/8"
+        }
+      ],
+      "regenerated_terms": [
+        {
+          "field": "B19",
+          "coefficient": "-1/8"
+        }
+      ],
+      "direct_match": true,
+      "direct_terms": 1,
+      "support_match": true,
+      "classification": "direct_match"
+    }
+  ],
+  "worked_examples_matching": 4,
+  "worked_examples_checked": 13,
+  "worked_example_terms_matching": 7,
+  "worked_example_terms_checked": 26,
+  "fixed_shared_spinor_label_permutation_reconciles_examples": false,
+  "algebra": {
+    "unordered_color_pairs_checked": 136,
+    "bosonic_relations_checked": 136,
+    "bosonic_scalar_equalities_checked": 914464,
+    "bosonic_max_frobenius_residual": 1.6828760607268123e-12,
+    "fermionic_nonclosure_pairs": 136,
+    "fermionic_entries_examined_across_pairs": 4212736,
+    "fermionic_nonclosure_nonzero_entries_across_pairs": 132352,
+    "nonzero_threshold": 1e-9,
+    "fermionic_nonclosure_max_frobenius_norm": 9.924716620639604,
+    "fermionic_nonclosure_max_abs_entry": 1.0
+  },
+  "run_timings": {
+    "load_ms": 11,
+    "content_validation_ms": 3,
+    "algebra_ms": 27,
+    "total_ms": 920
+  },
+  "algebra_benchmark": {
+    "warmup_runs": 3,
+    "measured_runs": 30,
+    "median_microseconds": 26803,
+    "p95_microseconds": 28054,
+    "build_profile": "release"
+  },
+  "source_fidelity_basis": "The raw hash locks the serialized artifact. The token hash identifies its ordered symbolic values after snapping within 1e-9. scripts/gen_10d_data.py and scripts/eval_garden_exact.py are independent transcriptions of the pinned Garden Algebra definitions; neither executes Wolfram Language.",
+  "passed": true,
+  "conclusion": "The supplied artifact matches the pinned raw-byte and tolerance-snapped matrix-token hashes, and all 136 bosonic relations close. Two independent local transcriptions agree with these matrices. The paper/source inconsistencies remain subject to author confirmation."
+}

@@ -7,14 +7,14 @@
 //! `data/tendim_10d_lr.json` is the numerically evaluated result of a Python
 //! re-implementation of that code (`scripts/gen_10d_data.py`).
 //!
-//! PROVENANCE CAVEAT (from adversarial review): because the dataset is
-//! REGENERATED (not a literal download), satisfying the bosonic Garden relation
-//! is necessary-but-not-sufficient evidence of fidelity (a different basis /
-//! color ordering / sign convention could satisfy it too). Safe claim: "this
-//! JSON satisfies the bosonic Garden relation to ~1.7e-12 with a nonzero
-//! fermionic remnant." NOT yet safe: "byte-faithful to the published matrices."
-//! Full fidelity needs a pinned upstream commit, a Wolfram re-export, and exact
-//! entry/hash comparison. The generator script is checked in for reproducibility.
+//! PROVENANCE BOUNDARY: this dataset exactly reproduces the authors' generative
+//! `Garden Algebra` source at a pinned commit under its recorded basis and field
+//! ordering. The source contains formulas, not a literal matrix dump, so there
+//! are no upstream matrix bytes to compare. The paper's displayed examples in
+//! Eqs. (6.0.5)-(6.0.6) are inconsistent with the generator and cannot be
+//! reconciled by one fixed shared permutation of the displayed spinor labels.
+//! Author confirmation is still needed to determine the intended L rows and
+//! assembled R coefficients. See PROVENANCE.md.
 //!
 //! Shapes: 16 generators. L_I is nb x nf (82 x 176), R_I is nf x nb (176 x 82).
 //! nb = 82 bosons, nf = 176 fermions. This is a non-valise, non-square
@@ -35,7 +35,9 @@
 // non-test binary sees it as dead. Kept as the lift-verifier research surface.
 #![allow(dead_code)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use std::time::Instant;
 
 /// Raw parsed dataset. `L[i]` is a 82x176 matrix (Vec of 82 rows, each 176
 /// long). `R[i]` is a 176x82 matrix. Entries are stored as f64 (the real parts;
@@ -52,6 +54,126 @@ pub struct TenDimData {
     pub l: Vec<Vec<Vec<f64>>>,
     #[serde(rename = "R")]
     pub r: Vec<Vec<Vec<f64>>>,
+}
+
+const UPSTREAM_COMMIT: &str = "8c8df92dac17853d7f6cb5b136ef2aec0efdea70";
+const UPSTREAM_SOURCE_SHA256: &str =
+    "d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c";
+const PINNED_TOKEN_HASH: &str = "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244";
+const PINNED_RAW_JSON_SHA256: &str =
+    "2f2468932b1d488b1cce69b472e77452a3cce0e93eb6bf6aab73419d3ec4e1f3";
+
+/// One nonzero term in a displayed transformation rule. The common `i` and
+/// time derivative on the R side are factored out, following Eqs. (6.0.7) and
+/// (6.0.8) of arXiv:2512.12157.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub struct AuditTerm {
+    pub field: String,
+    pub coefficient: String,
+}
+
+/// Direct comparison of a worked example printed in Eqs. (6.0.5)-(6.0.6) with
+/// the corresponding row of the pinned Garden Algebra regeneration.
+#[derive(Debug, Clone, Serialize)]
+pub struct WorkedExampleAudit {
+    pub equation: &'static str,
+    pub left_hand_side: String,
+    pub paper_terms: Vec<AuditTerm>,
+    pub regenerated_terms: Vec<AuditTerm>,
+    pub direct_match: bool,
+    pub direct_terms: usize,
+    pub support_match: bool,
+    pub classification: ComparisonClass,
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ComparisonClass {
+    DirectMatch,
+    SameSupportDifferentCoefficients,
+    DifferentSupport,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MatrixContentAudit {
+    pub l_entries: usize,
+    pub r_entries: usize,
+    pub combined_entries: usize,
+    pub l_nonzero_entries: usize,
+    pub r_nonzero_entries: usize,
+    pub l_nonzero_per_color: Vec<usize>,
+    pub r_nonzero_per_color: Vec<usize>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DimensionsAudit {
+    pub colors: usize,
+    pub bosons: usize,
+    pub fermions: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct AlgebraAudit {
+    pub unordered_color_pairs_checked: usize,
+    pub bosonic_relations_checked: usize,
+    pub bosonic_scalar_equalities_checked: usize,
+    pub bosonic_max_frobenius_residual: f64,
+    pub fermionic_nonclosure_pairs: usize,
+    pub fermionic_entries_examined_across_pairs: usize,
+    pub fermionic_nonclosure_nonzero_entries_across_pairs: usize,
+    pub nonzero_threshold: f64,
+    pub fermionic_nonclosure_max_frobenius_norm: f64,
+    pub fermionic_nonclosure_max_abs_entry: f64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TimingAudit {
+    pub load_ms: u128,
+    pub content_validation_ms: u128,
+    pub algebra_ms: u128,
+    pub total_ms: u128,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BenchmarkAudit {
+    pub warmup_runs: usize,
+    pub measured_runs: usize,
+    pub median_microseconds: u128,
+    pub p95_microseconds: u128,
+    pub build_profile: &'static str,
+}
+
+/// Machine-readable status report for the arXiv:2512.12157 reproduction.
+#[derive(Debug, Clone, Serialize)]
+pub struct ReproductionAudit {
+    pub schema_version: &'static str,
+    pub input_path: String,
+    pub paper_revision: &'static str,
+    pub paper_pdf_sha256: &'static str,
+    pub declared_upstream_repository: &'static str,
+    pub declared_upstream_commit: &'static str,
+    pub declared_upstream_source_sha256: &'static str,
+    pub raw_json_sha256: String,
+    pub raw_json_sha256_matches: bool,
+    pub canonical_matrix_token_hash: String,
+    pub canonical_matrix_token_hash_matches: bool,
+    pub canonical_token_tolerance: f64,
+    pub dimensions: DimensionsAudit,
+    pub matrix_content: MatrixContentAudit,
+    pub boson_order: Vec<String>,
+    pub fermion_order: Vec<String>,
+    pub worked_examples: Vec<WorkedExampleAudit>,
+    pub worked_examples_matching: usize,
+    pub worked_examples_checked: usize,
+    pub worked_example_terms_matching: usize,
+    pub worked_example_terms_checked: usize,
+    pub fixed_shared_spinor_label_permutation_reconciles_examples: bool,
+    pub algebra: AlgebraAudit,
+    pub run_timings: TimingAudit,
+    pub algebra_benchmark: BenchmarkAudit,
+    pub source_fidelity_basis: &'static str,
+    pub passed: bool,
+    pub conclusion: String,
 }
 
 /// Load the dataset from a JSON file produced from the Super-Sym Garden Algebra
@@ -157,7 +279,9 @@ impl TenDimData {
                 for (ci, &v) in row.iter().enumerate() {
                     if l_token(v).is_none() {
                         if errors.len() < MAX_REPORTED {
-                            errors.push(format!("L[{mi}][{ri}][{ci}] = {v:?} not an allowed L token"));
+                            errors.push(format!(
+                                "L[{mi}][{ri}][{ci}] = {v:?} not an allowed L token"
+                            ));
                         }
                     }
                 }
@@ -168,7 +292,9 @@ impl TenDimData {
                 for (ci, &v) in row.iter().enumerate() {
                     if r_token(v).is_none() {
                         if errors.len() < MAX_REPORTED {
-                            errors.push(format!("R[{mi}][{ri}][{ci}] = {v:?} not an allowed R token"));
+                            errors.push(format!(
+                                "R[{mi}][{ri}][{ci}] = {v:?} not an allowed R token"
+                            ));
                         }
                     }
                 }
@@ -238,6 +364,404 @@ impl TenDimData {
         }
         sha256_hex(stream.as_bytes())
     }
+
+    /// Evaluate every unordered color pair. The bosonic count is the number of
+    /// matrix relations checked, not the number of scalar entries.
+    pub fn full_algebra_audit(&self) -> AlgebraAudit {
+        let mut bosonic_max = 0.0_f64;
+        let mut fermionic_max = 0.0_f64;
+        let mut fermionic_max_abs = 0.0_f64;
+        let mut fermionic_nonzero_pairs = 0usize;
+        let mut fermionic_nonzero_entries = 0usize;
+        let mut pairs = 0usize;
+
+        for i in 0..self.n {
+            for j in i..self.n {
+                pairs += 1;
+                let lirj = matmul(&self.l[i], &self.r[j]);
+                let ljri = matmul(&self.l[j], &self.r[i]);
+                let delta = if i == j { 2.0 } else { 0.0 };
+                bosonic_max = bosonic_max.max(frob_diff_minus_scaled_identity(
+                    &lirj, &ljri, delta, self.nb,
+                ));
+
+                let rilj = matmul(&self.r[i], &self.l[j]);
+                let rjli = matmul(&self.r[j], &self.l[i]);
+                let mut norm_sq = 0.0_f64;
+                let mut pair_nonzero = false;
+                for row in 0..self.nf {
+                    for col in 0..self.nf {
+                        let mut e = 0.5 * (rilj[row][col] + rjli[row][col]);
+                        if i == j && row == col {
+                            e -= 1.0;
+                        }
+                        norm_sq += e * e;
+                        fermionic_max_abs = fermionic_max_abs.max(e.abs());
+                        if e.abs() > VALUE_TOL {
+                            pair_nonzero = true;
+                            fermionic_nonzero_entries += 1;
+                        }
+                    }
+                }
+                if pair_nonzero {
+                    fermionic_nonzero_pairs += 1;
+                }
+                fermionic_max = fermionic_max.max(norm_sq.sqrt());
+            }
+        }
+
+        AlgebraAudit {
+            unordered_color_pairs_checked: pairs,
+            bosonic_relations_checked: pairs,
+            bosonic_scalar_equalities_checked: pairs * self.nb * self.nb,
+            bosonic_max_frobenius_residual: bosonic_max,
+            fermionic_nonclosure_pairs: fermionic_nonzero_pairs,
+            fermionic_entries_examined_across_pairs: pairs * self.nf * self.nf,
+            fermionic_nonclosure_nonzero_entries_across_pairs: fermionic_nonzero_entries,
+            nonzero_threshold: VALUE_TOL,
+            fermionic_nonclosure_max_frobenius_norm: fermionic_max,
+            fermionic_nonclosure_max_abs_entry: fermionic_max_abs,
+        }
+    }
+}
+
+fn matrix_content_audit(data: &TenDimData) -> MatrixContentAudit {
+    let count = |matrix: &[Vec<f64>]| {
+        matrix
+            .iter()
+            .flatten()
+            .filter(|&&x| x.abs() > VALUE_TOL)
+            .count()
+    };
+    let l_nonzero_per_color = data
+        .l
+        .iter()
+        .map(|matrix| count(matrix))
+        .collect::<Vec<_>>();
+    let r_nonzero_per_color = data
+        .r
+        .iter()
+        .map(|matrix| count(matrix))
+        .collect::<Vec<_>>();
+    let l_entries = data.n * data.nb * data.nf;
+    let r_entries = data.n * data.nf * data.nb;
+    MatrixContentAudit {
+        l_entries,
+        r_entries,
+        combined_entries: l_entries + r_entries,
+        l_nonzero_entries: l_nonzero_per_color.iter().sum(),
+        r_nonzero_entries: r_nonzero_per_color.iter().sum(),
+        l_nonzero_per_color,
+        r_nonzero_per_color,
+    }
+}
+
+fn boson_order() -> Vec<String> {
+    let mut out = Vec::with_capacity(82);
+    for mu in 1..=9 {
+        for nu in mu..=9 {
+            out.push(format!("h{mu}{nu}"));
+        }
+    }
+    for mu in 1..=9 {
+        for nu in (mu + 1)..=9 {
+            out.push(format!("B{mu}{nu}"));
+        }
+    }
+    out.push("phi".to_string());
+    out
+}
+
+fn fermion_order() -> Vec<String> {
+    let mut out = Vec::with_capacity(176);
+    for mu in 0..=9 {
+        for spinor in 1..=16 {
+            out.push(format!("psi{mu}({spinor})"));
+        }
+    }
+    for spinor in 1..=16 {
+        out.push(format!("chi{spinor}"));
+    }
+    out
+}
+
+fn terms(entries: &[f64], fields: &[String], side: char) -> Vec<AuditTerm> {
+    let mut out = Vec::new();
+    for (&value, field) in entries.iter().zip(fields) {
+        let token = match side {
+            'L' => l_token(value),
+            'R' => r_token(value),
+            _ => unreachable!(),
+        };
+        if let Some(coefficient) = token {
+            if coefficient != "0" {
+                out.push(AuditTerm {
+                    field: field.clone(),
+                    coefficient: coefficient.to_string(),
+                });
+            }
+        } else {
+            panic!("worked-example audit encountered illegal {side} value {value}");
+        }
+    }
+    out
+}
+
+fn paper_terms(items: &[(&str, &str)]) -> Vec<AuditTerm> {
+    items
+        .iter()
+        .map(|(field, coefficient)| AuditTerm {
+            field: (*field).to_string(),
+            coefficient: (*coefficient).to_string(),
+        })
+        .collect()
+}
+
+fn same_terms(left: &[AuditTerm], right: &[AuditTerm]) -> bool {
+    let mut left = left.to_vec();
+    let mut right = right.to_vec();
+    left.sort();
+    right.sort();
+    left == right
+}
+
+fn same_support(left: &[AuditTerm], right: &[AuditTerm]) -> bool {
+    left.iter()
+        .map(|x| &x.field)
+        .collect::<std::collections::BTreeSet<_>>()
+        == right
+            .iter()
+            .map(|x| &x.field)
+            .collect::<std::collections::BTreeSet<_>>()
+}
+
+fn classify(left: &[AuditTerm], right: &[AuditTerm]) -> ComparisonClass {
+    if same_terms(left, right) {
+        ComparisonClass::DirectMatch
+    } else if same_support(left, right) {
+        ComparisonClass::SameSupportDifferentCoefficients
+    } else {
+        ComparisonClass::DifferentSupport
+    }
+}
+
+fn matching_term_count(left: &[AuditTerm], right: &[AuditTerm]) -> usize {
+    let counts = |xs: &[AuditTerm]| {
+        let mut out = BTreeMap::<(String, String), usize>::new();
+        for x in xs {
+            *out.entry((x.field.clone(), x.coefficient.clone()))
+                .or_default() += 1;
+        }
+        out
+    };
+    let left = counts(left);
+    let right = counts(right);
+    left.iter()
+        .map(|(term, n)| (*n).min(*right.get(term).unwrap_or(&0)))
+        .sum()
+}
+
+fn worked_example_audit(data: &TenDimData) -> Vec<WorkedExampleAudit> {
+    let bosons = boson_order();
+    let fermions = fermion_order();
+    let bidx = |name: &str| bosons.iter().position(|x| x == name).unwrap();
+    let fidx = |name: &str| fermions.iter().position(|x| x == name).unwrap();
+
+    let l_fixtures: [(&str, &[(&str, &str)]); 7] = [
+        ("h11", &[("psi1(6)", "2")]),
+        ("h47", &[("psi4(4)", "-1"), ("psi7(5)", "-1")]),
+        ("h99", &[("psi9(11)", "2")]),
+        ("B12", &[("psi1(8)", "-1"), ("psi2(6)", "1"), ("chi9", "1")]),
+        (
+            "B37",
+            &[("psi3(4)", "1"), ("psi7(7)", "-1"), ("chi16", "1")],
+        ),
+        ("B89", &[("psi8(11)", "1"), ("psi9(3)", "1"), ("chi3", "1")]),
+        ("phi", &[("chi1", "sqrt8")]),
+    ];
+    let r_fixtures: [(&str, &[(&str, &str)]); 6] = [
+        ("psi1(1)", &[("h19", "1/2"), ("B19", "1/16")]),
+        (
+            "psi4(16)",
+            &[
+                ("h14", "1/2"),
+                ("B14", "-1/16"),
+                ("B23", "3/16"),
+                ("B56", "3/16"),
+                ("B78", "3/16"),
+            ],
+        ),
+        ("psi9(16)", &[("h19", "1/2"), ("B19", "-1/16")]),
+        ("chi1", &[("phi", "1/sqrt8")]),
+        ("chi9", &[("B89", "-1/8")]),
+        ("chi16", &[("B19", "-1/8")]),
+    ];
+
+    let mut out = Vec::with_capacity(13);
+    for (lhs, expected) in l_fixtures {
+        let paper = paper_terms(expected);
+        let regenerated = terms(&data.l[0][bidx(lhs)], &fermions, 'L');
+        let direct_match = same_terms(&paper, &regenerated);
+        let direct_terms = matching_term_count(&paper, &regenerated);
+        let support_match = same_support(&paper, &regenerated);
+        let classification = classify(&paper, &regenerated);
+        out.push(WorkedExampleAudit {
+            equation: "6.0.5",
+            left_hand_side: format!("Q1 {lhs}"),
+            direct_match,
+            direct_terms,
+            support_match,
+            classification,
+            paper_terms: paper,
+            regenerated_terms: regenerated,
+        });
+    }
+    for (lhs, expected) in r_fixtures {
+        let paper = paper_terms(expected);
+        let regenerated = terms(&data.r[0][fidx(lhs)], &bosons, 'R');
+        let direct_match = same_terms(&paper, &regenerated);
+        let direct_terms = matching_term_count(&paper, &regenerated);
+        let support_match = same_support(&paper, &regenerated);
+        let classification = classify(&paper, &regenerated);
+        out.push(WorkedExampleAudit {
+            equation: "6.0.6",
+            left_hand_side: format!("Q1 {lhs}"),
+            direct_match,
+            direct_terms,
+            support_match,
+            classification,
+            paper_terms: paper,
+            regenerated_terms: regenerated,
+        });
+    }
+    out
+}
+
+/// Load the committed dataset, verify its raw bytes and tolerance-snapped token
+/// identity, compare every
+/// worked example displayed in Eqs. (6.0.5)-(6.0.6), and evaluate every
+/// unordered bosonic and fermionic color pair.
+pub fn reproduction_audit(path: &str) -> ReproductionAudit {
+    reproduction_audit_with_benchmark(path, 3, 30)
+}
+
+fn reproduction_audit_with_benchmark(
+    path: &str,
+    warmup_runs: usize,
+    measured_runs: usize,
+) -> ReproductionAudit {
+    let total_start = Instant::now();
+    let start = Instant::now();
+    let raw =
+        std::fs::read(path).unwrap_or_else(|e| panic!("failed to read 10D dataset {path}: {e}"));
+    let raw_hash = sha256_hex(&raw);
+    let data = load(path);
+    let load_ms = start.elapsed().as_millis();
+
+    let start = Instant::now();
+    data.validate_value_sets()
+        .expect("10D dataset contains a value outside the pinned token sets");
+    let token_hash = data.canonical_token_hash();
+    let content_validation_ms = start.elapsed().as_millis();
+
+    let examples = worked_example_audit(&data);
+    let example_matches = examples.iter().filter(|x| x.direct_match).count();
+    let term_matches = examples
+        .iter()
+        .map(|x| matching_term_count(&x.paper_terms, &x.regenerated_terms))
+        .sum();
+    let terms_checked = examples.iter().map(|x| x.paper_terms.len()).sum();
+
+    let start = Instant::now();
+    let algebra = data.full_algebra_audit();
+    let algebra_ms = start.elapsed().as_millis();
+
+    for _ in 0..warmup_runs {
+        std::hint::black_box(data.full_algebra_audit());
+    }
+    let mut samples = Vec::with_capacity(measured_runs);
+    for _ in 0..measured_runs {
+        let start = Instant::now();
+        std::hint::black_box(data.full_algebra_audit());
+        samples.push(start.elapsed().as_micros());
+    }
+    samples.sort_unstable();
+    let median = if samples.is_empty() {
+        0
+    } else {
+        samples[samples.len() / 2]
+    };
+    let p95 = if samples.is_empty() {
+        0
+    } else {
+        samples[((samples.len() as f64 * 0.95).ceil() as usize - 1).min(samples.len() - 1)]
+    };
+    let token_hash_matches = token_hash == PINNED_TOKEN_HASH;
+    let raw_hash_matches = raw_hash == PINNED_RAW_JSON_SHA256;
+    let passed = token_hash_matches
+        && raw_hash_matches
+        && data.n == 16
+        && data.nb == 82
+        && data.nf == 176
+        && algebra.bosonic_max_frobenius_residual < 1e-9;
+    let conclusion = if passed {
+        "The supplied artifact matches the pinned raw-byte and tolerance-snapped matrix-token hashes, and all 136 bosonic relations close. Two independent local transcriptions agree with these matrices. The paper/source inconsistencies remain subject to author confirmation."
+    } else {
+        "The supplied artifact failed at least one pinned reproduction check. It must not be reported as the validated 10D L/R artifact."
+    };
+
+    ReproductionAudit {
+        schema_version: "tendim-reproduction-audit-v1",
+        input_path: path.to_string(),
+        paper_revision: "arXiv:2512.12157v1",
+        paper_pdf_sha256: "4b3adbda34bf4ba870713ccddad285d8de70c5608fb53ec0dd6f6ae6dcfd4602",
+        declared_upstream_repository: "https://github.com/mcmulaz/Super-Sym",
+        declared_upstream_commit: UPSTREAM_COMMIT,
+        declared_upstream_source_sha256: UPSTREAM_SOURCE_SHA256,
+        raw_json_sha256_matches: raw_hash_matches,
+        raw_json_sha256: raw_hash,
+        canonical_matrix_token_hash_matches: token_hash_matches,
+        canonical_matrix_token_hash: token_hash,
+        canonical_token_tolerance: VALUE_TOL,
+        dimensions: DimensionsAudit {
+            colors: data.n,
+            bosons: data.nb,
+            fermions: data.nf,
+        },
+        matrix_content: matrix_content_audit(&data),
+        boson_order: boson_order(),
+        fermion_order: fermion_order(),
+        worked_examples_matching: example_matches,
+        worked_examples_checked: examples.len(),
+        worked_example_terms_matching: term_matches,
+        worked_example_terms_checked: terms_checked,
+        // Eq. (6.0.6) pins spinor label 16 to 16, while Eq. (6.0.5) would
+        // require label 6 to map to 16. An injective fixed permutation cannot
+        // satisfy both. The chi_9 examples give an independent contradiction.
+        fixed_shared_spinor_label_permutation_reconciles_examples: false,
+        worked_examples: examples,
+        algebra,
+        run_timings: TimingAudit {
+            load_ms,
+            content_validation_ms,
+            algebra_ms,
+            total_ms: total_start.elapsed().as_millis(),
+        },
+        algebra_benchmark: BenchmarkAudit {
+            warmup_runs,
+            measured_runs,
+            median_microseconds: median,
+            p95_microseconds: p95,
+            build_profile: if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            },
+        },
+        source_fidelity_basis: "The raw hash locks the serialized artifact. The token hash identifies its ordered symbolic values after snapping within 1e-9. scripts/gen_10d_data.py and scripts/eval_garden_exact.py are independent transcriptions of the pinned Garden Algebra definitions; neither executes Wolfram Language.",
+        passed,
+        conclusion: conclusion.to_string(),
+    }
 }
 
 /// Tolerance for snapping a float entry to an exact symbolic token.
@@ -302,7 +826,11 @@ pub struct LiftTolerances {
 }
 impl Default for LiftTolerances {
     fn default() -> Self {
-        LiftTolerances { bosonic: 1e-9, entrywise: 1e-9, partner: 1e-9 }
+        LiftTolerances {
+            bosonic: 1e-9,
+            entrywise: 1e-9,
+            partner: 1e-9,
+        }
     }
 }
 
@@ -344,7 +872,8 @@ pub fn verify_lift(
     // Shape: counts AND per-matrix dims (nb×nf for L, nf×nb for R), so the
     // entrywise comparison below is index-safe and never panics.
     let dims_ok = |mats: &[Vec<Vec<f64>>], rows: usize, cols: usize| {
-        mats.iter().all(|m| m.len() == rows && m.iter().all(|row| row.len() == cols))
+        mats.iter()
+            .all(|m| m.len() == rows && m.iter().all(|row| row.len() == cols))
     };
     // Validate BOTH candidate and target dims (a caller may pass a malformed
     // target), so the entrywise zip below is always index-safe.
@@ -376,10 +905,18 @@ pub fn verify_lift(
 
     let mut max_lr_diff = 0.0f64;
     for i in 0..candidate.l.len() {
-        for (a, b) in candidate.l[i].iter().flatten().zip(target.l[i].iter().flatten()) {
+        for (a, b) in candidate.l[i]
+            .iter()
+            .flatten()
+            .zip(target.l[i].iter().flatten())
+        {
             max_lr_diff = max_lr_diff.max((a - b).abs());
         }
-        for (a, b) in candidate.r[i].iter().flatten().zip(target.r[i].iter().flatten()) {
+        for (a, b) in candidate.r[i]
+            .iter()
+            .flatten()
+            .zip(target.r[i].iter().flatten())
+        {
             max_lr_diff = max_lr_diff.max((a - b).abs());
         }
     }
@@ -451,12 +988,7 @@ fn matmul(a: &[Vec<f64>], b: &[Vec<f64>]) -> Vec<Vec<f64>> {
 }
 
 /// Frobenius norm of `(x + y) - scale*I` for square `dim x dim` matrices.
-fn frob_diff_minus_scaled_identity(
-    x: &[Vec<f64>],
-    y: &[Vec<f64>],
-    scale: f64,
-    dim: usize,
-) -> f64 {
+fn frob_diff_minus_scaled_identity(x: &[Vec<f64>], y: &[Vec<f64>], scale: f64, dim: usize) -> f64 {
     let mut acc = 0.0_f64;
     for i in 0..dim {
         for j in 0..dim {
@@ -590,8 +1122,7 @@ mod tests {
     /// hash), and any perturbation is rejected.
     #[test]
     fn verify_lift_self_and_perturbation() {
-        const PINNED: &str =
-            "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244";
+        const PINNED: &str = "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244";
         let data = load(&dataset_path());
         let v = verify_lift(&data, &data, &LiftTolerances::default(), Some(PINNED));
         assert!(v.passed, "dataset must self-verify: {v:?}");
@@ -603,7 +1134,10 @@ mod tests {
         bad.l[0][0][0] += 0.1;
         let vb = verify_lift(&bad, &data, &LiftTolerances::default(), Some(PINNED));
         assert!(!vb.passed, "perturbed candidate must be rejected: {vb:?}");
-        assert!(vb.max_lr_diff > 1e-3, "entrywise diff should catch the perturbation");
+        assert!(
+            vb.max_lr_diff > 1e-3,
+            "entrywise diff should catch the perturbation"
+        );
     }
 
     fn dataset_path() -> String {
@@ -667,11 +1201,17 @@ mod tests {
         assert_eq!(d.r.len(), 16);
         for li in &d.l {
             assert_eq!(li.len(), 82, "each L matrix has 82 rows");
-            assert!(li.iter().all(|row| row.len() == 176), "each L row has 176 cols");
+            assert!(
+                li.iter().all(|row| row.len() == 176),
+                "each L row has 176 cols"
+            );
         }
         for ri in &d.r {
             assert_eq!(ri.len(), 176, "each R matrix has 176 rows");
-            assert!(ri.iter().all(|row| row.len() == 82), "each R row has 82 cols");
+            assert!(
+                ri.iter().all(|row| row.len() == 82),
+                "each R row has 82 cols"
+            );
         }
 
         // --- DOF counts: nb=82=55+45+1-19, nf=176=160+16. ---
@@ -709,7 +1249,8 @@ mod tests {
         // is left without any partner coupling for generator I). ---
         for (gi, li) in d.l.iter().enumerate() {
             assert!(
-                li.iter().any(|row| row.iter().any(|&x| x.abs() > VALUE_TOL)),
+                li.iter()
+                    .any(|row| row.iter().any(|&x| x.abs() > VALUE_TOL)),
                 "L[{gi}] is entirely zero (degenerate generator)"
             );
             for (rrow, row) in li.iter().enumerate() {
@@ -721,7 +1262,8 @@ mod tests {
         }
         for (gi, ri) in d.r.iter().enumerate() {
             assert!(
-                ri.iter().any(|row| row.iter().any(|&x| x.abs() > VALUE_TOL)),
+                ri.iter()
+                    .any(|row| row.iter().any(|&x| x.abs() > VALUE_TOL)),
                 "R[{gi}] is entirely zero (degenerate generator)"
             );
         }
@@ -757,5 +1299,124 @@ mod tests {
             h, PINNED_HASH,
             "canonical token hash drift: dataset CONTENT changed (pinned={PINNED_HASH}, got={h})"
         );
+    }
+
+    #[test]
+    fn paper_worked_examples_are_compared_in_the_published_ordering() {
+        let d = load(&dataset_path());
+        let audit = worked_example_audit(&d);
+        assert_eq!(audit.len(), 13);
+        assert_eq!(audit.iter().filter(|x| x.direct_match).count(), 4);
+        assert_eq!(audit.iter().filter(|x| x.support_match).count(), 7);
+        assert_eq!(
+            audit
+                .iter()
+                .map(|x| matching_term_count(&x.paper_terms, &x.regenerated_terms))
+                .sum::<usize>(),
+            7
+        );
+        assert_eq!(audit.iter().map(|x| x.paper_terms.len()).sum::<usize>(), 26);
+
+        let h11 = audit.iter().find(|x| x.left_hand_side == "Q1 h11").unwrap();
+        assert_eq!(h11.paper_terms, paper_terms(&[("psi1(6)", "2")]));
+        assert_eq!(h11.regenerated_terms, paper_terms(&[("psi1(16)", "2")]));
+
+        let psi = audit
+            .iter()
+            .find(|x| x.left_hand_side == "Q1 psi1(1)")
+            .unwrap();
+        assert_eq!(
+            psi.paper_terms,
+            paper_terms(&[("h19", "1/2"), ("B19", "1/16")])
+        );
+        assert_eq!(
+            psi.regenerated_terms,
+            paper_terms(&[("h19", "1/2"), ("B19", "-7/16")])
+        );
+    }
+
+    #[test]
+    fn complete_unordered_algebra_summary_is_stable() {
+        let d = load(&dataset_path());
+        let audit = d.full_algebra_audit();
+        assert_eq!(audit.unordered_color_pairs_checked, 136);
+        assert_eq!(audit.bosonic_relations_checked, 136);
+        assert_eq!(audit.bosonic_scalar_equalities_checked, 914_464);
+        assert!(audit.bosonic_max_frobenius_residual < 1e-9);
+        assert_eq!(audit.fermionic_nonclosure_pairs, 136);
+        assert_eq!(audit.fermionic_entries_examined_across_pairs, 4_212_736);
+        assert_eq!(
+            audit.fermionic_nonclosure_nonzero_entries_across_pairs,
+            132_352
+        );
+        assert_eq!(audit.nonzero_threshold, 1e-9);
+        assert!(
+            (audit.fermionic_nonclosure_max_frobenius_norm - 9.924_716_620_639_604).abs() < 1e-12
+        );
+        assert_eq!(audit.fermionic_nonclosure_max_abs_entry, 1.0);
+    }
+
+    #[test]
+    fn complete_matrix_content_counts_are_stable() {
+        let d = load(&dataset_path());
+        let audit = matrix_content_audit(&d);
+        assert_eq!(audit.l_entries, 230_912);
+        assert_eq!(audit.r_entries, 230_912);
+        assert_eq!(audit.combined_entries, 461_824);
+        assert_eq!(audit.l_nonzero_entries, 3_040);
+        assert_eq!(audit.r_nonzero_entries, 7_648);
+        assert_eq!(audit.l_nonzero_per_color, vec![190; 16]);
+        assert_eq!(audit.r_nonzero_per_color, vec![478; 16]);
+    }
+
+    #[test]
+    fn reproduction_status_passes_pinned_artifact_and_rejects_tampering() {
+        let path = dataset_path();
+        let report = reproduction_audit_with_benchmark(&path, 0, 0);
+        assert!(report.passed);
+        assert!(report.raw_json_sha256_matches);
+        assert!(report.canonical_matrix_token_hash_matches);
+
+        let original = std::fs::read_to_string(&path).unwrap();
+        let changed = original.replacen("0.0", "1.0", 1);
+        assert_ne!(changed, original);
+        let temp = std::env::temp_dir().join(format!(
+            "tendim-tampered-{}-{}.json",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        std::fs::write(&temp, changed).unwrap();
+        let bad = reproduction_audit_with_benchmark(temp.to_str().unwrap(), 0, 0);
+        std::fs::remove_file(&temp).unwrap();
+        assert!(!bad.passed);
+        assert!(!bad.raw_json_sha256_matches);
+        assert!(
+            !bad.canonical_matrix_token_hash_matches
+                || bad.algebra.bosonic_max_frobenius_residual >= 1e-9
+        );
+    }
+
+    #[test]
+    fn field_order_matches_equation_6_0_7_and_upstream_source() {
+        let bosons = boson_order();
+        let fermions = fermion_order();
+        assert_eq!(bosons.len(), 82);
+        assert_eq!(&bosons[..4], ["h11", "h12", "h13", "h14"]);
+        assert_eq!(
+            &bosons[44..],
+            [
+                "h99", "B12", "B13", "B14", "B15", "B16", "B17", "B18", "B19", "B23", "B24", "B25",
+                "B26", "B27", "B28", "B29", "B34", "B35", "B36", "B37", "B38", "B39", "B45", "B46",
+                "B47", "B48", "B49", "B56", "B57", "B58", "B59", "B67", "B68", "B69", "B78", "B79",
+                "B89", "phi"
+            ]
+        );
+        assert_eq!(fermions.len(), 176);
+        assert_eq!(fermions[0], "psi0(1)");
+        assert_eq!(fermions[15], "psi0(16)");
+        assert_eq!(fermions[16], "psi1(1)");
+        assert_eq!(fermions[159], "psi9(16)");
+        assert_eq!(fermions[160], "chi1");
+        assert_eq!(fermions[175], "chi16");
     }
 }

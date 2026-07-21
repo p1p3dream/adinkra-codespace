@@ -3,11 +3,12 @@
 This document records the exact origin, regeneration procedure, conventions, and
 licensing posture of the 10D L/R matrix dataset shipped in this repository.
 
-It deliberately does **not** claim the dataset is byte-faithful to any matrices
-published by the upstream authors. What it claims is precise and verifiable: the
-dataset is an academic **regeneration** produced by numerically evaluating the
-authors' published generative Mathematica ("Garden Algebra") at a pinned commit,
-with the conventions and known discrepancies documented below.
+The upstream repository contains generative Wolfram Language source, not literal
+matrix files. This dataset is a deterministic 12-decimal serialization produced
+by a line-by-line Python transcription of the source at a pinned commit. A second
+exact-arithmetic transcription checks every matrix entry. Neither script executes
+Wolfram Language. The basis, ordering, checks, and paper/source inconsistencies
+are recorded below.
 
 ---
 
@@ -31,7 +32,10 @@ It is **not** a copy of a pre-computed dataset published by the authors.
 | Artifact | SHA256 | Notes |
 |----------|--------|-------|
 | Upstream `Garden Algebra` (Mathematica source) | `d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c` | At commit `8c8df92`. Canonical input. |
-| Regeneration script `scripts/gen_10d_data.py` | *(not pinned here — the script is edited over time; the value drifts)* | Compute the current hash with `shasum -a 256 scripts/gen_10d_data.py`. The integrity guarantee is the **canonical content hash** below, not the script hash. |
+| Regeneration script `scripts/gen_10d_data.py` | `0fa4d332224d5d475972032198804ebab267fb845400e7fbf91c189014155746` | NumPy implementation used for the committed artifact. |
+| Independent exact evaluator `scripts/eval_garden_exact.py` | `4b2a82c97e8c80e0039fe57fd18b2fa1bdc72362d84dd721c41c8846d8f2f680` | SymPy implementation used for exact entry and Garden checks. |
+| Provenance manifest `data/tendim_10d_provenance.json` | `993cc56cda159d24be573a700fb1423f07cae713d17464e2347f51eaf19f8e5c` | Clean regeneration input. |
+| Current `data/tendim_10d_lr.json` raw bytes | `2f2468932b1d488b1cce69b472e77452a3cce0e93eb6bf6aab73419d3ec4e1f3` | Includes the provenance metadata block. |
 | `data/tendim_10d_lr.json` raw bytes (pre-metadata-edit) | `d58baa8cd62cbecc5dcb87cc1ea560045534644dd1da5eedae30665eae38f0c8` | **Informational only.** This is the raw-byte hash *before* the provenance metadata fields were added. Adding metadata changes the raw-byte hash, so this value will no longer match the current file. Do not use it as the integrity check. |
 
 ### Canonical content hash (the integrity check that matters)
@@ -58,7 +62,14 @@ running the regeneration script from the repository root:
 
 ```sh
 python3 scripts/gen_10d_data.py
+python3 scripts/eval_garden_exact.py
+cargo run --release -- tendim-reproduce
 ```
+
+Validated environment: Python 3.12.8, NumPy 1.26.4, SymPy 1.14.0, and
+Rust 1.94.1. The generator always reads
+`data/tendim_10d_provenance.json`, so a fresh output includes the same metadata
+as the committed artifact.
 
 The companion paper (arXiv:2512.12157) was consulted locally; its text was
 extracted with `pdftotext` (`pdftotext` output cached at `/tmp/2512_pdf.txt`) to
@@ -119,14 +130,14 @@ The Garden Algebra evaluation introduces the following normalization factors:
 | `1/2` | sigma-bilinear (`Sig2`/`TildeSig2`) antisymmetrizations |
 | `1/8` | R-side entries (token `1/8`) |
 | `1/16` | R-side entries (token `1/16`) |
-| `1/sqrt8` | dilaton (`Phi`) coupling on the L side; R-side token `1/sqrt8` |
+| `1/sqrt8` | dilaton derivative coupling on the R side |
 | `sqrt8` | dilatino (`chi`) coupling on the L side (token `sqrt8`) |
 
 ### 4.7 Allowed entry value-sets
 
 | Matrix | Allowed exact tokens |
 |--------|----------------------|
-| `L` | `{ -2, -1, 0, 1, 2, sqrt8 }` (both signs of `sqrt8` admitted defensively; dataset uses `+sqrt8`) |
+| `L` | `{ -2, -1, 0, 1, 2, sqrt8 }` |
 | `R` | `{ 0, +-1/16, +-1/8, +-7/16, +-1/2, +-1/sqrt8 }` |
 
 ### 4.8 Defining relations
@@ -163,45 +174,57 @@ posture should be revisited.
 
 ---
 
-## 6. Paper worked-example discrepancy (UNRESOLVED)
+## 6. Paper/source inconsistency; author intent unresolved
 
-The paper's **displayed worked examples** disagree with the output of the upstream
-Garden Algebra (and therefore our regeneration). This was investigated with two
-adversarial passes; it is **not resolved** and an earlier "it's a typo" conclusion
-was retracted after review.
+The displayed worked examples disagree with the upstream Garden Algebra output.
+The disagreement is established. The authors' intended final normalization is
+not established.
 
-What disagrees:
-- Eq. 6.0.5 bracketed spinor indices: e.g. paper `Q_1 h_11 = 2 psi_1(6)` vs the
-  Garden source / our JSON `2 psi_1(16)`; the discrepancy is across the displayed
-  examples and not a single fixed permutation.
-- Eq. 6.0.6 gravitino (psi) examples ALSO disagree on coefficients: e.g. paper
-  `Q_1 psi_1(1) = i/2 d h19 + i/16 d B19` vs our R row `+1/2 h19 - 7/16 B19`. The
-  chi examples and the phi line do match.
+The Rust audit checks all 13 displayed transformation equations and all 26 terms.
+Four equations and seven terms match directly. The matching equations are the
+`phi`, `chi_1`, `chi_9`, and `chi_16` examples.
+
+- Eq. 6.0.5: the six nonscalar examples do not match `L_1`. Several resemble
+  `L_11`, but two signs differ, while the scalar line matches `L_1`. Appendix A's
+  printed sigma basis gives `Q_1 h_11 = 2 psi_1(16)`, which agrees with the
+  generator and disagrees with the displayed `2 psi_1(6)`.
+- Eq. 6.0.6: the three graviton coefficients and three dilatino equations match
+  `R_1`. Six two-form coefficients do not. For example, the paper gives
+  `+1/16 B_19` in `Q_1 psi_1(1)`, while the assembled source gives `-7/16 B_19`.
+- A fixed shared permutation of the displayed spinor labels cannot reconcile both
+  samples. Eq. 6.0.6 fixes label 16 to 16, while Eq. 6.0.5 would require label 6
+  to map to 16. The `chi_9` examples give a separate contradiction. This does not
+  exclude a more general physical convention map.
 
 What is established (and IS solid):
-- Our JSON **faithfully reproduces the authors' Garden Algebra source** at commit
-  `8c8df92`: an exact (sympy) re-derivation from that source matches our JSON
-  entrywise (0 mismatches) and the bosonic Garden relation holds exactly
-  (`scripts/eval_garden_exact.py`).
+- Two independent transcriptions of the Garden Algebra definitions at commit
+  `8c8df92` agree entrywise with zero mismatches, and the exact SymPy transcription
+  gives an exact zero bosonic Garden residual (`scripts/eval_garden_exact.py`).
+- All 136 unordered bosonic color-pair relations close. All 136 corresponding
+  fermionic pair matrices have nonzero `E_IJ`; those unordered blocks contain
+  132,352 nonzero entries out of 4,212,736 at tolerance `1e-9`. This sparsity is
+  basis-dependent.
 
 What is NOT established:
-- Whether the Garden source equals the paper's *intended* matrices, or whether the
-  paper's displayed examples contain transcription errors, or whether the
-  difference is a primitive-vs-assembled coefficient presentation (e.g. the paper's
-  `i/16` vs our assembled `7/16`). A reconciling convention map has not been proven,
-  and our own automated checks disagreed on the Eq. 6.0.6 match.
+- Which L-row labels and signs the authors intend for the nonscalar Eq. 6.0.5
+  examples.
+- Which assembled two-form coefficients the authors intend in Eq. 6.0.6.
+- Whether the executable `1/16 MixedLeft` coefficient in the Garden source is the
+  intended three-form normalization. A nearby source comment says `1/8`, while
+  the executable expression uses `1/16`. Changing this coefficient alone does
+  not reconcile all printed examples.
 
-**Status: unresolved; requires confirmation from the authors.** We make NO typo
-claim and NO paper-fidelity claim. The defensible statement is only: "this dataset
-reproduces the authors' Garden Algebra generative source; the paper's displayed
-worked examples disagree with that source and the discrepancy is unresolved."
+**Status:** two independent source transcriptions agree entrywise; the paper/source
+inconsistencies are documented; the intended matrices require author confirmation.
+No correction to the paper or source is asserted.
 
 ---
 
 ## 7. What is and is not claimed
 
-- **Claimed:** the dataset is an exact numerical regeneration of the upstream
-  "Garden Algebra" code at the pinned commit; the bosonic Garden relation holds
+- **Claimed:** the dataset is a deterministic 12-decimal serialization from a
+  transcription of the upstream "Garden Algebra" code at the pinned commit; an
+  independent exact-arithmetic transcription agrees entrywise; the bosonic Garden relation holds
   to ~1.7e-12; all entries snap to the documented exact token value-sets; the DOF
   counts match the paper (Eq. 6.0.3-6.0.4).
 - **Not claimed:** that the dataset is byte-faithful to any matrices the authors
