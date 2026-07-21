@@ -8,6 +8,11 @@ mod bbbm_nonabelian;
 mod bbbm_nonabelian_crosscheck;
 #[cfg(test)]
 mod bbbm_nonabelian_source_audit;
+mod bbbm_sixteen_onshell;
+#[cfg(test)]
+mod bbbm_sixteen_onshell_crosscheck;
+#[cfg(test)]
+mod bbbm_sixteen_source_audit;
 #[cfg(test)]
 mod bbbm_source_audit;
 mod bbbm_worldline;
@@ -74,6 +79,7 @@ fn main() {
         "bbbm-closure" => cmd_bbbm_closure(&args),
         "bbbm-holoraumy" => cmd_bbbm_holoraumy(&args),
         "bbbm-nonabelian" => cmd_bbbm_nonabelian(&args),
+        "bbbm-sixteen-onshell" => cmd_bbbm_sixteen_onshell(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -128,6 +134,7 @@ fn print_usage(prog: &str) {
     eprintln!("  bbbm-holoraumy          Compute the generic N=9 gadget invariants");
     eprintln!("  bbbm-closure            Verify BBBM component closure and worldline reduction");
     eprintln!("  bbbm-nonabelian         Verify the full nonabelian BBBM component algebra");
+    eprintln!("  bbbm-sixteen-onshell    Verify full 16-charge closure modulo the Dirac equation");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -156,6 +163,11 @@ fn cmd_bbbm_closure(_args: &[String]) {
 
 fn cmd_bbbm_nonabelian(_args: &[String]) {
     let report = bbbm_nonabelian::run();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_bbbm_sixteen_onshell(_args: &[String]) {
+    let report = bbbm_sixteen_onshell::run();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
 

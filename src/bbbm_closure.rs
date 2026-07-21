@@ -881,6 +881,10 @@ pub struct SevenChargeStatus {
     pub antiselfdual_projector_rank: usize,
     pub projector_idempotent: bool,
     pub projector_symmetric: bool,
+    pub ordinary_full_sixteen_onshell_algebra_verified: bool,
+    pub bbbm_tensor_basis_intertwiner_implemented: bool,
+    pub bbbm_auxiliary_extension_available: bool,
+    pub full_sixteen_onshell_relations_checked: usize,
 }
 
 pub fn seven_charge_status() -> SevenChargeStatus {
@@ -891,28 +895,26 @@ pub fn seven_charge_status() -> SevenChargeStatus {
         explicit_transformation_laws_in_paper: false,
         non_closure_printed_in_this_paper: false,
         what_the_paper_gives:
-            "Eq (5): the full 16-charge algebra closes only modulo gauge AND equations of \
-             motion, {delta,deltahat} ~ -2i eps Gamma^mu epshat d_mu - 2i delta^gauge. Eq (6): \
-             it would close off-shell only if (epshat, vhat_a) is a linear combination of \
-             (Gamma^{mu nu} eps, Gamma^{mu nu} v) -- which has NO linear solution for all 16 \
-             (that is the Berkovits [1] no-go). The 7 dropped charges are the antiselfdual \
-             tensor delta^-_{ij}, removed by setting nu^{ij}=0 in Eq (17)."
+            "Equation (5) states that the full sixteen-charge algebra closes modulo gauge \
+             transformations and equations of motion. Equations (15)-(17) decompose the \
+             supersymmetry parameter as 1+8+7 and set the antiselfdual tensor parameter \
+             nu^{ij} to zero in the covariant linear auxiliary-spinor solution."
                 .to_string(),
         what_is_missing:
-            "The paper gives NO explicit component transformation laws delta^-_{ij}(fields) for \
-             the 7 antiselfdual charges. It only specifies delta_0 and delta_i (Eqs 22-23) and \
-             DROPS the tensor charges (nu=0). To obtain the 7 non-closure (EOM) functions one \
-             would have to (a) restore a nonzero antiselfdual parameter nu^{ij} in Eq (15), (b) \
-             re-derive delta^-_{ij} on every component field from the parent Eq (2)/(9), and (c) \
-             compute {delta^-, delta^-} and {delta_0/i, delta^-}. Equation (3) supplies the \
-             transformation delta G_a, not an equation of motion; the fermionic non-closure must \
-             instead be compared with the Dirac equation derived from Eq. (1). This reconstruction \
-             requires gamma-matrix and octonion-basis conventions that the printed twisted rules \
-             do not fix. Reported here rather than fabricated."
+            "After eliminating the auxiliaries, the ordinary sixteen-charge algebra is verified \
+             in a covariant spinor-component basis, and its residuals factor through the gaugino \
+             Dirac equation. The implemented basis has not been explicitly intertwined with BBBM's \
+             scalar, vector, and tensor charge basis. A linear action of the tensor charges on the \
+             independent auxiliaries remains unavailable because BBBM's covariant linear constraints \
+             admit only nu^{ij}=0."
                 .to_string(),
         antiselfdual_projector_rank: proj.rank(),
         projector_idempotent: proj.is_idempotent(),
         projector_symmetric: proj.is_symmetric(),
+        ordinary_full_sixteen_onshell_algebra_verified: true,
+        bbbm_tensor_basis_intertwiner_implemented: false,
+        bbbm_auxiliary_extension_available: false,
+        full_sixteen_onshell_relations_checked: 3_536,
     }
 }
 
@@ -926,6 +928,7 @@ pub struct BbbmClosureReport {
     pub delta0_squared_component: Delta0SquaredCheck,
     pub full_linearized_component: crate::bbbm_component::ComponentClosureReport,
     pub full_nonabelian_component: crate::bbbm_nonabelian::NonabelianClosureReport,
+    pub full_sixteen_onshell: crate::bbbm_sixteen_onshell::SixteenOnShellReport,
     pub worldline_reduction: crate::bbbm_worldline::WorldlineReductionReport,
     pub nine_close_offshell_no_nonclosure: bool,
     pub seven_onshell: SevenChargeStatus,
@@ -937,6 +940,7 @@ pub fn run() -> BbbmClosureReport {
     let d0 = delta0_squared_check();
     let component = crate::bbbm_component::run();
     let nonabelian = crate::bbbm_nonabelian::run();
+    let sixteen_onshell = crate::bbbm_sixteen_onshell::run();
     let worldline = crate::bbbm_worldline::run();
     let nine_ok = sc.dhat_sq_closes
         && sc.dhat_ij_closes
@@ -951,6 +955,7 @@ pub fn run() -> BbbmClosureReport {
         delta0_squared_component: d0,
         full_linearized_component: component,
         full_nonabelian_component: nonabelian,
+        full_sixteen_onshell: sixteen_onshell,
         worldline_reduction: worldline,
         nine_close_offshell_no_nonclosure: nine_ok,
         seven_onshell: seven,
@@ -962,8 +967,11 @@ pub fn run() -> BbbmClosureReport {
              Independent exact engines and source-convention audits agree. The actual \
              one-dimensional reduction gives a local (9,16,7) hanging. Its formal node-lowered \
              chromotopology matches the [9,4] scaffold, but node lowering requires D^{-1} and \
-             does not identify zero modes. The seven discarded tensor-charge transformations \
-             are not printed in arXiv:0705.2002 and require a separate reconstruction."
+             does not identify zero modes. After eliminating the seven auxiliaries, all 3,536 \
+             component relations of the ordinary sixteen-charge system close modulo gauge and \
+             the gaugino Dirac equation. BBBM's linear auxiliary-spinor constraints have no \
+             nonzero tensor-parameter extension, so this on-shell result is not a sixteen-charge \
+             extension of the 33-field auxiliary multiplet."
                 .to_string(),
     }
 }
@@ -1023,6 +1031,19 @@ mod tests {
                 .full_nonabelian_component
                 .all_nonabelian_relations_close_modulo_gauge
         );
+        assert_eq!(report.full_sixteen_onshell.identities_checked, 3_536);
+        assert_eq!(
+            report
+                .full_sixteen_onshell
+                .identities_involving_tensor_charges,
+            2_366
+        );
+        assert!(
+            report
+                .full_sixteen_onshell
+                .all_relations_close_modulo_gauge_and_dirac_equation
+        );
+        assert!(!report.full_sixteen_onshell.auxiliaries_included);
         assert!(
             report
                 .worldline_reduction

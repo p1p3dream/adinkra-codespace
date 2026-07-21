@@ -147,20 +147,46 @@ invariants. An independent dense implementation reproduces them:
 The all-dashing survey concerns the generic scaffold. The BBBM reduction fixes
 a formal chromotopology but has not been matched to every generic dashing.
 
-## The seven discarded charges
+## The other seven charges
 
-The paper sets the antiselfdual tensor parameter \(\nu^{ij}\) to zero and does
-not print twisted component transformations for the other seven charges. Their
-non-closure functions are therefore not present in Eqs. (22)-(24).
+The supersymmetry parameter decomposes under \(Spin(7)\) as
+\(\mathbf{16}=\mathbf{1}+\mathbf{8}+\mathbf{7}\). The last term is the
+antiselfdual tensor parameter \(\nu^{ij}\). BBBM's covariant linear solution of
+the auxiliary-spinor constraints sets \(\nu^{ij}=0\), leaving the scalar and
+vector charges.
 
-They may be reconstructed from the parent spinor transformations in Eqs.
-(2)-(6), but that requires gamma-matrix conventions, a nonzero
-\(\nu^{ij}\), the full twist, and a separate on-shell closure calculation. No
-such reconstruction is claimed here.
+This is not merely an omitted component table. A transformation on the
+independent auxiliaries requires a linear assignment \(v_a(\nu)\). The
+constraints in Eqs. (15)-(17) provide no such extension with nonzero
+\(\nu^{ij}\). Individual generalized transformations can be chosen only with
+an auxiliary \(SO(7)\) ambiguity, and those choices do not define a linear
+sixteen-charge off-shell algebra.
 
-Equation (3) is the transformation of \(G_a\), not an equation of motion. The
-auxiliary equation from the action is algebraic, while a fermionic non-closure
-term must be compared with the Dirac equation derived from the action.
+After eliminating the auxiliaries, the ordinary transformations of all sixteen
+supercharges are defined on the ten gauge potentials and sixteen gaugino
+components. `src/bbbm_sixteen_onshell.rs` evaluates all 136 charge pairs in the
+noncommutative differential algebra:
+
+- 3,536 component relations are checked;
+- 2,366 of those relations involve at least one charge from the
+  seven-dimensional tensor subspace;
+- all 1,360 gauge-potential relations close modulo translations and gauge
+  transformations;
+- all 2,176 gaugino relations factor through
+  \(\mathcal E_\Psi=\sigma^\mu D_\mu\Psi\);
+- 1,120 gaugino component relations have a nonzero Dirac multiplier in the
+  chosen sparse spinor basis;
+- no residual remains after the Dirac factors are removed.
+
+The calculation uses a covariant spinor-component charge basis. It does not
+yet construct the explicit intertwiner from that basis to BBBM's scalar,
+vector, and antiselfdual tensor charge basis.
+
+`src/bbbm_sixteen_onshell_crosscheck.rs` independently verifies the Clifford
+and closure coefficient identities and detects a one-entry bivector mutation.
+`src/bbbm_sixteen_source_audit.rs` records the source boundary and the
+\(1+8+7\) projector ranks. This is an on-shell calculation on 26 fields. It is
+not a sixteen-charge extension of BBBM's 33-field auxiliary multiplet.
 
 ## Reproducibility
 
@@ -169,9 +195,22 @@ cargo run --release -- bbbm
 cargo run --release -- bbbm-holoraumy
 cargo run --release -- bbbm-closure
 cargo run --release -- bbbm-nonabelian
+cargo run --release -- bbbm-sixteen-onshell
 cargo test
 ```
 
 Primary reference: L. Baulieu, N. Berkovits, G. Bossard, and A. Martin,
 "Ten-dimensional super-Yang-Mills with nine off-shell supersymmetries,"
 arXiv:0705.2002, *Physics Letters B* 658 (2008) 249-254.
+
+Additional references:
+
+- N. Berkovits, "A Ten-Dimensional Super-Yang-Mills Action with Off-Shell
+  Supersymmetry," arXiv:hep-th/9308128, *Physics Letters B* 318 (1993) 104-106.
+- J. M. Evans, "Supersymmetry Algebras and Lorentz Invariance for d=10
+  Super-Yang-Mills," arXiv:hep-th/9404190, *Physics Letters B* 334 (1994)
+  105-112.
+- S. J. Gates Jr., G. Hannon, R. X. Siew, and K. Stiffler,
+  "Infinite-Dimensional Algebraic Spin(N) Structure in Extended/Higher
+  Dimensional SUSY Holoraumy for Valise and On-Shell Supermultiplet
+  Representations," arXiv:2010.06124, *JHEP* 05 (2022) 173.
