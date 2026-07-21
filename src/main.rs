@@ -37,6 +37,7 @@ mod signed_perm;
 mod sr_hole;
 mod streamed_gadget;
 mod tendim_data;
+mod tendim_generate;
 mod viz_export;
 
 use std::time::Instant;
@@ -81,6 +82,7 @@ fn main() {
         "bbbm-nonabelian" => cmd_bbbm_nonabelian(&args),
         "bbbm-sixteen-onshell" => cmd_bbbm_sixteen_onshell(&args),
         "tendim-reproduce" => cmd_tendim_reproduce(&args),
+        "tendim-generate" => cmd_tendim_generate(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -137,6 +139,7 @@ fn print_usage(prog: &str) {
     eprintln!("  bbbm-nonabelian         Verify the full nonabelian BBBM component algebra");
     eprintln!("  bbbm-sixteen-onshell    Verify full 16-charge closure modulo the Dirac equation");
     eprintln!("  tendim-reproduce [json] Audit the pinned 10D supergravity L/R reproduction");
+    eprintln!("  tendim-generate [json]  Generate the 10D supergravity L/R artifact in Rust");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -181,6 +184,20 @@ fn cmd_tendim_reproduce(args: &[String]) {
     if !report.passed {
         std::process::exit(2);
     }
+}
+
+fn cmd_tendim_generate(args: &[String]) {
+    let default_path = format!("{}/data/tendim_10d_lr.json", env!("CARGO_MANIFEST_DIR"));
+    let path = args.get(2).map(String::as_str).unwrap_or(&default_path);
+    let generated = tendim_generate::generate();
+    let exact_pairs = tendim_generate::verify_exact_bosonic(&generated);
+    let artifact = tendim_generate::artifact_json(&generated);
+    std::fs::write(path, artifact).unwrap_or_else(|e| panic!("failed to write {path}: {e}"));
+    println!(
+        "{{\"output\":{},\"language\":\"Rust\",\"exact_bosonic_pairs\":{},\"python_role\":\"independent cross-check only\"}}",
+        serde_json::to_string(path).unwrap(),
+        exact_pairs
+    );
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

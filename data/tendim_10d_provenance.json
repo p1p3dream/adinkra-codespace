@@ -5,14 +5,19 @@
   "upstream_file_sha256": "d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c",
   "paper": "arXiv:2512.12157v1",
   "paper_title": "10D Supergravity Numerical Data Sets for L & R Matrices",
-  "regeneration_command": "python3 scripts/gen_10d_data.py",
+  "regeneration_command": "cargo run --release -- tendim-generate",
   "raw_json_sha256_pre_metadata": "d58baa8cd62cbecc5dcb87cc1ea560045534644dd1da5eedae30665eae38f0c8",
   "content_hash_note": "Canonical content hash is canonical_token_hash() in src/tendim_data.rs (symbolic-token hash, prefix 'TENDIM-TOKENS-v1;'), NOT the raw-byte JSON SHA256. The raw_json_sha256_pre_metadata value is informational and predates adding these provenance fields.",
   "license_note": "Upstream repo has NO LICENSE file at commit 8c8df92. This is an academic regeneration of the authors' published generative Mathematica (Garden Algebra), provided with full citation for reproducibility; not a redistribution of a licensed dataset.",
-  "known_mismatch": "ESTABLISHED paper/source inconsistency; author intent unresolved. The audit checks all 13 displayed transformations in Eqs. 6.0.5-6.0.6. Four equations and 7 of 26 terms match the pinned Garden Algebra transcription. No fixed shared permutation of the displayed spinor labels reconciles the sampled equations. Appendix A and Eq. 5.0.1 support Q_1 h_11 = 2 psi_1(16), while Eq. 6.0.5 displays psi_1(6). The executable source uses 1/16 MixedLeft while a nearby comment says 1/8. Two independent local transcriptions agree with the executable formulas; author confirmation is required for the intended matrices. No paper correction is asserted.",
+  "known_mismatch": "ESTABLISHED paper/source inconsistency; author intent unresolved. The audit checks all 13 displayed transformations in Eqs. 6.0.5-6.0.6. Four equations and 7 of 26 terms match the pinned Garden Algebra transcription. No fixed shared permutation of the displayed spinor labels reconciles the sampled equations. Appendix A and Eq. 5.0.1 support Q_1 h_11 = 2 psi_1(16), while Eq. 6.0.5 displays psi_1(6). The executable source uses 1/16 MixedLeft while a nearby comment says 1/8. The Rust generator and both independent Python cross-checks agree with the executable formulas; author confirmation is required for the intended matrices. No paper correction is asserted.",
   "provenance_doc": "PROVENANCE.md",
   "gen_script_sha256_note": "Pinned in PROVENANCE.md; update after any script edit.",
   "canonical_token_sha256": "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244",
   "audit_command": "cargo run --release -- tendim-reproduce",
-  "paper_pdf_sha256": "4b3adbda34bf4ba870713ccddad285d8de70c5608fb53ec0dd6f6ae6dcfd4602"
+  "paper_pdf_sha256": "4b3adbda34bf4ba870713ccddad285d8de70c5608fb53ec0dd6f6ae6dcfd4602",
+  "rust_generator": "src/tendim_generate.rs",
+  "python_crosschecks": [
+    "python3 scripts/gen_10d_data.py /tmp/tendim-python.json",
+    "python3 scripts/eval_garden_exact.py"
+  ]
 }

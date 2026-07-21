@@ -6,11 +6,14 @@
   "declared_upstream_repository": "https://github.com/mcmulaz/Super-Sym",
   "declared_upstream_commit": "8c8df92dac17853d7f6cb5b136ef2aec0efdea70",
   "declared_upstream_source_sha256": "d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c",
-  "raw_json_sha256": "2f2468932b1d488b1cce69b472e77452a3cce0e93eb6bf6aab73419d3ec4e1f3",
+  "raw_json_sha256": "148e2891fe3c8cd7634e5a9232a800a88e957677b6b3a0490ddcc61063c9825f",
   "raw_json_sha256_matches": true,
   "canonical_matrix_token_hash": "4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244",
   "canonical_matrix_token_hash_matches": true,
   "canonical_token_tolerance": 1e-9,
+  "rust_generator_entrywise_max_difference": 0.0,
+  "rust_generator_exact_bosonic_pairs": 136,
+  "rust_generator_matches": true,
   "dimensions": {
     "colors": 16,
     "bosons": 82,
@@ -705,19 +708,19 @@
     "fermionic_nonclosure_max_abs_entry": 1.0
   },
   "run_timings": {
-    "load_ms": 11,
-    "content_validation_ms": 3,
-    "algebra_ms": 27,
-    "total_ms": 920
+    "load_ms": 12,
+    "content_validation_ms": 4,
+    "algebra_ms": 25,
+    "total_ms": 906
   },
   "algebra_benchmark": {
     "warmup_runs": 3,
     "measured_runs": 30,
-    "median_microseconds": 26803,
-    "p95_microseconds": 28054,
+    "median_microseconds": 25089,
+    "p95_microseconds": 25742,
     "build_profile": "release"
   },
-  "source_fidelity_basis": "The raw hash locks the serialized artifact. The token hash identifies its ordered symbolic values after snapping within 1e-9. scripts/gen_10d_data.py and scripts/eval_garden_exact.py are independent transcriptions of the pinned Garden Algebra definitions; neither executes Wolfram Language.",
+  "source_fidelity_basis": "The raw hash locks the serialized artifact. The token hash identifies its ordered symbolic values after snapping within 1e-9. Rust is the primary generator and verifies exact bosonic closure over Q(sqrt(2)). The NumPy and SymPy implementations are retained only as independent cross-checks. None executes Wolfram Language.",
   "passed": true,
-  "conclusion": "The supplied artifact matches the pinned raw-byte and tolerance-snapped matrix-token hashes, and all 136 bosonic relations close. Two independent local transcriptions agree with these matrices. The paper/source inconsistencies remain subject to author confirmation."
+  "conclusion": "The supplied artifact matches the pinned raw-byte and tolerance-snapped matrix-token hashes, the Rust generator matches every entry, and all 136 bosonic relations close exactly over Q(sqrt(2)). Both independent Python cross-checks agree with the Rust artifact. The paper/source inconsistencies remain subject to author confirmation."
 }

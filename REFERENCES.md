@@ -97,24 +97,23 @@ relevant module doc-comments).
   Algebra" Mathematica file, commit `8c8df92`). The split SO(1,9) sigma relation
   `σ^μ σ̃^ν + σ^ν σ̃^μ = 2 η^μν I_16` and the explicit 82×176 / 176×82 L/R matrices +
   non-closure tensor E_IJ. Used by: `lorentz.rs` (split-sigma relation),
-  `tendim_data.rs` + `data/tendim_10d_lr.json` (regenerated via
-  `scripts/gen_10d_data.py`).
-  **Provenance note:** our JSON is a deterministic 12-decimal serialization from
-  a Python transcription of the authors' Garden Algebra source at commit
+  `tendim_generate.rs`, `tendim_data.rs`, and `data/tendim_10d_lr.json`.
+  **Provenance note:** our JSON is generated in Rust from a transcription of the
+  authors' Garden Algebra source at commit
   `8c8df92`, not a literal download. It satisfies the bosonic Garden relation to
   ~1.7e-12 in float (exactly 0 in exact arithmetic). The fermionic non-closure
   remnant E_IJ is nonzero (computed here, NOT a paper-reported figure). This is
-  evidence of algebraic plausibility. A separate exact SymPy transcription matches
-  the JSON entrywise with zero mismatches and gives an exact zero bosonic residual;
-  see `scripts/eval_garden_exact.py`. The two transcriptions agree, but neither
-  executes Wolfram Language and neither establishes the authors' intended convention.
+  evidence of algebraic plausibility. Rust verifies all 136 bosonic relations
+  exactly over `Q(sqrt(2))`. The NumPy and SymPy ports remain independent
+  cross-checks and match the Rust artifact entrywise. None executes Wolfram
+  Language or establishes the authors' intended convention.
   **Paper/source inconsistency:** the audit checks all 13 displayed equations in
   Eqs. 6.0.5-6.0.6. Four equations and seven of 26 terms match directly. No fixed
   shared permutation of the displayed spinor labels reconciles the sampled
   equations with the generator. Appendix A's
   printed sigma basis supports the generator's `Q_1 h_11 = 2 ψ_1(16)`, not the
   displayed `ψ_1(6)`. The executable source uses `1/16 MixedLeft`, while its nearby
-  comment says `1/8`. The two local transcriptions agree; the intended L rows and
+  comment says `1/8`. The Rust generator and both cross-checks agree; the intended L rows and
   assembled R coefficients still require author confirmation. See PROVENANCE.md §6 and run
   `cargo run --release -- tendim-reproduce`.
   **License / citation posture:** the upstream repo carries no LICENSE file. The

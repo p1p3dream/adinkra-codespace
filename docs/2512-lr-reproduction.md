@@ -15,10 +15,9 @@ The reproduction pins:
 - matrix token SHA-256 `4070fbeda9028cfd6c29097dfaf20df06300026e0c44d96e40c3d4b9a8faf244`.
 
 The upstream repository supplies generative Wolfram Language source. It does
-not supply literal matrix files. The local JSON is a deterministic 12-decimal
-serialization from a Python transcription of that source. A separate exact
-transcription independently checks every entry. Neither script executes Wolfram
-Language.
+not supply literal matrix files. The primary generator and exact bosonic verifier
+are implemented in Rust. The older NumPy and SymPy implementations remain only
+as independent cross-checks. None of these implementations executes Wolfram Language.
 
 ## Basis and ordering
 
@@ -35,23 +34,25 @@ Equation 6.0.9, the conclusion, and the source establish the ordering above.
 
 ## Validation
 
-Three implementations are retained:
+Four validation components are retained:
 
-1. `scripts/gen_10d_data.py` evaluates the source formulas numerically and
-   writes `data/tendim_10d_lr.json`.
-2. `scripts/eval_garden_exact.py` independently evaluates the same definitions
+1. `src/tendim_generate.rs` generates the complete artifact in Rust and verifies
+   all 136 bosonic relations exactly over `Q(sqrt(2))`.
+2. `scripts/gen_10d_data.py` independently evaluates the formulas numerically as
+   a cross-check.
+3. `scripts/eval_garden_exact.py` independently evaluates the same definitions
    with exact SymPy arithmetic and compares every matrix entry.
-3. `src/tendim_data.rs` validates shapes, field order, allowed exact values,
+4. `src/tendim_data.rs` validates shapes, field order, allowed exact values,
    the complete matrix-content hash, every unordered Garden relation, and every
    displayed example in Eqs. 6.0.5-6.0.6.
 
 Run:
 
 ```sh
-python3 scripts/gen_10d_data.py
-python3 scripts/eval_garden_exact.py
-cargo test tendim_data
+cargo run --release -- tendim-generate
 cargo run --release -- tendim-reproduce
+python3 scripts/gen_10d_data.py /tmp/tendim-python.json
+python3 scripts/eval_garden_exact.py
 ```
 
 The complete audit gives:
@@ -71,9 +72,9 @@ The complete audit gives:
 | Maximum `E_IJ` Frobenius norm | `9.924716620639604` |
 | Maximum absolute `E_IJ` entry | `1` |
 
-On an Apple M4 Pro with 48 GB memory, an optimized audit loaded the JSON in 11 ms
-and validated its content in 3 ms. After three warmups, 30 full-algebra runs had
-a 26.803 ms median and a 28.054 ms p95. These measurements are recorded in
+On an Apple M4 Pro with 48 GB memory, an optimized audit loaded the JSON in 12 ms
+and validated its content in 4 ms. After three warmups, 30 full-algebra runs had
+a 25.089 ms median and a 25.742 ms p95. These measurements are recorded in
 `results/tendim_2512_reproduction_audit.json`; they are not performance guarantees.
 
 ## Printed examples
@@ -101,10 +102,10 @@ Author confirmation is required before changing that coefficient.
 
 ## Result and boundary
 
-Two independent transcriptions of the pinned executable source agree with the
-local matrices entrywise, including the recorded basis, ordering, signs, and
-normalizations. The complete bosonic Garden algebra closes, and the fermionic
-nonclosure data are generated for all unordered color pairs.
+The Rust generator and both independent Python cross-checks agree with the local
+matrices entrywise, including the recorded basis, ordering, signs, and
+normalizations. Rust verifies the complete bosonic Garden algebra exactly, and
+the fermionic nonclosure data are generated for all unordered color pairs.
 
 This does not establish that the executable three-form coefficient is the
 authors' intended coefficient. It also does not construct an off-shell embedding.
