@@ -294,6 +294,12 @@ fn real(value: &Cx) -> f64 {
 
 /// Generate all sixteen L and R matrices from the pinned formulas.
 pub fn generate() -> TenDimData {
+    generate_with_mixed_left(1, 16)
+}
+
+/// Generate the matrices with an explicit coefficient multiplying
+/// `MixedLeft`. The executable source uses 1/16; its nearby comment says 1/8.
+pub fn generate_with_mixed_left(mixed_numerator: i64, mixed_denominator: i64) -> TenDimData {
     let t = tables();
     let hs = h_order();
     let bs = b_order();
@@ -350,7 +356,8 @@ pub fn generate() -> TenDimData {
                             &mut row,
                             &bs,
                             (rho, xi),
-                            t.mixed[mu][rho][xi].get(dotted, charge).clone() * rat(1, 16),
+                            t.mixed[mu][rho][xi].get(dotted, charge).clone()
+                                * rat(mixed_numerator, mixed_denominator),
                         );
                     }
                 }
@@ -458,21 +465,12 @@ fn exact_l(value: f64) -> Quad {
 }
 
 fn exact_r(value: f64) -> Quad {
-    for (candidate, exact) in [
-        (-0.5, Quad::rational(-1, 2)),
-        (-0.4375, Quad::rational(-7, 16)),
-        (-0.125, Quad::rational(-1, 8)),
-        (-0.0625, Quad::rational(-1, 16)),
-        (0.0, Quad::zero()),
-        (0.0625, Quad::rational(1, 16)),
-        (0.125, Quad::rational(1, 8)),
-        (0.4375, Quad::rational(7, 16)),
-        (0.5, Quad::rational(1, 2)),
-        (1.0 / 8.0_f64.sqrt(), Quad::sqrt2(1, 4)),
-    ] {
-        if (value - candidate).abs() <= 1e-9 {
-            return exact;
-        }
+    if (value - 1.0 / 8.0_f64.sqrt()).abs() <= 1e-9 {
+        return Quad::sqrt2(1, 4);
+    }
+    let numerator = (value * 16.0).round() as i64;
+    if (value - numerator as f64 / 16.0).abs() <= 1e-9 {
+        return Quad::rational(numerator, 16);
     }
     panic!("illegal generated R value {value}");
 }
@@ -512,8 +510,17 @@ fn sparse_product(
     out
 }
 
-/// Verify all 136 bosonic Garden relations over Q(sqrt(2)).
-pub fn verify_exact_bosonic(data: &TenDimData) -> usize {
+#[derive(Debug, Clone, Serialize)]
+pub struct ExactGardenAudit {
+    pub pairs_checked: usize,
+    pub failed_pairs: usize,
+    pub failed_scalar_entries: usize,
+    pub first_failure: Option<String>,
+    pub passed: bool,
+}
+
+/// Measure all 136 bosonic Garden relations over Q(sqrt(2)).
+pub fn exact_bosonic_audit(data: &TenDimData) -> ExactGardenAudit {
     let ls = data
         .l
         .iter()
@@ -525,10 +532,14 @@ pub fn verify_exact_bosonic(data: &TenDimData) -> usize {
         .map(|matrix| sparse_rows(matrix, 'R'))
         .collect::<Vec<_>>();
     let mut checked = 0;
+    let mut failed_pairs = 0;
+    let mut failed_scalar_entries = 0;
+    let mut first_failure = None;
     for i in 0..16 {
         for j in i..16 {
             let a = sparse_product(&ls[i], &rs[j], 82);
             let b = sparse_product(&ls[j], &rs[i], 82);
+            let mut pair_failed = false;
             for row in 0..82 {
                 for col in 0..82 {
                     let mut value = a[row * 82 + col].clone();
@@ -538,16 +549,41 @@ pub fn verify_exact_bosonic(data: &TenDimData) -> usize {
                     } else {
                         Quad::zero()
                     };
-                    assert_eq!(
-                        value, expected,
-                        "exact Garden failure at ({i},{j},{row},{col})"
-                    );
+                    if value != expected {
+                        pair_failed = true;
+                        failed_scalar_entries += 1;
+                        if first_failure.is_none() {
+                            first_failure = Some(format!(
+                                "color_pair=({},{}), matrix_entry=({},{})",
+                                i + 1,
+                                j + 1,
+                                row + 1,
+                                col + 1
+                            ));
+                        }
+                    }
                 }
+            }
+            if pair_failed {
+                failed_pairs += 1;
             }
             checked += 1;
         }
     }
-    checked
+    ExactGardenAudit {
+        pairs_checked: checked,
+        failed_pairs,
+        failed_scalar_entries,
+        first_failure,
+        passed: failed_pairs == 0,
+    }
+}
+
+/// Verify all 136 bosonic Garden relations over Q(sqrt(2)).
+pub fn verify_exact_bosonic(data: &TenDimData) -> usize {
+    let audit = exact_bosonic_audit(data);
+    assert!(audit.passed, "exact Garden audit failed: {audit:?}");
+    audit.pairs_checked
 }
 
 pub fn max_entrywise_difference(left: &TenDimData, right: &TenDimData) -> f64 {
@@ -561,6 +597,66 @@ pub fn max_entrywise_difference(left: &TenDimData, right: &TenDimData) -> f64 {
         }
     }
     max
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ConventionVariantAudit {
+    pub name: &'static str,
+    pub mixed_left_coefficient: &'static str,
+    pub exact_garden: ExactGardenAudit,
+    pub float_bosonic_max_frobenius_residual: f64,
+    pub fermionic_nonclosure_pairs: usize,
+    pub max_entrywise_difference_from_executable_source: f64,
+    pub paper_equations_matching: usize,
+    pub paper_equations_checked: usize,
+    pub paper_terms_matching: usize,
+    pub paper_terms_checked: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ConventionScanReport {
+    pub variants: Vec<ConventionVariantAudit>,
+    pub printed_examples_define_complete_dataset: bool,
+    pub conclusion: &'static str,
+}
+
+fn audit_variant(
+    name: &'static str,
+    coefficient: &'static str,
+    candidate: &TenDimData,
+    executable: &TenDimData,
+) -> ConventionVariantAudit {
+    let exact_garden = exact_bosonic_audit(candidate);
+    let algebra = candidate.full_algebra_audit();
+    let (equations_matching, equations_checked, terms_matching, terms_checked) =
+        crate::tendim_data::paper_example_counts(candidate);
+    ConventionVariantAudit {
+        name,
+        mixed_left_coefficient: coefficient,
+        exact_garden,
+        float_bosonic_max_frobenius_residual: algebra.bosonic_max_frobenius_residual,
+        fermionic_nonclosure_pairs: algebra.fermionic_nonclosure_pairs,
+        max_entrywise_difference_from_executable_source: max_entrywise_difference(
+            candidate, executable,
+        ),
+        paper_equations_matching: equations_matching,
+        paper_equations_checked: equations_checked,
+        paper_terms_matching: terms_matching,
+        paper_terms_checked: terms_checked,
+    }
+}
+
+pub fn convention_scan() -> ConventionScanReport {
+    let executable = generate_with_mixed_left(1, 16);
+    let comment = generate_with_mixed_left(1, 8);
+    ConventionScanReport {
+        variants: vec![
+            audit_variant("executable_source", "1/16", &executable, &executable),
+            audit_variant("source_comment", "1/8", &comment, &executable),
+        ],
+        printed_examples_define_complete_dataset: false,
+        conclusion: "The executable 1/16 branch satisfies all 136 bosonic Garden relations exactly. The source-comment 1/8 branch fails all 136 pairs at 7,296 scalar entries and does not improve agreement with the printed examples. With all other formulas fixed, 1/8 is not a consistent alternative. The thirteen printed examples are constraints, not a complete matrix definition, and are not patched into a synthetic dataset.",
+    }
 }
 
 fn normalize_json_spacing(input: &str) -> String {
@@ -645,5 +741,19 @@ mod tests {
         let generated = generate();
         let expected = std::fs::read_to_string(dataset_path()).unwrap();
         assert_eq!(artifact_json(&generated), expected);
+    }
+
+    #[test]
+    fn convention_scan_tests_both_formula_level_coefficients() {
+        let report = convention_scan();
+        assert_eq!(report.variants.len(), 2);
+        assert_eq!(report.variants[0].mixed_left_coefficient, "1/16");
+        assert_eq!(report.variants[1].mixed_left_coefficient, "1/8");
+        assert!(report.variants[0].exact_garden.passed);
+        assert!(!report.variants[1].exact_garden.passed);
+        assert_eq!(report.variants[1].exact_garden.failed_pairs, 136);
+        assert_eq!(report.variants[1].exact_garden.failed_scalar_entries, 7_296);
+        assert_eq!(report.variants[0].paper_equations_matching, 4);
+        assert_eq!(report.variants[1].paper_equations_matching, 4);
     }
 }

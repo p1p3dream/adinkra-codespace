@@ -83,6 +83,7 @@ fn main() {
         "bbbm-sixteen-onshell" => cmd_bbbm_sixteen_onshell(&args),
         "tendim-reproduce" => cmd_tendim_reproduce(&args),
         "tendim-generate" => cmd_tendim_generate(&args),
+        "tendim-convention-scan" => cmd_tendim_convention_scan(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -140,6 +141,7 @@ fn print_usage(prog: &str) {
     eprintln!("  bbbm-sixteen-onshell    Verify full 16-charge closure modulo the Dirac equation");
     eprintln!("  tendim-reproduce [json] Audit the pinned 10D supergravity L/R reproduction");
     eprintln!("  tendim-generate [json]  Generate the 10D supergravity L/R artifact in Rust");
+    eprintln!("  tendim-convention-scan  Compare the 1/16 and 1/8 formula branches");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -198,6 +200,11 @@ fn cmd_tendim_generate(args: &[String]) {
         serde_json::to_string(path).unwrap(),
         exact_pairs
     );
+}
+
+fn cmd_tendim_convention_scan() {
+    let report = tendim_generate::convention_scan();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

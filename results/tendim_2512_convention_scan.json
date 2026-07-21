@@ -1,0 +1,42 @@
+{
+  "variants": [
+    {
+      "name": "executable_source",
+      "mixed_left_coefficient": "1/16",
+      "exact_garden": {
+        "pairs_checked": 136,
+        "failed_pairs": 0,
+        "failed_scalar_entries": 0,
+        "first_failure": null,
+        "passed": true
+      },
+      "float_bosonic_max_frobenius_residual": 1.6828760607268123e-12,
+      "fermionic_nonclosure_pairs": 136,
+      "max_entrywise_difference_from_executable_source": 0.0,
+      "paper_equations_matching": 4,
+      "paper_equations_checked": 13,
+      "paper_terms_matching": 7,
+      "paper_terms_checked": 26
+    },
+    {
+      "name": "source_comment",
+      "mixed_left_coefficient": "1/8",
+      "exact_garden": {
+        "pairs_checked": 136,
+        "failed_pairs": 136,
+        "failed_scalar_entries": 7296,
+        "first_failure": "color_pair=(1,1), matrix_entry=(46,46)",
+        "passed": false
+      },
+      "float_bosonic_max_frobenius_residual": 2.7386127875258306,
+      "fermionic_nonclosure_pairs": 136,
+      "max_entrywise_difference_from_executable_source": 0.0625,
+      "paper_equations_matching": 4,
+      "paper_equations_checked": 13,
+      "paper_terms_matching": 7,
+      "paper_terms_checked": 26
+    }
+  ],
+  "printed_examples_define_complete_dataset": false,
+  "conclusion": "The executable 1/16 branch satisfies all 136 bosonic Garden relations exactly. The source-comment 1/8 branch fails all 136 pairs at 7,296 scalar entries and does not improve agreement with the printed examples. With all other formulas fixed, 1/8 is not a consistent alternative. The thirteen printed examples are constraints, not a complete matrix definition, and are not patched into a synthetic dataset."
+}

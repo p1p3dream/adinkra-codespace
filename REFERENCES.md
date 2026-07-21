@@ -113,7 +113,8 @@ relevant module doc-comments).
   equations with the generator. Appendix A's
   printed sigma basis supports the generator's `Q_1 h_11 = 2 ψ_1(16)`, not the
   displayed `ψ_1(6)`. The executable source uses `1/16 MixedLeft`, while its nearby
-  comment says `1/8`. The Rust generator and both cross-checks agree; the intended L rows and
+  comment says `1/8`. A complete `1/8` variant fails all 136 bosonic Garden
+  pair relations, while `1/16` closes exactly. The Rust generator and both cross-checks agree; the intended L rows and
   assembled R coefficients still require author confirmation. See PROVENANCE.md §6 and run
   `cargo run --release -- tendim-reproduce`.
   **License / citation posture:** the upstream repo carries no LICENSE file. The

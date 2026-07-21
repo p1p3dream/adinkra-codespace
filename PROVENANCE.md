@@ -33,7 +33,7 @@ It is **not** a copy of a pre-computed dataset published by the authors.
 | Artifact | SHA256 | Notes |
 |----------|--------|-------|
 | Upstream `Garden Algebra` (Mathematica source) | `d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c` | At commit `8c8df92`. Canonical input. |
-| Primary Rust generator `src/tendim_generate.rs` | `504fcab7a32cbc7e7895e445f87658ba598ad407534df7436538875c51a0ec00` | Generates the committed artifact and verifies exact bosonic closure. |
+| Primary Rust generator `src/tendim_generate.rs` | `2a0aa24562037edfb9ff71913cd865b621a74f450631c884ca50db8320a9fecc` | Generates the committed artifact and verifies exact bosonic closure. |
 | NumPy cross-check `scripts/gen_10d_data.py` | `0fa4d332224d5d475972032198804ebab267fb845400e7fbf91c189014155746` | Independent numerical cross-check only. |
 | SymPy cross-check `scripts/eval_garden_exact.py` | `4b2a82c97e8c80e0039fe57fd18b2fa1bdc72362d84dd721c41c8846d8f2f680` | Independent exact-arithmetic cross-check only. |
 | Provenance manifest `data/tendim_10d_provenance.json` | `446546c7b26925ab476d98e9a4729753c10a1f0c596c9fb55d5bda6a02b2bfb4` | Clean regeneration input. |
@@ -65,6 +65,7 @@ running the regeneration script from the repository root:
 ```sh
 cargo run --release -- tendim-generate
 cargo run --release -- tendim-reproduce
+cargo run --release -- tendim-convention-scan
 ```
 
 Independent cross-checks:
@@ -218,8 +219,10 @@ What is NOT established:
 - Which assembled two-form coefficients the authors intend in Eq. 6.0.6.
 - Whether the executable `1/16 MixedLeft` coefficient in the Garden source is the
   intended three-form normalization. A nearby source comment says `1/8`, while
-  the executable expression uses `1/16`. Changing this coefficient alone does
-  not reconcile all printed examples.
+  the executable expression uses `1/16`. A complete Rust variant using `1/8`
+  fails all 136 bosonic Garden pair relations at 7,296 scalar entries and does
+  not improve the printed-example matches. Thus `1/8` is not a consistent
+  alternative when all other executable formulas are held fixed.
 
 **Status:** the Rust generator and two independent cross-checks agree entrywise; the paper/source
 inconsistencies are documented; the intended matrices require author confirmation.

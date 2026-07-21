@@ -492,15 +492,17 @@ fn terms(entries: &[f64], fields: &[String], side: char) -> Vec<AuditTerm> {
     let mut out = Vec::new();
     for (&value, field) in entries.iter().zip(fields) {
         let token = match side {
-            'L' => l_token(value),
-            'R' => r_token(value),
+            'L' => l_token(value).map(str::to_string),
+            'R' => r_token(value)
+                .map(str::to_string)
+                .or_else(|| rational_sixteenth_token(value)),
             _ => unreachable!(),
         };
         if let Some(coefficient) = token {
             if coefficient != "0" {
                 out.push(AuditTerm {
                     field: field.clone(),
-                    coefficient: coefficient.to_string(),
+                    coefficient,
                 });
             }
         } else {
@@ -508,6 +510,30 @@ fn terms(entries: &[f64], fields: &[String], side: char) -> Vec<AuditTerm> {
         }
     }
     out
+}
+
+fn rational_sixteenth_token(value: f64) -> Option<String> {
+    let numerator = (value * 16.0).round() as i64;
+    if (value - numerator as f64 / 16.0).abs() > VALUE_TOL {
+        return None;
+    }
+    if numerator == 0 {
+        return Some("0".to_string());
+    }
+    let gcd = |mut a: i64, mut b: i64| {
+        while b != 0 {
+            (a, b) = (b, a % b);
+        }
+        a.abs()
+    };
+    let divisor = gcd(numerator.abs(), 16);
+    let n = numerator / divisor;
+    let d = 16 / divisor;
+    if d == 1 {
+        Some(n.to_string())
+    } else {
+        Some(format!("{n}/{d}"))
+    }
 }
 
 fn paper_terms(items: &[(&str, &str)]) -> Vec<AuditTerm> {
@@ -638,6 +664,16 @@ fn worked_example_audit(data: &TenDimData) -> Vec<WorkedExampleAudit> {
         });
     }
     out
+}
+
+pub fn paper_example_counts(data: &TenDimData) -> (usize, usize, usize, usize) {
+    let examples = worked_example_audit(data);
+    (
+        examples.iter().filter(|x| x.direct_match).count(),
+        examples.len(),
+        examples.iter().map(|x| x.direct_terms).sum(),
+        examples.iter().map(|x| x.paper_terms.len()).sum(),
+    )
 }
 
 /// Load the committed dataset, verify its raw bytes and tolerance-snapped token

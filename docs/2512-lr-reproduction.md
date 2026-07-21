@@ -51,6 +51,7 @@ Run:
 ```sh
 cargo run --release -- tendim-generate
 cargo run --release -- tendim-reproduce
+cargo run --release -- tendim-convention-scan
 python3 scripts/gen_10d_data.py /tmp/tendim-python.json
 python3 scripts/eval_garden_exact.py
 ```
@@ -100,6 +101,26 @@ the reduced three-form contribution gives `1/8 MixedLeft`, while the executable
 expression uses `1/16 MixedLeft`. The reproduction follows the executable source.
 Author confirmation is required before changing that coefficient.
 
+### Formula-level convention scan
+
+Both explicit coefficient choices were generated as complete Rust datasets and
+tested over `Q(sqrt(2))`:
+
+| Branch | Exact failed pairs | Failed scalar entries | Paper equations matched |
+|---|---:|---:|---:|
+| Executable source, `1/16` | 0 of 136 | 0 | 4 of 13 |
+| Source comment, `1/8` | 136 of 136 | 7,296 | 4 of 13 |
+
+The `1/8` branch has maximum floating bosonic residual
+`2.7386127875258306` and does not improve agreement with the printed examples.
+With all other formulas fixed, it is not a Garden representation. This strongly
+supports the executable `1/16` coefficient and indicates that the `1/8` comment
+is stale or incomplete. It does not resolve the separate field-label and sign
+discrepancies in Eq. 6.0.5 or the printed two-form coefficients in Eq. 6.0.6.
+
+The machine-readable result is
+`results/tendim_2512_convention_scan.json`.
+
 ## Result and boundary
 
 The Rust generator and both independent Python cross-checks agree with the local
@@ -112,3 +133,6 @@ authors' intended coefficient. It also does not construct an off-shell embedding
 The validated matrices are now a fixed input for an embedding search; candidate
 extensions must reproduce this content hash and cancel the measured fermionic
 nonclosure without disturbing the bosonic relations.
+
+The ordered embedding and Adynkrafield equation program is maintained in
+[`from-bbbm-closure-to-adynkrafield-equations.md`](from-bbbm-closure-to-adynkrafield-equations.md).

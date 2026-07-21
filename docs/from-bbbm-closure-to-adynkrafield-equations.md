@@ -3,8 +3,8 @@
 ## Purpose
 
 This document records the completed BBBM calculations and sets out the next
-research steps. The immediate problem is finite off-shell closure for all
-sixteen supersymmetries. The broader objective is to determine whether
+research steps. One problem is finite off-shell closure for all sixteen
+supersymmetries. The broader and primary objective is to determine whether
 Adynkrafields can express a supersymmetric field equation with the structural
 role played by Einstein's equation in general relativity.
 
@@ -12,6 +12,48 @@ The second objective is not yet defined here as a unique mathematical problem.
 The first task is therefore to define a candidate operator and state tests that
 can disprove it. A larger graph catalog by itself will not supply a field
 equation.
+
+## Status update: 2026-07-21
+
+The BBBM reproduction is complete through the full nonabelian nine-charge
+algebra and the sixteen-charge on-shell closure calculation. A second validated
+baseline is now available from Cigliano, Dahl, and Gates's ten-dimensional
+linearized supergravity L/R construction [9]:
+
+- the complete 16-color `82 x 176` and `176 x 82` matrices are generated in Rust;
+- all 461,824 entries match the retained NumPy and SymPy cross-checks;
+- all 136 bosonic Garden relations close exactly over `Q(sqrt(2))`;
+- the complete fermionic nonclosure blocks are measured;
+- the executable `1/16 MixedLeft` coefficient closes exactly;
+- the alternative `1/8` coefficient stated in a source comment fails all 136
+  bosonic charge-pair relations at 7,296 scalar entries;
+- neither coefficient choice resolves the separate displayed-example
+  discrepancies in Eqs. 6.0.5-6.0.6.
+
+The 10D data baseline is documented in
+[`2512-lr-reproduction.md`](2512-lr-reproduction.md). Its machine-readable
+convention scan is `results/tendim_2512_convention_scan.json`.
+
+These results change the work order. The direct finite sixteen-charge extension
+remains a high-risk auxiliary-field problem. Its nonclosure decomposition is a
+useful measurement program, but it is not assumed to yield the missing equation.
+The primary equation route is the Adynkrafield differential program below:
+
+1. reproduce the published four-dimensional `N=1` supergravity genomes;
+2. implement supercovariant derivative maps and multiplicity intertwiners;
+3. build the prepotential gauge, field-strength, and Bianchi complex;
+4. reproduce a known linearized supergravity equation and quadratic action;
+5. express that known equation as a tested Adynkrafield operator;
+6. only then apply the same machinery to the eleven-dimensional scalar
+   superfield and study its irreducible reduction;
+7. treat nonlinear products and interaction terms only after the linearized
+   operator and its Clebsch-Gordan data are validated.
+
+In parallel, the validated 10D L/R matrices may be used for bounded embedding
+searches. Every candidate must preserve the physical L/R block, cancel the
+measured fermionic nonclosure, satisfy the full Garden relations, and state its
+gauge, locality, zero-mode, and auxiliary-field assumptions. The permutahedron
+atlas remains a separate supporting calculation.
 
 ## Established BBBM results
 
@@ -257,6 +299,20 @@ differential work proceeds.
 
 ## Ordered research plan
 
+### Track 0: validated 10D supergravity baseline and embedding scan
+
+1. Generate and verify the complete L/R artifact in Rust. **Complete.**
+2. Compare the executable `1/16` and source-comment `1/8` branches. **Complete:**
+   only `1/16` satisfies the bosonic Garden relations.
+3. Obtain author clarification of the remaining printed L-row and R-coefficient
+   discrepancies, without blocking source-convention experiments.
+4. Decompose the measured fermionic nonclosure under the relevant Lorentz and
+   compact subgroups.
+5. Define explicit auxiliary-block embedding ansatzes and solve them as bounded
+   algebraic problems.
+6. Reject any candidate requiring equations of motion, inverse derivatives,
+   undeclared zero-mode deletion, or an unbounded auxiliary tower.
+
 ### Track 1: sixteen-charge off-shell closure
 
 1. Construct the explicit `1+8+7` charge-basis intertwiner.
@@ -289,11 +345,11 @@ differential work proceeds.
    terms.
 4. Feed any invariant structures into Tracks 1 and 2.
 
-The immediate priority is Track 1, Steps 1-3. They use the new full-closure
-calculation and can either produce a minimal auxiliary target or rule out a
-well-defined class of targets. Track 2 should begin with its published
-four-dimensional benchmark in parallel. Track 3 is bounded and valuable, but
-it should not displace the differential-operator work.
+The immediate equation priority is Track 2, Steps 1-5. Track 0 provides a
+validated 10D measurement and bounded embedding program. Track 1, Steps 1-3,
+remain useful for decomposing the BBBM obstruction, but a finite extension is
+not presumed. Track 3 is bounded and valuable, but it should not displace the
+differential-operator work.
 
 ## Reproduction
 
@@ -305,6 +361,9 @@ cargo run --release -- bbbm-holoraumy
 cargo run --release -- bbbm-closure
 cargo run --release -- bbbm-nonabelian
 cargo run --release -- bbbm-sixteen-onshell
+cargo run --release -- tendim-generate
+cargo run --release -- tendim-reproduce
+cargo run --release -- tendim-convention-scan
 cargo test
 ```
 
@@ -335,3 +394,6 @@ cargo test
 8. A. J. Cianciara, S. J. Gates Jr., Y. Lee, E. T. Levy, T. O. Razzaz, and J.
    Richardson, "Unfolded Adinkra Properties of Supermultiplets (I),"
    [arXiv:2311.06842](https://arxiv.org/abs/2311.06842).
+9. J. Cigliano, B. Dahl, and S. J. Gates Jr., "10D Supergravity Numerical Data
+   Sets for L & R Matrices,"
+   [arXiv:2512.12157](https://arxiv.org/abs/2512.12157).
