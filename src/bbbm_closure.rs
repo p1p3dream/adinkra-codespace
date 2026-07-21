@@ -30,25 +30,18 @@
 //!    Every anticommutator equals a pure translation: NO non-closure term.
 //!    This is the exact off-shell-closure certificate for the 9 supercharges.
 //!
-//! B. THE COMPONENT-FIELD CLOSURE (paper Eqs 22-24). We build delta_0 and
-//!    delta_i as linear operators on the 16|16 component multiplet
-//!        bosons:   A_i (8), A_+ , A_- , G^-_{ij} (7)
-//!        fermions: psi_i (8), eta , chi^-_{ij} (7)
-//!    directly from Eqs (22)-(23), with the flat (abelian) field strengths
-//!        F_{ij} = d_i A_j - d_j A_i , F_{i+/-} = d_i A_{+/-} - d_{+/-} A_i ,
-//!        F_{+-} = d_+ A_- - d_- A_+ ,
-//!    and verify the closure Eq (24)
-//!        delta_0^2            = d_+   (+ gauge)
-//!        delta_{(i} delta_{j)} = delta_ij d_-  (+ gauge)
-//!        {delta_0, delta_i}   = d_i   (+ gauge)
-//!    on the fields, extracting any residual (the "non-closure / EOM" term).
+//! B. THE COMPONENT-FIELD CLOSURE (paper Eqs 22-24). The legacy check below
+//!    verifies delta_0^2 directly. `crate::bbbm_component` independently builds
+//!    delta_0 and all eight delta_i on the 33 raw component fields (17 bosonic
+//!    variables before one gauge redundancy, 16 fermions) and verifies every
+//!    scalar, mixed, and vector anticommutator at linearized abelian order.
 //!
 //! WHAT IS UNDERSPECIFIED (reported honestly, not fabricated): the paper does
 //! NOT give explicit transformation laws for the 7 antiselfdual tensor charges
 //! delta^-_{ij}. It only states they are dropped (nu^{ij} = 0, Eq 17) and that
 //! the full 16-charge algebra closes only modulo the EOM (Eq 5). Their explicit
-//! non-closure functions therefore CANNOT be extracted from this paper alone;
-//! doing so would require reconstructing delta^-_{ij} from the parent
+//! non-closure functions are not printed. Reconstructing them would require
+//! deriving delta^-_{ij} from the parent
 //! transformation Eq (2) with a nonzero antiselfdual v-parameter, which the
 //! paper deliberately sets to zero. We build the GENERIC structure and report
 //! exactly what is missing (see `SevenChargeStatus`).
@@ -243,10 +236,10 @@ impl AntiSelfDualProjector {
                 // by fraction-free rank of (Omega - lambda I). The projector
                 // onto the antiselfdual 7 is therefore
                 //   P^- = (I - Omega) / (1 - (-3)) = (delta - Omega) / 4.
-                // (This is the paper's Eq (14) P^- = 1/4(delta - (1/2)Omega)
-                // once the paper's 4-form normalization -- which differs from
-                // ours by an overall factor 2 -- is matched. We fix the factor
-                // internally by demanding rank 7 and idempotency, both tested.)
+                // This is paper Eq. (14) on the 28 independent pair coordinates.
+                // Its explicit 1/2 multiplying Omega cancels the double count
+                // from summing both ordered components X_kl and X_lk. No
+                // different normalization of the paper's Cayley form is assumed.
                 // We store 4 * P^- = delta - Omega as integers (denominator 4).
                 mat4[r][c] = delta - om;
             }
@@ -882,7 +875,7 @@ pub struct SevenChargeStatus {
     pub count: usize,
     pub representation: String,
     pub explicit_transformation_laws_in_paper: bool,
-    pub non_closure_extractable_from_this_paper: bool,
+    pub non_closure_printed_in_this_paper: bool,
     pub what_the_paper_gives: String,
     pub what_is_missing: String,
     pub antiselfdual_projector_rank: usize,
@@ -896,7 +889,7 @@ pub fn seven_charge_status() -> SevenChargeStatus {
         count: 7,
         representation: "antiselfdual 2-tensor 7 of Spin(7) (delta^-_{ij})".to_string(),
         explicit_transformation_laws_in_paper: false,
-        non_closure_extractable_from_this_paper: false,
+        non_closure_printed_in_this_paper: false,
         what_the_paper_gives:
             "Eq (5): the full 16-charge algebra closes only modulo gauge AND equations of \
              motion, {delta,deltahat} ~ -2i eps Gamma^mu epshat d_mu - 2i delta^gauge. Eq (6): \
@@ -911,11 +904,11 @@ pub fn seven_charge_status() -> SevenChargeStatus {
              DROPS the tensor charges (nu=0). To obtain the 7 non-closure (EOM) functions one \
              would have to (a) restore a nonzero antiselfdual parameter nu^{ij} in Eq (15), (b) \
              re-derive delta^-_{ij} on every component field from the parent Eq (2)/(9), and (c) \
-             compute {delta^-, delta^-} and {delta_0/i, delta^-}, whose failure-to-close is the \
-             Ga equation of motion i/4 v_a Gamma^mu D_mu Psi = 0 read off from Eq (3). This is a \
-             re-derivation the paper deliberately does not carry out; it is NOT extractable from \
-             the printed equations without adding physics input (the octonion-basis-aligned \
-             antiselfdual v-parameter). Reported here rather than fabricated."
+             compute {delta^-, delta^-} and {delta_0/i, delta^-}. Equation (3) supplies the \
+             transformation delta G_a, not an equation of motion; the fermionic non-closure must \
+             instead be compared with the Dirac equation derived from Eq. (1). This reconstruction \
+             requires gamma-matrix and octonion-basis conventions that the printed twisted rules \
+             do not fix. Reported here rather than fabricated."
                 .to_string(),
         antiselfdual_projector_rank: proj.rank(),
         projector_idempotent: proj.is_idempotent(),
@@ -931,6 +924,8 @@ pub fn seven_charge_status() -> SevenChargeStatus {
 pub struct BbbmClosureReport {
     pub nine_offshell_superspace: SuperspaceCertificate,
     pub delta0_squared_component: Delta0SquaredCheck,
+    pub full_linearized_component: crate::bbbm_component::ComponentClosureReport,
+    pub worldline_reduction: crate::bbbm_worldline::WorldlineReductionReport,
     pub nine_close_offshell_no_nonclosure: bool,
     pub seven_onshell: SevenChargeStatus,
     pub headline: String,
@@ -939,23 +934,31 @@ pub struct BbbmClosureReport {
 pub fn run() -> BbbmClosureReport {
     let sc = superspace_certificate();
     let d0 = delta0_squared_check();
+    let component = crate::bbbm_component::run();
+    let worldline = crate::bbbm_worldline::run();
     let nine_ok = sc.dhat_sq_closes
         && sc.dhat_ij_closes
         && sc.dhat_mixed_closes
-        && d0.closes_as_translation_plus_gauge;
+        && d0.closes_as_translation_plus_gauge
+        && component.all_printed_relations_close_modulo_gauge_without_eom
+        && worldline.hanging_closes_exactly_over_polynomial_differential_operators;
     let seven = seven_charge_status();
     BbbmClosureReport {
         nine_offshell_superspace: sc,
         delta0_squared_component: d0,
+        full_linearized_component: component,
+        worldline_reduction: worldline,
         nine_close_offshell_no_nonclosure: nine_ok,
         seven_onshell: seven,
         headline:
-            "9 supercharges (1 scalar + 8 vector of Spin(7)) verified to close OFF-SHELL with \
-             NO non-closure term: every anticommutator equals a pure translation (paper Eq 34), \
-             checked exactly on the 512-dim reduced-superspace module. The 7 antiselfdual tensor \
-             charges are UNDERSPECIFIED by arXiv:0705.2002 (dropped via nu=0); their explicit \
-             non-closure/EOM functions are NOT extractable from the printed equations. See \
-             seven_onshell.what_is_missing."
+            "The nine reduced-superspace operators satisfy BBBM Eq. (34) exactly. Independently, \
+             all scalar, mixed, and vector component relations in Eq. (24), derived from Eqs. \
+             (22)-(23), close at linearized abelian order on all 33 raw fields modulo gauge, with \
+             no EOM residual. The actual one-dimensional reduction gives a local (9,16,7) \
+             hanging. Its formal node-lowered chromotopology matches the [9,4] scaffold, but \
+             node lowering requires D^{-1} and does not identify zero modes. The seven discarded \
+             tensor-charge transformations are not printed in arXiv:0705.2002 and require a \
+             separate reconstruction."
                 .to_string(),
     }
 }
@@ -1004,6 +1007,25 @@ mod tests {
     }
 
     #[test]
+    fn complete_linearized_component_and_worldline_reports_pass() {
+        let report = run();
+        assert_eq!(report.full_linearized_component.exact_relations_checked, 1_485);
+        assert_eq!(report.full_linearized_component.residual_relations, 0);
+        assert!(
+            report
+                .worldline_reduction
+                .hanging_closes_exactly_over_polynomial_differential_operators
+        );
+        assert!(
+            report
+                .worldline_reduction
+                .formal_chromotopology_matches_scaffold_after_color_permutation
+        );
+        assert!(!report.worldline_reduction.strict_local_valise_equivalence);
+        assert!(report.nine_close_offshell_no_nonclosure);
+    }
+
+    #[test]
     fn antiselfdual_projector_has_rank_seven() {
         let proj = AntiSelfDualProjector::build();
         assert!(proj.is_symmetric(), "P^- must be symmetric");
@@ -1027,8 +1049,8 @@ mod tests {
             "the paper does NOT print delta^-_{{ij}} transformation laws"
         );
         assert!(
-            !s.non_closure_extractable_from_this_paper,
-            "the 7 non-closure functions are NOT extractable from arXiv:0705.2002 alone"
+            !s.non_closure_printed_in_this_paper,
+            "the 7 non-closure functions are not printed in arXiv:0705.2002"
         );
         assert_eq!(s.antiselfdual_projector_rank, 7);
     }

@@ -1,7 +1,11 @@
 mod baselines;
 mod bbbm;
 mod bbbm_closure;
+mod bbbm_component;
 mod bbbm_holoraumy;
+#[cfg(test)]
+mod bbbm_source_audit;
+mod bbbm_worldline;
 mod canonical;
 mod chromochar;
 mod chromotopology;
@@ -114,6 +118,9 @@ fn print_usage(prog: &str) {
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
     eprintln!("  sr-investigation [json] Analyze the minimal unpaired Siegel-Rocek case");
     eprintln!("                          (default: adinkra_codes_n16.json)");
+    eprintln!("  bbbm                    Verify the generic minimal N=9 valise scaffold");
+    eprintln!("  bbbm-holoraumy          Compute the generic N=9 gadget invariants");
+    eprintln!("  bbbm-closure            Verify BBBM component closure and worldline reduction");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");

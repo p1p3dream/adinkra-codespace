@@ -1,9 +1,11 @@
 #![allow(dead_code)] // research module: exercised by the `bbbm-holoraumy` subcommand and tests
 
-//! Holoraumy / gadget invariants of the minimal N=9 BBBM valise GR(16,9).
+//! Holoraumy and gadget invariants of the generic minimal N=9 valise scaffold.
 //!
-//! Route A. Reuse the codebase's tested machinery to characterize the holoraumy
-//! structure of the N=9 valise built in `crate::bbbm`:
+//! The formal node-lowered BBBM reduction has the same `[9,4]` chromotopology,
+//! but strict local equivalence is obstructed by `D^{-1}` and zero modes. This
+//! module surveys every scaffold dashing and does not assign all of them to BBBM.
+//! It characterizes the N=9 valises built in `crate::bbbm`:
 //!
 //!   * bosonic holoraumy    V_IJ    = L_I R_J   = L_I L_J^{-1}
 //!   * fermionic holoraumy  Vtilde_IJ = R_I L_J = L_I^{-1} L_J
