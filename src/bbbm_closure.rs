@@ -925,6 +925,7 @@ pub struct BbbmClosureReport {
     pub nine_offshell_superspace: SuperspaceCertificate,
     pub delta0_squared_component: Delta0SquaredCheck,
     pub full_linearized_component: crate::bbbm_component::ComponentClosureReport,
+    pub full_nonabelian_component: crate::bbbm_nonabelian::NonabelianClosureReport,
     pub worldline_reduction: crate::bbbm_worldline::WorldlineReductionReport,
     pub nine_close_offshell_no_nonclosure: bool,
     pub seven_onshell: SevenChargeStatus,
@@ -935,30 +936,34 @@ pub fn run() -> BbbmClosureReport {
     let sc = superspace_certificate();
     let d0 = delta0_squared_check();
     let component = crate::bbbm_component::run();
+    let nonabelian = crate::bbbm_nonabelian::run();
     let worldline = crate::bbbm_worldline::run();
     let nine_ok = sc.dhat_sq_closes
         && sc.dhat_ij_closes
         && sc.dhat_mixed_closes
         && d0.closes_as_translation_plus_gauge
         && component.all_printed_relations_close_modulo_gauge_without_eom
+        && nonabelian.all_nonabelian_relations_close_modulo_gauge
         && worldline.hanging_closes_exactly_over_polynomial_differential_operators;
     let seven = seven_charge_status();
     BbbmClosureReport {
         nine_offshell_superspace: sc,
         delta0_squared_component: d0,
         full_linearized_component: component,
+        full_nonabelian_component: nonabelian,
         worldline_reduction: worldline,
         nine_close_offshell_no_nonclosure: nine_ok,
         seven_onshell: seven,
         headline:
-            "The nine reduced-superspace operators satisfy BBBM Eq. (34) exactly. Independently, \
-             all scalar, mixed, and vector component relations in Eq. (24), derived from Eqs. \
-             (22)-(23), close at linearized abelian order on all 33 raw fields modulo gauge, with \
-             no EOM residual. The actual one-dimensional reduction gives a local (9,16,7) \
-             hanging. Its formal node-lowered chromotopology matches the [9,4] scaffold, but \
-             node lowering requires D^{-1} and does not identify zero modes. The seven discarded \
-             tensor-charge transformations are not printed in arXiv:0705.2002 and require a \
-             separate reconstruction."
+            "The nine reduced-superspace operators satisfy BBBM Eq. (34) exactly. All 1,485 \
+             scalar, mixed, and vector component relations in Eq. (24), derived from Eqs. \
+             (22)-(23), close in the full nonabelian free differential superalgebra on all 33 \
+             raw fields modulo gauge, with no EOM, integration by parts, or trace identities. \
+             Independent exact engines and source-convention audits agree. The actual \
+             one-dimensional reduction gives a local (9,16,7) hanging. Its formal node-lowered \
+             chromotopology matches the [9,4] scaffold, but node lowering requires D^{-1} and \
+             does not identify zero modes. The seven discarded tensor-charge transformations \
+             are not printed in arXiv:0705.2002 and require a separate reconstruction."
                 .to_string(),
     }
 }
@@ -1011,6 +1016,13 @@ mod tests {
         let report = run();
         assert_eq!(report.full_linearized_component.exact_relations_checked, 1_485);
         assert_eq!(report.full_linearized_component.residual_relations, 0);
+        assert_eq!(report.full_nonabelian_component.exact_relations_checked, 1_485);
+        assert_eq!(report.full_nonabelian_component.residual_relations, 0);
+        assert!(
+            report
+                .full_nonabelian_component
+                .all_nonabelian_relations_close_modulo_gauge
+        );
         assert!(
             report
                 .worldline_reduction

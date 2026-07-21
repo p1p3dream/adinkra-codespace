@@ -19,7 +19,7 @@ fermionic variables:
 Removing one gauge redundancy leaves 16 gauge-invariant bosonic degrees of
 freedom and 16 fermionic degrees of freedom.
 
-## Exact component verification
+## Linearized component verification
 
 `src/bbbm_component.rs` encodes Eqs. (22)-(23) as sparse polynomial
 differential operators at linearized abelian order. It checks Eq. (24) on all
@@ -36,6 +36,39 @@ equation or integration by parts is used.
 `src/bbbm_source_audit.rs` independently repeats the calculation with rational
 arithmetic, a separately entered Cayley-form fixture, and all 28 projected
 two-form components. Its results agree with the production calculation.
+
+## Full nonabelian verification
+
+`src/bbbm_nonabelian.rs` expands the printed transformations into an exact free
+associative differential superalgebra. Adjoint-valued fields remain
+noncommuting, ordinary derivatives use the full Leibniz rule, and the
+supersymmetry variations are odd graded derivations. The implementation uses
+
+\[
+D_\mu X=\partial_\mu X+[A_\mu,X],
+\]
+
+\[
+F_{\mu\nu}=\partial_\mu A_\nu-\partial_\nu A_\mu+[A_\mu,A_\nu],
+\]
+
+with
+
+\[
+\delta_{\mathrm{gauge}}(\lambda)A_\mu=-D_\mu\lambda,
+\qquad
+\delta_{\mathrm{gauge}}(\lambda)X=[\lambda,X].
+\]
+
+All 1,485 component instances of Eq. (24) have zero canonical residual. The
+calculation uses no equations of motion, integration by parts, trace
+cyclicity, numerical sampling, or commutativity assumption.
+
+`src/bbbm_nonabelian_crosscheck.rs` repeats the calculation with a separately
+written free-word engine. A deliberate sign mutation produces nonzero
+residuals. `src/bbbm_nonabelian_source_audit.rs` independently checks the
+gauge conventions, graded signs, Jacobi identity, covariant-derivative
+commutator, and Bianchi identity against the original arXiv TeX.
 
 `src/bbbm_closure.rs` also verifies the reduced superspace derivative algebra
 of Eqs. (33)-(34) on all \(2^9=512\) Grassmann monomials.
@@ -135,6 +168,7 @@ term must be compared with the Dirac equation derived from the action.
 cargo run --release -- bbbm
 cargo run --release -- bbbm-holoraumy
 cargo run --release -- bbbm-closure
+cargo run --release -- bbbm-nonabelian
 cargo test
 ```
 

@@ -3,6 +3,11 @@ mod bbbm;
 mod bbbm_closure;
 mod bbbm_component;
 mod bbbm_holoraumy;
+mod bbbm_nonabelian;
+#[cfg(test)]
+mod bbbm_nonabelian_crosscheck;
+#[cfg(test)]
+mod bbbm_nonabelian_source_audit;
 #[cfg(test)]
 mod bbbm_source_audit;
 mod bbbm_worldline;
@@ -68,6 +73,7 @@ fn main() {
         "bbbm" => cmd_bbbm(&args),
         "bbbm-closure" => cmd_bbbm_closure(&args),
         "bbbm-holoraumy" => cmd_bbbm_holoraumy(&args),
+        "bbbm-nonabelian" => cmd_bbbm_nonabelian(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -121,6 +127,7 @@ fn print_usage(prog: &str) {
     eprintln!("  bbbm                    Verify the generic minimal N=9 valise scaffold");
     eprintln!("  bbbm-holoraumy          Compute the generic N=9 gadget invariants");
     eprintln!("  bbbm-closure            Verify BBBM component closure and worldline reduction");
+    eprintln!("  bbbm-nonabelian         Verify the full nonabelian BBBM component algebra");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -144,6 +151,11 @@ fn cmd_bbbm_holoraumy(_args: &[String]) {
 
 fn cmd_bbbm_closure(_args: &[String]) {
     let report = bbbm_closure::run();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_bbbm_nonabelian(_args: &[String]) {
+    let report = bbbm_nonabelian::run();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
 
