@@ -114,9 +114,10 @@ spinor intertwiners. It also materializes the complete 320-dimensional target
 module. The remaining `(10001)` work is to propagate the source vector through
 the same 752 lowering actions and verify every target relation. Consequently:
 
-- the three coefficients have not yet been substituted into the torsion
-  constraints of Eq. (2.7);
-- no surviving coefficient combination has been identified; and
+- the final two-form torsion projection has now been evaluated at the
+  representation level and has rank zero on the three coefficients;
+- Eq. (2.7) therefore does not select a unique combination of the three bridge
+  channels; and
 - generic-momentum gauge reducibility and a complete curvature complex remain
   open. The scalar-divergence kernel test has identified the direct two-form
   and five-form channels.
@@ -134,10 +135,38 @@ starting formulas:
 - the subsequent conventional-constraint analysis relating the holonomy
   superfields and spin connections to $H_\alpha{}^a$.
 
-Therefore the next calculation is not a bare substitution into the displayed
-lines of Eq. (2.7). It is an exact implementation of the linearized frame and
-anholonomy formulas, elimination of the conventional fields, and then
-evaluation of the Eq. (2.7) projections on the three bridge channels.
+Equations (39)-(40) already state the representation-level elimination needed
+for the final projection. A component-level reproduction of the complete
+linearized frame remains useful as an independent check, but is not required
+to determine the rank of this final constraint on the three bridge channels.
+
+## Result of the final Eq. (2.7) projection
+
+Equations (39)-(40) of hep-th/0101037 decompose the two-form-vector tensor
+$X_{ab}{}^c$. Its 605 components split as
+
+\[
+55\mathbin{\otimes}11=11\oplus165\oplus429.
+\]
+
+The vector and three-form pieces are removed by conventional constraints. The
+remaining traceless hook is the `(11000)` representation of dimension 429.
+The exact level-16 scalar-superfield inventory contains zero copies of
+`(11000)`. Therefore the final gamma-two torsion projection in Eq. (2.7)
+vanishes on every Lorentz-equivariant map from the scalar superfield.
+
+For the three-parameter bridge this gives a constraint matrix of rank zero:
+
+\[
+\dim\ker C_{\mathrm{Eq.\,(2.7)}}=3.
+\]
+
+All three coefficients $a$, $b$, and $c$ survive this projection. This confirms
+the representation-content argument made after Eq. (2.7), but it also shows
+that Eq. (2.7) does not determine the bridge coefficients. A unique bridge, if
+one exists, requires an additional condition such as a gauge transformation,
+a curvature normalization, a Bianchi identity, or matching to component
+supergravity.
 
 The independent Python program rebuilds the same matrices and numerically
 checks the small eigenvalues of $A^T A$. It was also used to propose integer

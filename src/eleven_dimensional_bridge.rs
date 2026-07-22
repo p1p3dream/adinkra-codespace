@@ -103,8 +103,62 @@ pub struct ElevenDimensionalBridgeReport {
     pub all_expected_kernel_vectors_verified: bool,
     pub spinor_descendant_audits: Vec<SpinorDescendantAudit>,
     pub vector_spinor_target_audit: VectorSpinorTargetAudit,
+    pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FinalEquationProjectionAudit {
+    pub source_equation: &'static str,
+    pub linearized_formula_source: &'static str,
+    pub raw_two_form_vector_dimension: usize,
+    pub conventional_vector_dimension: usize,
+    pub conventional_three_form_dimension: usize,
+    pub remaining_hook_dynkin_label: &'static str,
+    pub remaining_hook_dimension: usize,
+    pub dimension_decomposition_closes: bool,
+    pub scalar_level_checked: usize,
+    pub hook_multiplicity_in_scalar_level: usize,
+    pub projected_constraint_rank_on_bridge_coefficients: usize,
+    pub surviving_bridge_coefficient_dimension: usize,
+    pub interpretation: &'static str,
+    pub passed: bool,
+}
+
+fn audit_final_equation_2_7_projection() -> FinalEquationProjectionAudit {
+    let raw_two_form_vector_dimension = 55 * 11;
+    let conventional_vector_dimension = 11;
+    let conventional_three_form_dimension = 165;
+    let remaining_hook_dimension = 429;
+    let hook_multiplicity_in_scalar_level =
+        crate::eleven_dimensional_prepotential::level_multiplicity(16, "11000");
+    let dimension_decomposition_closes = conventional_vector_dimension
+        + conventional_three_form_dimension
+        + remaining_hook_dimension
+        == raw_two_form_vector_dimension;
+    let projected_constraint_rank_on_bridge_coefficients =
+        usize::from(hook_multiplicity_in_scalar_level != 0);
+    let surviving_bridge_coefficient_dimension =
+        3 - projected_constraint_rank_on_bridge_coefficients;
+    FinalEquationProjectionAudit {
+        source_equation: "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
+        linearized_formula_source: "Eqs. (39)-(40) of hep-th/0101037",
+        raw_two_form_vector_dimension,
+        conventional_vector_dimension,
+        conventional_three_form_dimension,
+        remaining_hook_dynkin_label: "11000",
+        remaining_hook_dimension,
+        dimension_decomposition_closes,
+        scalar_level_checked: 16,
+        hook_multiplicity_in_scalar_level,
+        projected_constraint_rank_on_bridge_coefficients,
+        surviving_bridge_coefficient_dimension,
+        interpretation: "the vector and three-form pieces are removed by conventional constraints; the remaining 429-dimensional hook is absent from level 16 of the scalar superfield, so the final Eq. (2.7) projection vanishes representation-theoretically and does not select among a, b, and c",
+        passed: dimension_decomposition_closes
+            && hook_multiplicity_in_scalar_level == 0
+            && surviving_bridge_coefficient_dimension == 3,
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -730,6 +784,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         })
         .collect::<Vec<_>>();
     let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
+    let final_equation_2_7_projection = audit_final_equation_2_7_projection();
     let passed = systems
         .iter()
         .all(|system| system.exact_sparse_system_constructed)
@@ -737,7 +792,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && spinor_descendant_audits
             .iter()
             .all(|audit| audit.exact_full_spinor_intertwiner_verified)
-        && vector_spinor_target_audit.passed;
+        && vector_spinor_target_audit.passed
+        && final_equation_2_7_projection.passed;
 
     ElevenDimensionalBridgeReport {
         schema_version: "adynkra.11d.level15-bridge.v1",
@@ -767,12 +823,13 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             },
         ],
         equation_2_7_status: "all three highest-weight kernel vectors are explicit and exact; their covariant descendants are still required before substituting the bridge into the torsion constraints",
-        coefficient_solution_status: "not solved",
+        coefficient_solution_status: "the final gamma^[2] projection has rank zero on the three bridge channels; it leaves a, b, and c unrestricted",
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
         spinor_descendant_audits,
         vector_spinor_target_audit,
+        final_equation_2_7_projection,
         boundary: "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
         passed,
     }
@@ -841,6 +898,17 @@ mod tests {
         assert_eq!(target.multiplicity_five_weights, 32);
         assert_eq!(target.nonzero_lowering_actions, 752);
         assert!(target.passed);
+        let projection = &report.final_equation_2_7_projection;
+        assert_eq!(projection.raw_two_form_vector_dimension, 605);
+        assert_eq!(projection.remaining_hook_dynkin_label, "11000");
+        assert_eq!(projection.remaining_hook_dimension, 429);
+        assert_eq!(projection.hook_multiplicity_in_scalar_level, 0);
+        assert_eq!(
+            projection.projected_constraint_rank_on_bridge_coefficients,
+            0
+        );
+        assert_eq!(projection.surviving_bridge_coefficient_dimension, 3);
+        assert!(projection.passed);
         let vector_spinor = &report.systems[1];
         assert_eq!(vector_spinor.source_weight_space_columns, 388_720);
         assert_eq!(vector_spinor.total_rows, 1_174_806);

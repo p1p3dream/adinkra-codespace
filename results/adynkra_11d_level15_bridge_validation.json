@@ -430,7 +430,7 @@
     }
   ],
   "equation_2_7_status": "all three highest-weight kernel vectors are explicit and exact; their covariant descendants are still required before substituting the bridge into the torsion constraints",
-  "coefficient_solution_status": "not solved",
+  "coefficient_solution_status": "the final gamma^[2] projection has rank zero on the three bridge channels; it leaves a, b, and c unrestricted",
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
   "all_expected_kernel_vectors_verified": true,
@@ -473,6 +473,22 @@
     "multiplicity_five_weights": 32,
     "maximum_weight_multiplicity": 5,
     "nonzero_lowering_actions": 752,
+    "passed": true
+  },
+  "final_equation_2_7_projection": {
+    "source_equation": "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
+    "linearized_formula_source": "Eqs. (39)-(40) of hep-th/0101037",
+    "raw_two_form_vector_dimension": 605,
+    "conventional_vector_dimension": 11,
+    "conventional_three_form_dimension": 165,
+    "remaining_hook_dynkin_label": "11000",
+    "remaining_hook_dimension": 429,
+    "dimension_decomposition_closes": true,
+    "scalar_level_checked": 16,
+    "hook_multiplicity_in_scalar_level": 0,
+    "projected_constraint_rank_on_bridge_coefficients": 0,
+    "surviving_bridge_coefficient_dimension": 3,
+    "interpretation": "the vector and three-form pieces are removed by conventional constraints; the remaining 429-dimensional hook is absent from level 16 of the scalar superfield, so the final Eq. (2.7) projection vanishes representation-theoretically and does not select among a, b, and c",
     "passed": true
   },
   "boundary": "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",

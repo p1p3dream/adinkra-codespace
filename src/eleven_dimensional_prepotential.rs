@@ -232,6 +232,10 @@ fn multiplicity(level: usize, label: &str) -> usize {
         .sum()
 }
 
+pub fn level_multiplicity(level: usize, label: &str) -> usize {
+    multiplicity(level, label)
+}
+
 /// Decompose a B5 irrep tensored with the 32-dimensional minuscule spinor.
 /// Each dominant `lambda + weight` occurs once.
 fn tensor_with_spinor(dynkin: B5Dynkin) -> Vec<B5Dynkin> {
@@ -742,10 +746,12 @@ mod tests {
         let report = verify();
         assert_eq!(report.spinor_gauge_parameter_channel_count, 6);
         assert_eq!(report.spinor_gauge_parameter_dimensions_sum, 32 * 32);
-        assert!(report
-            .spinor_gauge_parameter_channels
-            .iter()
-            .all(|channel| channel.multiplicity_in_spinor_square == 1));
+        assert!(
+            report
+                .spinor_gauge_parameter_channels
+                .iter()
+                .all(|channel| channel.multiplicity_in_spinor_square == 1)
+        );
         assert!(!report.cited_sources_print_gauge_channel_selection);
     }
 }
