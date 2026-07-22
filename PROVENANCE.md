@@ -240,3 +240,55 @@ No correction to the paper or source is asserted.
 - **Not claimed:** that the dataset is byte-faithful to any matrices the authors
   published, or that it reproduces every worked example in the paper (see the
   known mismatch in section 6).
+
+---
+
+## 8. Permutahedron atlas provenance
+
+The `S4` and `S8` permutahedron artifacts are generated in Rust from finite
+group definitions and primary-paper fixtures. No published atlas data file was
+copied.
+
+Primary inputs:
+
+| arXiv source | Version | Local PDF SHA256 |
+|---|---:|---|
+| `2012.13308` | 6 | `b75a70b4642ba62f973993d37da2310a374de3b0b3f86d18bcd81c11e08a7957` |
+| `2012.14015` | 7 | `67606499dda53ff78e3d80ca405498d8d1e2fd060936605fac04804ca7cd9b47` |
+| `2304.09830` | 2 | `d68c14ad31e824b52076bd4be078c6aec0167f0a622c55c4a9d4d2a6d2ef2a34` |
+| `2311.06842` | 1 | `346e5c3863f81d4afc8d0faf90a0f23c805062a21e9aebc1b32c96a1dd1b6e86` |
+
+Implementation:
+
+- `src/permutahedron.rs`: permutation, graph, distance, subgroup, and coset
+  algorithms;
+- `src/permutahedron_fixtures.rs`: page-located paper fixtures;
+- `src/permutahedron_atlas.rs`: validation and deterministic export;
+- `visualizer/permutahedron_atlas.html`: browser atlas;
+- `visualizer/permutahedron_core.mjs`: independent browser rank and distance
+  implementation.
+
+Artifacts:
+
+| Artifact | SHA256 |
+|---|---|
+| `data/permutahedron_s4_atlas.json` | `0738927f723ffd16b310ff7a7bcbafa8629b791583524a165a9c1635c008be2c` |
+| `data/permutahedron_s8_atlas.json` | `b178d1642d05f1b7e0b9b5b5befdf3fb3c412717b80202c9836fe1bf061f4ba3` |
+| `results/permutahedron_validation.json` | `d5328f76691b647f7ee04a06f13397c5fa1ea13fcd114c1af26ef4cdfbdbe74e` |
+
+Regenerate and verify:
+
+```sh
+cargo run --release -- perm-atlas-build
+cargo run --release -- perm-atlas-verify
+```
+
+The validation checks the complete vertex and edge sets, all 21 published `S4`
+correlator blocks, the 5,040 right and left `R8` cosets, the 168 coincident
+left-right slices, the 30 conjugate `R8` subgroups, all 40,320 intra-coset
+magic-number rows, and the `56 x 56` named-octet matrix. Bruhat correlators are
+graph distances and are not holoraumy gadgets.
+
+The full `S8` all-pairs distance matrix is not stored. The two-point distance is
+computed from the one-line addresses when requested. The atlas does not solve
+general sign assignment or construct a supersymmetric field equation.

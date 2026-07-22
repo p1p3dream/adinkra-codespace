@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Permutahedron Atlas</title>
+  <style>
+    :root { color-scheme: dark; --bg:#071018; --panel:#0d1a24; --line:#203544; --ink:#e9f0f4; --muted:#91a6b3; --cyan:#48d5ca; --gold:#ffbf69; --red:#ff6b6b; }
+    * { box-sizing:border-box; }
+    html, body { height:100%; margin:0; }
+    body { background:var(--bg); color:var(--ink); font:14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow:hidden; }
+    button, input, select { color:inherit; background:#102431; border:1px solid #2d4656; border-radius:4px; padding:7px 9px; font:inherit; }
+    button { cursor:pointer; } button:hover, button.active { border-color:var(--cyan); }
+    input[type=range] { padding:0; width:100%; }
+    header { height:58px; display:flex; align-items:center; gap:14px; padding:9px 14px; border-bottom:1px solid var(--line); background:#09141d; }
+    h1 { font:700 17px/1.1 system-ui,sans-serif; letter-spacing:.04em; margin:0; white-space:nowrap; }
+    .switch { display:flex; gap:3px; }
+    .switch button { min-width:45px; }
+    #complete { margin-left:auto; padding:5px 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); white-space:nowrap; }
+    #complete.ok { border-color:#27715e; color:#77e7bd; } #complete.bad { border-color:#793a3a; color:#ff9494; }
+    main { height:calc(100% - 58px); display:grid; grid-template-columns:292px minmax(280px,1fr) 310px; }
+    aside { background:var(--panel); padding:13px; overflow:auto; }
+    aside:first-child { border-right:1px solid var(--line); } aside:last-child { border-left:1px solid var(--line); }
+    section { margin:0 0 17px; }
+    h2 { color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font-size:11px; margin:0 0 8px; }
+    label { display:block; color:var(--muted); margin:7px 0 4px; }
+    .row { display:flex; gap:6px; align-items:center; } .row > * { min-width:0; flex:1; }
+    .check { display:flex; align-items:center; gap:7px; color:var(--ink); } .check input { width:auto; }
+    #stage { position:relative; min-width:0; background:radial-gradient(circle at center,#102331 0,#071018 72%); }
+    canvas { display:block; width:100%; height:100%; cursor:crosshair; }
+    #hud { position:absolute; left:11px; bottom:10px; pointer-events:none; color:#c5d4dc; background:#071018c9; border:1px solid var(--line); padding:6px 8px; border-radius:4px; }
+    .kv { display:grid; grid-template-columns:auto 1fr; gap:4px 9px; margin:0; }
+    .kv dt { color:var(--muted); } .kv dd { margin:0; overflow-wrap:anywhere; }
+    .mono-box { border:1px solid var(--line); background:#08131b; padding:8px; border-radius:4px; overflow-wrap:anywhere; }
+    #neighbors { display:grid; gap:4px; max-height:220px; overflow:auto; }
+    #neighbors button { padding:5px 7px; text-align:left; }
+    #distance strong { color:var(--gold); font-size:20px; }
+    .legend { display:flex; flex-wrap:wrap; gap:5px 10px; color:var(--muted); font-size:12px; }
+    .dot { width:8px; height:8px; display:inline-block; border-radius:50%; margin-right:4px; }
+    #error { color:#ff9b9b; white-space:pre-wrap; }
+    #correlator { overflow:auto; max-height:260px; }
+    #correlator table { border-collapse:collapse; font-size:10px; }
+    #correlator th, #correlator td { min-width:25px; padding:3px; text-align:center; border:1px solid #1b303d; }
+    #correlator th { position:sticky; top:0; background:#102431; color:var(--muted); }
+    @media (max-width:900px) { body { overflow:auto; } header { position:sticky; top:0; z-index:3; } main { height:auto; min-height:calc(100vh - 58px); grid-template-columns:235px 1fr; grid-template-rows:minmax(500px,70vh) auto; } aside:last-child { grid-column:1/-1; border-left:0; border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; } }
+    @media (max-width:620px) { header { height:auto; flex-wrap:wrap; } #complete { margin-left:0; width:100%; } main { display:flex; flex-direction:column; } aside { border:0!important; } #stage { height:60vh; order:-1; } aside:last-child { display:block; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Permutahedron Atlas</h1>
+  <div class="switch"><button id="s4">S4</button><button id="s8" class="active">S8</button></div>
+  <span id="summary">Loading</span>
+  <span id="complete">checking dataset</span>
+</header>
+<main>
+  <aside>
+    <section>
+      <h2>Find a vertex</h2>
+      <div class="row"><input id="search" aria-label="Stable ID or one-line address" placeholder="S8-00000 or 12345678"><button id="go">Find</button></div>
+      <div id="searchError" role="alert"></div>
+    </section>
+    <section>
+      <h2>Coset slices</h2>
+      <div class="row"><select id="sliceSide" aria-label="Coset side"><option value="right">Right</option><option value="left">Left</option></select><select id="slice" aria-label="Coset slice"><option value="all">All slices</option></select></div>
+    </section>
+    <section>
+      <h2>Representation overlay</h2>
+      <select id="representation" style="width:100%"><option value="none">None</option></select>
+    </section>
+    <section>
+      <h2>Inversion level</h2>
+      <label id="levelLabel" for="level">All levels</label>
+      <input id="level" type="range" min="-1" max="28" value="-1">
+    </section>
+    <section>
+      <h2>Display</h2>
+      <label class="check"><input id="edges" type="checkbox"> Show all edges</label>
+      <label class="check"><input id="neighborsOnly" type="checkbox" checked> Emphasize selected neighbors</label>
+      <button id="reset" style="width:100%;margin-top:7px">Reset view</button>
+    </section>
+    <section>
+      <h2>Key</h2>
+      <div class="legend"><span><i class="dot" style="background:#48d5ca"></i>visible</span><span><i class="dot" style="background:#ffbf69"></i>overlay</span><span><i class="dot" style="background:#ff6b6b"></i>selected</span></div>
+    </section>
+    <div id="error"></div>
+  </aside>
+  <div id="stage"><canvas id="canvas" aria-label="Interactive permutahedron graph"></canvas><div id="hud">Drag to pan · wheel to zoom · click vertices to select</div></div>
+  <aside>
+    <section><h2>Primary vertex</h2><div id="primary" class="mono-box">Select a vertex.</div></section>
+    <section><h2>Comparison vertex</h2><div id="secondary" class="mono-box">Select a second vertex.</div></section>
+    <section><h2>Exact graph distance</h2><div id="distance" class="mono-box">Two selections required.</div></section>
+    <section><h2>Selected neighbors</h2><div id="neighbors">None</div></section>
+    <section><h2>Source record</h2><div id="source" class="mono-box">None</div></section>
+    <section><h2>Named correlator matrix</h2><div id="correlator" class="mono-box">Not supplied.</div></section>
+    <section><h2>Self-checks</h2><div id="checks" class="mono-box">Running</div></section>
+  </aside>
+</main>
+<script type="module">
+import { factorial, inversionCount, kendallDistance, normalizePermutation, parseAddress, runSelfChecks, stableId, validateDataset } from "./permutahedron_core.mjs";
+
+const $ = id => document.getElementById(id);
+const canvas = $("canvas"), ctx = canvas.getContext("2d", { alpha:false });
+const state = { n:8, data:null, permutations:[], positions:null, levels:null, adjacency:null, primary:null, secondary:null, scale:1, dx:0, dy:0, drag:null, representation:new Set(), visible:null };
+const files = { 4:"../data/permutahedron_s4_atlas.json", 8:"../data/permutahedron_s8_atlas.json" };
+const palette = ["#48d5ca","#61c9e8","#7bb2ff","#a998ff","#d790df","#ee83ae","#ff8d82","#ffae69","#eacb63"];
+
+function edgeParts(edge) { return Array.isArray(edge) ? edge : [edge.source, edge.target, edge.generator]; }
+function sliceLabel(item, i) { return typeof item === "object" && !Array.isArray(item) ? (item.label ?? item.id ?? `slice ${i}`) : `slice ${i}`; }
+function sliceMembers(item) { return Array.isArray(item) ? item : (item?.member_ranks ?? item?.members ?? item?.ranks ?? []); }
+function representationLabel(item, i) { return item?.label ?? item?.name ?? item?.id ?? `representation ${i}`; }
+function representationMembers(item) { return item?.member_ranks ?? item?.members ?? item?.ranks ?? []; }
+
+async function load(n) {
+  state.n=n; state.primary=null; state.secondary=null; state.adjacency=null; state.scale=1; state.dx=state.dy=0;
+  $("error").textContent=""; $("complete").className=""; $("complete").textContent="loading dataset";
+  $("s4").classList.toggle("active",n===4); $("s8").classList.toggle("active",n===8);
+  try {
+    const response=await fetch(files[n]); if(!response.ok) throw new Error(`${response.status} ${response.statusText}: ${files[n]}`);
+    state.data=await response.json(); const audit=validateDataset(state.data);
+    state.permutations=state.data.permutations.map((entry,rank)=>normalizePermutation(entry,n,rank));
+    state.levels=Uint8Array.from(state.permutations, inversionCount);
+    state.positions=makePositions(); state.visible=new Uint8Array(audit.vertices).fill(1);
+    $("summary").textContent=`${audit.vertices.toLocaleString()} vertices · ${audit.edges.toLocaleString()} edges`;
+    $("complete").textContent=audit.complete ? `complete S${n} dataset` : `incomplete: ${audit.issues.join("; ")}`;
+    $("complete").className=audit.complete?"ok":"bad";
+    $("level").max=String(n*(n-1)/2); $("level").value="-1"; $("levelLabel").textContent="All levels";
+    populateSlices(); populateRepresentations(); populateCorrelator(); applyFilters(); updateDetails(); fit();
+  } catch(error) { $("error").textContent=`Could not load atlas. Serve the repository over HTTP.\n${error.message}`; $("complete").textContent="dataset unavailable"; $("complete").className="bad"; }
+}
+
+function makePositions() {
+  const count=state.permutations.length, values=new Float32Array(count*2), n=state.n;
+  let max=0;
+  for(let r=0;r<count;r++) { const p=state.permutations[r]; let x=0,y=0; for(let i=0;i<n;i++){ const angle=2*Math.PI*i/n; x+=p[i]*Math.cos(angle); y+=p[i]*Math.sin(angle); } values[2*r]=x; values[2*r+1]=y; max=Math.max(max,Math.abs(x),Math.abs(y)); }
+  for(let i=0;i<values.length;i++) values[i]/=max||1;
+  return values;
+}
+
+function populateSlices() {
+  const side=$("sliceSide").value, slices=state.data?.[`${side}_slices`] ?? [];
+  const abnormal=new Set((side==="right"?(state.data?.abnormal_right_slices??[]):[]).map(item=>typeof item==="object"?(item.slice_id??item.id??item.index):item));
+  $("slice").innerHTML='<option value="all">All slices</option>'+slices.map((item,i)=>`<option value="${i}">${escapeHtml(sliceLabel(item,i))} (${sliceMembers(item).length||"assigned"})${abnormal.has(i)||abnormal.has(String(i))?" · left/right coincident":""}</option>`).join("");
+}
+function populateRepresentations() {
+  const reps=state.data?.representations ?? [];
+  $("representation").innerHTML='<option value="none">None</option>'+reps.map((rep,i)=>`<option value="${i}">${escapeHtml(representationLabel(rep,i))} (${representationMembers(rep).length})</option>`).join("");
+  state.representation.clear();
+}
+function populateCorrelator() {
+  const raw=state.data?.named_correlator_matrix;
+  if(!raw){$("correlator").textContent="Not supplied.";return;}
+  const matrix=Array.isArray(raw)?raw:(raw.values??raw.matrix??raw.distances??[]);
+  const labels=raw.labels??raw.member_labels??matrix.map((_,i)=>String(i));
+  if(!Array.isArray(matrix)||!matrix.length){$("correlator").textContent="Supplied record has no matrix values.";return;}
+  $("correlator").innerHTML=`<table><thead><tr><th></th>${labels.map(label=>`<th>${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${matrix.map((row,i)=>`<tr><th>${escapeHtml(labels[i]??i)}</th>${row.map(value=>`<td>${escapeHtml(value)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function applyFilters() {
+  if(!state.data)return; const level=Number($("level").value), side=$("sliceSide").value, chosen=$("slice").value;
+  const assignment=state.data[`${side}_slice_by_rank`]; const slices=state.data[`${side}_slices`]??[]; let explicit=null;
+  if(chosen!=="all" && (!assignment || assignment.length!==state.permutations.length)) explicit=new Set(sliceMembers(slices[Number(chosen)]));
+  state.visible.fill(0); let visibleCount=0;
+  for(let rank=0;rank<state.permutations.length;rank++) {
+    const levelOk=level<0||state.levels[rank]===level;
+    const sliceOk=chosen==="all"||(assignment&&assignment[rank]==chosen)||explicit?.has(rank);
+    if(levelOk&&sliceOk) { state.visible[rank]=1; visibleCount+=1; }
+  }
+  const rep=$("representation").value; state.representation=new Set(rep==="none"?[]:representationMembers((state.data.representations??[])[Number(rep)]));
+  $("hud").textContent=`${visibleCount.toLocaleString()} / ${state.permutations.length.toLocaleString()} vertices visible · drag to pan · wheel to zoom · click to select`;
+  render();
+}
+
+function fit() { state.scale=1; state.dx=state.dy=0; render(); }
+function transform(rank) { const w=canvas.clientWidth,h=canvas.clientHeight; const span=.44*Math.min(w,h)*state.scale; return [w/2+state.dx+state.positions[2*rank]*span,h/2+state.dy+state.positions[2*rank+1]*span]; }
+
+function resize() { const dpr=Math.min(devicePixelRatio||1,2), rect=canvas.getBoundingClientRect(); const w=Math.max(1,Math.floor(rect.width*dpr)),h=Math.max(1,Math.floor(rect.height*dpr)); if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;ctx.setTransform(dpr,0,0,dpr,0,0);} render(); }
+function render() {
+  const w=canvas.clientWidth,h=canvas.clientHeight; ctx.fillStyle="#071018";ctx.fillRect(0,0,w,h); if(!state.data)return;
+  if($("edges").checked) { ctx.globalAlpha=state.n===8?.075:.28;ctx.strokeStyle="#7ea5b8";ctx.lineWidth=.55;ctx.beginPath(); for(const edge of state.data.edges){const [a,b]=edgeParts(edge);if(!state.visible[a]||!state.visible[b])continue;const p=transform(a),q=transform(b);ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);}ctx.stroke();ctx.globalAlpha=1; }
+  const radius=state.n===8?Math.max(.65,1.25*Math.sqrt(state.scale)):3.2;
+  ctx.globalAlpha=state.representation.size?.18:.82;
+  for(let group=0;group<palette.length;group++){ctx.fillStyle=palette[group];ctx.beginPath();for(let rank=0;rank<state.permutations.length;rank++){if(!state.visible[rank]||state.levels[rank]%palette.length!==group)continue;const [x,y]=transform(rank);ctx.moveTo(x+radius,y);ctx.arc(x,y,radius,0,Math.PI*2);}ctx.fill();}
+  if(state.representation.size){ctx.globalAlpha=.95;ctx.fillStyle="#ffbf69";ctx.beginPath();for(const rank of state.representation){if(!state.visible[rank])continue;const [x,y]=transform(rank);ctx.moveTo(x+radius*1.6,y);ctx.arc(x,y,radius*1.6,0,Math.PI*2);}ctx.fill();}
+  ctx.globalAlpha=1; if($("neighborsOnly").checked&&state.primary!==null){ensureAdjacency();ctx.strokeStyle="#ffbf69";ctx.lineWidth=1.3;ctx.beginPath();for(const {rank} of state.adjacency[state.primary]){if(!state.visible[rank])continue;const p=transform(state.primary),q=transform(rank);ctx.moveTo(...p);ctx.lineTo(...q);}ctx.stroke();}
+  for(const [rank,color] of [[state.secondary,"#ffbf69"],[state.primary,"#ff6b6b"]]) if(rank!==null){const [x,y]=transform(rank);ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.stroke();}
+ }
+
+function nearest(x,y) { let best=null,d2=Infinity;for(let r=0;r<state.permutations.length;r++){if(!state.visible[r])continue;const p=transform(r),v=(p[0]-x)**2+(p[1]-y)**2;if(v<d2){d2=v;best=r;}}return d2<=100?best:null; }
+function ensureAdjacency(){if(state.adjacency)return;state.adjacency=Array.from({length:state.permutations.length},()=>[]);for(const edge of state.data.edges){const [a,b,g]=edgeParts(edge);state.adjacency[a].push({rank:b,generator:g});state.adjacency[b].push({rank:a,generator:g});}}
+function select(rank){if(rank===null)return;if(state.primary===null||state.secondary!==null){state.primary=rank;state.secondary=null;}else if(rank!==state.primary)state.secondary=rank;updateDetails();render();}
+function vertexHtml(rank){if(rank===null)return"Select a vertex.";const p=state.permutations[rank],sideR=state.data.right_slice_by_rank?.[rank],sideL=state.data.left_slice_by_rank?.[rank];return `<dl class="kv"><dt>ID</dt><dd>${stableId(state.n,rank)}</dd><dt>rank</dt><dd>${rank}</dd><dt>address</dt><dd>${p.join("")}</dd><dt>inversions</dt><dd>${state.levels[rank]}</dd><dt>right slice</dt><dd>${sideR??"not assigned"}</dd><dt>left slice</dt><dd>${sideL??"not assigned"}</dd></dl>`;}
+function updateDetails(){ $("primary").innerHTML=vertexHtml(state.primary);$("secondary").innerHTML=vertexHtml(state.secondary);if(state.primary!==null&&state.secondary!==null){const d=kendallDistance(state.permutations[state.primary],state.permutations[state.secondary]);$("distance").innerHTML=`<strong>${d}</strong><br>Kendall tau / weak-Bruhat graph distance`;}else $("distance").textContent="Two selections required.";
+  if(state.primary===null){$("neighbors").textContent="None";$("source").textContent="None";return;}ensureAdjacency();$("neighbors").innerHTML=state.adjacency[state.primary].map(({rank,generator})=>`<button data-rank="${rank}">${stableId(state.n,rank)} · generator ${generator??"?"} · ${state.permutations[rank].join("")}</button>`).join("");$("neighbors").querySelectorAll("button").forEach(b=>b.onclick=()=>select(Number(b.dataset.rank)));$("source").textContent=JSON.stringify({record:state.data.permutations[state.primary],source:state.data.metadata?.source??state.data.metadata?.sources??state.data.metadata?.references??"generated atlas record"},null,2);}
+
+$("go").onclick=()=>{const found=parseAddress($("search").value,state.n);if(!found){$("searchError").textContent="No valid stable ID, rank, or one-line address.";return;}$("searchError").textContent="";select(found.rank);};
+$("search").onkeydown=e=>{if(e.key==="Enter")$("go").click();};
+$("s4").onclick=()=>load(4);$("s8").onclick=()=>load(8);
+$("sliceSide").onchange=()=>{populateSlices();applyFilters();};$("slice").onchange=applyFilters;$("representation").onchange=applyFilters;
+$("level").oninput=()=>{$("levelLabel").textContent=Number($("level").value)<0?"All levels":`Level ${$("level").value}`;applyFilters();};
+$("edges").onchange=render;$("neighborsOnly").onchange=render;$("reset").onclick=fit;
+canvas.addEventListener("pointerdown",e=>{canvas.setPointerCapture(e.pointerId);state.drag={x:e.clientX,y:e.clientY,dx:state.dx,dy:state.dy,moved:false};});
+canvas.addEventListener("pointermove",e=>{if(!state.drag)return;const x=e.clientX-state.drag.x,y=e.clientY-state.drag.y;if(Math.abs(x)+Math.abs(y)>3)state.drag.moved=true;state.dx=state.drag.dx+x;state.dy=state.drag.dy+y;render();});
+canvas.addEventListener("pointerup",e=>{if(state.drag&&!state.drag.moved){const rect=canvas.getBoundingClientRect();select(nearest(e.clientX-rect.left,e.clientY-rect.top));}state.drag=null;});
+canvas.addEventListener("wheel",e=>{e.preventDefault();const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top,old=state.scale;state.scale=Math.max(.35,Math.min(18,old*Math.exp(-e.deltaY*.001)));state.dx=mx-(mx-state.dx-canvas.clientWidth/2)*state.scale/old-canvas.clientWidth/2;state.dy=my-(my-state.dy-canvas.clientHeight/2)*state.scale/old-canvas.clientHeight/2;render();},{passive:false});
+new ResizeObserver(resize).observe($("stage"));
+try { const checks=runSelfChecks(); $("checks").textContent=`${checks.passed} rank, distance, and count fixtures passed.`; } catch(error){$("checks").textContent=error.message;$("checks").style.color="#ff6b6b";}
+load(8);
+</script>
+</body>
+</html>

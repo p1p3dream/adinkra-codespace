@@ -31,6 +31,9 @@ mod lr_matrix;
 mod nauty_canonical;
 mod orientation;
 mod pipeline;
+mod permutahedron;
+mod permutahedron_atlas;
+mod permutahedron_fixtures;
 mod ranking;
 mod search;
 mod signed_perm;
@@ -84,6 +87,8 @@ fn main() {
         "tendim-reproduce" => cmd_tendim_reproduce(&args),
         "tendim-generate" => cmd_tendim_generate(&args),
         "tendim-convention-scan" => cmd_tendim_convention_scan(),
+        "perm-atlas-build" => cmd_perm_atlas_build(&args),
+        "perm-atlas-verify" => cmd_perm_atlas_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -142,6 +147,9 @@ fn print_usage(prog: &str) {
     eprintln!("  tendim-reproduce [json] Audit the pinned 10D supergravity L/R reproduction");
     eprintln!("  tendim-generate [json]  Generate the 10D supergravity L/R artifact in Rust");
     eprintln!("  tendim-convention-scan  Compare the 1/16 and 1/8 formula branches");
+    eprintln!("  perm-atlas-build [dir] [report]");
+    eprintln!("                          Build complete S4 and S8 permutahedron atlases");
+    eprintln!("  perm-atlas-verify       Verify graphs, paper correlators, cosets, and embeddings");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -205,6 +213,27 @@ fn cmd_tendim_generate(args: &[String]) {
 fn cmd_tendim_convention_scan() {
     let report = tendim_generate::convention_scan();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_perm_atlas_build(args: &[String]) {
+    let output = args.get(2).map(String::as_str).unwrap_or("data");
+    let report_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_validation.json");
+    let report = permutahedron_atlas::build_artifacts(
+        std::path::Path::new(output),
+        std::path::Path::new(report_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_perm_atlas_verify() {
+    let report = permutahedron_atlas::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

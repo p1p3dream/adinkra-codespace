@@ -283,19 +283,25 @@ curvature construction extends to it.
 ## Role of the permutahedron program
 
 The `S_8` permutahedron has 40,320 vertices and is the natural finite object in
-the four-dimensional `N=2` program [2,3,7,8]. Completing its atlas is feasible
-and directly responsive to the work Gates identified:
+the four-dimensional `N=2` program [2,3,7,8]. The finite atlas is now complete:
 
-1. enumerate all `S_8` vertices and the selected Bruhat or permutahedron edges;
-2. reproduce the published lower-order correlators and representation fixtures;
-3. compute the stated two-point correlator matrices for the six `N=2`
-   representations;
-4. test embeddings of lower-color structures and organize nonclosure terms.
+1. all 40,320 `S_8` vertices and 141,120 weak-Bruhat edges are enumerated;
+2. the published `S_4` atlas and all 300 independent correlators are reproduced;
+3. `R_8` partitions `S_8` into 5,040 checked octets, with 168 left-right
+   coincident slices and 30 conjugate `R_8` subgroups;
+4. the six published `N=2` octets and the Diadem octet are mapped into the
+   atlas;
+5. the requested `56 x 56` two-point matrix for those seven octets is computed;
+6. a searchable browser atlas covers the complete vertex, edge, and coset data.
+
+The implementation and validation report are documented in
+[`permutahedron-atlas.md`](permutahedron-atlas.md).
 
 This track can reveal representation embeddings and invariant structure. It
 does not by itself provide a differential field equation. It should run as a
 supporting atlas and validation program while the nonclosure and Adynkrafield
-differential work proceeds.
+differential work proceeds. General sign assignment, the structure behind the
+168 coincident slices, and the relation of the atlas to nonclosure remain open.
 
 ## Ordered research plan
 
@@ -339,10 +345,12 @@ differential work proceeds.
 
 ### Track 3: finite combinatorial atlas
 
-1. Complete and validate the 40,320-vertex `S_8` atlas.
-2. Reproduce the published correlator calculations.
+1. Complete and validate the 40,320-vertex `S_8` atlas. **Complete.**
+2. Reproduce the published correlator calculations. **Complete for the full
+   `S_4` matrix and the seven named `S_8` octets.**
 3. Test the proposed lower-color embeddings and the organization of nonclosure
-   terms.
+   terms. **The published octets are located; the nonclosure organization
+   remains open.**
 4. Feed any invariant structures into Tracks 1 and 2.
 
 The immediate equation priority is Track 2, Steps 1-5. Track 0 provides a
@@ -364,6 +372,8 @@ cargo run --release -- bbbm-sixteen-onshell
 cargo run --release -- tendim-generate
 cargo run --release -- tendim-reproduce
 cargo run --release -- tendim-convention-scan
+cargo run --release -- perm-atlas-build
+cargo run --release -- perm-atlas-verify
 cargo test
 ```
 

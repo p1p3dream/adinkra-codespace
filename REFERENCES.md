@@ -127,6 +127,31 @@ relevant module doc-comments).
   standard; cf. arXiv:2205.09509 (*Lecture note on Clifford algebra*) and the
   Brink-Schwarz-Scherk 10D SYM construction. Used by: `lorentz.rs`, `sr_hole.rs`.
 
+## Permutahedron atlas
+
+- **Cianciara, Gates, Hu, Kirk**, *The 300 "Correlators" Suggests 4D, N=1 SUSY
+  Is a Solution to a Set of Sudoku Puzzles*, arXiv:2012.13308v6. Defines the
+  `S4` one-line dictionary, adjacent-transposition permutahedron, six quartets,
+  and all 21 correlator blocks. Used by `permutahedron_fixtures.rs` and
+  `permutahedron_atlas.rs`.
+- **Bristow, Caporaletti, Cianciara, Gates, Levine, Yerger**, *A Note On
+  Exemplary Off-Shell Constructions Of 4D, N=2 Supersymmetry
+  Representations*, arXiv:2012.14015v7. Supplies the six `S8` representation
+  octets and the Diadem octet in Eqs. (5.1)-(5.7), and states the complete
+  40,320-vertex arrangement and named correlator calculation as future work.
+- **Cianciara, Coleman, Gates, Lee, Zhang**, *N=2 SUSY & the
+  Hexipentisteriruncicantitruncated 7-Simplex*, arXiv:2304.09830v2. Supplies
+  `R8`, the 5,040-octet partition, magic number 112, the 168 coincident
+  left-right cosets, 30 conjugate subgroups, and the `S8` face counts.
+- **Cianciara, Gates, Lee, Levy, Razzaz, Richardson**, *Unfolded Adinkra
+  Properties of Supermultiplets (I)*, arXiv:2311.06842v1. Reviewed as part of
+  the four-paper set. It studies unfolded Adinkras and is not a defining source
+  for the finite permutahedron atlas.
+
+The generated finite datasets and complete validation report are documented in
+`docs/permutahedron-atlas.md`. The paper's term "correlator" is retained only
+for the weak-Bruhat distance matrix and is not used for a holoraumy gadget.
+
 ## Scope honesty (what is NOT claimed)
 
 - The χ₀-derived N=16 invariant `Q` (`chromochar.rs`) is a basis-independent
