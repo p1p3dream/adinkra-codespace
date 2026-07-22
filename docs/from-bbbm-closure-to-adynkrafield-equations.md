@@ -296,6 +296,14 @@ combination or coefficients. Solving the proposed torsion constraints for the th
 bridge coefficients and fixing that gauge map are the next gates before a
 curvature operator or physical quotient can be defined.
 
+The target-side Clifford data are now explicit. Eleven 32-dimensional gamma
+matrices, the charge-conjugation matrix, and the rank-32 gamma-trace and
+rank-320 gamma-traceless vector-spinor projectors pass their rational-arithmetic
+checks. For the direct first-derivative gauge ansatz, the zero-momentum
+two-derivative contraction vanishes in the one-, two-, and five-form channels
+and is not identically zero in the scalar, three-form, and four-form channels.
+The three source embeddings inside `exterior^15(32)` remain open.
+
 ## Role of the permutahedron program
 
 The `S_8` permutahedron has 40,320 vertices and is the natural finite object in
@@ -478,8 +486,10 @@ a new field equation or a polynomial-module proof.
    full spinor-prepotential candidate inventory is also derived and its Table
    5 multiplicities are reproduced. The fifteen-derivative bridge has three
    leading-symbol channels, and the possible first-derivative gauge domain has
-   six Lorentz channels. Their coefficients, reducibility, curvature complex,
-   and differential operator remain open.**
+   six Lorentz channels. The vector-spinor target projectors are explicit, and
+   the six direct gauge channels are split by their zero-momentum contraction.
+   The source embeddings, coefficients, generic-momentum reducibility,
+   curvature complex, and differential operator remain open.**
 7. Determine which representation products and intertwiners are required for a
    nonlinear extension.
 
@@ -519,6 +529,7 @@ cargo run --release -- perm-garden-scan
 cargo run --release -- adynkra-minimal-action-verify
 cargo run --release -- adynkrafield-operator-verify
 cargo run --release -- adynkra-11d-prepotential-verify
+cargo run --release -- adynkra-11d-clifford-verify
 cargo run --release -- adynkra-genome-build
 cargo run --release -- adynkra-genome-verify
 cargo run --release -- adynkra-derivative-verify

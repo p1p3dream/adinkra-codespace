@@ -193,7 +193,11 @@ validated four-dimensional Adynkrafield machinery in eleven dimensions:
 4. the full spinor-superfield inventory is derived by the minuscule tensor
    rule, and all Table 5 multiplicities are reproduced;
 5. the fifteen-derivative bridge is reduced to three leading-symbol channels;
-6. the six possible first-derivative gauge-parameter channels are enumerated.
+6. the six possible first-derivative gauge-parameter channels are enumerated;
+7. explicit gamma-trace and gamma-traceless vector-spinor projectors are
+   constructed;
+8. the direct gauge ansatz is separated into three channels that vanish in
+   the induced scalar variation at zero momentum and three that do not.
 
 It does not solve the proposed eleven-dimensional torsion constraints for the
 three bridge coefficients, select the spinor prepotential's gauge
@@ -211,6 +215,9 @@ cargo test eleven_dimensional_prepotential
 ```
 
 Implementation: `src/eleven_dimensional_prepotential.rs`
+
+The Clifford construction and vector-spinor projectors are documented in
+[`adynkra-11d-clifford-projectors.md`](adynkra-11d-clifford-projectors.md).
 
 ## References
 
