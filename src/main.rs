@@ -29,6 +29,7 @@ mod filters;
 mod holoraumy;
 mod lorentz;
 mod lr_matrix;
+mod lorentz_intertwiners;
 mod nauty_canonical;
 mod orientation;
 mod pipeline;
@@ -45,6 +46,7 @@ mod supercovariant_derivative;
 mod tendim_data;
 mod tendim_generate;
 mod viz_export;
+mod vector_spinor_intertwiners;
 
 use std::time::Instant;
 
@@ -96,6 +98,8 @@ fn main() {
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
+        "adynkra-intertwiner-verify" => cmd_adynkra_intertwiner_verify(),
+        "adynkra-vector-spinor-verify" => cmd_adynkra_vector_spinor_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -163,6 +167,8 @@ fn print_usage(prog: &str) {
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
     eprintln!("  adynkra-derivative-verify Verify the 4D N=1 derivative algebra in Eq. 2.22");
+    eprintln!("  adynkra-intertwiner-verify Verify the rank-two projectors in Eqs. 2.5 and 2.18");
+    eprintln!("  adynkra-vector-spinor-verify Verify the vector-spinor projectors in Eqs. 2.13-2.19");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -295,6 +301,22 @@ fn cmd_adynkra_genome_verify() {
 
 fn cmd_adynkra_derivative_verify() {
     let report = supercovariant_derivative::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_intertwiner_verify() {
+    let report = lorentz_intertwiners::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_vector_spinor_verify() {
+    let report = vector_spinor_intertwiners::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);

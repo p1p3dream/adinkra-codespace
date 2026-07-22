@@ -1,0 +1,63 @@
+{
+  "schema_version": "adynkra-4d-n1-rank-two-intertwiners-v1",
+  "source_arxiv": "2407.09334",
+  "source_equations": "2.5, 2.18",
+  "tensor_product": "[1,1] tensor [1,1] = [0,0] + [2,2] + [2,0] + [0,2]",
+  "tensor_dimension": 16,
+  "projectors": [
+    {
+      "id": "trace",
+      "dynkin_label": [
+        0,
+        0
+      ],
+      "expected_rank": 1,
+      "computed_rank": 1,
+      "idempotent": true,
+      "so4_equivariant": true
+    },
+    {
+      "id": "symmetric_traceless",
+      "dynkin_label": [
+        2,
+        2
+      ],
+      "expected_rank": 9,
+      "computed_rank": 9,
+      "idempotent": true,
+      "so4_equivariant": true
+    },
+    {
+      "id": "self_dual_two_form",
+      "dynkin_label": [
+        0,
+        2
+      ],
+      "expected_rank": 3,
+      "computed_rank": 3,
+      "idempotent": true,
+      "so4_equivariant": true
+    },
+    {
+      "id": "anti_self_dual_two_form",
+      "dynkin_label": [
+        2,
+        0
+      ],
+      "expected_rank": 3,
+      "computed_rank": 3,
+      "idempotent": true,
+      "so4_equivariant": true
+    }
+  ],
+  "projector_ranks_sum": 16,
+  "pairwise_orthogonal_products_checked": 12,
+  "pairwise_orthogonal": true,
+  "completeness_residual_entries": 0,
+  "reconstruction_basis_vectors_checked": 16,
+  "reconstruction_residual_entries": 0,
+  "so4_generators_checked": 6,
+  "equivariance_commutators_checked": 24,
+  "boundary": "rank-two bosonic intertwiners only; vector-spinor intertwiners and repeated-irrep derivative maps remain open",
+  "passed": true
+}

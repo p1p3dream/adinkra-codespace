@@ -329,6 +329,17 @@ close exactly. This completes the derivative-algebra baseline for Step 2, but
 not the irreducible multiplicity intertwiners. See
 [`adynkra-4d-n1-derivatives.md`](adynkra-4d-n1-derivatives.md).
 
+The first explicit irreducible intertwiners are also complete for the bosonic
+rank-two sector in Eqs. (2.5) and (2.18). Four exact projectors split
+`[1,1] tensor [1,1]` into ranks 1, 9, 3, and 3, commute with all six `so(4)`
+generators, and reconstruct the full tensor space with zero residual. See
+[`adynkra-4d-n1-intertwiners.md`](adynkra-4d-n1-intertwiners.md).
+
+The vector-spinor decompositions in Eqs. (2.13), (2.14), and (2.19) are now
+implemented as complementary exact projectors for both chiralities. Their
+ranks are 2 and 6, and all completeness, orthogonality, idempotency, and
+`sl(2)_L + sl(2)_R` equivariance checks pass.
+
 ## Ordered research plan
 
 ### Track 0: validated 10D supergravity baseline and embedding scan
@@ -362,7 +373,8 @@ not the irreducible multiplicity intertwiners. See
 1. Reproduce the four-dimensional `N=1` supergravity-prepotential genome.
    **Complete for the six published genomes in Eqs. (3.6)-(3.11).**
 2. Implement supercovariant derivatives and multiplicity intertwiners.
-   **Derivative algebra complete; irreducible multiplicity intertwiners open.**
+   **Derivative algebra, rank-two bosonic intertwiners, and vector-spinor
+   intertwiners complete; repeated-irrep maps open.**
 3. Construct the prepotential gauge and curvature complex.
 4. Reproduce a known linearized supergravity equation.
 5. Express that equation as an Adynkrafield operator.
@@ -407,6 +419,8 @@ cargo run --release -- perm-garden-scan
 cargo run --release -- adynkra-genome-build
 cargo run --release -- adynkra-genome-verify
 cargo run --release -- adynkra-derivative-verify
+cargo run --release -- adynkra-intertwiner-verify
+cargo run --release -- adynkra-vector-spinor-verify
 cargo test
 ```
 
