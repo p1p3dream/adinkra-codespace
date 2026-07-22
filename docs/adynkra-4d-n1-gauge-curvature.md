@@ -61,24 +61,25 @@ vanishes exactly in the implemented conventions.
 
 ## Old-minimal scalar curvature
 
-The old-minimal chiral compensator and scalar curvature from Eqs. (7.4.2b) and
-(7.5.19) of *Superspace* are also implemented:
+The old-minimal chiral compensator pair and scalar-curvature pair from Eqs.
+(7.4.2b) and (7.5.19) of *Superspace* are also implemented:
 
 ```text
 delta chi_bar = (1/3) D^2 Dbar^dot-alpha Lbar_dot-alpha
 R = Dbar^2 (chi_bar - (i/3) partial_a H^a)
+Rbar = D^2 (chi + (i/3) partial_a H^a)
 ```
 
 Here `phi = 1 + chi`, so the factor `1/3` follows by linearizing the source
 transformation of `phi^3`. The validation checks:
 
-- chirality on all 64 prepotential and 16 compensator basis inputs: 160
-  relations, zero residuals;
-- gauge invariance on all 64 gauge-parameter basis inputs: zero residuals;
-- removal of the compensator: 24 nonzero residuals.
+- chirality of `R`: 160 relations, zero residuals;
+- antichirality of `Rbar`: 160 relations, zero residuals;
+- gauge invariance of both curvatures on all 64 gauge-parameter basis inputs:
+  128 relations, zero residuals;
+- removal of the two compensator contributions: 48 nonzero residuals.
 
-The last check establishes that the compensator contribution is required for
-the scalar curvature identity.
+The last check establishes that both compensator contributions are required.
 
 ## Artifacts
 
@@ -106,7 +107,7 @@ cargo test minimal_supergravity_curvatures
 ## Boundary
 
 This completes the gauge map, the conformal super-Weyl curvature, and the
-old-minimal scalar curvature with its chiral compensator. It does not yet
+old-minimal scalar-curvature pair with its chiral compensator pair. It does not yet
 implement the vector curvature `G_a`, the Bianchi identities,
 polynomial-module cohomology, or an Euler-Lagrange equation.
 
