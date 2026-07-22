@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The 168</title>
+<style>
+  :root {
+    --bg: #04070f;
+    --panel: rgba(10, 16, 30, 0.92);
+    --line: rgba(140, 160, 200, 0.18);
+    --ink: #c8d2e4;
+    --ink-dim: #7b8aa6;
+    --ink-faint: #55627c;
+    --accent: #9ab8e8;
+    --green: #38d18c;
+    --amber: #d98c2b;
+    --red: #e5484d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); overflow: hidden; }
+  body {
+    font-family: "Avenir Next", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+  #stage:active { cursor: grabbing; }
+
+  .hud { position: fixed; z-index: 10; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+
+  #masthead { top: 18px; left: 22px; }
+  #masthead h1 {
+    font-size: 21px; font-weight: 500; letter-spacing: 0.14em;
+    color: #e8edf7; text-transform: uppercase;
+  }
+  #masthead .sub { margin-top: 3px; font-size: 11px; letter-spacing: 0.06em; color: var(--ink-dim); }
+
+  #honesty-badge {
+    top: 18px; right: 22px; max-width: 300px; text-align: right;
+    font-size: 11px; line-height: 1.5; letter-spacing: 0.04em;
+    color: var(--ink-dim);
+    border-right: 2px solid var(--line); padding-right: 10px;
+  }
+
+  #status-banner {
+    top: 0; left: 0; right: 0; display: none;
+    background: var(--red); color: #fff; padding: 12px 22px;
+    font-size: 13px; z-index: 60;
+  }
+  #status-banner.active { display: block; }
+
+  #check-strip {
+    bottom: 108px; left: 22px; font-size: 10.5px; letter-spacing: 0.05em;
+    color: var(--ink-faint); line-height: 1.7;
+  }
+  #check-strip .ok { color: #4d8f6f; }
+
+  #beat-bar {
+    left: 50%; transform: translateX(-50%); bottom: 20px;
+    width: min(860px, calc(100vw - 44px));
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 18px 12px;
+    backdrop-filter: blur(8px);
+  }
+  #beat-title { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #dfe6f2; }
+  #beat-caption { margin-top: 6px; font-size: 12.5px; line-height: 1.55; color: var(--ink); min-height: 3.1em; }
+  #beat-controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+  #beat-controls button {
+    background: none; border: 1px solid var(--line); border-radius: 4px;
+    color: var(--ink); font: inherit; font-size: 12px; padding: 4px 12px; cursor: pointer;
+  }
+  #beat-controls button:hover { border-color: var(--accent); color: #fff; }
+  #beat-scrub { flex: 1; accent-color: var(--accent); }
+  #beat-index { font-size: 11px; color: var(--ink-dim); min-width: 34px; text-align: center; }
+
+  #inspector {
+    bottom: 108px; right: 22px; width: 250px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; font-size: 12px; line-height: 1.6; display: none;
+  }
+  #inspector.active { display: block; }
+  #inspector .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; color: #dfe6f2; }
+  #inspector .dim { color: var(--ink-dim); }
+  #inspector .measure { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+
+  #verdict {
+    top: 90px; right: 22px; width: 250px; display: none;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; font-size: 12px;
+  }
+  #verdict.active { display: block; }
+  #verdict h3 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 8px; }
+  #verdict table { width: 100%; border-collapse: collapse; }
+  #verdict td { padding: 3px 0; border-bottom: 1px solid rgba(140,160,200,0.08); }
+  #verdict td:last-child { text-align: right; }
+  .status-green { color: var(--green); }
+  .status-amber { color: var(--amber); }
+
+  #ledger-toggle {
+    top: 64px; left: 22px;
+    background: none; border: 1px solid var(--line); border-radius: 4px;
+    color: var(--ink-dim); font: inherit; font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 5px 12px; cursor: pointer;
+  }
+  #ledger-toggle:hover { color: #fff; border-color: var(--accent); }
+
+  #ledger {
+    position: fixed; inset: 0; z-index: 40; display: none;
+    background: rgba(3, 5, 11, 0.9); backdrop-filter: blur(6px);
+    overflow-y: auto; padding: 60px 8vw;
+  }
+  #ledger.active { display: block; }
+  #ledger .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 26px; }
+  #ledger h2 { font-size: 16px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #e8edf7; }
+  #ledger h3 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  #ledger .col-repro h3 { color: var(--accent); }
+  #ledger .col-not h3 { color: var(--ink-dim); }
+  #ledger li { list-style: none; font-size: 12.5px; line-height: 1.6; margin-bottom: 12px; padding-left: 14px; position: relative; color: var(--ink); }
+  #ledger li::before { content: ""; position: absolute; left: 0; top: 8px; width: 5px; height: 1px; background: var(--ink-faint); }
+  #ledger .prov { margin-top: 34px; font-size: 11px; color: var(--ink-faint); line-height: 1.8; }
+  #ledger .prov .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; word-break: break-all; }
+  #ledger .close { position: absolute; top: 22px; right: 26px; background: none; border: none; color: var(--ink-dim); font-size: 22px; cursor: pointer; }
+  #ledger .close:hover { color: #fff; }
+
+  #onboarding {
+    position: fixed; inset: 0; z-index: 50; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(3, 5, 11, 0.86); backdrop-filter: blur(4px);
+  }
+  #onboarding.done { display: none; }
+  #onboarding .card {
+    width: min(520px, calc(100vw - 40px));
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 34px 38px;
+  }
+  #onboarding h1 { font-size: 22px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #e8edf7; }
+  #onboarding .lede { margin-top: 12px; font-size: 13px; line-height: 1.65; color: var(--ink); }
+  #onboarding ol { margin: 18px 0 0 18px; }
+  #onboarding li { font-size: 12.5px; line-height: 1.65; color: var(--ink); margin-bottom: 10px; }
+  #onboarding .fine { margin-top: 18px; font-size: 11px; line-height: 1.6; color: var(--ink-dim); }
+  #onboarding button {
+    margin-top: 22px; background: none; border: 1px solid var(--accent); border-radius: 4px;
+    color: #e8edf7; font: inherit; font-size: 13px; padding: 8px 22px; cursor: pointer;
+  }
+  #onboarding button:hover { background: rgba(154, 184, 232, 0.12); }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div id="status-banner" class="hud"></div>
+
+<div id="masthead" class="hud">
+  <h1>The 168</h1>
+  <div class="sub">S8 permutahedron instrument · from 24 to 168</div>
+</div>
+
+<div id="honesty-badge" class="hud">
+  Genuine 7D object · you are seeing an exact 3D orthographic slice.
+  All rotation happens in SO(7). Nothing is flattened in advance.
+</div>
+
+<button id="ledger-toggle" class="hud">The Ledger</button>
+
+<div id="check-strip" class="hud"></div>
+
+<div id="verdict" class="hud"></div>
+
+<div id="inspector" class="hud"></div>
+
+<div id="beat-bar" class="hud">
+  <div id="beat-title"></div>
+  <div id="beat-caption"></div>
+  <div id="beat-controls">
+    <button id="beat-prev">Prev</button>
+    <button id="beat-next">Next</button>
+    <input id="beat-scrub" type="range" min="0" max="8" step="1" value="0">
+    <div id="beat-index">0 / 8</div>
+    <button id="beat-play">Play</button>
+  </div>
+</div>
+
+<div id="ledger">
+  <button class="close" id="ledger-close">&times;</button>
+  <h2>The Ledger</h2>
+  <div class="cols">
+    <div class="col-repro"><h3>Reproduced</h3><ul id="ledger-repro"></ul></div>
+    <div class="col-not"><h3>Not claimed</h3><ul id="ledger-not"></ul></div>
+  </div>
+  <div class="prov" id="ledger-prov"></div>
+</div>
+
+<div id="onboarding">
+  <div class="card">
+    <h1>The 168</h1>
+    <div class="lede">
+      You are looking at the S8 permutahedron: all 40,320 permutations of
+      (1..8), each one a point in R^8, every point on the hyperplane
+      sum&nbsp;=&nbsp;36. The object is genuinely 7 dimensional. The screen
+      shows an exact 3D orthographic slice while it rotates in SO(7).
+    </div>
+    <ol>
+      <li><b>Drag</b> to steer the 7D rotation. <b>Scroll</b> to zoom.</li>
+      <li><b>Click a vertex</b> to read its address. Click a second one to
+        measure the swap distance between them.</li>
+      <li><b>Next / Prev</b> walks a nine-beat narrative, from the small
+        S4 solid you can hold, up to the 168 octets this instrument is
+        named after.</li>
+    </ol>
+    <div class="fine">
+      Everything shown is recomputed from checked-in JSON whose provenance
+      (arXiv ids, PDF hashes) sits in The Ledger, along with an explicit
+      list of what this instrument does not claim.
+    </div>
+    <button id="onboarding-dismiss">Begin</button>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "./vendor/three.module.js";
+import {
+  validateDataset, runSelfChecks, kendallDistance, stableId, unrankPermutation,
+} from "./permutahedron_core.mjs";
+import { Instrument168 } from "./the_168_render.mjs";
+import { makeBeats, makeLedger } from "./the_168_narrative.mjs";
+
+const $ = id => document.getElementById(id);
+
+function fail(message) {
+  const banner = $("status-banner");
+  banner.textContent = "CHECK FAILED, display halted: " + message;
+  banner.classList.add("active");
+  throw new Error(message);
+}
+
+async function loadJSON(path) {
+  const res = await fetch(path);
+  if (!res.ok) fail(`could not load ${path} (${res.status}). Serve this page over http, see docs/the-168-instrument.md.`);
+  return res.json();
+}
+
+const checkStrip = $("check-strip");
+const checkLines = [];
+function reportCheck(label) {
+  checkLines.push(`<span class="ok">ok</span> ${label}`);
+  checkStrip.innerHTML = checkLines.join("<br>");
+}
+
+const [s8, s4, garden] = await Promise.all([
+  loadJSON("../data/permutahedron_s8_atlas.json"),
+  loadJSON("../data/permutahedron_s4_atlas.json"),
+  loadJSON("../data/permutahedron_s8_garden.json"),
+]);
+
+// Gate the display on the checks. Never silently proceed.
+runSelfChecks();
+reportCheck("permutation core self-checks");
+
+for (const [name, atlas] of [["S8", s8], ["S4", s4]]) {
+  const result = validateDataset(atlas);
+  if (!result.complete) fail(`${name} atlas incomplete: ${result.issues.join("; ")}`);
+  reportCheck(`${name} atlas complete: ${result.vertices.toLocaleString()} vertices, ${result.edges.toLocaleString()} edges`);
+}
+if (garden.passed !== true) fail("garden scan record has passed !== true");
+if (garden.cosets_scanned !== 5040 || garden.signable_cosets !== 5040) {
+  fail(`garden coset counts off: scanned ${garden.cosets_scanned}, signable ${garden.signable_cosets}`);
+}
+if (s8.abnormal_right_slices.length !== 168) {
+  fail(`expected 168 abnormal right slices, found ${s8.abnormal_right_slices.length}`);
+}
+reportCheck("garden scan passed: 5,040 / 5,040 cosets signable, 168 abnormal");
+
+// Build the instrument.
+const instrument = new Instrument168({ canvas: $("stage"), THREE });
+const atlases = { s8, s4 };
+const beats = makeBeats({ s8, s4, garden });
+const ledger = makeLedger({ s8, garden });
+
+$("ledger-repro").innerHTML = ledger.reproduced.map(x => `<li>${x}</li>`).join("");
+$("ledger-not").innerHTML = ledger.notClaimed.map(x => `<li>${x}</li>`).join("");
+$("ledger-prov").innerHTML = "Provenance of the checked-in data: "
+  + ledger.provenance.map(p => `${p.arxiv} <span class="mono">sha256 ${p.sha256}</span>`).join(" · ")
+  + "<br>This page renders the repository JSON directly; nothing is regenerated at view time.";
+
+// Beat machinery.
+let beatIndex = 0;
+let beatHighlights = null;
+const selection = [];
+
+function applyHighlights() {
+  const merged = new Map(beatHighlights || []);
+  for (const rank of selection) merged.set(rank, 1);
+  instrument.setHighlights(merged);
+}
+
+function showBeat(index, { snapDataset = false } = {}) {
+  beatIndex = Math.max(0, Math.min(beats.length - 1, index));
+  const beat = beats[beatIndex];
+
+  if (instrument.datasetName !== beat.dataset) {
+    instrument.setDataset(beat.dataset, atlases[beat.dataset]);
+    selection.length = 0;
+    updateInspector();
+  }
+  if (beat.enterSnap && !snapDataset) instrument.snapTargets(beat.enterSnap);
+  instrument.setTargets(beat.targets);
+
+  beatHighlights = beat.highlights ? beat.highlights() : null;
+  applyHighlights();
+
+  $("beat-title").textContent = `${beatIndex}. ${beat.title}`;
+  $("beat-caption").textContent = beat.caption;
+  $("beat-scrub").value = String(beatIndex);
+  $("beat-index").textContent = `${beatIndex} / ${beats.length - 1}`;
+
+  const verdict = $("verdict");
+  if (beat.verdict) {
+    verdict.innerHTML = "<h3>Named octets, published status</h3><table>"
+      + beat.verdict.map(v => {
+        const cls = v.status === "published_garden_closure" ? "status-green" : "status-amber";
+        const word = v.status === "published_garden_closure" ? "closure" : "nonclosure";
+        return `<tr><td>${v.id}${v.abnormal ? " (one of the 168)" : ""}</td><td class="${cls}">${word}</td></tr>`;
+      }).join("")
+      + "</table>";
+    verdict.classList.add("active");
+  } else {
+    verdict.classList.remove("active");
+  }
+}
+
+$("beat-prev").addEventListener("click", () => showBeat(beatIndex - 1));
+$("beat-next").addEventListener("click", () => showBeat(beatIndex + 1));
+$("beat-scrub").addEventListener("input", e => showBeat(Number(e.target.value)));
+
+let playTimer = null;
+$("beat-play").addEventListener("click", () => {
+  if (playTimer) {
+    clearInterval(playTimer); playTimer = null;
+    $("beat-play").textContent = "Play";
+    return;
+  }
+  $("beat-play").textContent = "Pause";
+  playTimer = setInterval(() => {
+    if (beatIndex >= beats.length - 1) {
+      clearInterval(playTimer); playTimer = null;
+      $("beat-play").textContent = "Play";
+      return;
+    }
+    showBeat(beatIndex + 1);
+  }, 13000);
+});
+
+// Vertex inspection and pair measurement.
+function updateInspector() {
+  const panel = $("inspector");
+  if (selection.length === 0) { panel.classList.remove("active"); return; }
+  const atlas = atlases[instrument.datasetName];
+  const n = atlas.metadata.n;
+  const lines = selection.map(rank => {
+    const address = atlas.permutations[rank];
+    const right = atlas.right_slice_by_rank[rank];
+    const abnormal = atlas.abnormal_right_slices.includes(right);
+    return `<div><span class="mono">${stableId(n, rank)}</span> `
+      + `address <span class="mono">${address}</span><br>`
+      + `<span class="dim">right coset ${right}, left coset ${atlas.left_slice_by_rank[rank]}`
+      + `${abnormal ? ", one of the 168" : ""}</span></div>`;
+  });
+  let measure = "";
+  if (selection.length === 2) {
+    const [a, b] = selection.map(rank => unrankPermutation(rank, n));
+    const d = kendallDistance(a, b);
+    measure = `<div class="measure">minimal weak-Bruhat distance: `
+      + `<span class="mono">${d}</span><br>`
+      + `<span class="dim">adjacent-swap count; not a holoraumy gadget</span></div>`;
+  }
+  panel.innerHTML = lines.join("") + measure;
+  panel.classList.add("active");
+}
+
+instrument.onPick = rank => {
+  if (selection.length >= 2) selection.length = 0;
+  if (!selection.includes(rank)) selection.push(rank);
+  applyHighlights();
+  updateInspector();
+};
+
+// Panels.
+$("ledger-toggle").addEventListener("click", () => $("ledger").classList.add("active"));
+$("ledger-close").addEventListener("click", () => $("ledger").classList.remove("active"));
+$("onboarding-dismiss").addEventListener("click", () => $("onboarding").classList.add("done"));
+
+// Go. Deep links: ?beat=N jumps straight to a beat with its visual
+// state already settled, ?clean=1 skips the onboarding overlay.
+const params = new URLSearchParams(location.search);
+const startBeat = Math.max(0, Math.min(beats.length - 1, Number(params.get("beat") || 0)));
+if (params.get("clean") === "1") $("onboarding").classList.add("done");
+
+instrument.setDataset(beats[startBeat].dataset, atlases[beats[startBeat].dataset]);
+showBeat(startBeat, { snapDataset: true });
+instrument.snapTargets(beats[startBeat].targets);
+instrument.start();
+
+// Console handle for inspection and scripted demos.
+window.the168 = { instrument, beats, showBeat, atlases, garden };
+
+// ?picktest=1 exercises GPU color-ID picking end to end: project a
+// few known vertices to screen coordinates through the same SO(7)
+// slice the shader uses, run pickAt there, and write the outcome
+// into the DOM so a headless run can assert on it.
+if (params.get("picktest") === "1") {
+  setTimeout(() => {
+    const inst = instrument;
+    inst._tick(performance.now());
+    const geom = inst.points.geometry;
+    const pa = geom.getAttribute("aPa");
+    const pb = geom.getAttribute("aPb");
+    const R = inst.pointMaterial.uniforms.uRot.value;
+    const scale = inst.pointMaterial.uniforms.uScale.value;
+    const rect = inst.canvas.getBoundingClientRect();
+    const probes = [0, Math.floor(inst.vertexCount / 2), inst.vertexCount - 1];
+    const results = probes.map(rank => {
+      const p = [
+        pa.getX(rank), pa.getY(rank), pa.getZ(rank), pa.getW(rank),
+        pb.getX(rank), pb.getY(rank), pb.getZ(rank),
+      ];
+      const v = new THREE.Vector3(0, 0, 0);
+      for (let c = 0; c < 7; c += 1) {
+        v.x += R[c] * p[c];
+        v.y += R[7 + c] * p[c];
+        v.z += R[14 + c] * p[c];
+      }
+      v.multiplyScalar(scale).project(inst.camera);
+      const cx = rect.left + (v.x * 0.5 + 0.5) * rect.width;
+      const cy = rect.top + (1 - (v.y * 0.5 + 0.5)) * rect.height;
+      return `${rank}:${inst.pickAt(cx, cy)}`;
+    });
+    const div = document.createElement("div");
+    div.id = "picktest-result";
+    div.textContent = "picktest " + results.join(" ");
+    document.body.appendChild(div);
+  }, 1200);
+}
+</script>
+</body>
+</html>
