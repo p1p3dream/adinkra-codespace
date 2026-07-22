@@ -59,9 +59,9 @@ cargo test adynkra_derivative_intertwiners
 ## Boundary
 
 This supplies the fundamental Lorentz Clebsch-Gordan maps and distinguishes
-every repeated representation in the six published genomes. It does not yet
-assemble the source component normalizations in the prepotential gauge map or
-compute gauge cohomology.
+every repeated representation in the six published genomes. Their use in the
+prepotential gauge-curvature complex and the old-minimal Adynkrafield operator
+is validated in separate artifacts.
 
 ## Reference
 

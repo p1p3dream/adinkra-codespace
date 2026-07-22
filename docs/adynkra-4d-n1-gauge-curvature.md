@@ -207,10 +207,13 @@ action.
   vector curvatures, and Bianchi identities
 - `src/minimal_supergravity_action.rs`: quadratic action, variation,
   self-adjointness, and Noether identities
+- `src/adynkrafield_operator.rs`: exact Adynkrafield coordinate operator and
+  superspace reconstruction
 - `results/adynkra_4d_n1_prepotential_gauge_validation.json`
 - `results/adynkra_4d_n1_prepotential_curvature_validation.json`
 - `results/adynkra_4d_n1_minimal_curvature_complex_validation.json`
 - `results/adynkra_4d_n1_minimal_action_validation.json`
+- `results/adynkra_4d_n1_adynkrafield_operator_validation.json`
 
 ## Reproduction
 
@@ -223,9 +226,12 @@ cargo run --release -- adynkra-minimal-curvature-verify \
   > results/adynkra_4d_n1_minimal_curvature_complex_validation.json
 cargo run --release -- adynkra-minimal-action-verify \
   > results/adynkra_4d_n1_minimal_action_validation.json
+cargo run --release -- adynkrafield-operator-verify \
+  > results/adynkra_4d_n1_adynkrafield_operator_validation.json
 cargo test prepotential
 cargo test minimal_supergravity_curvatures
 cargo test minimal_supergravity_action
+cargo test adynkrafield_operator
 ```
 
 ## Boundary
@@ -235,7 +241,8 @@ through `R`, `Rbar`, `G_a`, the super-Weyl curvature pair, the independent
 Bianchi identities, the known source-free Euler-Lagrange operator, and exact
 momentum-fiber rank tests. The published quadratic action has also been
 reconstructed and varied back to that operator. Polynomial-module cohomology,
-helicity assignment, and the Adynkrafield form of the operator remain open.
+and helicity assignment remain open. The Adynkrafield coordinate form of the
+operator is validated separately.
 
 ## References
 

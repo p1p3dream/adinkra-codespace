@@ -13,8 +13,8 @@ use num_traits::Zero;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
-type Rat = Ratio<i64>;
-type Matrix = Vec<Vec<Rat>>;
+pub(crate) type Rat = Ratio<i64>;
+pub(crate) type Matrix = Vec<Vec<Rat>>;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct FundamentalCouplingCheck {
@@ -172,7 +172,7 @@ fn tensor_generator(n: usize, generator_index: usize) -> Matrix {
 }
 
 /// Returns `(embedding, projection)` for the `[n+1]` channel.
-fn upper_channel(n: usize) -> (Matrix, Matrix) {
+pub(crate) fn upper_channel(n: usize) -> (Matrix, Matrix) {
     let mut embedding = zeros(2 * (n + 1), n + 2);
     let mut projection = zeros(n + 2, 2 * (n + 1));
     let denominator = Rat::from_integer((n + 1) as i64);
@@ -192,7 +192,7 @@ fn upper_channel(n: usize) -> (Matrix, Matrix) {
 }
 
 /// Returns `(embedding, projection)` for the `[n-1]` channel.
-fn lower_channel(n: usize) -> Option<(Matrix, Matrix)> {
+pub(crate) fn lower_channel(n: usize) -> Option<(Matrix, Matrix)> {
     if n == 0 {
         return None;
     }

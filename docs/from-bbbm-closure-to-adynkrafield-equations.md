@@ -393,6 +393,16 @@ Hessian agrees on a full-rank 15-point quadratic-momentum interpolation design:
 compensator projections with zero residuals, and 384 gauge Noether relations
 with zero residuals. Explicit helicity signs remain open.
 
+The same equation is now expressed in the published Adynkrafield coordinates.
+The supergravity genome gives a rank-64 change of basis, while the chiral
+compensator and its conjugate contribute four coordinates each. On one zero,
+three null, and three non-null momentum fibers, the resulting 72-dimensional
+operator reconstructs the superspace operator in all 48,384 checked entries
+with zero residuals. Its ranks are 6, 20, and 24 on the zero, null, and
+non-null strata, respectively. All 448 translated gauge columns are
+annihilated. This is an exact coordinate translation on the tested fibers, not
+a new field equation or a polynomial-module proof.
+
 ## Ordered research plan
 
 ### Track 0: validated 10D supergravity baseline and embedding scan
@@ -439,7 +449,11 @@ with zero residuals. Explicit helicity signs remain open.
    non-null fibers are validated. The published quadratic action is also
    reconstructed, its variation returns the same equation, its graded Hessian
    is formally self-adjoint, and its gauge Noether identity holds.**
-5. Express that equation as an Adynkrafield operator.
+5. Express that equation as an Adynkrafield operator. **Complete on one zero,
+   three null, and three non-null rational momentum fibers. The published
+   genome blocks, Clebsch-Gordan maps, and factorial coefficients define the
+   coordinate change, and the translated operator reconstructs the superspace
+   equation with zero residuals. Polynomial-module equivalence remains open.**
 6. Apply the validated operators to the eleven-dimensional scalar superfield
    and test its complete irreducible reduction.
 7. Determine which representation products and intertwiners are required for a
@@ -456,7 +470,7 @@ with zero residuals. Explicit helicity signs remain open.
    Boolean factors remains separate.**
 4. Feed any invariant structures into Tracks 1 and 2.
 
-The immediate equation priority is Track 2, Steps 5-6. Track 0 provides a
+The immediate equation priority is Track 2, Step 6. Track 0 provides a
 validated 10D measurement and bounded embedding program. Track 1, Steps 1-3,
 remain useful for decomposing the BBBM obstruction, but a finite extension is
 not presumed. Track 3 is bounded and valuable, but it should not displace the
@@ -479,6 +493,7 @@ cargo run --release -- perm-atlas-build
 cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
 cargo run --release -- adynkra-minimal-action-verify
+cargo run --release -- adynkrafield-operator-verify
 cargo run --release -- adynkra-genome-build
 cargo run --release -- adynkra-genome-verify
 cargo run --release -- adynkra-derivative-verify
