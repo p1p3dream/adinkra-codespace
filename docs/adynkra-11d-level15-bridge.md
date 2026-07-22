@@ -70,6 +70,12 @@ one zero eigenvalue, followed by a gap of approximately 0.06730. The exact
 raising-equation checks, not those floating-point values, are the acceptance
 test for the stored vectors.
 
+The verifier also applies every simple-root lowering operator. For each
+`(00001)` vector, only the fifth lowering is nonzero. For `(10001)`, only the
+first and fifth lowerings are nonzero. Applying the same lowering a second
+time gives zero in every nontrivial case. These are the exact Dynkin strings
+specified by labels `00001` and `10001`.
+
 ## Generic bridge
 
 Before normalization, the most general leading symbol is
@@ -98,6 +104,24 @@ full covariant descendant sets. Consequently:
 - generic-momentum gauge reducibility and a complete curvature complex remain
   open. The scalar-divergence kernel test has identified the direct two-form
   and five-form channels.
+
+## Primary-source dependency for Eq. (2.7)
+
+Equation (2.7) does not by itself print the linearized torsion as an operator
+on $H_\alpha{}^a$. Its surrounding text points to Gates and Nishino,
+hep-th/0101037, for the linearized calculation. That paper supplies the needed
+starting formulas:
+
+- Eq. (24), the linearized spinorial frame;
+- Eq. (25), the induced vectorial frame;
+- Eqs. (26)-(29), the linearized anholonomy coefficients; and
+- the subsequent conventional-constraint analysis relating the holonomy
+  superfields and spin connections to $H_\alpha{}^a$.
+
+Therefore the next calculation is not a bare substitution into the displayed
+lines of Eq. (2.7). It is an exact implementation of the linearized frame and
+anholonomy formulas, elimination of the conventional fields, and then
+evaluation of the Eq. (2.7) projections on the three bridge channels.
 
 The independent Python program rebuilds the same matrices and numerically
 checks the small eigenvalues of $A^T A$. It was also used to propose integer
@@ -132,3 +156,6 @@ Independent numerical cross-check:
 2. S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Weyl Covariance, and Proposals
    for Superconformal Prepotentials in 10D Superspaces,"
    [arXiv:2007.05097](https://arxiv.org/abs/2007.05097).
+3. S. J. Gates Jr. and H. Nishino, "Deliberations on 11-D Superspace for the
+   M-Theory Effective Action,"
+   [arXiv:hep-th/0101037](https://arxiv.org/abs/hep-th/0101037).

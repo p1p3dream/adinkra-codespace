@@ -59,6 +59,17 @@ pub struct ExactKernelVectorReport {
     pub nonzero_residual_rows: usize,
     pub maximum_absolute_residual: i64,
     pub exact_kernel_verified: bool,
+    pub first_lowering_descendants: Vec<FirstLoweringReport>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstLoweringReport {
+    pub simple_root: usize,
+    pub expected_nonzero_from_dynkin_label: bool,
+    pub nonzero_terms: usize,
+    pub second_lowering_nonzero_terms: usize,
+    pub maximum_absolute_coefficient: i64,
+    pub matches_highest_weight_string: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -192,6 +203,67 @@ fn lowering_preimages(output_mask: u32, root: usize, weights: &[Weight; 32]) -> 
     preimages
 }
 
+fn lowered_spinor_index(index: usize, root: usize, weights: &[Weight; 32]) -> Option<usize> {
+    let target = subtract(weights[index], SIMPLE_ROOTS[root]);
+    weights.iter().position(|weight| *weight == target)
+}
+
+fn first_lowering(
+    source_basis: &[u32],
+    coefficients: &[i16],
+    root: usize,
+    weights: &[Weight; 32],
+) -> HashMap<u32, i64> {
+    let source = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients.iter().copied())
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<HashMap<_, _>>();
+    lower_sparse(&source, root, weights)
+}
+
+fn lower_sparse(
+    source: &HashMap<u32, i64>,
+    root: usize,
+    weights: &[Weight; 32],
+) -> HashMap<u32, i64> {
+    let mut descendant = HashMap::new();
+    for (&source_mask, &coefficient) in source {
+        for upper_index in 0..32 {
+            if source_mask & (1_u32 << upper_index) == 0 {
+                continue;
+            }
+            let Some(lower_index) = lowered_spinor_index(upper_index, root, weights) else {
+                continue;
+            };
+            if source_mask & (1_u32 << lower_index) != 0 {
+                continue;
+            }
+            let output_mask = (source_mask ^ (1_u32 << upper_index)) | (1_u32 << lower_index);
+            let (low, high) = if lower_index < upper_index {
+                (lower_index, upper_index)
+            } else {
+                (upper_index, lower_index)
+            };
+            let interval = if high == low + 1 {
+                0
+            } else {
+                ((1_u32 << high) - 1) ^ ((1_u32 << (low + 1)) - 1)
+            };
+            let sign = if (source_mask & interval).count_ones() % 2 == 0 {
+                1_i64
+            } else {
+                -1_i64
+            };
+            *descendant.entry(output_mask).or_insert(0) += sign * coefficient;
+        }
+    }
+    descendant.retain(|_, coefficient| *coefficient != 0);
+    descendant
+}
+
 fn build_system(
     dynkin_label: &'static str,
     representation_dimension: usize,
@@ -269,6 +341,29 @@ fn build_system(
             let coefficient_gcd = coefficients.iter().fold(0_i16, |gcd, coefficient| {
                 integer_gcd(gcd, coefficient.abs())
             });
+            let first_lowering_descendants = (0..5)
+                .map(|root| {
+                    let descendant = first_lowering(&source_basis, &coefficients, root, weights);
+                    let second_descendant = lower_sparse(&descendant, root, weights);
+                    let expected_nonzero_from_dynkin_label = dynkin_label.as_bytes()[root] != b'0';
+                    FirstLoweringReport {
+                        simple_root: root + 1,
+                        expected_nonzero_from_dynkin_label,
+                        nonzero_terms: descendant.len(),
+                        second_lowering_nonzero_terms: second_descendant.len(),
+                        maximum_absolute_coefficient: descendant
+                            .values()
+                            .map(|coefficient| coefficient.abs())
+                            .max()
+                            .unwrap_or(0),
+                        matches_highest_weight_string: if expected_nonzero_from_dynkin_label {
+                            !descendant.is_empty() && second_descendant.is_empty()
+                        } else {
+                            descendant.is_empty()
+                        },
+                    }
+                })
+                .collect::<Vec<_>>();
             ExactKernelVectorReport {
                 artifact: *artifact,
                 scalar_type: "signed 16-bit little-endian integer",
@@ -284,7 +379,11 @@ fn build_system(
                 nonzero_residual_rows: kernel_nonzero_residual_rows[kernel_index],
                 maximum_absolute_residual: kernel_maximum_absolute_residual[kernel_index],
                 exact_kernel_verified: kernel_nonzero_residual_rows[kernel_index] == 0
-                    && coefficient_gcd == 1,
+                    && coefficient_gcd == 1
+                    && first_lowering_descendants
+                        .iter()
+                        .all(|check| check.matches_highest_weight_string),
+                first_lowering_descendants,
             }
         })
         .collect();
@@ -469,5 +568,25 @@ mod tests {
         assert_eq!(kernel.coefficient_gcd, 1);
         assert_eq!(kernel.nonzero_residual_rows, 0);
         assert!(kernel.exact_kernel_verified);
+        assert_eq!(
+            kernel
+                .first_lowering_descendants
+                .iter()
+                .filter(|descendant| descendant.nonzero_terms > 0)
+                .map(|descendant| descendant.simple_root)
+                .collect::<Vec<_>>(),
+            vec![1, 5]
+        );
+        for spinor_kernel in &spinor.exact_kernel_vectors {
+            assert_eq!(
+                spinor_kernel
+                    .first_lowering_descendants
+                    .iter()
+                    .filter(|descendant| descendant.nonzero_terms > 0)
+                    .map(|descendant| descendant.simple_root)
+                    .collect::<Vec<_>>(),
+                vec![5]
+            );
+        }
     }
 }

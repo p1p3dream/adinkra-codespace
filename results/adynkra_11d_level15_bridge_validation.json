@@ -133,7 +133,49 @@
           "raising_rows_checked": 1943600,
           "nonzero_residual_rows": 0,
           "maximum_absolute_residual": 0,
-          "exact_kernel_verified": true
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 374246,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 3960,
+              "matches_highest_weight_string": true
+            }
+          ]
         },
         {
           "artifact": "data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le",
@@ -146,7 +188,49 @@
           "raising_rows_checked": 1943600,
           "nonzero_residual_rows": 0,
           "maximum_absolute_residual": 0,
-          "exact_kernel_verified": true
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 6435,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 1,
+              "matches_highest_weight_string": true
+            }
+          ]
         }
       ]
     },
@@ -277,7 +361,49 @@
           "raising_rows_checked": 1174806,
           "nonzero_residual_rows": 0,
           "maximum_absolute_residual": 0,
-          "exact_kernel_verified": true
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 260267,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 260267,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            }
+          ]
         }
       ]
     }
