@@ -273,12 +273,23 @@ enough for that step.
 
 ### E. Apply the validated operators to the eleven-dimensional scalar superfield
 
-After the four-dimensional benchmark passes, apply the same derivative,
-gauge-complex, and reducibility machinery to the proposed eleven-dimensional
-scalar superfield `U`. Reference [6] identifies its complete reduction to an
-irreducible supersymmetry representation as the next major problem. Locate the
-graviton sector in the resulting quotient and determine whether the validated
-curvature construction extends to it.
+The first eleven-dimensional gate is complete. The full Lorentz-irrep
+inventory of the unconstrained real scalar superfield `V` in Appendix F of
+Reference [10] is now encoded and checked. All 33 Grassmann levels reproduce
+`binomial(32,n)`, the published 1,494 bosonic and 1,186 fermionic irrep counts,
+and the equal `2^31` component dimensions. The level-16 conformal graviton and
+three-form occurrences, the level-17 conformal gravitino occurrence, and the
+missing level-16 two-form are also recovered.
+
+The published spinor-prepotential candidate `Psi_alpha`, related by
+`V = D^alpha Psi_alpha`, is also decomposed completely by the minuscule
+`SO(11)` spinor tensor rule. Every level has dimension
+`32 binomial(32,n)`, every individual tensor product passes its dimension
+identity, and all six middle-level multiplicities in Table 5 of Reference
+[10] are reproduced. The next gate is a specified gauge complex. Only after
+that is fixed can the validated derivative and reducibility machinery define
+a candidate eleven-dimensional curvature operator and locate its physical
+quotient.
 
 ## Role of the permutahedron program
 
@@ -454,8 +465,14 @@ a new field equation or a polynomial-module proof.
    genome blocks, Clebsch-Gordan maps, and factorial coefficients define the
    coordinate change, and the translated operator reconstructs the superspace
    equation with zero residuals. Polynomial-module equivalence remains open.**
-6. Apply the validated operators to the eleven-dimensional scalar superfield
-   and test its complete irreducible reduction.
+6. Apply the validated operators to the eleven-dimensional prepotential
+   candidates. **The complete Lorentz-irrep inventory of the scalar
+   semi-prepotential candidate `V` is reproduced across all 33 levels. Every
+   level passes its exterior-power dimension identity, and the published field
+   counts and middle-level supergravity representations are recovered. The
+   full spinor-prepotential candidate inventory is also derived and its Table
+   5 multiplicities are reproduced. The gauge complex and differential
+   operator remain open.**
 7. Determine which representation products and intertwiners are required for a
    nonlinear extension.
 
@@ -494,6 +511,7 @@ cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
 cargo run --release -- adynkra-minimal-action-verify
 cargo run --release -- adynkrafield-operator-verify
+cargo run --release -- adynkra-11d-prepotential-verify
 cargo run --release -- adynkra-genome-build
 cargo run --release -- adynkra-genome-verify
 cargo run --release -- adynkra-derivative-verify
@@ -532,3 +550,6 @@ cargo test
 9. J. Cigliano, B. Dahl, and S. J. Gates Jr., "10D Supergravity Numerical Data
    Sets for L & R Matrices,"
    [arXiv:2512.12157](https://arxiv.org/abs/2512.12157).
+10. S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Adinkra Foundation of Component
+    Decomposition and the Scan for Superconformal Multiplets in 11D, N = 1
+    Superspace," [arXiv:2002.08502](https://arxiv.org/abs/2002.08502).

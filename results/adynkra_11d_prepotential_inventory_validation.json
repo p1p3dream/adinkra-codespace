@@ -1,0 +1,770 @@
+{
+  "schema_version": "adynkra-11d-prepotential-inventories-v1",
+  "source_arxiv": "2002.08502",
+  "source_location": "Appendix F, Table 4, and the note in proof with Table 5",
+  "lorentz_algebra": "B5 = so(11)",
+  "superfield": "unconstrained real scalar V(x, theta)",
+  "spinor_coordinates": 32,
+  "levels_checked": 33,
+  "source_levels_transcribed": 17,
+  "upper_levels_generated_by_duality": 16,
+  "level_checks": [
+    {
+      "level": 0,
+      "statistics": "bosonic",
+      "source_level": 0,
+      "distinct_irreps": 1,
+      "irreducible_fields_with_multiplicity": 1,
+      "component_dimension": 1,
+      "expected_exterior_power_dimension": 1,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 1,
+      "statistics": "fermionic",
+      "source_level": 1,
+      "distinct_irreps": 1,
+      "irreducible_fields_with_multiplicity": 1,
+      "component_dimension": 32,
+      "expected_exterior_power_dimension": 32,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 2,
+      "statistics": "bosonic",
+      "source_level": 2,
+      "distinct_irreps": 3,
+      "irreducible_fields_with_multiplicity": 3,
+      "component_dimension": 496,
+      "expected_exterior_power_dimension": 496,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 3,
+      "statistics": "fermionic",
+      "source_level": 3,
+      "distinct_irreps": 3,
+      "irreducible_fields_with_multiplicity": 3,
+      "component_dimension": 4960,
+      "expected_exterior_power_dimension": 4960,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 4,
+      "statistics": "bosonic",
+      "source_level": 4,
+      "distinct_irreps": 8,
+      "irreducible_fields_with_multiplicity": 8,
+      "component_dimension": 35960,
+      "expected_exterior_power_dimension": 35960,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 5,
+      "statistics": "fermionic",
+      "source_level": 5,
+      "distinct_irreps": 9,
+      "irreducible_fields_with_multiplicity": 9,
+      "component_dimension": 201376,
+      "expected_exterior_power_dimension": 201376,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 6,
+      "statistics": "bosonic",
+      "source_level": 6,
+      "distinct_irreps": 18,
+      "irreducible_fields_with_multiplicity": 19,
+      "component_dimension": 906192,
+      "expected_exterior_power_dimension": 906192,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 7,
+      "statistics": "fermionic",
+      "source_level": 7,
+      "distinct_irreps": 21,
+      "irreducible_fields_with_multiplicity": 23,
+      "component_dimension": 3365856,
+      "expected_exterior_power_dimension": 3365856,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 8,
+      "statistics": "bosonic",
+      "source_level": 8,
+      "distinct_irreps": 42,
+      "irreducible_fields_with_multiplicity": 49,
+      "component_dimension": 10518300,
+      "expected_exterior_power_dimension": 10518300,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 9,
+      "statistics": "fermionic",
+      "source_level": 9,
+      "distinct_irreps": 39,
+      "irreducible_fields_with_multiplicity": 55,
+      "component_dimension": 28048800,
+      "expected_exterior_power_dimension": 28048800,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 10,
+      "statistics": "bosonic",
+      "source_level": 10,
+      "distinct_irreps": 66,
+      "irreducible_fields_with_multiplicity": 99,
+      "component_dimension": 64512240,
+      "expected_exterior_power_dimension": 64512240,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 11,
+      "statistics": "fermionic",
+      "source_level": 11,
+      "distinct_irreps": 55,
+      "irreducible_fields_with_multiplicity": 106,
+      "component_dimension": 129024480,
+      "expected_exterior_power_dimension": 129024480,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 12,
+      "statistics": "bosonic",
+      "source_level": 12,
+      "distinct_irreps": 92,
+      "irreducible_fields_with_multiplicity": 173,
+      "component_dimension": 225792840,
+      "expected_exterior_power_dimension": 225792840,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 13,
+      "statistics": "fermionic",
+      "source_level": 13,
+      "distinct_irreps": 69,
+      "irreducible_fields_with_multiplicity": 171,
+      "component_dimension": 347373600,
+      "expected_exterior_power_dimension": 347373600,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 14,
+      "statistics": "bosonic",
+      "source_level": 14,
+      "distinct_irreps": 115,
+      "irreducible_fields_with_multiplicity": 247,
+      "component_dimension": 471435600,
+      "expected_exterior_power_dimension": 471435600,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 15,
+      "statistics": "fermionic",
+      "source_level": 15,
+      "distinct_irreps": 83,
+      "irreducible_fields_with_multiplicity": 225,
+      "component_dimension": 565722720,
+      "expected_exterior_power_dimension": 565722720,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 16,
+      "statistics": "bosonic",
+      "source_level": 16,
+      "distinct_irreps": 132,
+      "irreducible_fields_with_multiplicity": 296,
+      "component_dimension": 601080390,
+      "expected_exterior_power_dimension": 601080390,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 17,
+      "statistics": "fermionic",
+      "source_level": 15,
+      "distinct_irreps": 83,
+      "irreducible_fields_with_multiplicity": 225,
+      "component_dimension": 565722720,
+      "expected_exterior_power_dimension": 565722720,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 18,
+      "statistics": "bosonic",
+      "source_level": 14,
+      "distinct_irreps": 115,
+      "irreducible_fields_with_multiplicity": 247,
+      "component_dimension": 471435600,
+      "expected_exterior_power_dimension": 471435600,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 19,
+      "statistics": "fermionic",
+      "source_level": 13,
+      "distinct_irreps": 69,
+      "irreducible_fields_with_multiplicity": 171,
+      "component_dimension": 347373600,
+      "expected_exterior_power_dimension": 347373600,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 20,
+      "statistics": "bosonic",
+      "source_level": 12,
+      "distinct_irreps": 92,
+      "irreducible_fields_with_multiplicity": 173,
+      "component_dimension": 225792840,
+      "expected_exterior_power_dimension": 225792840,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 21,
+      "statistics": "fermionic",
+      "source_level": 11,
+      "distinct_irreps": 55,
+      "irreducible_fields_with_multiplicity": 106,
+      "component_dimension": 129024480,
+      "expected_exterior_power_dimension": 129024480,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 22,
+      "statistics": "bosonic",
+      "source_level": 10,
+      "distinct_irreps": 66,
+      "irreducible_fields_with_multiplicity": 99,
+      "component_dimension": 64512240,
+      "expected_exterior_power_dimension": 64512240,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 23,
+      "statistics": "fermionic",
+      "source_level": 9,
+      "distinct_irreps": 39,
+      "irreducible_fields_with_multiplicity": 55,
+      "component_dimension": 28048800,
+      "expected_exterior_power_dimension": 28048800,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 24,
+      "statistics": "bosonic",
+      "source_level": 8,
+      "distinct_irreps": 42,
+      "irreducible_fields_with_multiplicity": 49,
+      "component_dimension": 10518300,
+      "expected_exterior_power_dimension": 10518300,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 25,
+      "statistics": "fermionic",
+      "source_level": 7,
+      "distinct_irreps": 21,
+      "irreducible_fields_with_multiplicity": 23,
+      "component_dimension": 3365856,
+      "expected_exterior_power_dimension": 3365856,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 26,
+      "statistics": "bosonic",
+      "source_level": 6,
+      "distinct_irreps": 18,
+      "irreducible_fields_with_multiplicity": 19,
+      "component_dimension": 906192,
+      "expected_exterior_power_dimension": 906192,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 27,
+      "statistics": "fermionic",
+      "source_level": 5,
+      "distinct_irreps": 9,
+      "irreducible_fields_with_multiplicity": 9,
+      "component_dimension": 201376,
+      "expected_exterior_power_dimension": 201376,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 28,
+      "statistics": "bosonic",
+      "source_level": 4,
+      "distinct_irreps": 8,
+      "irreducible_fields_with_multiplicity": 8,
+      "component_dimension": 35960,
+      "expected_exterior_power_dimension": 35960,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 29,
+      "statistics": "fermionic",
+      "source_level": 3,
+      "distinct_irreps": 3,
+      "irreducible_fields_with_multiplicity": 3,
+      "component_dimension": 4960,
+      "expected_exterior_power_dimension": 4960,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 30,
+      "statistics": "bosonic",
+      "source_level": 2,
+      "distinct_irreps": 3,
+      "irreducible_fields_with_multiplicity": 3,
+      "component_dimension": 496,
+      "expected_exterior_power_dimension": 496,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 31,
+      "statistics": "fermionic",
+      "source_level": 1,
+      "distinct_irreps": 1,
+      "irreducible_fields_with_multiplicity": 1,
+      "component_dimension": 32,
+      "expected_exterior_power_dimension": 32,
+      "matches_exterior_power": true
+    },
+    {
+      "level": 32,
+      "statistics": "bosonic",
+      "source_level": 0,
+      "distinct_irreps": 1,
+      "irreducible_fields_with_multiplicity": 1,
+      "component_dimension": 1,
+      "expected_exterior_power_dimension": 1,
+      "matches_exterior_power": true
+    }
+  ],
+  "bosonic_irreducible_fields": 1494,
+  "published_bosonic_irreducible_fields": 1494,
+  "fermionic_irreducible_fields": 1186,
+  "published_fermionic_irreducible_fields": 1186,
+  "bosonic_component_dimension": 2147483648,
+  "fermionic_component_dimension": 2147483648,
+  "expected_parity_component_dimension": 2147483648,
+  "mirror_symmetry_residuals": 0,
+  "distinguished_representations": [
+    {
+      "level": 16,
+      "dynkin_label": "20000",
+      "dimension": 65,
+      "multiplicity": 1,
+      "interpretation": "conformal graviton",
+      "expected_multiplicity": 1,
+      "passed": true
+    },
+    {
+      "level": 16,
+      "dynkin_label": "00100",
+      "dimension": 165,
+      "multiplicity": 2,
+      "interpretation": "three-form",
+      "expected_multiplicity": 2,
+      "passed": true
+    },
+    {
+      "level": 15,
+      "dynkin_label": "10001",
+      "dimension": 320,
+      "multiplicity": 1,
+      "interpretation": "conformal gravitino",
+      "expected_multiplicity": 1,
+      "passed": true
+    },
+    {
+      "level": 17,
+      "dynkin_label": "10001",
+      "dimension": 320,
+      "multiplicity": 1,
+      "interpretation": "dual conformal gravitino",
+      "expected_multiplicity": 1,
+      "passed": true
+    },
+    {
+      "level": 16,
+      "dynkin_label": "01000",
+      "dimension": 55,
+      "multiplicity": 0,
+      "interpretation": "missing two-form required by the inverse-frame decomposition",
+      "expected_multiplicity": 0,
+      "passed": true
+    }
+  ],
+  "spinor_prepotential_relation": "V = D^alpha Psi_alpha",
+  "spinor_tensor_rule": "each scalar-superfield level tensored with the 32-dimensional minuscule B5 spinor",
+  "spinor_level_checks": [
+    {
+      "level": 0,
+      "statistics": "fermionic",
+      "distinct_irreps": 1,
+      "irreducible_fields_with_multiplicity": 1,
+      "component_dimension": 32,
+      "expected_spinor_tensor_dimension": 32,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 1,
+      "statistics": "bosonic",
+      "distinct_irreps": 6,
+      "irreducible_fields_with_multiplicity": 6,
+      "component_dimension": 1024,
+      "expected_spinor_tensor_dimension": 1024,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 2,
+      "statistics": "fermionic",
+      "distinct_irreps": 5,
+      "irreducible_fields_with_multiplicity": 10,
+      "component_dimension": 15872,
+      "expected_spinor_tensor_dimension": 15872,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 3,
+      "statistics": "bosonic",
+      "distinct_irreps": 17,
+      "irreducible_fields_with_multiplicity": 30,
+      "component_dimension": 158720,
+      "expected_spinor_tensor_dimension": 158720,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 4,
+      "statistics": "fermionic",
+      "distinct_irreps": 16,
+      "irreducible_fields_with_multiplicity": 45,
+      "component_dimension": 1150720,
+      "expected_spinor_tensor_dimension": 1150720,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 5,
+      "statistics": "bosonic",
+      "distinct_irreps": 39,
+      "irreducible_fields_with_multiplicity": 110,
+      "component_dimension": 6444032,
+      "expected_spinor_tensor_dimension": 6444032,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 6,
+      "statistics": "fermionic",
+      "distinct_irreps": 35,
+      "irreducible_fields_with_multiplicity": 158,
+      "component_dimension": 28998144,
+      "expected_spinor_tensor_dimension": 28998144,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 7,
+      "statistics": "bosonic",
+      "distinct_irreps": 75,
+      "irreducible_fields_with_multiplicity": 340,
+      "component_dimension": 107707392,
+      "expected_spinor_tensor_dimension": 107707392,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 8,
+      "statistics": "fermionic",
+      "distinct_irreps": 61,
+      "irreducible_fields_with_multiplicity": 455,
+      "component_dimension": 336585600,
+      "expected_spinor_tensor_dimension": 336585600,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 9,
+      "statistics": "bosonic",
+      "distinct_irreps": 121,
+      "irreducible_fields_with_multiplicity": 878,
+      "component_dimension": 897561600,
+      "expected_spinor_tensor_dimension": 897561600,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 10,
+      "statistics": "fermionic",
+      "distinct_irreps": 90,
+      "irreducible_fields_with_multiplicity": 1058,
+      "component_dimension": 2064391680,
+      "expected_spinor_tensor_dimension": 2064391680,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 11,
+      "statistics": "bosonic",
+      "distinct_irreps": 162,
+      "irreducible_fields_with_multiplicity": 1798,
+      "component_dimension": 4128783360,
+      "expected_spinor_tensor_dimension": 4128783360,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 12,
+      "statistics": "fermionic",
+      "distinct_irreps": 119,
+      "irreducible_fields_with_multiplicity": 1967,
+      "component_dimension": 7225370880,
+      "expected_spinor_tensor_dimension": 7225370880,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 13,
+      "statistics": "bosonic",
+      "distinct_irreps": 194,
+      "irreducible_fields_with_multiplicity": 2956,
+      "component_dimension": 11115955200,
+      "expected_spinor_tensor_dimension": 11115955200,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 14,
+      "statistics": "fermionic",
+      "distinct_irreps": 138,
+      "irreducible_fields_with_multiplicity": 2882,
+      "component_dimension": 15085939200,
+      "expected_spinor_tensor_dimension": 15085939200,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 15,
+      "statistics": "bosonic",
+      "distinct_irreps": 217,
+      "irreducible_fields_with_multiplicity": 3860,
+      "component_dimension": 18103127040,
+      "expected_spinor_tensor_dimension": 18103127040,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 16,
+      "statistics": "fermionic",
+      "distinct_irreps": 148,
+      "irreducible_fields_with_multiplicity": 3305,
+      "component_dimension": 19234572480,
+      "expected_spinor_tensor_dimension": 19234572480,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 17,
+      "statistics": "bosonic",
+      "distinct_irreps": 217,
+      "irreducible_fields_with_multiplicity": 3860,
+      "component_dimension": 18103127040,
+      "expected_spinor_tensor_dimension": 18103127040,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 18,
+      "statistics": "fermionic",
+      "distinct_irreps": 138,
+      "irreducible_fields_with_multiplicity": 2882,
+      "component_dimension": 15085939200,
+      "expected_spinor_tensor_dimension": 15085939200,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 19,
+      "statistics": "bosonic",
+      "distinct_irreps": 194,
+      "irreducible_fields_with_multiplicity": 2956,
+      "component_dimension": 11115955200,
+      "expected_spinor_tensor_dimension": 11115955200,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 20,
+      "statistics": "fermionic",
+      "distinct_irreps": 119,
+      "irreducible_fields_with_multiplicity": 1967,
+      "component_dimension": 7225370880,
+      "expected_spinor_tensor_dimension": 7225370880,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 21,
+      "statistics": "bosonic",
+      "distinct_irreps": 162,
+      "irreducible_fields_with_multiplicity": 1798,
+      "component_dimension": 4128783360,
+      "expected_spinor_tensor_dimension": 4128783360,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 22,
+      "statistics": "fermionic",
+      "distinct_irreps": 90,
+      "irreducible_fields_with_multiplicity": 1058,
+      "component_dimension": 2064391680,
+      "expected_spinor_tensor_dimension": 2064391680,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 23,
+      "statistics": "bosonic",
+      "distinct_irreps": 121,
+      "irreducible_fields_with_multiplicity": 878,
+      "component_dimension": 897561600,
+      "expected_spinor_tensor_dimension": 897561600,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 24,
+      "statistics": "fermionic",
+      "distinct_irreps": 61,
+      "irreducible_fields_with_multiplicity": 455,
+      "component_dimension": 336585600,
+      "expected_spinor_tensor_dimension": 336585600,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 25,
+      "statistics": "bosonic",
+      "distinct_irreps": 75,
+      "irreducible_fields_with_multiplicity": 340,
+      "component_dimension": 107707392,
+      "expected_spinor_tensor_dimension": 107707392,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 26,
+      "statistics": "fermionic",
+      "distinct_irreps": 35,
+      "irreducible_fields_with_multiplicity": 158,
+      "component_dimension": 28998144,
+      "expected_spinor_tensor_dimension": 28998144,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 27,
+      "statistics": "bosonic",
+      "distinct_irreps": 39,
+      "irreducible_fields_with_multiplicity": 110,
+      "component_dimension": 6444032,
+      "expected_spinor_tensor_dimension": 6444032,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 28,
+      "statistics": "fermionic",
+      "distinct_irreps": 16,
+      "irreducible_fields_with_multiplicity": 45,
+      "component_dimension": 1150720,
+      "expected_spinor_tensor_dimension": 1150720,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 29,
+      "statistics": "bosonic",
+      "distinct_irreps": 17,
+      "irreducible_fields_with_multiplicity": 30,
+      "component_dimension": 158720,
+      "expected_spinor_tensor_dimension": 158720,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 30,
+      "statistics": "fermionic",
+      "distinct_irreps": 5,
+      "irreducible_fields_with_multiplicity": 10,
+      "component_dimension": 15872,
+      "expected_spinor_tensor_dimension": 15872,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 31,
+      "statistics": "bosonic",
+      "distinct_irreps": 6,
+      "irreducible_fields_with_multiplicity": 6,
+      "component_dimension": 1024,
+      "expected_spinor_tensor_dimension": 1024,
+      "matches_spinor_tensor_dimension": true
+    },
+    {
+      "level": 32,
+      "statistics": "fermionic",
+      "distinct_irreps": 1,
+      "irreducible_fields_with_multiplicity": 1,
+      "component_dimension": 32,
+      "expected_spinor_tensor_dimension": 32,
+      "matches_spinor_tensor_dimension": true
+    }
+  ],
+  "spinor_tensor_product_dimension_residuals": 0,
+  "spinor_bosonic_irreducible_fields": 19956,
+  "spinor_fermionic_irreducible_fields": 16457,
+  "spinor_bosonic_component_dimension": 68719476736,
+  "spinor_fermionic_component_dimension": 68719476736,
+  "expected_spinor_parity_component_dimension": 68719476736,
+  "spinor_candidate_representations": [
+    {
+      "level": 17,
+      "dynkin_label": "00000",
+      "dimension": 1,
+      "multiplicity": 2,
+      "interpretation": "scalar",
+      "expected_multiplicity": 2,
+      "passed": true
+    },
+    {
+      "level": 17,
+      "dynkin_label": "01000",
+      "dimension": 55,
+      "multiplicity": 5,
+      "interpretation": "two-form",
+      "expected_multiplicity": 5,
+      "passed": true
+    },
+    {
+      "level": 17,
+      "dynkin_label": "20000",
+      "dimension": 65,
+      "multiplicity": 2,
+      "interpretation": "conformal graviton",
+      "expected_multiplicity": 2,
+      "passed": true
+    },
+    {
+      "level": 17,
+      "dynkin_label": "00100",
+      "dimension": 165,
+      "multiplicity": 8,
+      "interpretation": "three-form",
+      "expected_multiplicity": 8,
+      "passed": true
+    },
+    {
+      "level": 18,
+      "dynkin_label": "00001",
+      "dimension": 32,
+      "multiplicity": 5,
+      "interpretation": "spinor",
+      "expected_multiplicity": 5,
+      "passed": true
+    },
+    {
+      "level": 18,
+      "dynkin_label": "10001",
+      "dimension": 320,
+      "multiplicity": 8,
+      "interpretation": "conformal gravitino",
+      "expected_multiplicity": 8,
+      "passed": true
+    }
+  ],
+  "spinor_every_level_matches_tensor_dimension": true,
+  "spinor_parity_dimensions_match": true,
+  "spinor_table_5_checks_pass": true,
+  "every_level_matches_exterior_power": true,
+  "aggregate_counts_match_publication": true,
+  "parity_dimensions_match": true,
+  "distinguished_representation_checks_pass": true,
+  "boundary": "reproduction of the published scalar-superfield Lorentz inventory and the spinor-prepotential candidate counts in Table 5; no eleven-dimensional gauge constraint, differential operator, action, or field equation is derived",
+  "passed": true
+}

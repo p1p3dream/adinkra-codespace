@@ -26,6 +26,7 @@ mod code;
 mod dashing;
 mod decompose;
 mod enhance;
+mod eleven_dimensional_prepotential;
 mod eval;
 mod filters;
 mod holoraumy;
@@ -112,6 +113,7 @@ fn main() {
         "adynkra-minimal-curvature-verify" => cmd_adynkra_minimal_curvature_verify(),
         "adynkra-minimal-action-verify" => cmd_adynkra_minimal_action_verify(),
         "adynkrafield-operator-verify" => cmd_adynkrafield_operator_verify(),
+        "adynkra-11d-prepotential-verify" => cmd_adynkra_11d_prepotential_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -187,6 +189,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-minimal-curvature-verify Verify the old-minimal curvature complex");
     eprintln!("  adynkra-minimal-action-verify Verify the quadratic old-minimal action");
     eprintln!("  adynkrafield-operator-verify Verify the old-minimal Adynkrafield operator");
+    eprintln!("  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -383,6 +386,14 @@ fn cmd_adynkra_minimal_action_verify() {
 
 fn cmd_adynkrafield_operator_verify() {
     let report = adynkrafield_operator::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_prepotential_verify() {
+    let report = eleven_dimensional_prepotential::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
