@@ -27,6 +27,7 @@ mod dashing;
 mod decompose;
 mod enhance;
 mod eleven_dimensional_clifford;
+mod eleven_dimensional_bridge;
 mod eleven_dimensional_prepotential;
 mod eval;
 mod filters;
@@ -116,6 +117,7 @@ fn main() {
         "adynkrafield-operator-verify" => cmd_adynkrafield_operator_verify(),
         "adynkra-11d-prepotential-verify" => cmd_adynkra_11d_prepotential_verify(),
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
+        "adynkra-11d-bridge-verify" => cmd_adynkra_11d_bridge_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -193,6 +195,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkrafield-operator-verify Verify the old-minimal Adynkrafield operator");
     eprintln!("  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
+    eprintln!("  adynkra-11d-bridge-verify Verify the exact level-15 bridge systems");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -409,6 +412,11 @@ fn cmd_adynkra_11d_clifford_verify() {
     if !report.passed {
         std::process::exit(2);
     }
+}
+
+fn cmd_adynkra_11d_bridge_verify() {
+    let report = eleven_dimensional_bridge::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

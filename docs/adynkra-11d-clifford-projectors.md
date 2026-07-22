@@ -122,16 +122,48 @@ This separates the six direct channels into two classes. It does not select a
 gauge transformation at generic momentum, where the spinor-derivative
 anticommutator produces a spacetime derivative.
 
+## Scalar-divergence test at generic momentum
+
+For the candidate scalar curvature
+
+\[
+V=D^\alpha\Psi_\alpha,
+\]
+
+the symmetric form channels receive only the translation term in the
+spinor-derivative anticommutator. The verifier contracts every
+$C\Gamma^{[p]}$ with every $C\Gamma^a$. Gamma-form orthogonality gives:
+
+| form degree | bilinear symmetry | nonzero translation contractions | in the direct kernel of $D^\alpha\Psi_\alpha$ |
+|---:|---|---:|---|
+| 0 | antisymmetric | 0 | no |
+| 1 | symmetric | 11 | no |
+| 2 | symmetric | 0 | yes |
+| 3 | antisymmetric | 0 | no |
+| 4 | antisymmetric | 0 | no |
+| 5 | symmetric | 0 | yes |
+
+Thus the direct two-form and five-form parameter channels leave the scalar
+divergence invariant at generic momentum. The vector channel leaves a term
+proportional to $p_a\Lambda^a$. The antisymmetric channels retain their
+ordered two-spinor-derivative terms. This is a kernel statement for the
+candidate scalar divergence, not a complete supergravity gauge complex.
+
 ## Remaining work on the four requested stages
 
-1. **Bridge intertwiners:** the target projectors are now explicit. The two
-   embeddings of \(\{32\}\) and the one embedding of \(\{320\}\) inside
-   \(\bigwedge^{15}\{32\}\) remain to be constructed.
+1. **Bridge intertwiners:** the target projectors and the exact sparse
+   highest-weight systems are now explicit. The systems have 591,810 and
+   388,720 columns. All three highest-weight kernel vectors are extracted and
+   verified exactly over 1,943,600 and 1,174,806 raising equations. Their
+   covariant descendants remain to be constructed. See
+   `docs/adynkra-11d-level15-bridge.md`.
 2. **Torsion constraints:** Eq. (2.7) of arXiv:2007.05097 cannot be evaluated
-   on the three coefficients until those source embeddings are explicit.
+   on the three coefficients until the covariant descendants of the three
+   highest-weight vectors are constructed.
 3. **Surviving combination:** no coefficient combination has yet been selected.
-4. **Gauge complex:** the six direct channels are now split at zero momentum,
-   but generic-momentum reducibility and curvature kernels remain open.
+4. **Gauge complex:** the direct two-form and five-form channels lie in the
+   generic-momentum kernel of the scalar divergence. Reducibility and a
+   complete set of curvature operators remain open.
 
 ## Reproduction
 

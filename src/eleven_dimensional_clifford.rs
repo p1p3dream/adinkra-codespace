@@ -22,6 +22,9 @@ pub struct BilinearSymmetryCheck {
     pub products_checked: usize,
     pub residual_products: usize,
     pub direct_dd_contraction_at_zero_momentum: &'static str,
+    pub translation_contractions_checked: usize,
+    pub nonzero_translation_contractions: usize,
+    pub scalar_divergence_kernel_at_generic_momentum: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -44,6 +47,7 @@ pub struct ElevenDimensionalCliffordReport {
     pub direct_first_derivative_gauge_ansatz: &'static str,
     pub zero_momentum_channels_annihilated_by_dd: usize,
     pub zero_momentum_channels_not_annihilated_by_dd: usize,
+    pub generic_momentum_scalar_divergence_kernel_degrees: Vec<usize>,
     pub gamma_trace_projector_denominator: i64,
     pub gamma_trace_projector_rank: usize,
     pub gamma_traceless_projector_rank: usize,
@@ -273,6 +277,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
     for degree in 0..=5 {
         let subsets = combinations(VECTOR_DIMENSION, degree);
         let mut residual_products = 0;
+        let mut nonzero_translation_contractions = 0;
         for subset in &subsets {
             let bilinear = multiply(&charge, &product_for_indices(&gammas, subset));
             let expected = if expected_symmetries[degree] == "symmetric" {
@@ -282,7 +287,14 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
             };
             residual_products +=
                 usize::from(matrix_residuals(&transpose(&bilinear), &expected) != 0);
+            for vector in 0..VECTOR_DIMENSION {
+                let translation_bilinear = multiply(&charge, &gammas[vector]);
+                let contraction = trace(&multiply(&transpose(&bilinear), &translation_bilinear));
+                nonzero_translation_contractions += usize::from(contraction != g(0, 0));
+            }
         }
+        let scalar_divergence_kernel_at_generic_momentum =
+            expected_symmetries[degree] == "symmetric" && nonzero_translation_contractions == 0;
         bilinear_symmetry_checks.push(BilinearSymmetryCheck {
             form_degree: degree,
             dynkin_label: labels[degree],
@@ -295,6 +307,9 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
             } else {
                 "not identically zero"
             },
+            translation_contractions_checked: subsets.len() * VECTOR_DIMENSION,
+            nonzero_translation_contractions,
+            scalar_divergence_kernel_at_generic_momentum,
         });
     }
 
@@ -351,6 +366,11 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         .count();
     let zero_momentum_channels_not_annihilated_by_dd =
         bilinear_symmetry_checks.len() - zero_momentum_channels_annihilated_by_dd;
+    let generic_momentum_scalar_divergence_kernel_degrees = bilinear_symmetry_checks
+        .iter()
+        .filter(|check| check.scalar_divergence_kernel_at_generic_momentum)
+        .map(|check| check.form_degree)
+        .collect::<Vec<_>>();
     let projector_completeness_residual_entries = usize::from(
         gamma_trace_projector_rank + gamma_traceless_projector_rank
             != VECTOR_DIMENSION * SPINOR_DIMENSION,
@@ -365,6 +385,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         && antisymmetric_bilinear_dimension == 496
         && zero_momentum_channels_annihilated_by_dd == 3
         && zero_momentum_channels_not_annihilated_by_dd == 3
+        && generic_momentum_scalar_divergence_kernel_degrees == vec![2, 5]
         && projector_idempotency_residual_entries == 0
         && gamma_tracelessness_residual_entries == 0
         && projector_completeness_residual_entries == 0
@@ -376,7 +397,10 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         vector_dimension: VECTOR_DIMENSION,
         spinor_dimension: SPINOR_DIMENSION,
         gamma_matrices: gammas.len(),
-        clifford_matrix_entries_checked: VECTOR_DIMENSION * VECTOR_DIMENSION * SPINOR_DIMENSION * SPINOR_DIMENSION,
+        clifford_matrix_entries_checked: VECTOR_DIMENSION
+            * VECTOR_DIMENSION
+            * SPINOR_DIMENSION
+            * SPINOR_DIMENSION,
         clifford_residual_entries,
         charge_conjugation_definition: "C = Gamma_2 Gamma_4 Gamma_6 Gamma_8 Gamma_10",
         charge_conjugation_is_antisymmetric,
@@ -389,6 +413,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         direct_first_derivative_gauge_ansatz: "delta Psi_alpha = (C Gamma^[p])_alpha^beta D_beta Lambda_[p]",
         zero_momentum_channels_annihilated_by_dd,
         zero_momentum_channels_not_annihilated_by_dd,
+        generic_momentum_scalar_divergence_kernel_degrees,
         gamma_trace_projector_denominator: 11,
         gamma_trace_projector_rank,
         gamma_traceless_projector_rank,
@@ -397,7 +422,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         gamma_tracelessness_entries_checked,
         gamma_tracelessness_residual_entries,
         projector_completeness_residual_entries,
-        boundary: "explicit target-side Clifford intertwiners, vector-spinor projectors, and the zero-momentum D-D contraction test for the direct six-channel gauge ansatz; the two embeddings of the 32 and the one embedding of the 320 inside exterior^15(32), their torsion-constraint coefficients, generic-momentum reducibility, and the gauge curvature complex remain open",
+        boundary: "explicit target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; covariant descendants of the exact level-15 kernel bases, their torsion-constraint coefficients, generic-momentum reducibility, and a complete gauge curvature complex remain open",
         passed,
     }
 }
@@ -424,10 +449,12 @@ mod tests {
             report.symmetric_bilinear_dimension + report.antisymmetric_bilinear_dimension,
             32 * 32
         );
-        assert!(report
-            .bilinear_symmetry_checks
-            .iter()
-            .all(|check| check.residual_products == 0));
+        assert!(
+            report
+                .bilinear_symmetry_checks
+                .iter()
+                .all(|check| check.residual_products == 0)
+        );
         assert_eq!(report.zero_momentum_channels_annihilated_by_dd, 3);
         assert_eq!(report.zero_momentum_channels_not_annihilated_by_dd, 3);
         let annihilated_degrees: Vec<_> = report
@@ -437,6 +464,13 @@ mod tests {
             .map(|check| check.form_degree)
             .collect();
         assert_eq!(annihilated_degrees, vec![1, 2, 5]);
+        assert_eq!(
+            report.generic_momentum_scalar_divergence_kernel_degrees,
+            vec![2, 5]
+        );
+        let vector = &report.bilinear_symmetry_checks[1];
+        assert_eq!(vector.nonzero_translation_contractions, 11);
+        assert!(!vector.scalar_divergence_kernel_at_generic_momentum);
     }
 
     #[test]

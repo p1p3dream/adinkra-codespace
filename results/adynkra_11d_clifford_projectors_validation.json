@@ -18,7 +18,10 @@
       "expected_symmetry": "antisymmetric",
       "products_checked": 1,
       "residual_products": 0,
-      "direct_dd_contraction_at_zero_momentum": "not identically zero"
+      "direct_dd_contraction_at_zero_momentum": "not identically zero",
+      "translation_contractions_checked": 11,
+      "nonzero_translation_contractions": 0,
+      "scalar_divergence_kernel_at_generic_momentum": false
     },
     {
       "form_degree": 1,
@@ -27,7 +30,10 @@
       "expected_symmetry": "symmetric",
       "products_checked": 11,
       "residual_products": 0,
-      "direct_dd_contraction_at_zero_momentum": "zero"
+      "direct_dd_contraction_at_zero_momentum": "zero",
+      "translation_contractions_checked": 121,
+      "nonzero_translation_contractions": 11,
+      "scalar_divergence_kernel_at_generic_momentum": false
     },
     {
       "form_degree": 2,
@@ -36,7 +42,10 @@
       "expected_symmetry": "symmetric",
       "products_checked": 55,
       "residual_products": 0,
-      "direct_dd_contraction_at_zero_momentum": "zero"
+      "direct_dd_contraction_at_zero_momentum": "zero",
+      "translation_contractions_checked": 605,
+      "nonzero_translation_contractions": 0,
+      "scalar_divergence_kernel_at_generic_momentum": true
     },
     {
       "form_degree": 3,
@@ -45,7 +54,10 @@
       "expected_symmetry": "antisymmetric",
       "products_checked": 165,
       "residual_products": 0,
-      "direct_dd_contraction_at_zero_momentum": "not identically zero"
+      "direct_dd_contraction_at_zero_momentum": "not identically zero",
+      "translation_contractions_checked": 1815,
+      "nonzero_translation_contractions": 0,
+      "scalar_divergence_kernel_at_generic_momentum": false
     },
     {
       "form_degree": 4,
@@ -54,7 +66,10 @@
       "expected_symmetry": "antisymmetric",
       "products_checked": 330,
       "residual_products": 0,
-      "direct_dd_contraction_at_zero_momentum": "not identically zero"
+      "direct_dd_contraction_at_zero_momentum": "not identically zero",
+      "translation_contractions_checked": 3630,
+      "nonzero_translation_contractions": 0,
+      "scalar_divergence_kernel_at_generic_momentum": false
     },
     {
       "form_degree": 5,
@@ -63,7 +78,10 @@
       "expected_symmetry": "symmetric",
       "products_checked": 462,
       "residual_products": 0,
-      "direct_dd_contraction_at_zero_momentum": "zero"
+      "direct_dd_contraction_at_zero_momentum": "zero",
+      "translation_contractions_checked": 5082,
+      "nonzero_translation_contractions": 0,
+      "scalar_divergence_kernel_at_generic_momentum": true
     }
   ],
   "symmetric_bilinear_dimension": 528,
@@ -72,6 +90,10 @@
   "direct_first_derivative_gauge_ansatz": "delta Psi_alpha = (C Gamma^[p])_alpha^beta D_beta Lambda_[p]",
   "zero_momentum_channels_annihilated_by_dd": 3,
   "zero_momentum_channels_not_annihilated_by_dd": 3,
+  "generic_momentum_scalar_divergence_kernel_degrees": [
+    2,
+    5
+  ],
   "gamma_trace_projector_denominator": 11,
   "gamma_trace_projector_rank": 32,
   "gamma_traceless_projector_rank": 320,
@@ -80,6 +102,6 @@
   "gamma_tracelessness_entries_checked": 11264,
   "gamma_tracelessness_residual_entries": 0,
   "projector_completeness_residual_entries": 0,
-  "boundary": "explicit target-side Clifford intertwiners, vector-spinor projectors, and the zero-momentum D-D contraction test for the direct six-channel gauge ansatz; the two embeddings of the 32 and the one embedding of the 320 inside exterior^15(32), their torsion-constraint coefficients, generic-momentum reducibility, and the gauge curvature complex remain open",
+  "boundary": "explicit target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; covariant descendants of the exact level-15 kernel bases, their torsion-constraint coefficients, generic-momentum reducibility, and a complete gauge curvature complex remain open",
   "passed": true
 }

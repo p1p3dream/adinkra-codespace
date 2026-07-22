@@ -1,0 +1,313 @@
+{
+  "schema_version": "adynkra.11d.level15-bridge.v1",
+  "source_arxiv": "2002.08502",
+  "source_level": 15,
+  "spinor_weights": 32,
+  "systems": [
+    {
+      "dynkin_label": "00001",
+      "representation_dimension": 32,
+      "highest_weight_doubled_coordinates": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 15,
+      "source_weight_space_columns": 591810,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            3,
+            -1,
+            1,
+            1,
+            1
+          ],
+          "rows": 388720,
+          "nonzero_entries": 1255260,
+          "row_degree_histogram": {
+            "2": 52836,
+            "3": 201676,
+            "4": 126480,
+            "5": 7728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            1,
+            3,
+            -1,
+            1,
+            1
+          ],
+          "rows": 388720,
+          "nonzero_entries": 1255260,
+          "row_degree_histogram": {
+            "2": 52836,
+            "3": 201676,
+            "4": 126480,
+            "5": 7728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            1,
+            1,
+            3,
+            -1,
+            1
+          ],
+          "rows": 388720,
+          "nonzero_entries": 1255260,
+          "row_degree_histogram": {
+            "2": 52836,
+            "3": 201676,
+            "4": 126480,
+            "5": 7728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            1,
+            1,
+            1,
+            3,
+            -1
+          ],
+          "rows": 388720,
+          "nonzero_entries": 1255260,
+          "row_degree_histogram": {
+            "2": 52836,
+            "3": 201676,
+            "4": 126480,
+            "5": 7728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            1,
+            1,
+            1,
+            1,
+            3
+          ],
+          "rows": 388720,
+          "nonzero_entries": 2391605,
+          "row_degree_histogram": {
+            "3": 1390,
+            "4": 19400,
+            "5": 83370,
+            "6": 141120,
+            "7": 106260,
+            "8": 32175,
+            "9": 5005
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1943600,
+      "total_nonzero_entries": 7412645,
+      "published_multiplicity": 2,
+      "expected_kernel_dimension": 2,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "data/eleven_dimensional_bridge/00001_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 591810,
+          "nonzero_coefficients": 374246,
+          "minimum_coefficient": -660,
+          "maximum_coefficient": 3960,
+          "coefficient_gcd": 1,
+          "raising_rows_checked": 1943600,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true
+        },
+        {
+          "artifact": "data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 591810,
+          "nonzero_coefficients": 6435,
+          "minimum_coefficient": -1,
+          "maximum_coefficient": 1,
+          "coefficient_gcd": 1,
+          "raising_rows_checked": 1943600,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true
+        }
+      ]
+    },
+    {
+      "dynkin_label": "10001",
+      "representation_dimension": 320,
+      "highest_weight_doubled_coordinates": [
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 15,
+      "source_weight_space_columns": 388720,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            5,
+            -1,
+            1,
+            1,
+            1
+          ],
+          "rows": 166158,
+          "nonzero_entries": 643104,
+          "row_degree_histogram": {
+            "3": 46728,
+            "4": 94230,
+            "5": 25200
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            3,
+            3,
+            -1,
+            1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            3,
+            1,
+            3,
+            -1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            3,
+            1,
+            1,
+            3,
+            -1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            3,
+            1,
+            1,
+            1,
+            3
+          ],
+          "rows": 252162,
+          "nonzero_entries": 1513601,
+          "row_degree_histogram": {
+            "3": 1093,
+            "4": 15080,
+            "5": 60774,
+            "6": 97104,
+            "7": 61380,
+            "8": 16731
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1174806,
+      "total_nonzero_entries": 4551287,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 388720,
+          "nonzero_coefficients": 260267,
+          "minimum_coefficient": -1320,
+          "maximum_coefficient": 1320,
+          "coefficient_gcd": 1,
+          "raising_rows_checked": 1174806,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true
+        }
+      ]
+    }
+  ],
+  "generic_bridge": "H_alpha^a(V) = a I_32^(1)(D^15 V) + b I_32^(2)(D^15 V) + c I_320(D^15 V)",
+  "coefficients": [
+    {
+      "name": "a",
+      "source_dynkin_label": "00001",
+      "source_copy": 1,
+      "target_sector": "gamma trace"
+    },
+    {
+      "name": "b",
+      "source_dynkin_label": "00001",
+      "source_copy": 2,
+      "target_sector": "gamma trace"
+    },
+    {
+      "name": "c",
+      "source_dynkin_label": "10001",
+      "source_copy": 1,
+      "target_sector": "gamma-traceless vector-spinor"
+    }
+  ],
+  "equation_2_7_status": "all three highest-weight kernel vectors are explicit and exact; their covariant descendants are still required before substituting the bridge into the torsion constraints",
+  "coefficient_solution_status": "not solved",
+  "expected_kernel_vectors": 3,
+  "exact_kernel_vectors_verified": 3,
+  "all_expected_kernel_vectors_verified": true,
+  "boundary": "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
+  "passed": true
+}

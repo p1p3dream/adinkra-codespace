@@ -1,0 +1,26 @@
+{
+  "schema_version": "adynkra.11d.level15-bridge-crosscheck.v1",
+  "role": "independent floating-point cross-check of the Rust exact sparse system",
+  "dynkin_label": "10001",
+  "matrix_rows": 1174806,
+  "matrix_columns": 388720,
+  "nonzero_entries": 4551287,
+  "raising_block_rows": [
+    166158,
+    252162,
+    252162,
+    252162,
+    252162
+  ],
+  "expected_kernel_dimension": 1,
+  "smallest_eigenvalues_of_transpose_product": [
+    2.4811662690598334e-13,
+    0.06729718306716116,
+    0.06729718306717307,
+    0.06729718306891835
+  ],
+  "numerical_zero_threshold": 1e-06,
+  "observed_numerical_kernel_dimension": 1,
+  "passed": true,
+  "boundary": "The eigenvalue calculation is numerical. It checks nullity and separation but does not supply an exact kernel basis."
+}
