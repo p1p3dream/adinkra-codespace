@@ -166,7 +166,7 @@ candidate scalar divergence, not a complete supergravity gauge complex.
    complete set of curvature operators remain open.
 
 See `docs/adynkra-11d-level15-bridge.md` for the completed source intertwiner,
-level-16 derivative-channel screen, and current boundary.
+resolved exterior symbol on all ten level-16 channels, and current boundary.
 
 ## Reproduction
 

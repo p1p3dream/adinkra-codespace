@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v4",
+  "schema_version": "adynkra.11d.level15-bridge.v5",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -491,6 +491,7 @@
     "nonzero_relation_residual_terms": 0,
     "maximum_absolute_relation_residual": 0,
     "zero_action_mismatches": 0,
+    "target_basis_correspondence_mismatches": 0,
     "minimum_source_state_support": 260267,
     "maximum_source_state_support": 555664,
     "maximum_absolute_source_coefficient": 18480,
@@ -572,6 +573,249 @@
     "final_two_form_hook_dynkin_label": "11000",
     "final_two_form_hook_absent": true,
     "interpretation": "a sixteenth spinor derivative of the surviving bridge has ten Lorentz candidate channels before exterior antisymmetrization; the scalar level-16 inventory excludes 01000 and 11000, so every equivariant leading-symbol map into either channel vanishes; presence of the other eight representations is necessary but does not prove a nonzero image",
+    "passed": true
+  },
+  "level_sixteen_exterior_derivative_audit": {
+    "source_map": "(00001) tensor I_320(wedge^15 S) -> wedge^16 S by exterior multiplication",
+    "scope": "zero-spacetime-momentum exterior symbol of the sixteenth spinor derivative",
+    "channels_checked": 10,
+    "highest_weight_kernels_verified": 10,
+    "nonzero_exterior_images_certified": 8,
+    "inventory_forced_zero_channels": 2,
+    "inventory_zero_fingerprint_crosschecks": 2,
+    "channels": [
+      {
+        "dynkin_label": "00002",
+        "dimension": 462,
+        "scalar_level_sixteen_multiplicity": 1,
+        "highest_weight_domain_dimension": 10,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 10,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          311893436,
+          926610856,
+          986255855
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "00010",
+        "dimension": 330,
+        "scalar_level_sixteen_multiplicity": 2,
+        "highest_weight_domain_dimension": 18,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 18,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          889143500,
+          726195685,
+          274739798
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "00100",
+        "dimension": 165,
+        "scalar_level_sixteen_multiplicity": 2,
+        "highest_weight_domain_dimension": 32,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 32,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          807560289,
+          373483952,
+          692751116
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "01000",
+        "dimension": 55,
+        "scalar_level_sixteen_multiplicity": 0,
+        "highest_weight_domain_dimension": 56,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 56,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          0,
+          0,
+          0
+        ],
+        "exterior_image_nonzero_certified": false,
+        "exterior_image_forced_zero_by_inventory": true,
+        "inventory_zero_fingerprint_crosscheck": true,
+        "passed": true
+      },
+      {
+        "dynkin_label": "10000",
+        "dimension": 11,
+        "scalar_level_sixteen_multiplicity": 1,
+        "highest_weight_domain_dimension": 96,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 96,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          847239993,
+          766880420,
+          754418876
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "10002",
+        "dimension": 4290,
+        "scalar_level_sixteen_multiplicity": 3,
+        "highest_weight_domain_dimension": 1,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 1,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          297860154,
+          228831829,
+          749303857
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "10010",
+        "dimension": 3003,
+        "scalar_level_sixteen_multiplicity": 1,
+        "highest_weight_domain_dimension": 2,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 2,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          73520697,
+          902980340,
+          955376711
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "10100",
+        "dimension": 1430,
+        "scalar_level_sixteen_multiplicity": 1,
+        "highest_weight_domain_dimension": 4,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 4,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          864096239,
+          40135867,
+          754689545
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      },
+      {
+        "dynkin_label": "11000",
+        "dimension": 429,
+        "scalar_level_sixteen_multiplicity": 0,
+        "highest_weight_domain_dimension": 8,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 8,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          0,
+          0,
+          0
+        ],
+        "exterior_image_nonzero_certified": false,
+        "exterior_image_forced_zero_by_inventory": true,
+        "inventory_zero_fingerprint_crosscheck": true,
+        "passed": true
+      },
+      {
+        "dynkin_label": "20000",
+        "dimension": 65,
+        "scalar_level_sixteen_multiplicity": 1,
+        "highest_weight_domain_dimension": 16,
+        "highest_weight_kernel_dimension": 1,
+        "primitive_highest_weight_nonzero_coefficients": 16,
+        "raising_residual_terms": 0,
+        "fingerprint_primes": [
+          1000000007,
+          1000000009,
+          998244353
+        ],
+        "exterior_image_fingerprint_residues": [
+          836452871,
+          971896391,
+          126402073
+        ],
+        "exterior_image_nonzero_certified": true,
+        "exterior_image_forced_zero_by_inventory": false,
+        "inventory_zero_fingerprint_crosscheck": false,
+        "passed": true
+      }
+    ],
+    "interpretation": "the exterior symbol is nonzero on each of the eight level-16 channels allowed by the scalar inventory; the 01000 and 11000 images vanish, as required by the scalar inventory; nonzero modular residues certify that the corresponding integer exterior images are nonzero; spacetime-derivative terms and curvature identifications are not included",
     "passed": true
   },
   "final_equation_2_7_projection": {
@@ -658,6 +902,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and screens the ten level-16 derivative channels. A component normalization of V and the complete curvature complex remain.",
+  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and resolves the zero-spacetime-momentum exterior symbol on all ten level-16 channels. A component normalization of V, spacetime-derivative terms, and identification of the eight nonzero images with the supergravity curvature complex remain.",
   "passed": true
 }

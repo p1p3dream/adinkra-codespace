@@ -106,6 +106,7 @@ pub struct ElevenDimensionalBridgeReport {
     pub vector_spinor_target_audit: VectorSpinorTargetAudit,
     pub vector_spinor_source_descendant_audit: VectorSpinorSourceDescendantAudit,
     pub level_sixteen_derivative_channel_audit: LevelSixteenDerivativeChannelAudit,
+    pub level_sixteen_exterior_derivative_audit: LevelSixteenExteriorDerivativeAudit,
     pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
     pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
@@ -248,10 +249,42 @@ pub struct VectorSpinorSourceDescendantAudit {
     pub nonzero_relation_residual_terms: usize,
     pub maximum_absolute_relation_residual: u64,
     pub zero_action_mismatches: usize,
+    pub target_basis_correspondence_mismatches: usize,
     pub minimum_source_state_support: usize,
     pub maximum_source_state_support: usize,
     pub maximum_absolute_source_coefficient: i64,
     pub exact_full_vector_spinor_intertwiner_verified: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LevelSixteenExteriorChannelAudit {
+    pub dynkin_label: String,
+    pub dimension: u64,
+    pub scalar_level_sixteen_multiplicity: usize,
+    pub highest_weight_domain_dimension: usize,
+    pub highest_weight_kernel_dimension: usize,
+    pub primitive_highest_weight_nonzero_coefficients: usize,
+    pub raising_residual_terms: usize,
+    pub fingerprint_primes: [u64; 3],
+    pub exterior_image_fingerprint_residues: [u64; 3],
+    pub exterior_image_nonzero_certified: bool,
+    pub exterior_image_forced_zero_by_inventory: bool,
+    pub inventory_zero_fingerprint_crosscheck: bool,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LevelSixteenExteriorDerivativeAudit {
+    pub source_map: &'static str,
+    pub scope: &'static str,
+    pub channels_checked: usize,
+    pub highest_weight_kernels_verified: usize,
+    pub nonzero_exterior_images_certified: usize,
+    pub inventory_forced_zero_channels: usize,
+    pub inventory_zero_fingerprint_crosschecks: usize,
+    pub channels: Vec<LevelSixteenExteriorChannelAudit>,
+    pub interpretation: &'static str,
+    pub passed: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -499,6 +532,29 @@ fn lower_vector_weight(weight: Weight, root: usize, weights: &[Weight]) -> Optio
     }
 }
 
+fn raise_vector_weight(weight: Weight, root: usize, weights: &[Weight]) -> Option<(usize, i64)> {
+    let mut target = weight;
+    if root < 4 {
+        if weight[root] == 0 && weight[root + 1] == 2 {
+            target[root] = 2;
+            target[root + 1] = 0;
+        } else if weight[root] == -2 && weight[root + 1] == 0 {
+            target[root] = 0;
+            target[root + 1] = -2;
+        } else {
+            return None;
+        }
+        Some((weights.iter().position(|item| *item == target).unwrap(), 1))
+    } else if weight == [0; 5] {
+        target[4] = 2;
+        Some((weights.iter().position(|item| *item == target).unwrap(), 2))
+    } else if weight[4] == -2 {
+        Some((weights.iter().position(|item| *item == [0; 5]).unwrap(), 1))
+    } else {
+        None
+    }
+}
+
 fn lower_target_tensor(
     source: &TensorVector,
     root: usize,
@@ -514,6 +570,28 @@ fn lower_target_tensor(
                 coefficient.clone() * Ratio::from_integer(factor);
         }
         if let Some(next) = lowered_spinor_index(spinor_index, root, spinors) {
+            *target.entry(vector_index * 32 + next).or_default() += coefficient.clone();
+        }
+    }
+    target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    target
+}
+
+fn raise_target_tensor(
+    source: &TensorVector,
+    root: usize,
+    vectors: &[Weight],
+    spinors: &[Weight; 32],
+) -> TensorVector {
+    let mut target = TensorVector::new();
+    for (&index, coefficient) in source {
+        let vector_index = index / 32;
+        let spinor_index = index % 32;
+        if let Some((next, factor)) = raise_vector_weight(vectors[vector_index], root, vectors) {
+            *target.entry(next * 32 + spinor_index).or_default() +=
+                coefficient.clone() * Ratio::from_integer(factor);
+        }
+        if let Some(next) = raised_spinor_index(spinor_index, root, spinors) {
             *target.entry(vector_index * 32 + next).or_default() += coefficient.clone();
         }
     }
@@ -551,7 +629,9 @@ fn add_target_basis(vector: TensorVector, basis: &mut Vec<(usize, TensorVector)>
     true
 }
 
-fn audit_vector_spinor_target(spinors: &[Weight; 32]) -> VectorSpinorTargetAudit {
+fn generate_vector_spinor_target_basis(
+    spinors: &[Weight; 32],
+) -> (HashMap<Weight, Vec<(usize, TensorVector)>>, usize) {
     use std::collections::VecDeque;
     let vectors = vector_weights();
     let vector_highest = vectors
@@ -563,7 +643,6 @@ fn audit_vector_spinor_target(spinors: &[Weight; 32]) -> VectorSpinorTargetAudit
     let mut by_weight = HashMap::<Weight, Vec<(usize, TensorVector)>>::new();
     add_target_basis(start.clone(), by_weight.entry([3, 1, 1, 1, 1]).or_default());
     let mut queue = VecDeque::from([start]);
-    let mut generated_irrep_dimension = 1;
     let mut nonzero_lowering_actions = 0;
     while let Some(state) = queue.pop_front() {
         for root in 0..5 {
@@ -574,11 +653,16 @@ fn audit_vector_spinor_target(spinors: &[Weight; 32]) -> VectorSpinorTargetAudit
             nonzero_lowering_actions += 1;
             let weight = tensor_weight(&descendant, &vectors, spinors);
             if add_target_basis(descendant.clone(), by_weight.entry(weight).or_default()) {
-                generated_irrep_dimension += 1;
                 queue.push_back(descendant);
             }
         }
     }
+    (by_weight, nonzero_lowering_actions)
+}
+
+fn audit_vector_spinor_target(spinors: &[Weight; 32]) -> VectorSpinorTargetAudit {
+    let (by_weight, nonzero_lowering_actions) = generate_vector_spinor_target_basis(spinors);
+    let generated_irrep_dimension = by_weight.values().map(Vec::len).sum();
     let multiplicity_one_weights = by_weight.values().filter(|basis| basis.len() == 1).count();
     let multiplicity_five_weights = by_weight.values().filter(|basis| basis.len() == 5).count();
     let maximum_weight_multiplicity = by_weight.values().map(Vec::len).max().unwrap_or(0);
@@ -657,6 +741,18 @@ fn subtract(left: Weight, right: Weight) -> Weight {
 
 fn add(left: Weight, right: Weight) -> Weight {
     std::array::from_fn(|axis| left[axis] + right[axis])
+}
+
+fn dynkin_highest_weight(label: &str) -> Weight {
+    assert_eq!(label.len(), 5);
+    let labels = label
+        .bytes()
+        .map(|byte| {
+            assert!(byte.is_ascii_digit());
+            i8::try_from(byte - b'0').unwrap()
+        })
+        .collect::<Vec<_>>();
+    std::array::from_fn(|index| 2 * labels[index..4].iter().sum::<i8>() + labels[4])
 }
 
 fn weight_basis(
@@ -796,6 +892,53 @@ struct VectorSpinorIntertwinerState {
     source: Vec<(u32, i64)>,
 }
 
+fn generate_layer_adapted_vector_spinor_target_states(
+    spinors: &[Weight; 32],
+) -> BTreeMap<Weight, Vec<VectorSpinorIntertwinerState>> {
+    let vectors = vector_weights();
+    let vector_highest = vectors
+        .iter()
+        .position(|weight| *weight == [2, 0, 0, 0, 0])
+        .unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_target =
+        HashMap::from([(vector_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_weight = [3, 1, 1, 1, 1];
+    let highest_state = VectorSpinorIntertwinerState {
+        target: highest_target,
+        source: Vec::new(),
+    };
+    let mut all = BTreeMap::from([(highest_weight, vec![highest_state.clone()])]);
+    let mut current = BTreeMap::from([(highest_weight, vec![highest_state])]);
+    while !current.is_empty() {
+        let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let target_descendant =
+                        lower_target_tensor(&state.target, root, &vectors, spinors);
+                    if target_descendant.is_empty() {
+                        continue;
+                    }
+                    let weight = tensor_weight(&target_descendant, &vectors, spinors);
+                    let basis = next.entry(weight).or_default();
+                    if target_span_coefficients(&target_descendant, basis).is_none() {
+                        basis.push(VectorSpinorIntertwinerState {
+                            target: target_descendant,
+                            source: Vec::new(),
+                        });
+                    }
+                }
+            }
+        }
+        for (weight, states) in &next {
+            all.insert(*weight, states.clone());
+        }
+        current = next;
+    }
+    all
+}
+
 fn target_span_coefficients(
     candidate: &TensorVector,
     basis: &[VectorSpinorIntertwinerState],
@@ -874,6 +1017,223 @@ fn target_span_coefficients(
     residual.is_empty().then_some(solution)
 }
 
+#[derive(Clone)]
+struct ExteriorDomainEntry {
+    outer_spinor_index: usize,
+    vector_spinor_weight: Weight,
+    vector_spinor_basis_index: usize,
+}
+
+struct ExteriorChannelPlan {
+    dynkin_label: String,
+    dimension: u64,
+    scalar_level_sixteen_multiplicity: usize,
+    domain: Vec<ExteriorDomainEntry>,
+    primitive_highest_weight_coefficients: Vec<i64>,
+    highest_weight_kernel_dimension: usize,
+    raising_residual_terms: usize,
+    fingerprint_residues: [u64; 3],
+}
+
+fn ratio_nullspace(rows: &[Vec<Ratio<i64>>], columns: usize) -> Vec<Vec<Ratio<i64>>> {
+    let zero = Ratio::from_integer(0);
+    let mut reduced = rows
+        .iter()
+        .filter(|row| row.iter().any(|value| *value != zero))
+        .cloned()
+        .collect::<Vec<_>>();
+    let mut pivot_columns = Vec::new();
+    let mut rank = 0;
+    for column in 0..columns {
+        let Some(pivot_row) = (rank..reduced.len()).find(|row| reduced[*row][column] != zero)
+        else {
+            continue;
+        };
+        reduced.swap(rank, pivot_row);
+        let normalization = reduced[rank][column].clone();
+        for value in &mut reduced[rank] {
+            *value /= normalization.clone();
+        }
+        let pivot = reduced[rank].clone();
+        for row in 0..reduced.len() {
+            if row == rank || reduced[row][column] == zero {
+                continue;
+            }
+            let factor = reduced[row][column].clone();
+            for index in column..columns {
+                reduced[row][index] -= factor.clone() * pivot[index].clone();
+            }
+        }
+        pivot_columns.push(column);
+        rank += 1;
+        if rank == reduced.len() {
+            break;
+        }
+    }
+    let free_columns = (0..columns)
+        .filter(|column| !pivot_columns.contains(column))
+        .collect::<Vec<_>>();
+    free_columns
+        .into_iter()
+        .map(|free| {
+            let mut vector = vec![zero.clone(); columns];
+            vector[free] = Ratio::from_integer(1);
+            for (row, &pivot) in pivot_columns.iter().enumerate().rev() {
+                vector[pivot] = -reduced[row][free].clone();
+            }
+            vector
+        })
+        .collect()
+}
+
+fn primitive_integer_vector(vector: &[Ratio<i64>]) -> Vec<i64> {
+    let denominator = vector.iter().fold(1_i64, |common, coefficient| {
+        lcm_i64(common, *coefficient.denom())
+    });
+    let mut integers = vector
+        .iter()
+        .map(|coefficient| *coefficient.numer() * (denominator / *coefficient.denom()))
+        .collect::<Vec<_>>();
+    let gcd = integers
+        .iter()
+        .fold(0_i64, |gcd, value| gcd_i64(gcd, *value));
+    assert_ne!(gcd, 0);
+    for value in &mut integers {
+        *value /= gcd;
+    }
+    if integers.iter().find(|value| **value != 0).unwrap() < &0 {
+        for value in &mut integers {
+            *value = -*value;
+        }
+    }
+    integers
+}
+
+fn build_exterior_channel_plans(spinors: &[Weight; 32]) -> Vec<ExteriorChannelPlan> {
+    let vectors = vector_weights();
+    let states = generate_layer_adapted_vector_spinor_target_states(spinors);
+    crate::eleven_dimensional_prepotential::spinor_tensor_channels("10001")
+        .into_iter()
+        .map(|(dynkin_label, dimension)| {
+            let highest_weight = dynkin_highest_weight(&dynkin_label);
+            let mut domain = Vec::new();
+            for (outer_spinor_index, outer_weight) in spinors.iter().enumerate() {
+                let vector_spinor_weight = subtract(highest_weight, *outer_weight);
+                if let Some(weight_states) = states.get(&vector_spinor_weight) {
+                    for vector_spinor_basis_index in 0..weight_states.len() {
+                        domain.push(ExteriorDomainEntry {
+                            outer_spinor_index,
+                            vector_spinor_weight,
+                            vector_spinor_basis_index,
+                        });
+                    }
+                }
+            }
+            let mut rows = BTreeMap::<usize, Vec<Ratio<i64>>>::new();
+            for (column, entry) in domain.iter().enumerate() {
+                let state =
+                    &states[&entry.vector_spinor_weight][entry.vector_spinor_basis_index].target;
+                for root in 0..5 {
+                    if let Some(raised_outer) =
+                        raised_spinor_index(entry.outer_spinor_index, root, spinors)
+                    {
+                        for (&inner, coefficient) in state {
+                            rows.entry(root * 32 * 352 + raised_outer * 352 + inner)
+                                .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])
+                                [column] += coefficient.clone();
+                        }
+                    }
+                    for (inner, coefficient) in raise_target_tensor(state, root, &vectors, spinors)
+                    {
+                        rows.entry(root * 32 * 352 + entry.outer_spinor_index * 352 + inner)
+                            .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])
+                            [column] += coefficient;
+                    }
+                }
+            }
+            let row_vectors = rows.into_values().collect::<Vec<_>>();
+            let kernel = ratio_nullspace(&row_vectors, domain.len());
+            let primitive_highest_weight_coefficients = if kernel.len() == 1 {
+                primitive_integer_vector(&kernel[0])
+            } else {
+                Vec::new()
+            };
+            let raising_residual_terms = if primitive_highest_weight_coefficients.is_empty() {
+                usize::MAX
+            } else {
+                row_vectors
+                    .iter()
+                    .filter(|row| {
+                        row.iter().zip(&primitive_highest_weight_coefficients).fold(
+                            Ratio::from_integer(0),
+                            |sum, (value, coefficient)| {
+                                sum + value.clone() * Ratio::from_integer(*coefficient)
+                            },
+                        ) != Ratio::from_integer(0)
+                    })
+                    .count()
+            };
+            ExteriorChannelPlan {
+                scalar_level_sixteen_multiplicity:
+                    crate::eleven_dimensional_prepotential::level_multiplicity(16, &dynkin_label),
+                dynkin_label,
+                dimension,
+                domain,
+                primitive_highest_weight_coefficients,
+                highest_weight_kernel_dimension: kernel.len(),
+                raising_residual_terms,
+                fingerprint_residues: [0; 3],
+            }
+        })
+        .collect()
+}
+
+const EXTERIOR_FINGERPRINT_PRIMES: [u64; 3] = [1_000_000_007, 1_000_000_009, 998_244_353];
+const EXTERIOR_FINGERPRINT_SEEDS: [u64; 3] = [
+    0x243f_6a88_85a3_08d3,
+    0x1319_8a2e_0370_7344,
+    0xa409_3822_299f_31d0,
+];
+
+fn splitmix64(mut value: u64) -> u64 {
+    value = value.wrapping_add(0x9e37_79b9_7f4a_7c15);
+    value = (value ^ (value >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+    value = (value ^ (value >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+    value ^ (value >> 31)
+}
+
+fn accumulate_exterior_fingerprint(
+    residues: &mut [u64; 3],
+    outer_spinor_index: usize,
+    domain_coefficient: i64,
+    source: &[(u32, i64)],
+) {
+    let outer_bit = 1_u32 << outer_spinor_index;
+    let lower_bits = outer_bit - 1;
+    for &(mask, source_coefficient) in source {
+        if mask & outer_bit != 0 {
+            continue;
+        }
+        let wedge_sign = if (mask & lower_bits).count_ones() % 2 == 0 {
+            1_i128
+        } else {
+            -1_i128
+        };
+        let signed_coefficient =
+            i128::from(domain_coefficient) * i128::from(source_coefficient) * wedge_sign;
+        let output_mask = mask | outer_bit;
+        for index in 0..3 {
+            let prime = EXTERIOR_FINGERPRINT_PRIMES[index];
+            let coefficient = signed_coefficient.rem_euclid(i128::from(prime)) as u64;
+            let hash =
+                splitmix64(u64::from(output_mask) ^ EXTERIOR_FINGERPRINT_SEEDS[index]) % prime;
+            residues[index] = ((u128::from(residues[index])
+                + u128::from(coefficient) * u128::from(hash))
+                % u128::from(prime)) as u64;
+        }
+    }
+}
+
 fn gcd_i64(mut left: i64, mut right: i64) -> i64 {
     left = left.abs();
     right = right.abs();
@@ -923,7 +1283,10 @@ fn audit_full_vector_spinor_source_descendants(
     source_basis: &[u32],
     coefficients: &[i16],
     spinors: &[Weight; 32],
-) -> VectorSpinorSourceDescendantAudit {
+) -> (
+    VectorSpinorSourceDescendantAudit,
+    LevelSixteenExteriorDerivativeAudit,
+) {
     let vectors = vector_weights();
     let vector_highest = vectors
         .iter()
@@ -956,14 +1319,40 @@ fn audit_full_vector_spinor_source_descendants(
     let mut nonzero_relation_residual_terms = 0;
     let mut maximum_absolute_relation_residual = 0;
     let mut zero_action_mismatches = 0;
+    let mut target_basis_correspondence_mismatches = 0;
     let mut minimum_source_state_support = usize::MAX;
     let mut maximum_source_state_support = 0;
     let mut maximum_absolute_source_coefficient = 0_i64;
+    let mut exterior_channel_plans = build_exterior_channel_plans(spinors);
+    let reference_target_states = generate_layer_adapted_vector_spinor_target_states(spinors);
 
     while !current.is_empty() {
         let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
-        for states in current.into_values() {
-            for state in states {
+        for (state_weight, states) in current {
+            for (state_basis_index, state) in states.into_iter().enumerate() {
+                target_basis_correspondence_mismatches += usize::from(
+                    reference_target_states[&state_weight][state_basis_index].target
+                        != state.target,
+                );
+                for plan in &mut exterior_channel_plans {
+                    for (entry, coefficient) in plan
+                        .domain
+                        .iter()
+                        .zip(&plan.primitive_highest_weight_coefficients)
+                        .filter(|(entry, coefficient)| {
+                            entry.vector_spinor_weight == state_weight
+                                && entry.vector_spinor_basis_index == state_basis_index
+                                && **coefficient != 0
+                        })
+                    {
+                        accumulate_exterior_fingerprint(
+                            &mut plan.fingerprint_residues,
+                            entry.outer_spinor_index,
+                            *coefficient,
+                            &state.source,
+                        );
+                    }
+                }
                 minimum_source_state_support = minimum_source_state_support.min(state.source.len());
                 maximum_source_state_support = maximum_source_state_support.max(state.source.len());
                 maximum_absolute_source_coefficient = maximum_absolute_source_coefficient.max(
@@ -1023,8 +1412,9 @@ fn audit_full_vector_spinor_source_descendants(
         && dependent_target_relation_mismatches == 0
         && nonzero_relation_residual_terms == 0
         && maximum_absolute_relation_residual == 0
-        && zero_action_mismatches == 0;
-    VectorSpinorSourceDescendantAudit {
+        && zero_action_mismatches == 0
+        && target_basis_correspondence_mismatches == 0;
+    let source_descendant_audit = VectorSpinorSourceDescendantAudit {
         target_states_expected: 320,
         target_states_generated,
         distinct_weights,
@@ -1038,11 +1428,89 @@ fn audit_full_vector_spinor_source_descendants(
         nonzero_relation_residual_terms,
         maximum_absolute_relation_residual,
         zero_action_mismatches,
+        target_basis_correspondence_mismatches,
         minimum_source_state_support,
         maximum_source_state_support,
         maximum_absolute_source_coefficient,
         exact_full_vector_spinor_intertwiner_verified,
-    }
+    };
+    let exterior_channels = exterior_channel_plans
+        .into_iter()
+        .map(|plan| {
+            let exterior_image_nonzero_certified = plan
+                .fingerprint_residues
+                .iter()
+                .any(|residue| *residue != 0);
+            let exterior_image_forced_zero_by_inventory =
+                plan.scalar_level_sixteen_multiplicity == 0;
+            let inventory_zero_fingerprint_crosscheck =
+                exterior_image_forced_zero_by_inventory && plan.fingerprint_residues == [0; 3];
+            let highest_weight_kernel_verified = plan.highest_weight_kernel_dimension == 1
+                && plan.raising_residual_terms == 0
+                && !plan.primitive_highest_weight_coefficients.is_empty();
+            let passed = highest_weight_kernel_verified
+                && if exterior_image_forced_zero_by_inventory {
+                    inventory_zero_fingerprint_crosscheck
+                } else {
+                    exterior_image_nonzero_certified
+                };
+            LevelSixteenExteriorChannelAudit {
+                dynkin_label: plan.dynkin_label,
+                dimension: plan.dimension,
+                scalar_level_sixteen_multiplicity: plan.scalar_level_sixteen_multiplicity,
+                highest_weight_domain_dimension: plan.domain.len(),
+                highest_weight_kernel_dimension: plan.highest_weight_kernel_dimension,
+                primitive_highest_weight_nonzero_coefficients: plan
+                    .primitive_highest_weight_coefficients
+                    .iter()
+                    .filter(|coefficient| **coefficient != 0)
+                    .count(),
+                raising_residual_terms: plan.raising_residual_terms,
+                fingerprint_primes: EXTERIOR_FINGERPRINT_PRIMES,
+                exterior_image_fingerprint_residues: plan.fingerprint_residues,
+                exterior_image_nonzero_certified,
+                exterior_image_forced_zero_by_inventory,
+                inventory_zero_fingerprint_crosscheck,
+                passed,
+            }
+        })
+        .collect::<Vec<_>>();
+    let highest_weight_kernels_verified = exterior_channels
+        .iter()
+        .filter(|channel| {
+            channel.highest_weight_kernel_dimension == 1 && channel.raising_residual_terms == 0
+        })
+        .count();
+    let nonzero_exterior_images_certified = exterior_channels
+        .iter()
+        .filter(|channel| channel.exterior_image_nonzero_certified)
+        .count();
+    let inventory_forced_zero_channels = exterior_channels
+        .iter()
+        .filter(|channel| channel.exterior_image_forced_zero_by_inventory)
+        .count();
+    let inventory_zero_fingerprint_crosschecks = exterior_channels
+        .iter()
+        .filter(|channel| channel.inventory_zero_fingerprint_crosscheck)
+        .count();
+    let exterior_derivative_audit = LevelSixteenExteriorDerivativeAudit {
+        source_map: "(00001) tensor I_320(wedge^15 S) -> wedge^16 S by exterior multiplication",
+        scope: "zero-spacetime-momentum exterior symbol of the sixteenth spinor derivative",
+        channels_checked: exterior_channels.len(),
+        highest_weight_kernels_verified,
+        nonzero_exterior_images_certified,
+        inventory_forced_zero_channels,
+        inventory_zero_fingerprint_crosschecks,
+        passed: exterior_channels.len() == 10
+            && highest_weight_kernels_verified == 10
+            && nonzero_exterior_images_certified == 8
+            && inventory_forced_zero_channels == 2
+            && inventory_zero_fingerprint_crosschecks == 2
+            && exterior_channels.iter().all(|channel| channel.passed),
+        channels: exterior_channels,
+        interpretation: "the exterior symbol is nonzero on each of the eight level-16 channels allowed by the scalar inventory; the 01000 and 11000 images vanish, as required by the scalar inventory; nonzero modular residues certify that the corresponding integer exterior images are nonzero; spacetime-derivative terms and curvature identifications are not included",
+    };
+    (source_descendant_audit, exterior_derivative_audit)
 }
 
 fn audit_full_spinor_descendants(
@@ -1327,11 +1795,12 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         .collect::<Vec<_>>();
     let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
     let vector_spinor_source_basis = weight_basis([3, 1, 1, 1, 1], &left, &right);
-    let vector_spinor_source_descendant_audit = audit_full_vector_spinor_source_descendants(
-        &vector_spinor_source_basis,
-        &decode_kernel(VECTOR_SPINOR_KERNEL),
-        &weights,
-    );
+    let (vector_spinor_source_descendant_audit, level_sixteen_exterior_derivative_audit) =
+        audit_full_vector_spinor_source_descendants(
+            &vector_spinor_source_basis,
+            &decode_kernel(VECTOR_SPINOR_KERNEL),
+            &weights,
+        );
     let level_sixteen_derivative_channel_audit = audit_level_sixteen_derivative_channels();
     let final_equation_2_7_projection = audit_final_equation_2_7_projection();
     let clifford = crate::eleven_dimensional_clifford::verify();
@@ -1350,6 +1819,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && vector_spinor_target_audit.passed
         && vector_spinor_source_descendant_audit.exact_full_vector_spinor_intertwiner_verified
         && level_sixteen_derivative_channel_audit.passed
+        && level_sixteen_exterior_derivative_audit.passed
         && final_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
         && canonical_source_line_normalization.passed
@@ -1357,7 +1827,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v4",
+        schema_version: "adynkra.11d.level15-bridge.v5",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -1392,12 +1862,13 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         vector_spinor_target_audit,
         vector_spinor_source_descendant_audit,
         level_sixteen_derivative_channel_audit,
+        level_sixteen_exterior_derivative_audit,
         final_equation_2_7_projection,
         local_gamma_trace_quotient,
         canonical_source_line_normalization,
         linearized_scale_freedom_audit,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and screens the ten level-16 derivative channels. A component normalization of V and the complete curvature complex remain.",
+        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and resolves the zero-spacetime-momentum exterior symbol on all ten level-16 channels. A component normalization of V, spacetime-derivative terms, and identification of the eight nonzero images with the supergravity curvature complex remain.",
         passed,
     }
 }
@@ -1460,6 +1931,52 @@ mod tests {
     }
 
     #[test]
+    fn level_sixteen_highest_weight_kernels_are_unique() {
+        let spinors = spinor_weights();
+        let (by_weight, _) = generate_vector_spinor_target_basis(&spinors);
+        let plans = build_exterior_channel_plans(&spinors);
+        for (label, expected_domain_dimension) in [
+            ("00002", 10),
+            ("00010", 18),
+            ("00100", 32),
+            ("01000", 56),
+            ("10000", 96),
+            ("10002", 1),
+            ("10010", 2),
+            ("10100", 4),
+            ("11000", 8),
+            ("20000", 16),
+        ] {
+            let highest = dynkin_highest_weight(label);
+            let dimension = spinors
+                .iter()
+                .map(|spinor| {
+                    by_weight
+                        .get(&subtract(highest, *spinor))
+                        .map(Vec::len)
+                        .unwrap_or(0)
+                })
+                .sum::<usize>();
+            let plan = plans
+                .iter()
+                .find(|plan| plan.dynkin_label == label)
+                .unwrap();
+            assert_eq!(dimension, expected_domain_dimension, "{label}");
+            assert_eq!(plan.domain.len(), expected_domain_dimension, "{label}");
+            assert_eq!(plan.highest_weight_kernel_dimension, 1, "{label}");
+            assert_eq!(
+                plan.primitive_highest_weight_coefficients
+                    .iter()
+                    .filter(|coefficient| **coefficient != 0)
+                    .count(),
+                expected_domain_dimension,
+                "{label}"
+            );
+            assert_eq!(plan.raising_residual_terms, 0, "{label}");
+        }
+    }
+
+    #[test]
     fn homogeneous_constraints_leave_the_overall_bridge_scale_free() {
         let normalization = audit_canonical_source_line_normalization();
         let audit = audit_linearized_scale_freedom(&normalization);
@@ -1516,6 +2033,7 @@ mod tests {
         assert_eq!(source_descendants.nonzero_relation_residual_terms, 0);
         assert_eq!(source_descendants.maximum_absolute_relation_residual, 0);
         assert_eq!(source_descendants.zero_action_mismatches, 0);
+        assert_eq!(source_descendants.target_basis_correspondence_mismatches, 0);
         assert!(source_descendants.exact_full_vector_spinor_intertwiner_verified);
         let derivative_channels = &report.level_sixteen_derivative_channel_audit;
         assert_eq!(
@@ -1524,6 +2042,14 @@ mod tests {
         );
         assert!(derivative_channels.final_two_form_hook_absent);
         assert!(derivative_channels.passed);
+        let exterior = &report.level_sixteen_exterior_derivative_audit;
+        assert_eq!(exterior.channels_checked, 10);
+        assert_eq!(exterior.highest_weight_kernels_verified, 10);
+        assert_eq!(exterior.nonzero_exterior_images_certified, 8);
+        assert_eq!(exterior.inventory_forced_zero_channels, 2);
+        assert_eq!(exterior.inventory_zero_fingerprint_crosschecks, 2);
+        assert!(exterior.channels.iter().all(|channel| channel.passed));
+        assert!(exterior.passed);
         let projection = &report.final_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);
         assert_eq!(projection.remaining_hook_dynkin_label, "11000");

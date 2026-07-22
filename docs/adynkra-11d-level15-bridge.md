@@ -140,17 +140,34 @@ A further spinor derivative gives the multiplicity-free tensor product
 Its dimension is $32\times320=10{,}240$. Comparison with the scalar
 superfield at level 16 removes two candidate channels:
 
-| channel | dimension | level-16 multiplicity | consequence |
-|---|---:|---:|---|
-| `(01000)` | 55 | 0 | forced to vanish |
-| `(11000)` | 429 | 0 | forced to vanish |
+| channel | dimension | highest-weight domain | level-16 multiplicity | exterior image |
+|---|---:|---:|---:|---|
+| `(00002)` | 462 | 10 | 1 | nonzero |
+| `(00010)` | 330 | 18 | 2 | nonzero |
+| `(00100)` | 165 | 32 | 2 | nonzero |
+| `(01000)` | 55 | 56 | 0 | zero |
+| `(10000)` | 11 | 96 | 1 | nonzero |
+| `(10002)` | 4,290 | 1 | 3 | nonzero |
+| `(10010)` | 3,003 | 2 | 1 | nonzero |
+| `(10100)` | 1,430 | 4 | 1 | nonzero |
+| `(11000)` | 429 | 8 | 0 | zero |
+| `(20000)` | 65 | 16 | 1 | nonzero |
 
-The other eight representations occur at level 16 and have combined dimension
-9,756. Their presence is necessary but does not prove that the exterior
-spinor derivative has a nonzero projection onto each of them. The absent
-`(11000)` is the 429-dimensional hook left by the conventional decomposition
-of the two-form-vector torsion. Its absence gives the vanishing of the final
-Eq. (2.7) projection.
+For each channel, the verifier constructs the unique highest-weight kernel in
+the indicated domain and checks every raising equation with rational
+arithmetic. It then applies exterior multiplication to the corresponding
+level-15 source vectors. This is the zero-spacetime-momentum exterior symbol of
+the sixteenth spinor derivative. The eight inventory-allowed channels have
+nonzero images. The `(01000)` and `(11000)` images vanish, consistent with
+their absence from the scalar level-16 inventory.
+
+The nonzero results use three deterministic modular linear functionals. A
+nonzero residue is a certificate that the underlying integer exterior image is
+nonzero. All three residues vanish for each inventory-forbidden channel; their
+vanishing is a cross-check, while the representation inventory supplies the
+zero proof. The `(11000)` is the 429-dimensional hook left by the conventional
+decomposition of the two-form-vector torsion, so its absence gives the
+vanishing of the final Eq. (2.7) projection.
 
 ## Canonical computational normalization
 
@@ -192,16 +209,19 @@ This pass makes the source-embedding problem explicit and reproducible and
 supplies all three exact highest-weight vectors and both complete 32-component
 spinor intertwiners. It also materializes the complete 320-dimensional target
 module, verifies its full source intertwiner, and fixes a canonical
-computational normalization of the surviving source highest-weight line.
+computational normalization of the surviving source highest-weight line. It
+also resolves the zero-spacetime-momentum exterior symbol on all ten level-16
+candidate channels.
 Consequently:
 
 - the final two-form torsion projection has now been evaluated at the
   representation level and has rank zero on the three coefficients;
 - Eq. (2.7) therefore does not select a unique combination of the three bridge
   channels; and
-- component normalization of $V$, generic-momentum gauge reducibility, and a
-  complete curvature complex remain open. The scalar-divergence kernel test has
-  identified the direct two-form and five-form channels.
+- component normalization of $V$, spacetime-derivative terms,
+  generic-momentum gauge reducibility, and identification of the eight nonzero
+  images with the curvature complex remain open. The scalar-divergence kernel
+  test has identified the direct two-form and five-form channels.
 
 ## Primary-source dependency for Eq. (2.7)
 
