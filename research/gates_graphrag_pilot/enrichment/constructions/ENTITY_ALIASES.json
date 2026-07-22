@@ -1,0 +1,60 @@
+{
+  "schema_version": "gates-enrichment-entity-aliases-v1",
+  "entities": [
+    {
+      "key": "construction:adynkra",
+      "canonical_name": "Adynkra",
+      "aliases": ["adynkra", "adynkras"]
+    },
+    {
+      "key": "construction:adynkra-genome",
+      "canonical_name": "Adynkra genome",
+      "aliases": ["adynkra genome", "AG", "G"]
+    },
+    {
+      "key": "construction:adynkrafield",
+      "canonical_name": "Adynkrafield",
+      "aliases": ["adynkrafield", "adynkra field", "adynkrafield formulation"]
+    },
+    {
+      "key": "construction:infinitely-unfolded-adinkra",
+      "canonical_name": "infinitely unfolded Adinkra",
+      "aliases": ["infinite unfolded adinkra", "infinitely unfolded adinkra"]
+    },
+    {
+      "key": "construction:rana-octet-r8",
+      "canonical_name": "Rana octet R8",
+      "aliases": ["Rana octet", "R8", "R_8"]
+    },
+    {
+      "key": "group:z2-cubed",
+      "canonical_name": "(Z2)^3",
+      "aliases": ["(Z2)⊕3", "Z2 cubed", "direct sum of three Z2 groups"]
+    },
+    {
+      "key": "mathematical_object:dynkin-label",
+      "canonical_name": "Dynkin label",
+      "aliases": ["Dynkin Label", "Dynkin Labels", "DL", "DLs", "DL’s"]
+    },
+    {
+      "key": "mathematical_object:young-tableau",
+      "canonical_name": "Young tableau",
+      "aliases": ["Young Tableaux", "YT", "YTs", "YT’s"]
+    },
+    {
+      "key": "method:height-yielding-matrix-number",
+      "canonical_name": "Height Yielding Matrix Number",
+      "aliases": ["HYMN", "HYMNs", "Height Yielding Matrix Numbers"]
+    },
+    {
+      "key": "method:hopping-operator",
+      "canonical_name": "hopping operator",
+      "aliases": ["hopping operators", "hopper", "hoppers"]
+    },
+    {
+      "key": "result:chi-and-echi-values",
+      "canonical_name": "graph-theoretic quantities chi and echi",
+      "aliases": ["χ and eχ", "chi and echi", "χ-values and eχ-values"]
+    }
+  ]
+}

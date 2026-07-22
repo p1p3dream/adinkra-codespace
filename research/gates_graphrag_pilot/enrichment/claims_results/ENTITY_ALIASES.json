@@ -1,0 +1,60 @@
+{
+  "schema_version": "gates-enrichment-entity-aliases-v1",
+  "entities": [
+    {
+      "key": "claim:11d-scalar-superfield-m-theory-limit",
+      "canonical_name": "11D scalar-superfield M-theory-limit conjecture",
+      "aliases": ["M-theory superfield-limit conjecture", "11D scalar prepotential conjecture", "11D scalar semi-prepotential conjecture"]
+    },
+    {
+      "key": "claim:duplicate-level-representations-indicate-reducibility",
+      "canonical_name": "duplicate-level representation reducibility conjecture",
+      "aliases": ["repeated-irrep reducibility conjecture", "duplicate representation criterion"]
+    },
+    {
+      "key": "claim:possible-higher-dimensional-conformal-supergravity",
+      "canonical_name": "possible higher-dimensional conformal supergravity",
+      "aliases": ["10D conformal-supergravity possibility", "higher-dimensional conformal-supergravity proposal"]
+    },
+    {
+      "key": "claim:susy-representation-rules-as-sudoku",
+      "canonical_name": "SUSY representation rules as Sudoku problems",
+      "aliases": ["SUSY Sudoku interpretation", "diadem-embedding Sudoku interpretation"]
+    },
+    {
+      "key": "claim:susy-weight-space-embedded-in-permutahedra",
+      "canonical_name": "SUSY weight-space permutahedron conjecture",
+      "aliases": ["permutahedral weight-space conjecture", "Sd permutahedron embedding conjecture"]
+    },
+    {
+      "key": "claim:zero-net-nodal-vorticity-for-all-adinkras",
+      "canonical_name": "zero net nodal vorticity conjecture",
+      "aliases": ["all-Adinkra zero-vorticity conjecture", "universal nodal-vorticity conjecture"]
+    },
+    {
+      "key": "result:four-color-truncated-octahedron-equivalence",
+      "canonical_name": "four-color truncated-octahedron equivalence",
+      "aliases": ["truncated-octahedron four-color result", "4D N = 1 four-color equivalence"]
+    },
+    {
+      "key": "result:hymn-selects-off-shell-4d-n2-combinations",
+      "canonical_name": "HYMN selection of off-shell 4D N = 2 combinations",
+      "aliases": ["Height Yielding Matrix Number selection result", "HYMN classification result"]
+    },
+    {
+      "key": "result:lower-dimensional-adynkra-libraries",
+      "canonical_name": "lower-dimensional Adynkra libraries",
+      "aliases": ["4D-9D Adynkra libraries", "D = 4 through D = 9 Adynkra libraries"]
+    },
+    {
+      "key": "result:magic-number-values-s4-s8-s16",
+      "canonical_name": "magic-number values for S4, S8, and S16",
+      "aliases": ["G(3) values", "magic number table"]
+    },
+    {
+      "key": "result:unfolded-adinkras-for-cs-vs-ts-cls",
+      "canonical_name": "unfolded Adinkras for CS, VS, TS, and CLS",
+      "aliases": ["unfolded chiral-vector-tensor-complex-linear networks", "CS-VS-TS-CLS unfolded networks"]
+    }
+  ]
+}

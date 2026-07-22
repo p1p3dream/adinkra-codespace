@@ -1,0 +1,86 @@
+{
+  "checks": {
+    "all_166_local_pdfs_have_chunks": true,
+    "all_edges_have_evidence": true,
+    "all_nodes_have_evidence": true,
+    "all_planned_strings_are_nul_free": true,
+    "citation_edges_reconcile": true,
+    "deterministic_plan": true,
+    "manifest_has_295_corpus_papers": true,
+    "no_dangling_chunk_evidence": true,
+    "one_review_state_per_citation_edge": true,
+    "pdf_artifacts_reconcile_166_plus_4": true,
+    "zero_resolution_warnings": true
+  },
+  "counts": {
+    "artifacts": 170,
+    "chunks": 10153,
+    "corpus_papers": 295,
+    "edge_evidence": 4861,
+    "edges": 4827,
+    "edges_by_relationship": {
+      "AUTHORED_BY": 836,
+      "CITES": 3825,
+      "CLASSIFIES": 2,
+      "COMPUTES": 5,
+      "CONSTRUCTS": 8,
+      "DEFINES": 5,
+      "DERIVES": 6,
+      "INTRODUCES": 14,
+      "REPORTS_RESULT": 64,
+      "STUDIES": 56,
+      "SUPPORTS": 2,
+      "USES": 4
+    },
+    "edges_by_review_status": {
+      "accepted": 995,
+      "observed": 836,
+      "pending": 2996
+    },
+    "external_stubs": 2694,
+    "identifiers": 3258,
+    "node_evidence": 3991,
+    "nodes": 3407,
+    "nodes_by_type": {
+      "author": 252,
+      "claim": 2,
+      "computation": 5,
+      "concept": 19,
+      "construction": 8,
+      "dataset": 2,
+      "method": 4,
+      "paper": 2989,
+      "result": 70,
+      "scope": 56
+    },
+    "papers": 2989,
+    "sources": 170,
+    "warnings": 0
+  },
+  "manifest_sha256": "63fe5c34a1b355ace0d83197ef00dd17e62481d5610ad8b1000fe0520b6c514b",
+  "plan_sha256": "b1f9f29d8cefe15a83aaa83a191ee1ab9abe2c955d324765c8e212e56c75ac57",
+  "reconciliation": {
+    "citations": {
+      "accepted_edges": 995,
+      "exact_distinct_pairs": 995,
+      "exact_occurrences": 1014,
+      "exact_title_pair_overlap": 4,
+      "external_distinct_pairs": 2694,
+      "external_stub_occurrences": 2694,
+      "internal_distinct_pairs": 1131,
+      "pending_edges": 2830,
+      "title_distinct_pairs": 140,
+      "title_occurrences": 151,
+      "total_edges": 3825
+    },
+    "pdf_artifacts": {
+      "canonical": 166,
+      "exact_called_out_copies": 4,
+      "total": 170
+    }
+  },
+  "semantic_inputs": [
+    "/Users/brandon/code/adinkra-codespace/research/gates_graphrag_full/semantic/proposals.jsonl"
+  ],
+  "status": "pass"
+}

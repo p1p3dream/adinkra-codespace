@@ -1,0 +1,30 @@
+{
+  "alias_entity_count": 30,
+  "entity_aliases_sha256": "607e9b89ab852a02beb6881480ccdbf9c9877ce23220803ccbb9e307d8ff7c11",
+  "errors": [],
+  "paper_count": 9,
+  "paper_counts": {
+    "1911.00807": 6,
+    "2002.08502": 6,
+    "2006.03609": 8,
+    "2007.07390": 8,
+    "2012.13308": 8,
+    "2012.14015": 8,
+    "2304.09830": 13,
+    "2311.06842": 10,
+    "2407.09334": 13
+  },
+  "proposal_count": 80,
+  "proposals_sha256": "f01d3052525ae5b6dda694e9ae15d96cb5313f4396d2b15bf65daadb417a390f",
+  "relationship_counts": {
+    "APPLIES_TO": 13,
+    "DESCRIBES_MULTIPLET": 18,
+    "DESCRIBES_REPRESENTATION": 10,
+    "HAS_INPUT": 10,
+    "HAS_OUTPUT": 10,
+    "USES_ALGEBRA": 7,
+    "USES_GROUP": 12
+  },
+  "schema_version": "gates-scope-atlas-validation-v1",
+  "status": "pass"
+}

@@ -1,0 +1,1168 @@
+{
+  "entities": [
+    {
+      "aliases": [
+        "arXiv:0705.3207"
+      ],
+      "canonical_name": "D=2 N=(2,2) Semi Chiral Vector Multiplet",
+      "key": "arxiv:0705.3207"
+    },
+    {
+      "aliases": [
+        "arXiv:0710.5245"
+      ],
+      "canonical_name": "On the matter of N=2 matter",
+      "key": "arxiv:0710.5245"
+    },
+    {
+      "aliases": [
+        "arXiv:0801.3687"
+      ],
+      "canonical_name": "Short Distance Operator Product Expansion of the 1D, N = 4 Extended GR Super Virasoro Algebra by Use of Coadjoint Representations",
+      "key": "arxiv:0801.3687"
+    },
+    {
+      "aliases": [
+        "arXiv:0803.3434"
+      ],
+      "canonical_name": "Super-Zeeman Embedding Models on N-Supersymmetric World-Lines",
+      "key": "arxiv:0803.3434"
+    },
+    {
+      "aliases": [
+        "arXiv:0806.0050"
+      ],
+      "canonical_name": "Topology Types of Adinkras and the Corresponding Representations of N-Extended Supersymmetry",
+      "key": "arxiv:0806.0050"
+    },
+    {
+      "aliases": [
+        "arXiv:0806.0051"
+      ],
+      "canonical_name": "Relating Doubly-Even Error-Correcting Codes, Graphs, and Irreducible Representations of N-Extended Supersymmetry",
+      "key": "arxiv:0806.0051"
+    },
+    {
+      "aliases": [
+        "arXiv:0809.5279"
+      ],
+      "canonical_name": "Frames for supersymmetry",
+      "key": "arxiv:0809.5279"
+    },
+    {
+      "aliases": [
+        "arXiv:0811.3410"
+      ],
+      "canonical_name": "Adinkras for Clifford Algebras, and Worldline Supermultiplets",
+      "key": "arxiv:0811.3410"
+    },
+    {
+      "aliases": [
+        "arXiv:0901.2467"
+      ],
+      "canonical_name": "Superstring-inspired supergravity as the universal source of inflation and quintessence",
+      "key": "arxiv:0901.2467"
+    },
+    {
+      "aliases": [
+        "arXiv:0901.4165"
+      ],
+      "canonical_name": "A Derivation of an Off-Shell N = (2,2) Supergravity Chiral Projection Operator",
+      "key": "arxiv:0901.4165"
+    },
+    {
+      "aliases": [
+        "arXiv:0901.4970"
+      ],
+      "canonical_name": "A Superfield for Every Dash-Chromotopology",
+      "key": "arxiv:0901.4970"
+    },
+    {
+      "aliases": [
+        "arXiv:0902.3830"
+      ],
+      "canonical_name": "4D, N = 1 Supersymmetry Genomics (I)",
+      "key": "arxiv:0902.3830"
+    },
+    {
+      "aliases": [
+        "arXiv:0904.4719"
+      ],
+      "canonical_name": "Effective Symmetries of the Minimal Supermultiplet of N = 8 Extended Worldline Supersymmetry",
+      "key": "arxiv:0904.4719"
+    },
+    {
+      "aliases": [
+        "arXiv:0906.4978"
+      ],
+      "canonical_name": "Seeking the Loop Quantum Gravity Barbero-Immirzi Parameter and Field in 4D, N = 1 Supergravity",
+      "key": "arxiv:0906.4978"
+    },
+    {
+      "aliases": [
+        "arXiv:0907.5264"
+      ],
+      "canonical_name": "Ectoplasm and Superspace Integration Measure for 2D Supergravity with Four Spinorial Supercurrents",
+      "key": "arxiv:0907.5264"
+    },
+    {
+      "aliases": [
+        "arXiv:0909.3918"
+      ],
+      "canonical_name": "Chiral supergravity actions and superforms",
+      "key": "arxiv:0909.3918"
+    },
+    {
+      "aliases": [
+        "arXiv:1004.3572"
+      ],
+      "canonical_name": "A Unified Spinorial Superfield Treatment of the Higher Superspin Superfield Formalism",
+      "key": "arxiv:1004.3572"
+    },
+    {
+      "aliases": [
+        "arXiv:1009.1449"
+      ],
+      "canonical_name": "Automorphism Properties of Adinkras",
+      "key": "arxiv:1009.1449"
+    },
+    {
+      "aliases": [
+        "arXiv:1103.3564"
+      ],
+      "canonical_name": "A Codicil To Massless Gauge Superfields of Higher Half-Odd Integer Superspins",
+      "key": "arxiv:1103.3564"
+    },
+    {
+      "aliases": [
+        "arXiv:1103.3565"
+      ],
+      "canonical_name": "A Codicil To Massless Gauge Superfields of Higher Integer Superspins",
+      "key": "arxiv:1103.3565"
+    },
+    {
+      "aliases": [
+        "arXiv:1104.0722"
+      ],
+      "canonical_name": "On Dimensional Extension of Supersymmetry: From Worldlines to Worldsheets",
+      "key": "arxiv:1104.0722"
+    },
+    {
+      "aliases": [
+        "arXiv:1106.5475"
+      ],
+      "canonical_name": "An Extended Detailed Investigation of First and Second Order Supersymmetries for Off-Shell N= 2 and N = 4 Supermultiplets",
+      "key": "arxiv:1106.5475"
+    },
+    {
+      "aliases": [
+        "arXiv:1108.4124"
+      ],
+      "canonical_name": "Codes and Supersymmetry in One Dimension",
+      "key": "arxiv:1108.4124"
+    },
+    {
+      "aliases": [
+        "arXiv:1112.2147"
+      ],
+      "canonical_name": "4D, N = 1 Supersymmetry Genomics (II)",
+      "key": "arxiv:1112.2147"
+    },
+    {
+      "aliases": [
+        "arXiv:1201.0307"
+      ],
+      "canonical_name": "SUSY Equation Topology, Zonohedra, and the Search for Alternate Off-Shell Adinkras",
+      "key": "arxiv:1201.0307"
+    },
+    {
+      "aliases": [
+        "arXiv:1202.4418"
+      ],
+      "canonical_name": "The Real Anatomy of Complex Linear Superfields",
+      "key": "arxiv:1202.4418"
+    },
+    {
+      "aliases": [
+        "arXiv:1208.5999"
+      ],
+      "canonical_name": "Adinkras and SUSY Holography: Some explicit examples",
+      "key": "arxiv:1208.5999"
+    },
+    {
+      "aliases": [
+        "arXiv:1209.5020"
+      ],
+      "canonical_name": "A Computer Algorithm For Engineering Off-Shell Multiplets With Four Supercharges On The World Sheet",
+      "key": "arxiv:1209.5020"
+    },
+    {
+      "aliases": [
+        "arXiv:1210.0478"
+      ],
+      "canonical_name": "Adinkra (in)equivalence from Coxeter group representations: A case study",
+      "key": "arxiv:1210.0478"
+    },
+    {
+      "aliases": [
+        "arXiv:1212.2731"
+      ],
+      "canonical_name": "Adinkra Isomorphisms and `Seeing' Shapes with Eigenvalues",
+      "key": "arxiv:1212.2731"
+    },
+    {
+      "aliases": [
+        "arXiv:1212.3318"
+      ],
+      "canonical_name": "4D, N=1 Supergravity Genomics",
+      "key": "arxiv:1212.3318"
+    },
+    {
+      "aliases": [
+        "arXiv:1310.7385"
+      ],
+      "canonical_name": "On 4D, N = 1 massless gauge superfields of arbitrary superhelicity",
+      "key": "arxiv:1310.7385"
+    },
+    {
+      "aliases": [
+        "arXiv:1310.7386"
+      ],
+      "canonical_name": "On 4D, N = 1 Massless Gauge Superfields of Higher Superspin: Half-Odd-Integer Case",
+      "key": "arxiv:1310.7386"
+    },
+    {
+      "aliases": [
+        "arXiv:1310.7387"
+      ],
+      "canonical_name": "A dynamical theory for linearized massive superspin 3/2",
+      "key": "arxiv:1310.7387"
+    },
+    {
+      "aliases": [
+        "arXiv:1312.2000"
+      ],
+      "canonical_name": "Reduction Redux of Adinkras",
+      "key": "arxiv:1312.2000"
+    },
+    {
+      "aliases": [
+        "arXiv:1402.5765"
+      ],
+      "canonical_name": "Is it possible to embed a 4D, N= 4 supersymmetric vector multiplet within a completely off-shell adinkra hologram?",
+      "key": "arxiv:1402.5765"
+    },
+    {
+      "aliases": [
+        "arXiv:1405.0048"
+      ],
+      "canonical_name": "Adinkra `Color' Confinement In Exemplary Off-Shell Constructions Of 4D, cal N = 2 Supersymmetry Representations",
+      "key": "arxiv:1405.0048"
+    },
+    {
+      "aliases": [
+        "arXiv:1409.4445"
+      ],
+      "canonical_name": "On Clifford-algebraic dimensional extension and SUSY holography",
+      "key": "arxiv:1409.4445"
+    },
+    {
+      "aliases": [
+        "arXiv:1412.4086"
+      ],
+      "canonical_name": "Superforms in Five-Dimensional, N = 1 Superspace",
+      "key": "arxiv:1412.4086"
+    },
+    {
+      "aliases": [
+        "arXiv:1501.00101"
+      ],
+      "canonical_name": "Adinkras, 0-branes, Holoraumy and the SUSY QFT/QM Correspondence",
+      "key": "arxiv:1501.00101"
+    },
+    {
+      "aliases": [
+        "arXiv:1502.04164"
+      ],
+      "canonical_name": "Think Different: Applying the Old Macintosh Mantra to the Computability of the SUSY Auxiliary Field Problem",
+      "key": "arxiv:1502.04164"
+    },
+    {
+      "aliases": [
+        "arXiv:1508.07546"
+      ],
+      "canonical_name": "A Lorentz covariant holoraumy-induced “gadget” from minimal off-shell 4D, N=1 supermultiplets",
+      "key": "arxiv:1508.07546"
+    },
+    {
+      "aliases": [
+        "arXiv:1601.00725"
+      ],
+      "canonical_name": "A proposal on culling & filtering a coxeter group for 4D, N = 1 spacetime SUSY representations: revised",
+      "key": "arxiv:1601.00725"
+    },
+    {
+      "aliases": [
+        "arXiv:1608.07864"
+      ],
+      "canonical_name": "N=4 and N=8 SUSY Quantum Mechanics and Klein's Vierergruppe",
+      "key": "arxiv:1608.07864"
+    },
+    {
+      "aliases": [
+        "arXiv:1701.00304"
+      ],
+      "canonical_name": "Adinkras from ordered quartets of BC_4 Coxeter group elements and regarding 1,358,954,496 matrix elements of the Gadget",
+      "key": "arxiv:1701.00304"
+    },
+    {
+      "aliases": [
+        "arXiv:1701.08102"
+      ],
+      "canonical_name": "Spacetime Spin and Chirality Operators for Minimal 4D, cal N = 1 Supermultiplets From BC_4 Adinkra-Tessellation of Riemann Surfaces",
+      "key": "arxiv:1701.08102"
+    },
+    {
+      "aliases": [
+        "arXiv:1702.05453"
+      ],
+      "canonical_name": "On the four-dimensional holoraumy of the 4D, cal N = 1 complex linear supermultiplet",
+      "key": "arxiv:1702.05453"
+    },
+    {
+      "aliases": [
+        "arXiv:1707.00194"
+      ],
+      "canonical_name": "From Diophantus to Supergravity and massless higher spin multiplets",
+      "key": "arxiv:1707.00194"
+    },
+    {
+      "aliases": [
+        "arXiv:1708.06262"
+      ],
+      "canonical_name": "Higher Spin Superfield interactions with the Chiral Supermultiplet: Conserved Supercurrents and Cubic Vertices",
+      "key": "arxiv:1708.06262"
+    },
+    {
+      "aliases": [
+        "arXiv:1712.07826"
+      ],
+      "canonical_name": "Generating all 36,864 Four-Color Adinkras via Signed Permutations and Organizing into ell- and tilde ell-Equivalence Classes",
+      "key": "arxiv:1712.07826"
+    },
+    {
+      "aliases": [
+        "arXiv:1802.02890"
+      ],
+      "canonical_name": "Adinkras from ordered quartets of BC4 Coxeter group elements and regarding another Gadget’s 1,358,954,496 matrix elements",
+      "key": "arxiv:1802.02890"
+    },
+    {
+      "aliases": [
+        "arXiv:1804.08539"
+      ],
+      "canonical_name": "Interaction of supersymmetric nonlinear sigma models with external higher spin superfields via higher spin supercurrents",
+      "key": "arxiv:1804.08539"
+    },
+    {
+      "aliases": [
+        "arXiv:1805.04413"
+      ],
+      "canonical_name": "Conserved higher spin supercurrents for arbitrary spin massless supermultiplets and higher spin superfield cubic interactions",
+      "key": "arxiv:1805.04413"
+    },
+    {
+      "aliases": [
+        "arXiv:1808.07946"
+      ],
+      "canonical_name": "Examples of 4D, N = 2 holoraumy",
+      "key": "arxiv:1808.07946"
+    },
+    {
+      "aliases": [
+        "arXiv:1811.12858"
+      ],
+      "canonical_name": "Integer superspin supercurrents of matter supermultiplets",
+      "key": "arxiv:1811.12858"
+    },
+    {
+      "aliases": [
+        "arXiv:1812.04236"
+      ],
+      "canonical_name": "Exploring the Abelian 4D, N = 4 Vector-Tensor Supermultiplet and Its Off-Shell Central Charge Structure",
+      "key": "arxiv:1812.04236"
+    },
+    {
+      "aliases": [
+        "arXiv:1812.05097"
+      ],
+      "canonical_name": "A codex on linearized Nordström supergravity in eleven and ten dimensional superspaces",
+      "key": "arxiv:1812.05097"
+    },
+    {
+      "aliases": [
+        "arXiv:1903.08631"
+      ],
+      "canonical_name": "Superfield continuous spin equations of motion",
+      "key": "arxiv:1903.08631"
+    },
+    {
+      "aliases": [
+        "arXiv:1904.01738"
+      ],
+      "canonical_name": "Adinkra Height Yielding Matrix Numbers: Eigenvalue Equivalence Classes for Minimal Four-Color Adinkras",
+      "key": "arxiv:1904.01738"
+    },
+    {
+      "aliases": [
+        "arXiv:1904.13336"
+      ],
+      "canonical_name": "Progress on cubic interactions of arbitrary superspin supermultiplets via gauge invariant supercurrents",
+      "key": "arxiv:1904.13336"
+    },
+    {
+      "aliases": [
+        "arXiv:1906.02971"
+      ],
+      "canonical_name": "On the Ubiquity Of Electromagnetic-Duality Rotations in 4D, mathcal N = 1 Holoraumy Tensors for On-Shell 4D Supermultiplets",
+      "key": "arxiv:1906.02971"
+    },
+    {
+      "aliases": [
+        "arXiv:1907.05829"
+      ],
+      "canonical_name": "Higher Spin Supersymmetry at the Cosmological Collider: Sculpting SUSY Rilles in the CMB",
+      "key": "arxiv:1907.05829"
+    },
+    {
+      "aliases": [
+        "arXiv:1911.00807"
+      ],
+      "canonical_name": "Superfield Component Decompositions and the Scan for Prepotential Supermultiplets in 10D Superspaces",
+      "key": "arxiv:1911.00807"
+    },
+    {
+      "aliases": [
+        "arXiv:2002.08502"
+      ],
+      "canonical_name": "Adinkra foundation of component decomposition and the scan for superconformal multiplets in 11D, N = 1 superspace",
+      "key": "arxiv:2002.08502"
+    },
+    {
+      "aliases": [
+        "arXiv:2006.03609"
+      ],
+      "canonical_name": "Advening to adynkrafields: Young tableaux to component fields of the 10D, N=1 scalar superfield",
+      "key": "arxiv:2006.03609"
+    },
+    {
+      "aliases": [
+        "arXiv:2007.05097"
+      ],
+      "canonical_name": "Weyl covariance, and proposals for superconformal prepotentials in 10D superspaces",
+      "key": "arxiv:2007.05097"
+    },
+    {
+      "aliases": [
+        "arXiv:2007.07390"
+      ],
+      "canonical_name": "Component decompositions and adynkra libraries for supermultiplets in lower dimensional superspaces",
+      "key": "arxiv:2007.07390"
+    },
+    {
+      "aliases": [
+        "arXiv:2010.02061"
+      ],
+      "canonical_name": "Hierarchy of Supersymmetric Higher Spin Connections",
+      "key": "arxiv:2010.02061"
+    },
+    {
+      "aliases": [
+        "arXiv:2010.06124"
+      ],
+      "canonical_name": "Infinite-dimensional algebraic mathfrakSpin (N) structure in extended/higher dimensional SUSY holoraumy for valise and on shell supermultiplet representations",
+      "key": "arxiv:2010.06124"
+    },
+    {
+      "aliases": [
+        "arXiv:2010.14659"
+      ],
+      "canonical_name": "Properties of HYMNs in Examples of Four-Color, Five-Color, and Six-Color Adinkras",
+      "key": "arxiv:2010.14659"
+    },
+    {
+      "aliases": [
+        "arXiv:2012.09211"
+      ],
+      "canonical_name": "Supersymmetry and Representation Theory in Low Dimensions",
+      "key": "arxiv:2012.09211"
+    },
+    {
+      "aliases": [
+        "arXiv:2012.13308"
+      ],
+      "canonical_name": "The 300 “correlators” suggests 4D, N = 1 SUSY is a solution to a set of Sudoku puzzles",
+      "key": "arxiv:2012.13308"
+    },
+    {
+      "aliases": [
+        "arXiv:2012.14015"
+      ],
+      "canonical_name": "A note on exemplary off-shell constructions of 4D, N = 2 supersymmetry representations",
+      "key": "arxiv:2012.14015"
+    },
+    {
+      "aliases": [
+        "arXiv:2012.14549"
+      ],
+      "canonical_name": "A Letter Highlighting Matrix Mapping in Minimal 4D, cal N = 1 On-Shell Supermultiplet Representations",
+      "key": "arxiv:2012.14549"
+    },
+    {
+      "aliases": [
+        "arXiv:2103.11899"
+      ],
+      "canonical_name": "On 1D, N = 4 Supersymmetric SYK-Type Models (I)",
+      "key": "arxiv:2103.11899"
+    },
+    {
+      "aliases": [
+        "arXiv:2107.06854"
+      ],
+      "canonical_name": "Superspace first order formalism, trivial symmetries and electromagnetic interactions of linearized supergravity",
+      "key": "arxiv:2107.06854"
+    },
+    {
+      "aliases": [
+        "arXiv:2110.15562"
+      ],
+      "canonical_name": "On 1D, N = 4 supersymmetric SYK-type models. Part II",
+      "key": "arxiv:2110.15562"
+    },
+    {
+      "aliases": [
+        "arXiv:2111.08186"
+      ],
+      "canonical_name": "Cluster Superalgebras and Stringy Integrals",
+      "key": "arxiv:2111.08186"
+    },
+    {
+      "aliases": [
+        "arXiv:2112.13059"
+      ],
+      "canonical_name": "Superspace BRST/BV Operators of Superfield Gauge Theories",
+      "key": "arxiv:2112.13059"
+    },
+    {
+      "aliases": [
+        "arXiv:2203.10393"
+      ],
+      "canonical_name": "In Search of Excellence and Equity in Physics",
+      "key": "arxiv:2203.10393"
+    },
+    {
+      "aliases": [
+        "arXiv:2212.00614"
+      ],
+      "canonical_name": "Modern tensor–spinor symbolic algebra algorithms and computing non-closure geometry and holoraumy in 11D, N=1 supergravity",
+      "key": "arxiv:2212.00614"
+    },
+    {
+      "aliases": [
+        "arXiv:2212.07442"
+      ],
+      "canonical_name": "Towards a direct detection of the spin of dark matter",
+      "key": "arxiv:2212.07442"
+    },
+    {
+      "aliases": [
+        "arXiv:2304.09830"
+      ],
+      "canonical_name": "cal N=2 SUSY and the Hexipentisteriruncicantitruncated 7-Simplex",
+      "key": "arxiv:2304.09830"
+    },
+    {
+      "aliases": [
+        "arXiv:2311.06842"
+      ],
+      "canonical_name": "Unfolded Adinkra Properties of Supermultiplets (I)",
+      "key": "arxiv:2311.06842"
+    },
+    {
+      "aliases": [
+        "arXiv:2407.09334"
+      ],
+      "canonical_name": "Adynkra Genomes, Adynkrafields, and the 4D, cal N = 1 Supergravity Superfield Prepotential",
+      "key": "arxiv:2407.09334"
+    },
+    {
+      "aliases": [
+        "arXiv:2408.09342"
+      ],
+      "canonical_name": "A Précis: Minimal Four Color Holoraumy and Wolfram's \"New Kind of Science\" Paradigm",
+      "key": "arxiv:2408.09342"
+    },
+    {
+      "aliases": [
+        "arXiv:2503.13797"
+      ],
+      "canonical_name": "Adinkras & Genomics in Sixteen Color Systems (I)",
+      "key": "arxiv:2503.13797"
+    },
+    {
+      "aliases": [
+        "arXiv:2512.12157"
+      ],
+      "canonical_name": "10D Supergravity Numerical Data Sets for L & R Matrices",
+      "key": "arxiv:2512.12157"
+    },
+    {
+      "aliases": [
+        "arXiv:2602.20149"
+      ],
+      "canonical_name": "Quantum Information Approach to Bosonization of Supersymmetric Yang-Mills Fields",
+      "key": "arxiv:2602.20149"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-ph/0012301"
+      ],
+      "canonical_name": "The Superspace WZNW action for 4-D, N=1 supersymmetric QCD",
+      "key": "arxiv:hep-ph/0012301"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-ph/9912362"
+      ],
+      "canonical_name": "Searching for supersymmetry in hadrons",
+      "key": "arxiv:hep-ph/9912362"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0002010"
+      ],
+      "canonical_name": "Superspace geometrical realization of the N extended super Virasoro algebra and its dual",
+      "key": "arxiv:hep-th/0002010"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0002045"
+      ],
+      "canonical_name": "Holomorphy, minimal homotopy and the 4-D, N=1 supersymmetric Bardeen-Gross-Jackiw anomaly",
+      "key": "arxiv:hep-th/0002045"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0004202"
+      ],
+      "canonical_name": "Irreducible decomposition of products of 10-D chiral sigma matrices",
+      "key": "arxiv:hep-th/0004202"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0005120"
+      ],
+      "canonical_name": "Two two-dimensional supergravity theories from Calabi-Yau four folds",
+      "key": "arxiv:hep-th/0005120"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0008206"
+      ],
+      "canonical_name": "Will the real 4-D, N=1 SG limit of superstring / M theory please stand up?",
+      "key": "arxiv:hep-th/0008206"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0009192"
+      ],
+      "canonical_name": "Supersymmetric gauge anomaly with general homotopic paths",
+      "key": "arxiv:hep-th/0009192"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0101037"
+      ],
+      "canonical_name": "Deliberations on 11-D superspace for the M-theory effective action",
+      "key": "arxiv:hep-th/0101037"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0104223"
+      ],
+      "canonical_name": "4-D, N=1 Born-Infeld supergravity",
+      "key": "arxiv:hep-th/0104223"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0105161"
+      ],
+      "canonical_name": "Supergravitons interacting with the superVirasoro group",
+      "key": "arxiv:hep-th/0105161"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0106150"
+      ],
+      "canonical_name": "Superconformal symmetry in 11-D superspace and the M theory effective action",
+      "key": "arxiv:hep-th/0106150"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0107155"
+      ],
+      "canonical_name": "Teleparallel superspace in eleven-dimensions coupled to supermembranes",
+      "key": "arxiv:hep-th/0107155"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0108200"
+      ],
+      "canonical_name": "Superspace Or One Thousand and One Lessons in Supersymmetry",
+      "key": "arxiv:hep-th/0108200"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0109109"
+      ],
+      "canonical_name": "The Fundamental supersymmetry challenge remains",
+      "key": "arxiv:hep-th/0109109"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0201094"
+      ],
+      "canonical_name": "Chiral supergravitons interacting with a 0 brane N extended NSR superVirasoro group",
+      "key": "arxiv:hep-th/0201094"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0201096"
+      ],
+      "canonical_name": "New 4-D, N=1 superfield theory: Model of free massive superspin 3/2 multiplet",
+      "key": "arxiv:hep-th/0201096"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0202112"
+      ],
+      "canonical_name": "Is stringy supersymmetry quintessentially challenged?",
+      "key": "arxiv:hep-th/0202112"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0207243"
+      ],
+      "canonical_name": "Dynamical superfield theory of free massive superspin-1 multiplet",
+      "key": "arxiv:hep-th/0207243"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0208105"
+      ],
+      "canonical_name": "Minimal superspace vector fields for 5-D minimal supersymmetry",
+      "key": "arxiv:hep-th/0208105"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0211021"
+      ],
+      "canonical_name": "Short Distance Expansion from the Dual Representation of Infinite Dimensional Lie Algebras",
+      "key": "arxiv:hep-th/0211021"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0211034"
+      ],
+      "canonical_name": "When superspace is not enough",
+      "key": "arxiv:hep-th/0211034"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0305169"
+      ],
+      "canonical_name": "Supergravity loop contributions to brane world supersymmetry breaking",
+      "key": "arxiv:hep-th/0305169"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0306288"
+      ],
+      "canonical_name": "The Off-shell (3/2, 2) supermultiplets revisited",
+      "key": "arxiv:hep-th/0306288"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0311153"
+      ],
+      "canonical_name": "Field strengths of linearized 5-D, N=1 superfield supergravity on a three-brane",
+      "key": "arxiv:hep-th/0311153"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0312040"
+      ],
+      "canonical_name": "M theory on spin(7) manifolds, fluxes and 3-D, N=1 supergravity",
+      "key": "arxiv:hep-th/0312040"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0408004"
+      ],
+      "canonical_name": "Adinkras: A Graphical technology for supersymmetric representation theory",
+      "key": "arxiv:hep-th/0408004"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0409014"
+      ],
+      "canonical_name": "Can the string scale be related to the cosmic baryon asymmetry?",
+      "key": "arxiv:hep-th/0409014"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0409104"
+      ],
+      "canonical_name": "Dynamical equations from a first-order perturbative superspace formulation of 10D, N=1 string-corrected supergravity. (I)",
+      "key": "arxiv:hep-th/0409104"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0410070"
+      ],
+      "canonical_name": "Supersymmetric embedding of the quantum Hall matrix model",
+      "key": "arxiv:hep-th/0410070"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0501199"
+      ],
+      "canonical_name": "Massive 4D, N=1 superspin 1 and 3/2 multiplets and dualities",
+      "key": "arxiv:hep-th/0501199"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0506255"
+      ],
+      "canonical_name": "4D, N = 1 higher spin gauge superfields and quantized twistors",
+      "key": "arxiv:hep-th/0506255"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0508187"
+      ],
+      "canonical_name": "6D supersymmetry, projective superspace and 4D, N=1 superfields",
+      "key": "arxiv:hep-th/0508187"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0602259"
+      ],
+      "canonical_name": "A Journey through garden algebras",
+      "key": "arxiv:hep-th/0602259"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0604042"
+      ],
+      "canonical_name": "6D Supersymmetric Nonlinear Sigma-Models in 4D, N=1 Superspace",
+      "key": "arxiv:hep-th/0604042"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0605269"
+      ],
+      "canonical_name": "Adinkras and the Dynamics of Superspace Prepotentials",
+      "key": "arxiv:hep-th/0605269"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0610333"
+      ],
+      "canonical_name": "New massive supergravity multiplets",
+      "key": "arxiv:hep-th/0610333"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/0611060"
+      ],
+      "canonical_name": "A Counter-example to a putative classification of 1-dimensional, N-extended supermultiplets",
+      "key": "arxiv:hep-th/0611060"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9207042"
+      ],
+      "canonical_name": "Selfdual supersymmetry and supergravity in Atiyah-Ward space-time",
+      "key": "arxiv:hep-th/9207042"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9407147"
+      ],
+      "canonical_name": "Extended supersymmetry and superBF gauge theories",
+      "key": "arxiv:hep-th/9407147"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9410149"
+      ],
+      "canonical_name": "Why are there so many N=4 superstrings?",
+      "key": "arxiv:hep-th/9410149"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9410150"
+      ],
+      "canonical_name": "Ultramultiplets: A New representation of rigid 2-d, N=8 supersymmetry",
+      "key": "arxiv:hep-th/9410150"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9411091"
+      ],
+      "canonical_name": "Manifest (4,0) supersymmetry, sigma models and the ADHM instanton construction",
+      "key": "arxiv:hep-th/9411091"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9412222"
+      ],
+      "canonical_name": "Vector multiplets and the phases of N=2 theories in 2-D: Through the looking glass",
+      "key": "arxiv:hep-th/9412222"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9501140"
+      ],
+      "canonical_name": "No N=4 strings on wolf spaces",
+      "key": "arxiv:hep-th/9501140"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9503237"
+      ],
+      "canonical_name": "A Truly crazy idea about type IIB supergravity and heterotic sigma models",
+      "key": "arxiv:hep-th/9503237"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9504025"
+      ],
+      "canonical_name": "A Theory of spinning particles for large N extended supersymmetry",
+      "key": "arxiv:hep-th/9504025"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9504077"
+      ],
+      "canonical_name": "2-D (4,4) hypermultiplets",
+      "key": "arxiv:hep-th/9504077"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9505034"
+      ],
+      "canonical_name": "On continuous conformal deformation of the SL(2)-4 / U(1) coset",
+      "key": "arxiv:hep-th/9505034"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9508153"
+      ],
+      "canonical_name": "Why auxiliary fields matter: The Strange case of the 4-D, N=1 supersymmetric QCD effective action",
+      "key": "arxiv:hep-th/9508153"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9509021"
+      ],
+      "canonical_name": "A Study of general 2-D, N=2 matter coupled to supergravity in superspace",
+      "key": "arxiv:hep-th/9509021"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9510151"
+      ],
+      "canonical_name": "A Theory of spinning particles for large n extended supersymmetry. 2.",
+      "key": "arxiv:hep-th/9510151"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9510152"
+      ],
+      "canonical_name": "A Proposal for alephO extended supersymmetry in integrable systems",
+      "key": "arxiv:hep-th/9510152"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9602011"
+      ],
+      "canonical_name": "Toward an off-shell 11-d supergravity limit of m theory",
+      "key": "arxiv:hep-th/9602011"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9602072"
+      ],
+      "canonical_name": "Tuning the RADIO to the off-shell 2-D Fayet hypermultiplet problem",
+      "key": "arxiv:hep-th/9602072"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9606090"
+      ],
+      "canonical_name": "Aleph0 extended supergravity and Chern-Simons theories",
+      "key": "arxiv:hep-th/9606090"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9606107"
+      ],
+      "canonical_name": "On aspects and implications of the new covariant 4-D, N=1 Green-Schwarz sigma model action",
+      "key": "arxiv:hep-th/9606107"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9606108"
+      ],
+      "canonical_name": "A Canticle on (4,0) supergravity scalar multiplet systems for a 'cognoscente'",
+      "key": "arxiv:hep-th/9606108"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9606109"
+      ],
+      "canonical_name": "Why auxiliary fields matter: The strange case of the 4-D, N=1 supersymmetric QCD effective action. 2.",
+      "key": "arxiv:hep-th/9606109"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9609141"
+      ],
+      "canonical_name": "N=2 supersymmetry of higher superspin massless theories",
+      "key": "arxiv:hep-th/9609141"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9611193"
+      ],
+      "canonical_name": "Towards a unified theory of massless superfields of all superspins",
+      "key": "arxiv:hep-th/9611193"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9612196"
+      ],
+      "canonical_name": "N=1 supersymmetric extension of the QCD effective action",
+      "key": "arxiv:hep-th/9612196"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9701024"
+      ],
+      "canonical_name": "What if Dirac pionini existed in a purely chiral superfield formulation?",
+      "key": "arxiv:hep-th/9701024"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9704101"
+      ],
+      "canonical_name": "Type B / type O bosonic string sigma models",
+      "key": "arxiv:hep-th/9704101"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9708143"
+      ],
+      "canonical_name": "Can pions 'smell' 4-D, N=1 supersymmetry?",
+      "key": "arxiv:hep-th/9708143"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9709104"
+      ],
+      "canonical_name": "Ectoplasm has no topology: The Prelude",
+      "key": "arxiv:hep-th/9709104"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9711151"
+      ],
+      "canonical_name": "Component actions from curved superspace: Normal coordinates and ectoplasm",
+      "key": "arxiv:hep-th/9711151"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9802139"
+      ],
+      "canonical_name": "Quantum cosmology in the models of 2-D and 4-D dilatonic supergravity with WZ matter",
+      "key": "arxiv:hep-th/9802139"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9806038"
+      ],
+      "canonical_name": "Superspace geometrical representations of extended super Virasoro algebras",
+      "key": "arxiv:hep-th/9806038"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9809056"
+      ],
+      "canonical_name": "Ectoplasm has no topology",
+      "key": "arxiv:hep-th/9809056"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9809064"
+      ],
+      "canonical_name": "Basic canon in D = 4, N=1 superfield theory: Five primer lectures",
+      "key": "arxiv:hep-th/9809064"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9810137"
+      ],
+      "canonical_name": "The CNM hypermultiplet nexus",
+      "key": "arxiv:hep-th/9810137"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9902211"
+      ],
+      "canonical_name": "CNM models, holomorphic functions and projective superspace C maps",
+      "key": "arxiv:hep-th/9902211"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9903013"
+      ],
+      "canonical_name": "4-D, N=2 supersymmetric off-shell sigma models on the cotangent bundles of Kahler manifolds",
+      "key": "arxiv:hep-th/9903013"
+    },
+    {
+      "aliases": [
+        "arXiv:hep-th/9908136"
+      ],
+      "canonical_name": "The * Report",
+      "key": "arxiv:hep-th/9908136"
+    },
+    {
+      "aliases": [
+        "arXiv:math-ph/0512016"
+      ],
+      "canonical_name": "On graph-theoretic identifications of Adinkras, supersymmetry representations and superfields",
+      "key": "arxiv:math-ph/0512016"
+    },
+    {
+      "aliases": [
+        "INSPIRE:1393363"
+      ],
+      "canonical_name": "Automorphism Properties and Classification of Adinkras",
+      "key": "inspire:1393363"
+    }
+  ],
+  "schema_version": "gates-full-semantic-aliases-v1",
+  "source": "Pilot aliases are inherited only when the canonical key occurs in a full-corpus proposal."
+}

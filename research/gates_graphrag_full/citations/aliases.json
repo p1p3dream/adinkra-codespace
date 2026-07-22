@@ -1,0 +1,2077 @@
+{
+  "arxiv_to_inspire": {
+    "0705.3207": [
+      "751168"
+    ],
+    "0710.5245": [
+      "765824"
+    ],
+    "0801.3687": [
+      "778050"
+    ],
+    "0803.3434": [
+      "781935"
+    ],
+    "0806.0050": [
+      "787024"
+    ],
+    "0806.0051": [
+      "787025"
+    ],
+    "0809.5279": [
+      "798100"
+    ],
+    "0811.3410": [
+      "803194"
+    ],
+    "0901.2467": [
+      "811183"
+    ],
+    "0901.4165": [
+      "811896"
+    ],
+    "0901.4970": [
+      "812235"
+    ],
+    "0902.3830": [
+      "813950"
+    ],
+    "0904.4719": [
+      "819090"
+    ],
+    "0906.4978": [
+      "824185"
+    ],
+    "0907.5264": [
+      "827339"
+    ],
+    "0909.3918": [
+      "831847"
+    ],
+    "1004.3572": [
+      "852570"
+    ],
+    "1009.1449": [
+      "868040"
+    ],
+    "1103.3564": [
+      "893144"
+    ],
+    "1103.3565": [
+      "893143"
+    ],
+    "1104.0722": [
+      "894991"
+    ],
+    "1106.5475": [
+      "916150"
+    ],
+    "1108.4124": [
+      "924662"
+    ],
+    "1112.2147": [
+      "1080779"
+    ],
+    "1201.0307": [
+      "1083406"
+    ],
+    "1202.4418": [
+      "1089738"
+    ],
+    "1208.5999": [
+      "1182543"
+    ],
+    "1209.5020": [
+      "1187817"
+    ],
+    "1210.0478": [
+      "1188872"
+    ],
+    "1212.2731": [
+      "1207094"
+    ],
+    "1212.3318": [
+      "1207316"
+    ],
+    "1310.7385": [
+      "1262369"
+    ],
+    "1310.7386": [
+      "1262370"
+    ],
+    "1310.7387": [
+      "1262371"
+    ],
+    "1312.2000": [
+      "1268178"
+    ],
+    "1402.5765": [
+      "1282298"
+    ],
+    "1405.0048": [
+      "1293807"
+    ],
+    "1409.4445": [
+      "1317251"
+    ],
+    "1412.4086": [
+      "1334166"
+    ],
+    "1501.00101": [
+      "1336106"
+    ],
+    "1502.04164": [
+      "1345056"
+    ],
+    "1508.07546": [
+      "1391194"
+    ],
+    "1601.00725": [
+      "1413126"
+    ],
+    "1608.07864": [
+      "1484334"
+    ],
+    "1701.00304": [
+      "1507499"
+    ],
+    "1701.08102": [
+      "1511146"
+    ],
+    "1702.05453": [
+      "1514056"
+    ],
+    "1707.00194": [
+      "1608410"
+    ],
+    "1708.06262": [
+      "1617798"
+    ],
+    "1712.07826": [
+      "1644656"
+    ],
+    "1802.02890": [
+      "1653961"
+    ],
+    "1804.08539": [
+      "1669640"
+    ],
+    "1805.04413": [
+      "1672787"
+    ],
+    "1808.07946": [
+      "1691228"
+    ],
+    "1811.12858": [
+      "1705972"
+    ],
+    "1812.04236": [
+      "1708546"
+    ],
+    "1812.05097": [
+      "1728169"
+    ],
+    "1903.08631": [
+      "1725940"
+    ],
+    "1904.01738": [
+      "1727955"
+    ],
+    "1904.02328": [
+      "1728169"
+    ],
+    "1904.13336": [
+      "1732260"
+    ],
+    "1906.02971": [
+      "1738855"
+    ],
+    "1907.05829": [
+      "1743771"
+    ],
+    "1911.00807": [
+      "1762868"
+    ],
+    "2002.08502": [
+      "1781516"
+    ],
+    "2006.03609": [
+      "1799870"
+    ],
+    "2007.05097": [
+      "1806430"
+    ],
+    "2007.07390": [
+      "1807004"
+    ],
+    "2010.02061": [
+      "1821396"
+    ],
+    "2010.06124": [
+      "1822476"
+    ],
+    "2010.14659": [
+      "1826638"
+    ],
+    "2012.09211": [
+      "1837085"
+    ],
+    "2012.13308": [
+      "1838225"
+    ],
+    "2012.14015": [
+      "1838426"
+    ],
+    "2012.14549": [
+      "1838864"
+    ],
+    "2103.11899": [
+      "1852871"
+    ],
+    "2107.06854": [
+      "1883895"
+    ],
+    "2110.15562": [
+      "1956018"
+    ],
+    "2111.08186": [
+      "1969605"
+    ],
+    "2112.13059": [
+      "1997189"
+    ],
+    "2203.10393": [
+      "2055661"
+    ],
+    "2212.00614": [
+      "2606563"
+    ],
+    "2212.07442": [
+      "2614891"
+    ],
+    "2304.09830": [
+      "2652632"
+    ],
+    "2311.06842": [
+      "2721972"
+    ],
+    "2407.09334": [
+      "2807436"
+    ],
+    "2408.09342": [
+      "2819157"
+    ],
+    "2503.13797": [
+      "2901502"
+    ],
+    "2512.12157": [
+      "3092791"
+    ],
+    "2602.20149": [
+      "3122895"
+    ],
+    "hep-ph/0012301": [
+      "539116"
+    ],
+    "hep-ph/9912362": [
+      "511618"
+    ],
+    "hep-th/0002010": [
+      "523537"
+    ],
+    "hep-th/0002045": [
+      "523721"
+    ],
+    "hep-th/0004202": [
+      "526708"
+    ],
+    "hep-th/0005120": [
+      "527220"
+    ],
+    "hep-th/0008206": [
+      "532505"
+    ],
+    "hep-th/0009192": [
+      "534176"
+    ],
+    "hep-th/0101037": [
+      "551915"
+    ],
+    "hep-th/0104223": [
+      "555874"
+    ],
+    "hep-th/0105161": [
+      "556791"
+    ],
+    "hep-th/0106150": [
+      "558607"
+    ],
+    "hep-th/0107155": [
+      "560325"
+    ],
+    "hep-th/0108200": [
+      "195126"
+    ],
+    "hep-th/0109109": [
+      "562720"
+    ],
+    "hep-th/0201094": [
+      "581765"
+    ],
+    "hep-th/0201096": [
+      "581767"
+    ],
+    "hep-th/0202112": [
+      "583078"
+    ],
+    "hep-th/0207243": [
+      "591424"
+    ],
+    "hep-th/0208105": [
+      "592994"
+    ],
+    "hep-th/0211021": [
+      "601268"
+    ],
+    "hep-th/0211034": [
+      "601439"
+    ],
+    "hep-th/0305169": [
+      "619144"
+    ],
+    "hep-th/0306288": [
+      "622349"
+    ],
+    "hep-th/0311153": [
+      "633544"
+    ],
+    "hep-th/0312040": [
+      "634664"
+    ],
+    "hep-th/0408004": [
+      "655613"
+    ],
+    "hep-th/0409014": [
+      "658189"
+    ],
+    "hep-th/0409104": [
+      "658781"
+    ],
+    "hep-th/0410070": [
+      "661400"
+    ],
+    "hep-th/0501199": [
+      "675561"
+    ],
+    "hep-th/0506255": [
+      "686382"
+    ],
+    "hep-th/0508187": [
+      "690796"
+    ],
+    "hep-th/0602259": [
+      "711216"
+    ],
+    "hep-th/0604042": [
+      "714004"
+    ],
+    "hep-th/0605269": [
+      "717895"
+    ],
+    "hep-th/0610333": [
+      "730507"
+    ],
+    "hep-th/0611060": [
+      "731002"
+    ],
+    "hep-th/9203078": [
+      "333605"
+    ],
+    "hep-th/9203080": [
+      "333607"
+    ],
+    "hep-th/9203081": [
+      "333606"
+    ],
+    "hep-th/9207042": [
+      "336206"
+    ],
+    "hep-th/9210163": [
+      "340003"
+    ],
+    "hep-th/9405017": [
+      "384487"
+    ],
+    "hep-th/9407147": [
+      "375053"
+    ],
+    "hep-th/9410149": [
+      "378788"
+    ],
+    "hep-th/9410150": [
+      "378790"
+    ],
+    "hep-th/9411091": [
+      "379816"
+    ],
+    "hep-th/9412222": [
+      "381836"
+    ],
+    "hep-th/9501140": [
+      "392495"
+    ],
+    "hep-th/9503237": [
+      "393920"
+    ],
+    "hep-th/9504025": [
+      "394041"
+    ],
+    "hep-th/9504077": [
+      "394241"
+    ],
+    "hep-th/9505034": [
+      "394825"
+    ],
+    "hep-th/9508153": [
+      "398755"
+    ],
+    "hep-th/9509021": [
+      "399058"
+    ],
+    "hep-th/9510151": [
+      "401068"
+    ],
+    "hep-th/9510152": [
+      "401091"
+    ],
+    "hep-th/9602011": [
+      "415718"
+    ],
+    "hep-th/9602072": [
+      "415955"
+    ],
+    "hep-th/9606090": [
+      "419643"
+    ],
+    "hep-th/9606107": [
+      "406415"
+    ],
+    "hep-th/9606108": [
+      "419763"
+    ],
+    "hep-th/9606109": [
+      "419762"
+    ],
+    "hep-th/9609141": [
+      "423426"
+    ],
+    "hep-th/9611193": [
+      "426331"
+    ],
+    "hep-th/9612196": [
+      "427629"
+    ],
+    "hep-th/9701024": [
+      "439466"
+    ],
+    "hep-th/9704101": [
+      "442136"
+    ],
+    "hep-th/9708143": [
+      "447680"
+    ],
+    "hep-th/9709104": [
+      "448416"
+    ],
+    "hep-th/9711151": [
+      "451300"
+    ],
+    "hep-th/9802139": [
+      "467390"
+    ],
+    "hep-th/9806038": [
+      "471405"
+    ],
+    "hep-th/9809056": [
+      "476012"
+    ],
+    "hep-th/9809064": [
+      "455060"
+    ],
+    "hep-th/9810137": [
+      "478126"
+    ],
+    "hep-th/9902211": [
+      "495995"
+    ],
+    "hep-th/9903013": [
+      "496070"
+    ],
+    "hep-th/9908136": [
+      "505941"
+    ],
+    "math-ph/0512016": [
+      "699968"
+    ]
+  },
+  "canonical_key": "inspire_id",
+  "doi_to_inspire": {
+    "10.1002/(sici)1521-3978(20001)48:1/3<115::aid-prop115>3.0.co;2-f": [
+      "496070"
+    ],
+    "10.1002/(sici)1521-3978(20001)48:1/3<115::aid-prop115>3.3.co;2-6": [
+      "496070"
+    ],
+    "10.1007/3-540-33314-2_1": [
+      "711216"
+    ],
+    "10.1007/bf01551806": [
+      "202439"
+    ],
+    "10.1007/jhep02(2020)176": [
+      "1762868"
+    ],
+    "10.1007/jhep03(2014)030": [
+      "1262371"
+    ],
+    "10.1007/jhep03(2019)129": [
+      "1708546"
+    ],
+    "10.1007/jhep03(2021)074": [
+      "1806430"
+    ],
+    "10.1007/jhep03(2022)148": [
+      "1956018"
+    ],
+    "10.1007/jhep04(2015)056": [
+      "1345056"
+    ],
+    "10.1007/jhep04(2022)104": [
+      "1838426"
+    ],
+    "10.1007/jhep05(2014)057": [
+      "1282298"
+    ],
+    "10.1007/jhep05(2015)049": [
+      "1334166"
+    ],
+    "10.1007/jhep05(2018)204": [
+      "1669640"
+    ],
+    "10.1007/jhep05(2019)031": [
+      "1705972"
+    ],
+    "10.1007/jhep05(2021)077": [
+      "1838225"
+    ],
+    "10.1007/jhep05(2022)173": [
+      "1822476"
+    ],
+    "10.1007/jhep06(2012)071": [
+      "1080779"
+    ],
+    "10.1007/jhep06(2014)098": [
+      "1262369"
+    ],
+    "10.1007/jhep06(2017)006": [
+      "1507499"
+    ],
+    "10.1007/jhep06(2021)158": [
+      "1852871"
+    ],
+    "10.1007/jhep07(2014)051": [
+      "1293807"
+    ],
+    "10.1007/jhep07(2019)063": [
+      "1728169"
+    ],
+    "10.1007/jhep08(2016)076": [
+      "1413126"
+    ],
+    "10.1007/jhep08(2018)055": [
+      "1672787"
+    ],
+    "10.1007/jhep09(2020)089": [
+      "1781516"
+    ],
+    "10.1007/jhep09(2021)077": [
+      "1883895"
+    ],
+    "10.1007/jhep09(2021)202": [
+      "1807004"
+    ],
+    "10.1007/jhep10(2013)004": [
+      "1207316"
+    ],
+    "10.1007/jhep10(2019)156": [
+      "1743771"
+    ],
+    "10.1007/jhep11(2015)113": [
+      "1391194"
+    ],
+    "10.1007/jhep11(2017)063": [
+      "1608410"
+    ],
+    "10.1007/s00220-004-1048-0": [
+      "601268"
+    ],
+    "10.1016/0003-4916(79)90210-0": [
+      "140015"
+    ],
+    "10.1016/0003-4916(86)90037-0": [
+      "212837"
+    ],
+    "10.1016/0370-2693(79)90285-5": [
+      "140433"
+    ],
+    "10.1016/0370-2693(80)90773-x": [
+      "153598"
+    ],
+    "10.1016/0370-2693(83)90422-7": [
+      "182350"
+    ],
+    "10.1016/0370-2693(83)90558-0": [
+      "12561"
+    ],
+    "10.1016/0370-2693(85)90410-1": [
+      "207930"
+    ],
+    "10.1016/0370-2693(85)90833-0": [
+      "204580"
+    ],
+    "10.1016/0370-2693(85)91537-0": [
+      "16413"
+    ],
+    "10.1016/0370-2693(86)90407-7": [
+      "227310"
+    ],
+    "10.1016/0370-2693(86)91228-1": [
+      "17753"
+    ],
+    "10.1016/0370-2693(86)91229-3": [
+      "220000"
+    ],
+    "10.1016/0370-2693(87)90570-3": [
+      "235592"
+    ],
+    "10.1016/0370-2693(87)90765-9": [
+      "244796"
+    ],
+    "10.1016/0370-2693(87)91267-6": [
+      "235678"
+    ],
+    "10.1016/0370-2693(87)91271-8": [
+      "235791"
+    ],
+    "10.1016/0370-2693(88)90446-7": [
+      "262426"
+    ],
+    "10.1016/0370-2693(88)90647-8": [
+      "261658"
+    ],
+    "10.1016/0370-2693(88)90709-5": [
+      "251286"
+    ],
+    "10.1016/0370-2693(89)90295-5": [
+      "277291"
+    ],
+    "10.1016/0370-2693(89)90470-x": [
+      "263912"
+    ],
+    "10.1016/0370-2693(89)90560-1": [
+      "283237"
+    ],
+    "10.1016/0370-2693(89)91007-1": [
+      "277729"
+    ],
+    "10.1016/0370-2693(89)91188-x": [
+      "277349"
+    ],
+    "10.1016/0370-2693(89)91282-3": [
+      "279199"
+    ],
+    "10.1016/0370-2693(89)91462-7": [
+      "267627"
+    ],
+    "10.1016/0370-2693(90)90375-g": [
+      "282771"
+    ],
+    "10.1016/0370-2693(90)91741-s": [
+      "27090"
+    ],
+    "10.1016/0370-2693(91)90054-t": [
+      "315122"
+    ],
+    "10.1016/0370-2693(91)90100-5": [
+      "315514"
+    ],
+    "10.1016/0370-2693(91)90737-b": [
+      "302115"
+    ],
+    "10.1016/0370-2693(92)90277-b": [
+      "321872"
+    ],
+    "10.1016/0370-2693(92)91076-l": [
+      "333605"
+    ],
+    "10.1016/0370-2693(92)91531-d": [
+      "344753"
+    ],
+    "10.1016/0370-2693(92)91927-2": [
+      "339673"
+    ],
+    "10.1016/0370-2693(93)90228-a": [
+      "333606"
+    ],
+    "10.1016/0370-2693(93)90229-b": [
+      "333607"
+    ],
+    "10.1016/0370-2693(93)90256-h": [
+      "340003"
+    ],
+    "10.1016/0370-2693(93)91504-g": [
+      "366353"
+    ],
+    "10.1016/0370-2693(94)01365-j": [
+      "378790"
+    ],
+    "10.1016/0370-2693(94)01653-t": [
+      "379816"
+    ],
+    "10.1016/0370-2693(94)90637-8": [
+      "384487"
+    ],
+    "10.1016/0370-2693(94)91339-0": [
+      "378788"
+    ],
+    "10.1016/0370-2693(95)00469-2": [
+      "381836"
+    ],
+    "10.1016/0370-2693(95)00474-y": [
+      "394041"
+    ],
+    "10.1016/0370-2693(95)00671-7": [
+      "394825"
+    ],
+    "10.1016/0370-2693(95)00947-j": [
+      "393920"
+    ],
+    "10.1016/0370-2693(95)01309-1": [
+      "398755"
+    ],
+    "10.1016/0370-2693(95)01542-6": [
+      "401068"
+    ],
+    "10.1016/0370-2693(95)01557-4": [
+      "401091"
+    ],
+    "10.1016/0550-3213(79)90416-4": [
+      "6893"
+    ],
+    "10.1016/0550-3213(80)90037-1": [
+      "8700"
+    ],
+    "10.1016/0550-3213(80)90043-7": [
+      "143311"
+    ],
+    "10.1016/0550-3213(80)90414-9": [
+      "141382"
+    ],
+    "10.1016/0550-3213(80)90432-0": [
+      "141077"
+    ],
+    "10.1016/0550-3213(80)90459-9": [
+      "152626"
+    ],
+    "10.1016/0550-3213(80)90522-2": [
+      "141844"
+    ],
+    "10.1016/0550-3213(81)90225-x": [
+      "9990"
+    ],
+    "10.1016/0550-3213(81)90281-9": [
+      "9991"
+    ],
+    "10.1016/0550-3213(81)90382-5": [
+      "164904"
+    ],
+    "10.1016/0550-3213(82)90027-x": [
+      "168955"
+    ],
+    "10.1016/0550-3213(82)90047-5": [
+      "166323"
+    ],
+    "10.1016/0550-3213(82)90548-x": [
+      "168448"
+    ],
+    "10.1016/0550-3213(83)90229-8": [
+      "11709"
+    ],
+    "10.1016/0550-3213(84)90026-9": [
+      "14653"
+    ],
+    "10.1016/0550-3213(84)90456-5": [
+      "194744"
+    ],
+    "10.1016/0550-3213(84)90468-1": [
+      "190269"
+    ],
+    "10.1016/0550-3213(84)90592-3": [
+      "15441"
+    ],
+    "10.1016/0550-3213(84)90612-6": [
+      "15327"
+    ],
+    "10.1016/0550-3213(85)90216-0": [
+      "220186"
+    ],
+    "10.1016/0550-3213(86)90258-0": [
+      "221678"
+    ],
+    "10.1016/0550-3213(86)90261-0": [
+      "232038"
+    ],
+    "10.1016/0550-3213(87)90123-4": [
+      "18959"
+    ],
+    "10.1016/0550-3213(87)90428-7": [
+      "20684"
+    ],
+    "10.1016/0550-3213(87)90470-6": [
+      "230969"
+    ],
+    "10.1016/0550-3213(87)90471-8": [
+      "235790"
+    ],
+    "10.1016/0550-3213(87)90675-4": [
+      "18547"
+    ],
+    "10.1016/0550-3213(88)90674-8": [
+      "247173"
+    ],
+    "10.1016/0550-3213(89)90071-0": [
+      "24554"
+    ],
+    "10.1016/0550-3213(89)90079-5": [
+      "266600"
+    ],
+    "10.1016/0550-3213(89)90253-8": [
+      "265527"
+    ],
+    "10.1016/0550-3213(90)90583-y": [
+      "304832"
+    ],
+    "10.1016/0550-3213(90)90588-5": [
+      "284288"
+    ],
+    "10.1016/0550-3213(90)90687-9": [
+      "278660"
+    ],
+    "10.1016/0550-3213(91)90562-c": [
+      "314337"
+    ],
+    "10.1016/0550-3213(93)90242-h": [
+      "336206"
+    ],
+    "10.1016/0550-3213(94)90600-9": [
+      "375053"
+    ],
+    "10.1016/0550-3213(95)00648-6": [
+      "399058"
+    ],
+    "10.1016/j.nuclphysb.2004.01.013": [
+      "634664"
+    ],
+    "10.1016/j.physletb.2003.09.085": [
+      "622349"
+    ],
+    "10.1016/j.physletb.2007.11.001": [
+      "765824"
+    ],
+    "10.1016/j.physletb.2009.03.005": [
+      "811183"
+    ],
+    "10.1016/j.physletb.2019.05.015": [
+      "1725940"
+    ],
+    "10.1016/j.physletb.2019.134868": [
+      "1732260"
+    ],
+    "10.1016/j.physletb.2023.137956": [
+      "2614891"
+    ],
+    "10.1016/s0010-4655(00)00251-4": [
+      "526708"
+    ],
+    "10.1016/s0370-2693(00)00172-6": [
+      "511618"
+    ],
+    "10.1016/s0370-2693(00)00400-7": [
+      "523537"
+    ],
+    "10.1016/s0370-2693(00)00464-0": [
+      "523721"
+    ],
+    "10.1016/s0370-2693(00)01073-x": [
+      "532505"
+    ],
+    "10.1016/s0370-2693(01)00210-6": [
+      "539116"
+    ],
+    "10.1016/s0370-2693(01)00487-7": [
+      "551915"
+    ],
+    "10.1016/s0370-2693(01)00701-8": [
+      "556791"
+    ],
+    "10.1016/s0370-2693(02)01256-x": [
+      "581765"
+    ],
+    "10.1016/s0370-2693(02)01772-0": [
+      "581767"
+    ],
+    "10.1016/s0370-2693(02)02860-5": [
+      "591424"
+    ],
+    "10.1016/s0370-2693(96)01193-8": [
+      "415718"
+    ],
+    "10.1016/s0370-2693(96)01254-3": [
+      "419763"
+    ],
+    "10.1016/s0370-2693(96)01393-7": [
+      "406415"
+    ],
+    "10.1016/s0370-2693(97)00034-8": [
+      "426331"
+    ],
+    "10.1016/s0370-2693(97)00069-5": [
+      "427629"
+    ],
+    "10.1016/s0370-2693(97)00620-5": [
+      "442136"
+    ],
+    "10.1016/s0370-2693(97)01037-x": [
+      "423426"
+    ],
+    "10.1016/s0370-2693(97)01504-9": [
+      "394241"
+    ],
+    "10.1016/s0370-2693(97)01505-0": [
+      "470040"
+    ],
+    "10.1016/s0370-2693(97)01557-8": [
+      "451300"
+    ],
+    "10.1016/s0370-2693(98)00937-x": [
+      "471405"
+    ],
+    "10.1016/s0370-2693(98)01054-5": [
+      "439466"
+    ],
+    "10.1016/s0550-3213(00)00374-6": [
+      "527220"
+    ],
+    "10.1016/s0550-3213(00)00676-3": [
+      "534176"
+    ],
+    "10.1016/s0550-3213(01)00421-7": [
+      "558607"
+    ],
+    "10.1016/s0550-3213(96)00476-2": [
+      "419643"
+    ],
+    "10.1016/s0550-3213(96)00621-9": [
+      "419762"
+    ],
+    "10.1016/s0550-3213(98)00819-0": [
+      "476012"
+    ],
+    "10.1016/s0550-3213(98)00870-0": [
+      "478126"
+    ],
+    "10.1016/s0550-3213(99)00370-3": [
+      "495995"
+    ],
+    "10.1016/s0920-5632(97)00654-3": [
+      "487862"
+    ],
+    "10.1023/a:1021201715112": [
+      "592994"
+    ],
+    "10.1063/1.2218556": [
+      "723249"
+    ],
+    "10.1063/1.2803799": [
+      "772961"
+    ],
+    "10.1088/0264-9381/1/3/002": [
+      "191558"
+    ],
+    "10.1088/0264-9381/17/10/308": [
+      "505941"
+    ],
+    "10.1088/0264-9381/18/17/310": [
+      "555874"
+    ],
+    "10.1088/0264-9381/3/1/005": [
+      "204714"
+    ],
+    "10.1088/0264-9381/3/3/013": [
+      "217518"
+    ],
+    "10.1088/0264-9381/3/5/005": [
+      "237390"
+    ],
+    "10.1088/0264-9381/5/2/015": [
+      "238147"
+    ],
+    "10.1088/0264-9381/5/5/012": [
+      "248012"
+    ],
+    "10.1088/0264-9381/8/5/006": [
+      "285942"
+    ],
+    "10.1088/0305-4616/13/1/004": [
+      "16304"
+    ],
+    "10.1088/1126-6708/2004/11/075": [
+      "661400"
+    ],
+    "10.1088/1126-6708/2004/12/047": [
+      "658781"
+    ],
+    "10.1088/1126-6708/2005/02/036": [
+      "633544"
+    ],
+    "10.1088/1126-6708/2005/02/056": [
+      "675561"
+    ],
+    "10.1088/1126-6708/2005/10/008": [
+      "686382"
+    ],
+    "10.1088/1126-6708/2006/05/051": [
+      "690796"
+    ],
+    "10.1088/1126-6708/2006/09/006": [
+      "714004"
+    ],
+    "10.1088/1126-6708/2007/02/052": [
+      "730507"
+    ],
+    "10.1088/1126-6708/2007/10/035": [
+      "751168"
+    ],
+    "10.1088/1126-6708/2009/01/054": [
+      "778050"
+    ],
+    "10.1088/1126-6708/2009/12/008": [
+      "813950"
+    ],
+    "10.1088/1475-7516/2006/06/018": [
+      "658189"
+    ],
+    "10.1088/1751-8113/42/41/415206": [
+      "819090"
+    ],
+    "10.1088/1751-8113/42/44/442002": [
+      "811896"
+    ],
+    "10.1088/1751-8113/42/6/065402": [
+      "781935"
+    ],
+    "10.1088/1751-8113/43/9/095401": [
+      "827339"
+    ],
+    "10.1103/physrevd.102.125018": [
+      "1821396"
+    ],
+    "10.1103/physrevd.14.1357": [
+      "108473"
+    ],
+    "10.1103/physrevd.14.3227": [
+      "115597"
+    ],
+    "10.1103/physrevd.16.1727": [
+      "111455"
+    ],
+    "10.1103/physrevd.17.3188": [
+      "121291"
+    ],
+    "10.1103/physrevd.18.2768": [
+      "129790"
+    ],
+    "10.1103/physrevd.22.2364": [
+      "8943"
+    ],
+    "10.1103/physrevd.52.2278": [
+      "392495"
+    ],
+    "10.1103/physrevd.58.084026": [
+      "467390"
+    ],
+    "10.1103/physrevd.65.024013": [
+      "560325"
+    ],
+    "10.1103/physrevd.70.025008": [
+      "619144"
+    ],
+    "10.1103/physrevd.71.065002": [
+      "655613"
+    ],
+    "10.1103/physrevd.80.065003": [
+      "824185"
+    ],
+    "10.1103/physrevd.80.125015": [
+      "831847"
+    ],
+    "10.1142/9789812810175_0021": [
+      "1489482"
+    ],
+    "10.1142/s0217732389000411": [
+      "264801"
+    ],
+    "10.1142/s0217732389002240": [
+      "284916"
+    ],
+    "10.1142/s0217732389002264": [
+      "277546"
+    ],
+    "10.1142/s0217732392004006": [
+      "333626"
+    ],
+    "10.1142/s0217751x07035112": [
+      "699968"
+    ],
+    "10.1142/s0217751x09044644": [
+      "798100"
+    ],
+    "10.1142/s0217751x09047685": [
+      "812235"
+    ],
+    "10.1142/s0217751x12501436": [
+      "1089738"
+    ],
+    "10.1142/s0217751x14500298": [
+      "1188872"
+    ],
+    "10.1142/s0217751x14500419": [
+      "1182543"
+    ],
+    "10.1142/s0217751x14500705": [
+      "1268178"
+    ],
+    "10.1142/s0217751x15500426": [
+      "1317251"
+    ],
+    "10.1142/s0217751x15500505": [
+      "1336106"
+    ],
+    "10.1142/s0217751x18500665": [
+      "1653961"
+    ],
+    "10.1142/s0217751x18500720": [
+      "1514056"
+    ],
+    "10.1142/s0217751x19500817": [
+      "1691228"
+    ],
+    "10.1142/s0217751x19500854": [
+      "1727955"
+    ],
+    "10.1142/s0217751x20500086": [
+      "1738855"
+    ],
+    "10.1142/s0217751x21500822": [
+      "1826638"
+    ],
+    "10.1142/s0217751x24501185": [
+      "2606563"
+    ],
+    "10.1142/s0217751x25300248": [
+      "3104353"
+    ],
+    "10.1142/s0217751x93001363": [
+      "319046"
+    ],
+    "10.1155/2015/584542": [
+      "1393363"
+    ],
+    "10.3390/sym11010120": [
+      "1644656"
+    ],
+    "10.3390/sym14020256": [
+      "1997189"
+    ],
+    "10.3390/sym7021080": [
+      "916150"
+    ],
+    "10.3390/universe4010006": [
+      "1617798"
+    ],
+    "10.4310/atmp.2011.v15.n6.a7": [
+      "924662"
+    ],
+    "10.4310/atmp.2012.v16.n6.a2": [
+      "894991"
+    ],
+    "10.4310/atmp.2021.v25.n6.a3": [
+      "1799870"
+    ]
+  },
+  "normalized_title_to_inspire": {
+    "1 0 thirring models and the coupling of spin 0 fields to the heterotic string": [
+      "283237"
+    ],
+    "10d supergravity numerical data sets for l r matrices": [
+      "3092791"
+    ],
+    "2 d 4 4 hypermultiplets": [
+      "394241"
+    ],
+    "2d 4 4 hypermultiplets ii field theory origins of dualities": [
+      "470040"
+    ],
+    "3 2 1 superfield of o 2 supergravity": [
+      "141844"
+    ],
+    "4 d n 1 born infeld supergravity": [
+      "555874"
+    ],
+    "4 d n 2 supersymmetric off shell sigma models on the cotangent bundles of kahler manifolds": [
+      "496070"
+    ],
+    "4d n 1 higher spin gauge superfields and quantized twistors": [
+      "686382"
+    ],
+    "4d n 1 supergravity genomics": [
+      "1207316"
+    ],
+    "4d n 1 supersymmetry genomics i": [
+      "813950"
+    ],
+    "4d n 1 supersymmetry genomics ii": [
+      "1080779"
+    ],
+    "6d supersymmetric nonlinear sigma models in 4d n 1 superspace": [
+      "714004"
+    ],
+    "6d supersymmetry projective superspace and 4d n 1 superfields": [
+      "690796"
+    ],
+    "a canticle on 4 0 supergravity scalar multiplet systems for a cognoscente": [
+      "419763"
+    ],
+    "a codex on linearized nordstro m supergravity in eleven and ten dimensional superspaces": [
+      "1728169"
+    ],
+    "a codicil to massless gauge superfields of higher half odd integer superspins": [
+      "893144"
+    ],
+    "a codicil to massless gauge superfields of higher integer superspins": [
+      "893143"
+    ],
+    "a comment on superspace bianchi identities and six dimensional space time": [
+      "140433"
+    ],
+    "a comment on the electroweak interactions in gauged hidden symmetry nonlinear sigma models": [
+      "16304"
+    ],
+    "a computer algorithm for engineering off shell multiplets with four supercharges on the world sheet": [
+      "1187817"
+    ],
+    "a counter example to a putative classification of 1 dimensional n extended supermultiplets": [
+      "731002"
+    ],
+    "a derivation of an off shell n 2 2 supergravity chiral projection operator": [
+      "811896"
+    ],
+    "a dynamical theory for linearized massive superspin 3 2": [
+      "1262371"
+    ],
+    "a journey through garden algebras": [
+      "711216"
+    ],
+    "a letter highlighting matrix mapping in minimal 4d cal n 1 on shell supermultiplet representations": [
+      "1838864"
+    ],
+    "a lorentz covariant holoraumy induced gadget from minimal off shell 4d n 1 supermultiplets": [
+      "1391194"
+    ],
+    "a new proposed description of the 4d n 1 supersymmetric effective action for scalar multiplets": [
+      "433861"
+    ],
+    "a note on exemplary off shell constructions of 4d n 2 supersymmetry representations": [
+      "1838426"
+    ],
+    "a note on the geometry of global supersymmetry": [
+      "119079"
+    ],
+    "a note on the geometry of local supersymmetry": [
+      "129105"
+    ],
+    "a pre cis minimal four color holoraumy and wolfram s new kind of science paradigm": [
+      "2819157"
+    ],
+    "a preon model with family replication from a d 6 n 2 supergravity theory": [
+      "207930"
+    ],
+    "a proposal for alepho extended supersymmetry in integrable systems": [
+      "401091"
+    ],
+    "a proposal on culling filtering a coxeter group for 4d n 1 spacetime susy representations revised": [
+      "1413126"
+    ],
+    "a study of general 2 d n 2 matter coupled to supergravity in superspace": [
+      "399058"
+    ],
+    "a superfield for every dash chromotopology": [
+      "812235"
+    ],
+    "a theory of spinning particles for large n extended supersymmetry": [
+      "394041"
+    ],
+    "a theory of spinning particles for large n extended supersymmetry 2": [
+      "401068"
+    ],
+    "a truly crazy idea about type iib supergravity and heterotic sigma models": [
+      "393920"
+    ],
+    "a unified spinorial superfield treatment of the higher superspin superfield formalism": [
+      "852570"
+    ],
+    "adinkra color confinement in exemplary off shell constructions of 4d cal n 2 supersymmetry representations": [
+      "1293807"
+    ],
+    "adinkra foundation of component decomposition and the scan for superconformal multiplets in 11d n 1 superspace": [
+      "1781516"
+    ],
+    "adinkra height yielding matrix numbers eigenvalue equivalence classes for minimal four color adinkras": [
+      "1727955"
+    ],
+    "adinkra in equivalence from coxeter group representations a case study": [
+      "1188872"
+    ],
+    "adinkra isomorphisms and seeing shapes with eigenvalues": [
+      "1207094"
+    ],
+    "adinkras 0 branes holoraumy and the susy qft qm correspondence": [
+      "1336106"
+    ],
+    "adinkras a graphical technology for supersymmetric representation theory": [
+      "655613"
+    ],
+    "adinkras and susy holography some explicit examples": [
+      "1182543"
+    ],
+    "adinkras and the dynamics of superspace prepotentials": [
+      "717895"
+    ],
+    "adinkras for clifford algebras and worldline supermultiplets": [
+      "803194"
+    ],
+    "adinkras from ordered quartets of bc 4 coxeter group elements and regarding 1 358 954 496 matrix elements of the gadget": [
+      "1507499"
+    ],
+    "adinkras from ordered quartets of bc4 coxeter group elements and regarding another gadget s 1 358 954 496 matrix elements": [
+      "1653961"
+    ],
+    "adinkras genomics in sixteen color systems i": [
+      "2901502"
+    ],
+    "advening to adynkrafields young tableaux to component fields of the 10d n 1 scalar superfield": [
+      "1799870"
+    ],
+    "adynkra genomes adynkrafields and the 4d cal n 1 supergravity superfield prepotential": [
+      "2807436"
+    ],
+    "aleph0 extended supergravity and chern simons theories": [
+      "419643"
+    ],
+    "algebra of the local symmetries for the d 4 n 1 green schwarz superstring": [
+      "278529"
+    ],
+    "algebraic origins of superspace constraints in supergravity": [
+      "8700"
+    ],
+    "an extended detailed investigation of first and second order supersymmetries for off shell n 2 and n 4 supermultiplets": [
+      "916150"
+    ],
+    "another solution for n 2 superspace bianchi identities": [
+      "153598"
+    ],
+    "automorphism properties and classification of adinkras": [
+      "1393363"
+    ],
+    "automorphism properties of adinkras": [
+      "868040"
+    ],
+    "auxiliary fields for d 2 n 4 supergravity": [
+      "24554"
+    ],
+    "basic canon in d 4 n 1 superfield theory five primer lectures": [
+      "455060"
+    ],
+    "cal n 2 susy and the hexipentisteriruncicantitruncated 7 simplex": [
+      "2652632"
+    ],
+    "calabi yau heterotic strings and unidexterous sigma models": [
+      "284288"
+    ],
+    "calabi yau manifold compactification in heterotic string and n 1 supersymmetry in four dimensions": [
+      "235678"
+    ],
+    "can pions smell 4 d n 1 supersymmetry": [
+      "447680"
+    ],
+    "can the string scale be related to the cosmic baryon asymmetry": [
+      "658189"
+    ],
+    "chern simons theories with supersymmetries in three dimensions": [
+      "319046"
+    ],
+    "chiral supergravitons interacting with a 0 brane n extended nsr supervirasoro group": [
+      "581765"
+    ],
+    "chiral supergravity actions and superforms": [
+      "831847"
+    ],
+    "cluster superalgebras and stringy integrals": [
+      "1969605"
+    ],
+    "cnm models holomorphic functions and projective superspace c maps": [
+      "495995"
+    ],
+    "codes and supersymmetry in one dimension": [
+      "924662"
+    ],
+    "comments on nonminimal n 1 scalar multiplets": [
+      "220186"
+    ],
+    "component actions from curved superspace normal coordinates and ectoplasm": [
+      "451300"
+    ],
+    "component decompositions and adynkra libraries for supermultiplets in lower dimensional superspaces": [
+      "1807004"
+    ],
+    "consequences of conformally covariant constraints for n 4 superspace": [
+      "12561"
+    ],
+    "conserved higher spin supercurrents for arbitrary spin massless supermultiplets and higher spin superfield cubic interactions": [
+      "1672787"
+    ],
+    "consistent and universal inclusion of the lorentz chern simons form in d 10 n 1 supergravity theories": [
+      "27090"
+    ],
+    "d 10 n 1 superspace supergravity and the lorentz chern simons form": [
+      "261658"
+    ],
+    "d 10 n 2a supergravity in superspace": [
+      "235791"
+    ],
+    "d 2 n 2 2 semi chiral vector multiplet": [
+      "751168"
+    ],
+    "d 2 superfield supergravity local supersymmetry 2 and nonlinear sigma models": [
+      "217518"
+    ],
+    "deliberations on 11 d superspace for the m theory effective action": [
+      "551915"
+    ],
+    "delta i 1 2 rule in the weinberg salam model": [
+      "115597"
+    ],
+    "does d 4 n 8 supergravity really know about heterotic strings": [
+      "285942"
+    ],
+    "dual versions of higher dimensional supergravities and anomaly cancellations in lower dimensions": [
+      "221678"
+    ],
+    "dynamical equations from a first order perturbative superspace formulation of 10d n 1 string corrected supergravity i": [
+      "658781"
+    ],
+    "dynamical superfield theory of free massive superspin 1 multiplet": [
+      "591424"
+    ],
+    "ectoplasm and superspace integration measure for 2d supergravity with four spinorial supercurrents": [
+      "827339"
+    ],
+    "ectoplasm has no topology": [
+      "476012"
+    ],
+    "ectoplasm has no topology the prelude": [
+      "448416"
+    ],
+    "effective symmetries of the minimal supermultiplet of n 8 extended worldline supersymmetry": [
+      "819090"
+    ],
+    "equivalence of four dimensional supersymmetry 2 particle models": [
+      "264801"
+    ],
+    "euler characteristics in new d 10 n 1 superspace supergravity": [
+      "18547"
+    ],
+    "examples of 4d n 2 holoraumy": [
+      "1691228"
+    ],
+    "exploring the abelian 4d n 4 vector tensor supermultiplet and its off shell central charge structure": [
+      "1708546"
+    ],
+    "extended d 2 supergravity theories and their lower superspace realizations": [
+      "248012"
+    ],
+    "extended supersymmetry and selfduality in 2 2 dimensions": [
+      "333605"
+    ],
+    "extended supersymmetry and superbf gauge theories": [
+      "375053"
+    ],
+    "fermionic thirring theories as minimal model actions": [
+      "366353"
+    ],
+    "field strengths of linearized 5 d n 1 superfield supergravity on a three brane": [
+      "633544"
+    ],
+    "finiteness of d 4 n 1 green schwarz heterotic sigma models": [
+      "266600"
+    ],
+    "from diophantus to supergravity and massless higher spin multiplets": [
+      "1608410"
+    ],
+    "gauge two form in d 4 n 4 supergeometry with su 4 supersymmetry": [
+      "277546"
+    ],
+    "gauged and ungauged n 4 supergravities in superspace": [
+      "12589"
+    ],
+    "gauged n 4 supergravity theory with a new scalar potential": [
+      "182350"
+    ],
+    "generating all 36 864 four color adinkras via signed permutations and organizing into ell and tilde ell equivalence classes": [
+      "1644656"
+    ],
+    "hierarchy of supersymmetric higher spin connections": [
+      "1821396"
+    ],
+    "higher spin superfield interactions with the chiral supermultiplet conserved supercurrents and cubic vertices": [
+      "1617798"
+    ],
+    "higher spin supersymmetry at the cosmological collider sculpting susy rilles in the cmb": [
+      "1743771"
+    ],
+    "holomorphy minimal homotopy and the 4 d n 1 supersymmetric bardeen gross jackiw anomaly": [
+      "523721"
+    ],
+    "improved supergeometries for type ii green schwarz nonlinear sigma model": [
+      "284916"
+    ],
+    "in search of excellence and equity in physics": [
+      "2055661"
+    ],
+    "infinite dimensional algebraic mathfrakspin n structure in extended higher dimensional susy holoraumy for valise and on shell supermultiplet representations": [
+      "1822476"
+    ],
+    "integer superspin supercurrents of matter supermultiplets": [
+      "1705972"
+    ],
+    "interaction of supersymmetric nonlinear sigma models with external higher spin superfields via higher spin supercurrents": [
+      "1669640"
+    ],
+    "introductory and fundamental mathematical aspects of supersymmetry": [
+      "706881"
+    ],
+    "irreducible decomposition of products of 10 d chiral sigma matrices": [
+      "526708"
+    ],
+    "is it possible to embed a 4d n 4 supersymmetric vector multiplet within a completely off shell adinkra hologram": [
+      "1282298"
+    ],
+    "is string theory phenomenologically viable": [
+      "723249"
+    ],
+    "is stringy supersymmetry quintessentially challenged": [
+      "583078"
+    ],
+    "lagrangian chiral coset construction of heterotic string theories in 1 0 superspace": [
+      "314337"
+    ],
+    "lefton righton formulation of massless thirring models": [
+      "267627"
+    ],
+    "leftons rightons nonlinear sigma models and superstrings": [
+      "251286"
+    ],
+    "linearized n 2 superfield supergravity": [
+      "166323"
+    ],
+    "local supersymmetry in superspace": [
+      "129790"
+    ],
+    "lorentz covariant quantization of the heterotic superstring": [
+      "277729"
+    ],
+    "m theory on spin 7 manifolds fluxes and 3 d n 1 supergravity": [
+      "634664"
+    ],
+    "majorana weyl spinors and selfdual gauge fields in 2 2 dimensions": [
+      "333606"
+    ],
+    "manifest 4 0 supersymmetry sigma models and the adhm instanton construction": [
+      "379816"
+    ],
+    "manifestly supersymmetric extensions of curvature 2 terms in six dimensional n 2 supergravity": [
+      "227310"
+    ],
+    "manifestly supersymmetric gauge fixing in d 2 supergravity theories": [
+      "238147"
+    ],
+    "manifestly supersymmetric o alpha prime superstring corrections in new d 10 n 1 supergravity yang mills theory": [
+      "220000"
+    ],
+    "massive 4d n 1 superspin 1 and 3 2 multiplets and dualities": [
+      "675561"
+    ],
+    "matter coupled to d 2 simple unidexterous supergravity local supersymmetry 2 and strings": [
+      "237390"
+    ],
+    "minimal superspace vector fields for 5 d minimal supersymmetry": [
+      "592994"
+    ],
+    "modern tensor spinor symbolic algebra algorithms and computing non closure geometry and holoraumy in 11d n 1 supergravity": [
+      "2606563"
+    ],
+    "more about the 2 0 supersymmetric wznw model in 2 0 superspace": [
+      "315514"
+    ],
+    "more four dimensional super string theories": [
+      "250105"
+    ],
+    "n 1 superspace components of extended supergravity": [
+      "191558"
+    ],
+    "n 1 superspace geometry of extended supergravity": [
+      "14653"
+    ],
+    "n 1 supersymmetric extension of the qcd effective action": [
+      "427629"
+    ],
+    "n 1 supersymmetry and the phenomenological pion physics effective action": [
+      "487862"
+    ],
+    "n 2 0 superstring as the underlying theory of selfdual yang mills theory": [
+      "333626"
+    ],
+    "n 2 supersymmetry of higher superspin massless theories": [
+      "423426"
+    ],
+    "n 4 and n 8 susy quantum mechanics and klein s vierergruppe": [
+      "1484334"
+    ],
+    "new 4 d n 1 superfield theory model of free massive superspin 3 2 multiplet": [
+      "581767"
+    ],
+    "new d 10 n 1 supergravity coupled to yang mills supermultiplet and anomaly cancellations": [
+      "16413"
+    ],
+    "new d 10 n 1 superspace supergravity and local symmetries of superstrings": [
+      "17753"
+    ],
+    "new massive supergravity multiplets": [
+      "730507"
+    ],
+    "new properties of unidexterous supersymmetric theories": [
+      "242031"
+    ],
+    "no n 4 strings on wolf spaces": [
+      "392495"
+    ],
+    "nonminimal n 1 supergravity and broken global supersymmetry": [
+      "204580"
+    ],
+    "nonpolynomiality prepotentials and superspace geometry": [
+      "218729"
+    ],
+    "off shell brst invariant superjacobians": [
+      "250201"
+    ],
+    "on 1d n 4 supersymmetric syk type models i": [
+      "1852871"
+    ],
+    "on 1d n 4 supersymmetric syk type models part ii": [
+      "1956018"
+    ],
+    "on 4d n 1 massless gauge superfields of arbitrary superhelicity": [
+      "1262369"
+    ],
+    "on 4d n 1 massless gauge superfields of higher superspin half odd integer case": [
+      "1262370"
+    ],
+    "on aspects and implications of the new covariant 4 d n 1 green schwarz sigma model action": [
+      "406415"
+    ],
+    "on clifford algebraic dimensional extension and susy holography": [
+      "1317251"
+    ],
+    "on continuous conformal deformation of the sl 2 4 u 1 coset": [
+      "394825"
+    ],
+    "on d 10 n 1 supersymmetry superspace geometry and superstring effects": [
+      "230969"
+    ],
+    "on d 10 n 1 supersymmetry superspace geometry and superstring effects 2": [
+      "235790"
+    ],
+    "on dimensional extension of supersymmetry from worldlines to worldsheets": [
+      "894991"
+    ],
+    "on graph theoretic identifications of adinkras supersymmetry representations and superfields": [
+      "699968"
+    ],
+    "on shell and conformal n 4 supergravity in superspace": [
+      "11709"
+    ],
+    "on the four dimensional holoraumy of the 4d cal n 1 complex linear supermultiplet": [
+      "1514056"
+    ],
+    "on the geometry of superspace": [
+      "119503"
+    ],
+    "on the geometry of superspace and local supersymmetry 1": [
+      "121291"
+    ],
+    "on the geometry of superspace and local supersymmetry 2": [
+      "130840"
+    ],
+    "on the logical foundations of remarks on the supersymmetrization of the lorentz chern simons form in d 10 n 1 supergravity theories": [
+      "313879"
+    ],
+    "on the matter of n 2 matter": [
+      "765824"
+    ],
+    "on the ubiquity of electromagnetic duality rotations in 4d mathcal n 1 holoraumy tensors for on shell 4d supermultiplets": [
+      "1738855"
+    ],
+    "on universality of the su 2 bosonized thirring model": [
+      "344753"
+    ],
+    "porous low k dielectrics material properties": [
+      "671443"
+    ],
+    "prepotentials a beltrami parametrization of superriemann surfaces": [
+      "273316"
+    ],
+    "progress on cubic interactions of arbitrary superspin supermultiplets via gauge invariant supercurrents": [
+      "1732260"
+    ],
+    "progress toward a classical susy 2 4d n 1 green schwarz sigma model action": [
+      "455748"
+    ],
+    "progress toward covariant formulation of all d 4 gs type sigma model actions": [
+      "290173"
+    ],
+    "properties of hymns in examples of four color five color and six color adinkras": [
+      "1826638"
+    ],
+    "quantum cosmology in the models of 2 d and 4 d dilatonic supergravity with wz matter": [
+      "467390"
+    ],
+    "quantum information approach to bosonization of supersymmetric yang mills fields": [
+      "3122895"
+    ],
+    "quantum supersymmetry and the supergeometry of four dimensional superstrings": [
+      "279199"
+    ],
+    "realization of space time conformal symmetry in d 10 n 1 superspace": [
+      "302115"
+    ],
+    "reduction redux of adinkras": [
+      "1268178"
+    ],
+    "relating doubly even error correcting codes graphs and irreducible representations of n extended supersymmetry": [
+      "787025"
+    ],
+    "remarks on the n 2 supersymmetric chern simons theories": [
+      "321872"
+    ],
+    "revealing some of the hidden representation theory of supersymmetry": [
+      "772961"
+    ],
+    "searching for all n 4 supergravities with global so 4": [
+      "190269"
+    ],
+    "searching for supersymmetry in hadrons": [
+      "511618"
+    ],
+    "seeking the loop quantum gravity barbero immirzi parameter and field in 4d n 1 supergravity": [
+      "824185"
+    ],
+    "selfdual supersymmetry and supergravity in atiyah ward space time": [
+      "336206"
+    ],
+    "short distance expansion from the dual representation of infinite dimensional lie algebras": [
+      "601268"
+    ],
+    "short distance operator product expansion of the 1d n 4 extended gr super virasoro algebra by use of coadjoint representations": [
+      "778050"
+    ],
+    "simplified su 2 spinning string superspace supergravity": [
+      "263912"
+    ],
+    "solution to constraints for n 0 supergravity": [
+      "168448"
+    ],
+    "spacetime spin and chirality operators for minimal 4d cal n 1 supermultiplets from bc 4 adinkra tessellation of riemann surfaces": [
+      "1511146"
+    ],
+    "spinor yang mills superfields": [
+      "111455"
+    ],
+    "strings 88 proceedings workshop college park usa may 24 28 1988": [
+      "290028"
+    ],
+    "strings superstrings and two dimensional lagrangian field theory": [
+      "289488"
+    ],
+    "super p form gauge superfields": [
+      "9990"
+    ],
+    "super zeeman embedding models on n supersymmetric world lines": [
+      "781935"
+    ],
+    "superconformal symmetry breakdown as a guide to supergravity constraints": [
+      "143334"
+    ],
+    "superconformal symmetry in 11 d superspace and the m theory effective action": [
+      "558607"
+    ],
+    "superconformal transformations and six dimensional space time": [
+      "141077"
+    ],
+    "supercovariant derivatives super weyl groups and n 2 supergravity": [
+      "152626"
+    ],
+    "superfield component decompositions and the scan for prepotential supermultiplets in 10d superspaces": [
+      "1762868"
+    ],
+    "superfield continuous spin equations of motion": [
+      "1725940"
+    ],
+    "superforms in five dimensional n 1 superspace": [
+      "1334166"
+    ],
+    "supergravitons interacting with the supervirasoro group": [
+      "556791"
+    ],
+    "supergravity in d 9 and its coupling to noncompact sigma model": [
+      "204714"
+    ],
+    "supergravity loop contributions to brane world supersymmetry breaking": [
+      "619144"
+    ],
+    "superspace bianchi identities and the supercovariant derivative": [
+      "140015"
+    ],
+    "superspace brst bv operators of superfield gauge theories": [
+      "1997189"
+    ],
+    "superspace first order formalism trivial symmetries and electromagnetic interactions of linearized supergravity": [
+      "1883895"
+    ],
+    "superspace formulation of new nonlinear sigma models": [
+      "194744"
+    ],
+    "superspace geometrical realization of the n extended super virasoro algebra and its dual": [
+      "523537"
+    ],
+    "superspace geometrical representations of extended super virasoro algebras": [
+      "471405"
+    ],
+    "superspace geometry and n 1 nonminimal supergravity": [
+      "143311"
+    ],
+    "superspace geometry from d 4 n 1 heterotic superstrings": [
+      "262426"
+    ],
+    "superspace or one thousand and one lessons in supersymmetry": [
+      "195126"
+    ],
+    "superspace spinning string spectres": [
+      "18959"
+    ],
+    "superstring inspired supergravity as the universal source of inflation and quintessence": [
+      "811183"
+    ],
+    "superstrings cosmology composite structures proceedings international workshop college park usa march 11 18 1987": [
+      "255986"
+    ],
+    "superstrings why einstein would love spaghetti in fundamental physics": [
+      "1489482"
+    ],
+    "supersymmetric embedding of the quantum hall matrix model": [
+      "661400"
+    ],
+    "supersymmetric gauge anomaly with general homotopic paths": [
+      "534176"
+    ],
+    "supersymmetric matter gravitino multiplets": [
+      "15327"
+    ],
+    "supersymmetric selfdual yang mills and supergravity as background of green schwarz superstring": [
+      "333607"
+    ],
+    "supersymmetric soluble systems embedded in supersymmetric selfdual yang mills theory": [
+      "340003"
+    ],
+    "supersymmetry and geometry in d 4 nonlinear sigma models": [
+      "212837"
+    ],
+    "supersymmetry and representation theory in low dimensions": [
+      "1837085"
+    ],
+    "supersymmetry and yang mills invariance in 1 1 dimensions": [
+      "119080"
+    ],
+    "supersymmetry from superspace to graph theory and polyhedra celebrationum scripta collecta": [
+      "3104353"
+    ],
+    "susy equation topology zonohedra and the search for alternate off shell adinkras": [
+      "1083406"
+    ],
+    "teleparallel superspace in eleven dimensions coupled to supermembranes": [
+      "560325"
+    ],
+    "the 1st ilk superparticle in 2nd order lagrangian and backgrounds": [
+      "315122"
+    ],
+    "the 300 correlators suggests 4d n 1 susy is a solution to a set of sudoku puzzles": [
+      "1838225"
+    ],
+    "the cnm hypermultiplet nexus": [
+      "478126"
+    ],
+    "the constraints for n 2 superspace from extended supergravity in ordinary space": [
+      "8943"
+    ],
+    "the fundamental supersymmetry challenge remains": [
+      "562720"
+    ],
+    "the gauge principle versus the equivalence principle": [
+      "217045"
+    ],
+    "the off shell 3 2 2 supermultiplets revisited": [
+      "622349"
+    ],
+    "the real anatomy of complex linear superfields": [
+      "1089738"
+    ],
+    "the spin 3 2 1 multiplet and superspace geometry": [
+      "202439"
+    ],
+    "the superspace wznw action for 4 d n 1 supersymmetric qcd": [
+      "539116"
+    ],
+    "think different applying the old macintosh mantra to the computability of the susy auxiliary field problem": [
+      "1345056"
+    ],
+    "topology types of adinkras and the corresponding representations of n extended supersymmetry": [
+      "787024"
+    ],
+    "toward a complete theory of massless effective actions for d 4 n 1 superstrings": [
+      "290802"
+    ],
+    "toward a supersymmetry 2 particle model of the first ilk": [
+      "339673"
+    ],
+    "toward an off shell 11 d supergravity limit of m theory": [
+      "415718"
+    ],
+    "toward an unextended superfield formulation of n 2 supergravity": [
+      "9654"
+    ],
+    "towards a direct detection of the spin of dark matter": [
+      "2614891"
+    ],
+    "towards a unified theory of massless superfields of all superspins": [
+      "426331"
+    ],
+    "towards covariantly quantized d 10 type ii green schwarz sigma models": [
+      "278660"
+    ],
+    "tuning the radio to the off shell 2 d fayet hypermultiplet problem": [
+      "415955"
+    ],
+    "twisted multiplets and new supersymmetric nonlinear sigma models": [
+      "15441"
+    ],
+    "two two dimensional supergravity theories from calabi yau four folds": [
+      "527220"
+    ],
+    "type b type o bosonic string sigma models": [
+      "442136"
+    ],
+    "ultramultiplets a new representation of rigid 2 d n 8 supersymmetry": [
+      "378790"
+    ],
+    "unconstrained brst a new prototype for covariant string field theory": [
+      "307983"
+    ],
+    "unconstrained brst superfield theories": [
+      "304832"
+    ],
+    "understanding constraints in superspace formulations of supergravity": [
+      "141382"
+    ],
+    "unfolded adinkra properties of supermultiplets i": [
+      "2721972"
+    ],
+    "unidexterous d 2 supersymmetry in superspace": [
+      "232038"
+    ],
+    "unidexterous d 2 supersymmetry in superspace 2 quantization": [
+      "235592"
+    ],
+    "unidexterous locally supersymmetric actions for calabi yau compactifications": [
+      "277291"
+    ],
+    "unidexterous supergravity beltrami parametrization and brst quantization": [
+      "265527"
+    ],
+    "unidexterous superspace the flax of super strings": [
+      "244796"
+    ],
+    "using superspace techniques to construct effective actions for massless string states": [
+      "243451"
+    ],
+    "vector multiplets and the phases of n 2 theories in 2 d through the looking glass": [
+      "381836"
+    ],
+    "violation of lorentz invariance in type ii green schwarz superstrings in curved d 10 n 2 superspace": [
+      "277349"
+    ],
+    "weyl covariance and proposals for superconformal prepotentials in 10d superspaces": [
+      "1806430"
+    ],
+    "what if dirac pionini existed in a purely chiral superfield formulation": [
+      "439466"
+    ],
+    "when superspace is not enough": [
+      "601439"
+    ],
+    "why are there so many n 4 superstrings": [
+      "378788"
+    ],
+    "why auxiliary fields matter the strange case of the 4 d n 1 supersymmetric qcd effective action": [
+      "398755"
+    ],
+    "why auxiliary fields matter the strange case of the 4 d n 1 supersymmetric qcd effective action 2": [
+      "419762"
+    ],
+    "will the real 4 d n 1 sg limit of superstring m theory please stand up": [
+      "532505"
+    ],
+    "yes leftons for heterotic superstrings": [
+      "282771"
+    ]
+  },
+  "schema_version": "gates-citation-v1"
+}
