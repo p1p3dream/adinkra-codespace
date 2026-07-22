@@ -303,52 +303,46 @@ export class Instrument168 {
     }
 
     const pointGeometry = new THREE.BufferGeometry();
-    pointGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    pointGeometry.setAttribute("aPa", new THREE.BufferAttribute(pa, 4));
-    pointGeometry.setAttribute("aPb", new THREE.BufferAttribute(pb, 3));
-    pointGeometry.setAttribute("aCa", new THREE.BufferAttribute(ca, 4));
-    pointGeometry.setAttribute("aCb", new THREE.BufferAttribute(cb, 3));
-    pointGeometry.setAttribute("aRightHue", new THREE.BufferAttribute(rightHue, 1));
-    pointGeometry.setAttribute("aLeftHue", new THREE.BufferAttribute(leftHue, 1));
-    pointGeometry.setAttribute("aGold", new THREE.BufferAttribute(gold, 1));
+    const attrPos = new THREE.BufferAttribute(positions, 3);
+    const attrPa = new THREE.BufferAttribute(pa, 4);
+    const attrPb = new THREE.BufferAttribute(pb, 3);
+    const attrCa = new THREE.BufferAttribute(ca, 4);
+    const attrCb = new THREE.BufferAttribute(cb, 3);
+    const attrRightHue = new THREE.BufferAttribute(rightHue, 1);
+    const attrLeftHue = new THREE.BufferAttribute(leftHue, 1);
+    const attrGold = new THREE.BufferAttribute(gold, 1);
+    pointGeometry.setAttribute("position", attrPos);
+    pointGeometry.setAttribute("aPa", attrPa);
+    pointGeometry.setAttribute("aPb", attrPb);
+    pointGeometry.setAttribute("aCa", attrCa);
+    pointGeometry.setAttribute("aCb", attrCb);
+    pointGeometry.setAttribute("aRightHue", attrRightHue);
+    pointGeometry.setAttribute("aLeftHue", attrLeftHue);
+    pointGeometry.setAttribute("aGold", attrGold);
     pointGeometry.setAttribute("aId", new THREE.BufferAttribute(ids, 1));
     pointGeometry.setAttribute("aHighlight", new THREE.BufferAttribute(highlight, 1));
 
-    // Edge geometry: duplicate the per-vertex attributes per endpoint.
+    // Edge geometry shares the point attribute buffers and draws them indexed.
+    // This replaces duplicating about 19 floats per endpoint (roughly 21 MB for
+    // S8) and a 282,240-iteration copy loop that stalled first paint with a
+    // single pass that fills one index buffer.
     const edges = atlas.edges;
     const eCount = edges.length;
-    const epa = new Float32Array(eCount * 2 * 4);
-    const epb = new Float32Array(eCount * 2 * 3);
-    const eca = new Float32Array(eCount * 2 * 4);
-    const ecb = new Float32Array(eCount * 2 * 3);
-    const erh = new Float32Array(eCount * 2);
-    const elh = new Float32Array(eCount * 2);
-    const egold = new Float32Array(eCount * 2);
-    const epos = new Float32Array(eCount * 2 * 3);
+    const edgeIndex = new Uint32Array(eCount * 2);
     for (let e = 0; e < eCount; e += 1) {
-      const ends = [edges[e][0], edges[e][1]];
-      for (let side = 0; side < 2; side += 1) {
-        const v = ends[side];
-        const w = e * 2 + side;
-        epa.set(pa.subarray(v * 4, v * 4 + 4), w * 4);
-        epb.set(pb.subarray(v * 3, v * 3 + 3), w * 3);
-        eca.set(ca.subarray(v * 4, v * 4 + 4), w * 4);
-        ecb.set(cb.subarray(v * 3, v * 3 + 3), w * 3);
-        erh[w] = rightHue[v];
-        elh[w] = leftHue[v];
-        egold[w] = gold[v];
-        epos.set(positions.subarray(v * 3, v * 3 + 3), w * 3);
-      }
+      edgeIndex[e * 2] = edges[e][0];
+      edgeIndex[e * 2 + 1] = edges[e][1];
     }
     const edgeGeometry = new THREE.BufferGeometry();
-    edgeGeometry.setAttribute("position", new THREE.BufferAttribute(epos, 3));
-    edgeGeometry.setAttribute("aPa", new THREE.BufferAttribute(epa, 4));
-    edgeGeometry.setAttribute("aPb", new THREE.BufferAttribute(epb, 3));
-    edgeGeometry.setAttribute("aCa", new THREE.BufferAttribute(eca, 4));
-    edgeGeometry.setAttribute("aCb", new THREE.BufferAttribute(ecb, 3));
-    edgeGeometry.setAttribute("aRightHue", new THREE.BufferAttribute(erh, 1));
-    edgeGeometry.setAttribute("aLeftHue", new THREE.BufferAttribute(elh, 1));
-    edgeGeometry.setAttribute("aGold", new THREE.BufferAttribute(egold, 1));
+    edgeGeometry.setAttribute("position", attrPos);
+    edgeGeometry.setAttribute("aPa", attrPa);
+    edgeGeometry.setAttribute("aPb", attrPb);
+    edgeGeometry.setAttribute("aCa", attrCa);
+    edgeGeometry.setAttribute("aCb", attrCb);
+    edgeGeometry.setAttribute("aRightHue", attrRightHue);
+    edgeGeometry.setAttribute("aLeftHue", attrLeftHue);
+    edgeGeometry.setAttribute("aGold", attrGold);
+    edgeGeometry.setIndex(new THREE.BufferAttribute(edgeIndex, 1));
 
     this.points = new THREE.Points(pointGeometry, this.pointMaterial);
     this.points.frustumCulled = false;

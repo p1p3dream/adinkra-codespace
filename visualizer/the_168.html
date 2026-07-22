@@ -390,18 +390,38 @@ instrument.onPick = rank => {
 // Panels.
 $("ledger-toggle").addEventListener("click", () => $("ledger").classList.add("active"));
 $("ledger-close").addEventListener("click", () => $("ledger").classList.remove("active"));
-$("onboarding-dismiss").addEventListener("click", () => $("onboarding").classList.add("done"));
+// Begin is gated on the instrument being ready so the click never lands on a
+// busy main thread. The overlay doubles as the preparing state; an eager click
+// is remembered and honored the instant the build finishes.
+const beginBtn = $("onboarding-dismiss");
+let instrumentReady = false;
+let beginRequested = false;
+const revealStage = () => $("onboarding").classList.add("done");
+beginBtn.textContent = "Preparing the 7D object...";
+beginBtn.addEventListener("click", () => {
+  if (instrumentReady) revealStage();
+  else { beginRequested = true; beginBtn.textContent = "Starting..."; }
+});
 
 // Go. Deep links: ?beat=N jumps straight to a beat with its visual
 // state already settled, ?clean=1 skips the onboarding overlay.
 const params = new URLSearchParams(location.search);
 const startBeat = Math.max(0, Math.min(beats.length - 1, Number(params.get("beat") || 0)));
-if (params.get("clean") === "1") $("onboarding").classList.add("done");
+if (params.get("clean") === "1") revealStage();
 
-instrument.setDataset(beats[startBeat].dataset, atlases[beats[startBeat].dataset]);
-showBeat(startBeat, { snapDataset: true });
-instrument.snapTargets(beats[startBeat].targets);
-instrument.start();
+// Build after the first paint so the overlay shows and the Begin button stays
+// responsive while the geometry uploads, instead of the whole page freezing
+// through init and swallowing the click. With the indexed edge geometry this
+// window is short; the gate makes it feel instant regardless.
+requestAnimationFrame(() => {
+  instrument.setDataset(beats[startBeat].dataset, atlases[beats[startBeat].dataset]);
+  showBeat(startBeat, { snapDataset: true });
+  instrument.snapTargets(beats[startBeat].targets);
+  instrument.start();
+  instrumentReady = true;
+  beginBtn.textContent = "Begin";
+  if (beginRequested) revealStage();
+});
 
 // Console handle for inspection and scripted demos.
 window.the168 = { instrument, beats, showBeat, atlases, garden };
