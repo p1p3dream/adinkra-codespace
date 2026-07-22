@@ -56,11 +56,11 @@ explicit kernel calculation.
 
 All three highest-weight kernels have now been extracted and verified exactly:
 
-| target | vector | coefficients | nonzero | range | raising rows with nonzero residual |
-|---|---:|---:|---:|---:|---:|
-| `(00001)` | 1 | 591,810 | 374,246 | -660 to 3,960 | 0 of 1,943,600 |
-| `(00001)` | 2 | 591,810 | 6,435 | -1 to 1 | 0 of 1,943,600 |
-| `(10001)` | 1 | 388,720 | 260,267 | -1,320 to 1,320 | 0 of 1,174,806 |
+| target | vector | coefficients | nonzero | squared norm | range | raising rows with nonzero residual |
+|---|---:|---:|---:|---:|---:|---:|
+| `(00001)` | 1 | 591,810 | 374,246 | 426,254,400 | -660 to 3,960 | 0 of 1,943,600 |
+| `(00001)` | 2 | 591,810 | 6,435 | 6,435 | -1 to 1 | 0 of 1,943,600 |
+| `(10001)` | 1 | 388,720 | 260,267 | 245,044,800 | -1,320 to 1,320 | 0 of 1,174,806 |
 
 Each integer vector has greatest common divisor one. The artifacts are stored
 under `data/eleven_dimensional_bridge/` and read directly by the Rust verifier.
@@ -104,15 +104,39 @@ c\,I_{320}(D^{15}V).
 Here $I_{32}^{(1)}$, $I_{32}^{(2)}$, and $I_{320}$ denote kernel vectors of
 the two exact sparse systems above, followed by the target projectors already
 verified in `src/eleven_dimensional_clifford.rs`. All three highest-weight
-vectors are now exact. Their covariant descendants remain.
+vectors are now exact. Both 32-component spinor descendant systems are exact.
+The 320-component source descendant system remains to be constructed.
+
+## Canonical computational normalization
+
+The surviving `(10001)` highest-weight kernel is a primitive integer vector
+$v$ with greatest common divisor one. Its first nonzero coefficient is
+positive, fixing the remaining sign convention, and
+
+\[
+\langle v,v\rangle=245{,}044{,}800.
+\]
+
+The exact rank-one projector onto this source highest-weight line is therefore
+
+\[
+P_v(x)=v\,\frac{\langle v,x\rangle}{245{,}044{,}800}.
+\]
+
+The verifier checks $P_v(v)=v$ and the corresponding exact identity
+$P_v^2=P_v$. This fixes a reproducible computational normalization for the
+source line. It does not fix the physical scale of $c$. That scale requires a
+curvature convention, a Bianchi identity, or matching to a component field.
 
 ## Current boundary
 
 This pass makes the source-embedding problem explicit and reproducible and
 supplies all three exact highest-weight vectors and both complete 32-component
 spinor intertwiners. It also materializes the complete 320-dimensional target
-module. The remaining `(10001)` work is to propagate the source vector through
-the same 752 lowering actions and verify every target relation. Consequently:
+module and fixes a canonical computational normalization of the surviving
+source highest-weight line. The remaining `(10001)` work is to propagate the
+source vector through the same 752 lowering actions and verify every target
+relation. Consequently:
 
 - the final two-form torsion projection has now been evaluated at the
   representation level and has rank zero on the three coefficients;

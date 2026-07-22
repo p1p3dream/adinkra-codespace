@@ -62,6 +62,7 @@ pub struct ExactKernelVectorReport {
     pub minimum_coefficient: i16,
     pub maximum_coefficient: i16,
     pub coefficient_gcd: i16,
+    pub squared_norm: u64,
     pub raising_rows_checked: usize,
     pub nonzero_residual_rows: usize,
     pub maximum_absolute_residual: i64,
@@ -105,9 +106,76 @@ pub struct ElevenDimensionalBridgeReport {
     pub vector_spinor_target_audit: VectorSpinorTargetAudit,
     pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
+    pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
     pub inherited_spinor_gauge_audit: InheritedSpinorGaugeAudit,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CanonicalSourceLineNormalizationAudit {
+    pub source_artifact: &'static str,
+    pub source_dynkin_label: &'static str,
+    pub primitive_coefficient_gcd: i16,
+    pub first_nonzero_coefficient: i16,
+    pub squared_norm: u64,
+    pub orthogonal_projection_denominator: u64,
+    pub projector_on_source_line_numerator: u64,
+    pub projector_on_source_line_denominator: u64,
+    pub primitive_sign_fixed: bool,
+    pub orthogonal_projector_idempotent: bool,
+    pub computational_source_normalization_fixed: bool,
+    pub physical_bridge_scale_fixed: bool,
+    pub interpretation: &'static str,
+    pub passed: bool,
+}
+
+fn squared_norm(coefficients: &[i16]) -> u64 {
+    coefficients
+        .iter()
+        .map(|coefficient| {
+            let coefficient = i64::from(*coefficient);
+            (coefficient * coefficient) as u64
+        })
+        .sum()
+}
+
+fn audit_canonical_source_line_normalization() -> CanonicalSourceLineNormalizationAudit {
+    let coefficients = decode_kernel(VECTOR_SPINOR_KERNEL);
+    let primitive_coefficient_gcd = coefficients.iter().fold(0_i16, |gcd, coefficient| {
+        integer_gcd(gcd, coefficient.abs())
+    });
+    let first_nonzero_coefficient = coefficients
+        .iter()
+        .copied()
+        .find(|coefficient| *coefficient != 0)
+        .unwrap_or(0);
+    let squared_norm = squared_norm(&coefficients);
+    let orthogonal_projection_denominator = squared_norm;
+    let projector_on_source_line_numerator = squared_norm;
+    let projector_on_source_line_denominator = squared_norm;
+    let primitive_sign_fixed = first_nonzero_coefficient > 0;
+    let orthogonal_projector_idempotent = squared_norm != 0
+        && projector_on_source_line_numerator == projector_on_source_line_denominator
+        && orthogonal_projection_denominator == squared_norm;
+    let computational_source_normalization_fixed =
+        primitive_coefficient_gcd == 1 && primitive_sign_fixed && orthogonal_projector_idempotent;
+    CanonicalSourceLineNormalizationAudit {
+        source_artifact: "data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le",
+        source_dynkin_label: "10001",
+        primitive_coefficient_gcd,
+        first_nonzero_coefficient,
+        squared_norm,
+        orthogonal_projection_denominator,
+        projector_on_source_line_numerator,
+        projector_on_source_line_denominator,
+        primitive_sign_fixed,
+        orthogonal_projector_idempotent,
+        computational_source_normalization_fixed,
+        physical_bridge_scale_fixed: false,
+        interpretation: "the primitive integer kernel, positive first nonzero coefficient, and exact rank-one orthogonal projector fix a reproducible normalization of the source highest-weight line; they do not fix the physical coefficient c multiplying the bridge",
+        passed: computational_source_normalization_fixed,
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -759,6 +827,7 @@ fn build_system(
                 minimum_coefficient: *coefficients.iter().min().unwrap(),
                 maximum_coefficient: *coefficients.iter().max().unwrap(),
                 coefficient_gcd,
+                squared_norm: squared_norm(&coefficients),
                 raising_rows_checked: raising_blocks.iter().map(|block| block.rows).sum(),
                 nonzero_residual_rows: kernel_nonzero_residual_rows[kernel_index],
                 maximum_absolute_residual: kernel_maximum_absolute_residual[kernel_index],
@@ -863,6 +932,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
     let final_equation_2_7_projection = audit_final_equation_2_7_projection();
     let clifford = crate::eleven_dimensional_clifford::verify();
     let local_gamma_trace_quotient = audit_local_gamma_trace_quotient(&clifford);
+    let canonical_source_line_normalization = audit_canonical_source_line_normalization();
     let inherited_spinor_gauge_audit = audit_inherited_spinor_gauge(&clifford);
     let passed = systems
         .iter()
@@ -874,10 +944,11 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && vector_spinor_target_audit.passed
         && final_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
+        && canonical_source_line_normalization.passed
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v1",
+        schema_version: "adynkra.11d.level15-bridge.v2",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -903,8 +974,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
                 target_sector: "gamma-traceless vector-spinor",
             },
         ],
-        equation_2_7_status: "all three highest-weight kernel vectors are explicit and exact; their covariant descendants are still required before substituting the bridge into the torsion constraints",
-        coefficient_solution_status: "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b, leaving the unique non-gamma-trace c channel up to normalization",
+        equation_2_7_status: "the final gamma^[2] projection has rank zero on the three bridge channels; the two spinor source descendant systems are exact and the 320-dimensional source descendant system remains",
+        coefficient_solution_status: "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b, leaving the unique non-gamma-trace c channel with a canonical source-line normalization but an unfixed physical scale",
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
@@ -912,8 +983,9 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         vector_spinor_target_audit,
         final_equation_2_7_projection,
         local_gamma_trace_quotient,
+        canonical_source_line_normalization,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
+        boundary: "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes both spinor source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The 320-dimensional source descendant system and the physical normalization of c remain.",
         passed,
     }
 }
@@ -949,6 +1021,19 @@ mod tests {
     }
 
     #[test]
+    fn vector_spinor_source_line_has_canonical_computational_normalization() {
+        let audit = audit_canonical_source_line_normalization();
+        assert_eq!(audit.primitive_coefficient_gcd, 1);
+        assert_eq!(audit.first_nonzero_coefficient, 84);
+        assert_eq!(audit.squared_norm, 245_044_800);
+        assert!(audit.primitive_sign_fixed);
+        assert!(audit.orthogonal_projector_idempotent);
+        assert!(audit.computational_source_normalization_fixed);
+        assert!(!audit.physical_bridge_scale_fixed);
+        assert!(audit.passed);
+    }
+
+    #[test]
     #[ignore = "constructs 3.1 million rows and 12 million exact sparse entries"]
     fn full_level_15_system_matches_independent_counts() {
         let report = verify();
@@ -966,6 +1051,8 @@ mod tests {
         );
         assert_eq!(spinor.exact_kernel_vectors[0].nonzero_coefficients, 374_246);
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
+        assert_eq!(spinor.exact_kernel_vectors[0].squared_norm, 426_254_400);
+        assert_eq!(spinor.exact_kernel_vectors[1].squared_norm, 6_435);
         assert_eq!(report.spinor_descendant_audits.len(), 2);
         for audit in &report.spinor_descendant_audits {
             assert_eq!(audit.target_states_generated, 32);
@@ -999,6 +1086,16 @@ mod tests {
         assert_eq!(quotient.surviving_coefficients, vec!["c"]);
         assert_eq!(quotient.quotient_bridge_coefficient_dimension, 1);
         assert!(quotient.passed);
+        let normalization = &report.canonical_source_line_normalization;
+        assert_eq!(normalization.primitive_coefficient_gcd, 1);
+        assert_eq!(normalization.first_nonzero_coefficient, 84);
+        assert_eq!(normalization.squared_norm, 245_044_800);
+        assert_eq!(normalization.orthogonal_projection_denominator, 245_044_800);
+        assert!(normalization.primitive_sign_fixed);
+        assert!(normalization.orthogonal_projector_idempotent);
+        assert!(normalization.computational_source_normalization_fixed);
+        assert!(!normalization.physical_bridge_scale_fixed);
+        assert!(normalization.passed);
         let gauge = &report.inherited_spinor_gauge_audit;
         assert_eq!(
             gauge.channels_leaving_scalar_divergence_invariant,
@@ -1017,6 +1114,7 @@ mod tests {
         assert_eq!(kernel.minimum_coefficient, -1320);
         assert_eq!(kernel.maximum_coefficient, 1320);
         assert_eq!(kernel.coefficient_gcd, 1);
+        assert_eq!(kernel.squared_norm, 245_044_800);
         assert_eq!(kernel.nonzero_residual_rows, 0);
         assert!(kernel.exact_kernel_verified);
         assert_eq!(
