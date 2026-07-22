@@ -30,7 +30,7 @@ pub struct MinimalScalarCurvatureReport {
     pub compensator: &'static str,
     pub scalar_curvature: &'static str,
     pub vector_curvature: &'static str,
-    pub bianchi_identities: [&'static str; 3],
+    pub bianchi_identities: [&'static str; 4],
     pub convention: &'static str,
     pub prepotential_basis_inputs: usize,
     pub compensator_prepotential_basis_inputs_per_chirality: usize,
@@ -53,10 +53,22 @@ pub struct MinimalScalarCurvatureReport {
     pub conjugate_scalar_vector_bianchi_residuals: usize,
     pub weyl_vector_bianchi_relations_checked: usize,
     pub weyl_vector_bianchi_residuals: usize,
+    pub conjugate_weyl_vector_bianchi_relations_checked: usize,
+    pub conjugate_weyl_vector_bianchi_residuals: usize,
     pub unconstrained_compensator_mutation_residuals: usize,
     pub momentum_fiber_cohomology_checks: Vec<MomentumCohomologyCheck>,
-    pub non_null_momentum_fibers_exact_at_potential_term: bool,
-    pub null_momentum_fibers_have_dimension_two: bool,
+    pub nonzero_momentum_fibers_exact_at_potential_term: bool,
+    pub chiral_only_null_cohomology_dimension: usize,
+    pub euler_lagrange_source_equations: &'static str,
+    pub euler_lagrange_equation: &'static str,
+    pub euler_lagrange_momentum_checks: Vec<MomentumCohomologyCheck>,
+    pub euler_null_bosonic_cohomology_dimension: usize,
+    pub euler_null_fermionic_cohomology_dimension: usize,
+    pub euler_null_classes_detected_by_chiral_weyl_bosonic: usize,
+    pub euler_null_classes_detected_by_chiral_weyl_fermionic: usize,
+    pub euler_null_classes_detected_by_conjugate_weyl_bosonic: usize,
+    pub euler_null_classes_detected_by_conjugate_weyl_fermionic: usize,
+    pub euler_non_null_fibers_have_zero_cohomology: bool,
     pub boundary: &'static str,
     pub passed: bool,
 }
@@ -380,6 +392,26 @@ fn partial_lower_upper_dotted(polynomial: &Polynomial, alpha: usize, dotted: usi
     result
 }
 
+fn partial_upper_undotted_lower(
+    polynomial: &Polynomial,
+    alpha: usize,
+    dotted: usize,
+) -> Polynomial {
+    let mut result = Polynomial::default();
+    for source_alpha in 0..2 {
+        let coefficient = spinor_metric_upper(source_alpha, alpha);
+        if coefficient != 0 {
+            result = result.add(
+                polynomial
+                    .clone()
+                    .spacetime_derivative(2 * source_alpha + dotted)
+                    .scale(gaussian(coefficient, 0, 1)),
+            );
+        }
+    }
+    result
+}
+
 fn weyl_vector_bianchi_residual(h: &[Vec<Polynomial>], beta: usize, gamma: usize) -> Polynomial {
     let mut divergence = Polynomial::default();
     for alpha in 0..2 {
@@ -406,6 +438,50 @@ fn weyl_vector_bianchi_residual(h: &[Vec<Polynomial>], beta: usize, gamma: usize
     // The source coefficient i/2 becomes -i/2 in the implemented epsilon
     // convention.
     divergence.add(symmetrized_gradient.scale(gaussian(0, 1, 2)))
+}
+
+fn conjugate_weyl_vector_bianchi_terms(
+    h: &[Vec<Polynomial>],
+    dotted_beta: usize,
+    dotted_gamma: usize,
+) -> (Polynomial, Polynomial) {
+    let mut divergence = Polynomial::default();
+    for dotted_alpha in 0..2 {
+        divergence = divergence.add(apply_raised_d_bar(
+            dotted_alpha,
+            &crate::prepotential_curvature::conjugate_weyl_component(
+                h,
+                dotted_alpha + dotted_beta + dotted_gamma,
+            ),
+        ));
+    }
+
+    let zero = Polynomial::default();
+    let g: Vec<_> = (0..4)
+        .map(|output| vector_curvature(h, &zero, &zero, output))
+        .collect();
+    let mut symmetrized_gradient = Polynomial::default();
+    for (derivative_dotted, g_dotted) in [(dotted_beta, dotted_gamma), (dotted_gamma, dotted_beta)]
+    {
+        for alpha in 0..2 {
+            symmetrized_gradient = symmetrized_gradient.add(partial_upper_undotted_lower(
+                &g[2 * alpha + g_dotted],
+                alpha,
+                derivative_dotted,
+            ));
+        }
+    }
+    (divergence, symmetrized_gradient)
+}
+
+fn conjugate_weyl_vector_bianchi_residual(
+    h: &[Vec<Polynomial>],
+    dotted_beta: usize,
+    dotted_gamma: usize,
+) -> Polynomial {
+    let (divergence, symmetrized_gradient) =
+        conjugate_weyl_vector_bianchi_terms(h, dotted_beta, dotted_gamma);
+    divergence.add(symmetrized_gradient.scale(gaussian(0, -1, 2)))
 }
 
 fn evaluate_polynomial(polynomial: &Polynomial, momentum: [i64; 4]) -> Vec<GaussianRational> {
@@ -508,8 +584,10 @@ fn curvature_vector(
     chi: &Polynomial,
     chi_bar: &Polynomial,
     momentum: [i64; 4],
+    include_weyl: bool,
+    include_conjugate_weyl: bool,
 ) -> Vec<GaussianRational> {
-    let mut result = Vec::with_capacity(160);
+    let mut result = Vec::with_capacity(224);
     append_evaluated(&mut result, &scalar_curvature(h, chi_bar), momentum);
     append_evaluated(&mut result, &conjugate_scalar_curvature(h, chi), momentum);
     for output in 0..4 {
@@ -519,17 +597,41 @@ fn curvature_vector(
             momentum,
         );
     }
-    for component in 0..4 {
-        append_evaluated(
-            &mut result,
-            &crate::prepotential_curvature::weyl_component(h, component),
-            momentum,
-        );
+    if include_weyl {
+        for component in 0..4 {
+            append_evaluated(
+                &mut result,
+                &crate::prepotential_curvature::weyl_component(h, component),
+                momentum,
+            );
+        }
+    }
+    if include_conjugate_weyl {
+        for component in 0..4 {
+            append_evaluated(
+                &mut result,
+                &crate::prepotential_curvature::conjugate_weyl_component(h, component),
+                momentum,
+            );
+        }
     }
     result
 }
 
-fn momentum_cohomology(momentum: [i64; 4]) -> MomentumCohomologyCheck {
+fn momentum_cohomology(
+    momentum: [i64; 4],
+    include_weyl: bool,
+    include_conjugate_weyl: bool,
+) -> MomentumCohomologyCheck {
+    momentum_cohomology_filtered(momentum, include_weyl, include_conjugate_weyl, None)
+}
+
+fn momentum_cohomology_filtered(
+    momentum: [i64; 4],
+    include_weyl: bool,
+    include_conjugate_weyl: bool,
+    potential_parity: Option<u32>,
+) -> MomentumCohomologyCheck {
     let chiral_columns: Vec<_> = (0..GRASSMANN_DIMENSION as u8)
         .map(|mask| evaluate_polynomial(&d_bar_squared(&Polynomial::basis(mask)), momentum))
         .collect();
@@ -543,6 +645,9 @@ fn momentum_cohomology(momentum: [i64; 4]) -> MomentumCohomologyCheck {
     for chirality in 0..2 {
         for spinor in 0..2 {
             for mask in 0..GRASSMANN_DIMENSION as u8 {
+                if potential_parity.is_some_and(|parity| parity != (mask.count_ones() + 1) % 2) {
+                    continue;
+                }
                 let (h, chi, chi_bar) = if chirality == 0 {
                     let (h, chi) = gauge_image_l(spinor, mask);
                     (h, chi, Polynomial::default())
@@ -559,6 +664,9 @@ fn momentum_cohomology(momentum: [i64; 4]) -> MomentumCohomologyCheck {
     let mut curvature_columns = Vec::with_capacity(72);
     for component in 0..4 {
         for mask in 0..GRASSMANN_DIMENSION as u8 {
+            if potential_parity.is_some_and(|parity| parity != mask.count_ones() % 2) {
+                continue;
+            }
             let mut h = zero_h();
             h[component / 2][component % 2] = Polynomial::basis(mask);
             curvature_columns.push(curvature_vector(
@@ -566,23 +674,35 @@ fn momentum_cohomology(momentum: [i64; 4]) -> MomentumCohomologyCheck {
                 &Polynomial::default(),
                 &Polynomial::default(),
                 momentum,
+                include_weyl,
+                include_conjugate_weyl,
             ));
         }
     }
     for &mask in &chiral_pivots {
+        if potential_parity.is_some_and(|parity| parity != (mask as u8).count_ones() % 2) {
+            continue;
+        }
         curvature_columns.push(curvature_vector(
             &zero_h(),
             &d_bar_squared(&Polynomial::basis(mask as u8)),
             &Polynomial::default(),
             momentum,
+            include_weyl,
+            include_conjugate_weyl,
         ));
     }
     for &mask in &antichiral_pivots {
+        if potential_parity.is_some_and(|parity| parity != (mask as u8).count_ones() % 2) {
+            continue;
+        }
         curvature_columns.push(curvature_vector(
             &zero_h(),
             &Polynomial::default(),
             &d_squared(&Polynomial::basis(mask as u8)),
             momentum,
+            include_weyl,
+            include_conjugate_weyl,
         ));
     }
     let allowed_potential_dimension = curvature_columns.len();
@@ -779,6 +899,8 @@ pub fn verify() -> MinimalScalarCurvatureReport {
 
     let mut weyl_vector_bianchi_relations_checked = 0;
     let mut weyl_vector_bianchi_residuals = 0;
+    let mut conjugate_weyl_vector_bianchi_relations_checked = 0;
+    let mut conjugate_weyl_vector_bianchi_residuals = 0;
     for input_kind in 0..4 {
         for mask in 0..GRASSMANN_DIMENSION as u8 {
             let mut h = zero_h();
@@ -787,6 +909,15 @@ pub fn verify() -> MinimalScalarCurvatureReport {
                 weyl_vector_bianchi_relations_checked += 1;
                 if !weyl_vector_bianchi_residual(&h, beta, gamma).0.is_empty() {
                     weyl_vector_bianchi_residuals += 1;
+                }
+            }
+            for (dotted_beta, dotted_gamma) in [(0, 0), (0, 1), (1, 1)] {
+                conjugate_weyl_vector_bianchi_relations_checked += 1;
+                if !conjugate_weyl_vector_bianchi_residual(&h, dotted_beta, dotted_gamma)
+                    .0
+                    .is_empty()
+                {
+                    conjugate_weyl_vector_bianchi_residuals += 1;
                 }
             }
         }
@@ -801,16 +932,49 @@ pub fn verify() -> MinimalScalarCurvatureReport {
         [1, 2, 3, 5],
         [2, -1, 4, 3],
     ];
-    let momentum_fiber_cohomology_checks: Vec<_> =
-        momenta.into_iter().map(momentum_cohomology).collect();
-    let non_null_momentum_fibers_exact_at_potential_term = momentum_fiber_cohomology_checks
+    let momentum_fiber_cohomology_checks: Vec<_> = momenta
+        .into_iter()
+        .map(|momentum| momentum_cohomology(momentum, true, true))
+        .collect();
+    let nonzero_momentum_fibers_exact_at_potential_term = momentum_fiber_cohomology_checks
+        .iter()
+        .filter(|check| check.momentum_class != "zero")
+        .all(|check| check.middle_cohomology_dimension == 0);
+    let chiral_only_null_cohomology_dimension =
+        momentum_cohomology([1, 0, 0, 0], true, false).middle_cohomology_dimension;
+    let euler_lagrange_momentum_checks: Vec<_> = momenta
+        .into_iter()
+        .map(|momentum| momentum_cohomology(momentum, false, false))
+        .collect();
+    let euler_null_bosonic_cohomology_dimension =
+        momentum_cohomology_filtered([1, 0, 0, 0], false, false, Some(0))
+            .middle_cohomology_dimension;
+    let euler_null_fermionic_cohomology_dimension =
+        momentum_cohomology_filtered([1, 0, 0, 0], false, false, Some(1))
+            .middle_cohomology_dimension;
+    let euler_null_classes_detected_by_chiral_weyl_bosonic = euler_null_bosonic_cohomology_dimension
+        - momentum_cohomology_filtered([1, 0, 0, 0], true, false, Some(0))
+            .middle_cohomology_dimension;
+    let euler_null_classes_detected_by_chiral_weyl_fermionic =
+        euler_null_fermionic_cohomology_dimension
+            - momentum_cohomology_filtered([1, 0, 0, 0], true, false, Some(1))
+                .middle_cohomology_dimension;
+    let euler_null_classes_detected_by_conjugate_weyl_bosonic =
+        euler_null_bosonic_cohomology_dimension
+            - momentum_cohomology_filtered([1, 0, 0, 0], false, true, Some(0))
+                .middle_cohomology_dimension;
+    let euler_null_classes_detected_by_conjugate_weyl_fermionic =
+        euler_null_fermionic_cohomology_dimension
+            - momentum_cohomology_filtered([1, 0, 0, 0], false, true, Some(1))
+                .middle_cohomology_dimension;
+    let euler_non_null_fibers_have_zero_cohomology = euler_lagrange_momentum_checks
         .iter()
         .filter(|check| check.momentum_class == "non-null")
         .all(|check| check.middle_cohomology_dimension == 0);
-    let null_momentum_fibers_have_dimension_two = momentum_fiber_cohomology_checks
+    let euler_null_fibers_have_dimension_four = euler_lagrange_momentum_checks
         .iter()
         .filter(|check| check.momentum_class == "null")
-        .all(|check| check.middle_cohomology_dimension == 2);
+        .all(|check| check.middle_cohomology_dimension == 4);
 
     let passed = nonzero_curvature_images > 0
         && chirality_relations_checked == 160
@@ -828,14 +992,24 @@ pub fn verify() -> MinimalScalarCurvatureReport {
         && conjugate_scalar_vector_bianchi_residuals == 0
         && weyl_vector_bianchi_relations_checked == 192
         && weyl_vector_bianchi_residuals == 0
+        && conjugate_weyl_vector_bianchi_relations_checked == 192
+        && conjugate_weyl_vector_bianchi_residuals == 0
         && unconstrained_compensator_mutation_residuals == 52
-        && non_null_momentum_fibers_exact_at_potential_term
-        && null_momentum_fibers_have_dimension_two
+        && nonzero_momentum_fibers_exact_at_potential_term
+        && chiral_only_null_cohomology_dimension == 2
+        && euler_null_bosonic_cohomology_dimension == 2
+        && euler_null_fermionic_cohomology_dimension == 2
+        && euler_null_classes_detected_by_chiral_weyl_bosonic == 1
+        && euler_null_classes_detected_by_chiral_weyl_fermionic == 1
+        && euler_null_classes_detected_by_conjugate_weyl_bosonic == 1
+        && euler_null_classes_detected_by_conjugate_weyl_fermionic == 1
+        && euler_non_null_fibers_have_zero_cohomology
+        && euler_null_fibers_have_dimension_four
         && momentum_fiber_cohomology_checks[0].middle_cohomology_dimension == 26;
     MinimalScalarCurvatureReport {
-        schema_version: "adynkra-4d-n1-old-minimal-curvature-complex-v3",
+        schema_version: "adynkra-4d-n1-old-minimal-curvature-complex-v4",
         source: "hep-th/0108200",
-        source_equations: "3.1.22, 5.4.18, 7.4.2b, and 7.5.19",
+        source_equations: "3.1.22, 5.4.18, 5.5.45, 5.5.48, 7.4.2b, and 7.5.19",
         compensator: "the chiral conjugate pair obtained by linearizing delta phi^3 = Dbar^2 D^alpha L_alpha",
         scalar_curvature: "R = Dbar^2 (chi_bar - (i/3) partial_a H^a), with its conjugate Rbar",
         vector_curvature: "the four-term G_a expression in Superspace Eq. (7.5.19)",
@@ -843,6 +1017,7 @@ pub fn verify() -> MinimalScalarCurvatureReport {
             "Dbar^dot-alpha G_(alpha dot-alpha) = -D_alpha R",
             "D^alpha G_(alpha dot-alpha) = Dbar_dot-alpha Rbar",
             "D^alpha W_(alpha beta gamma) = -(i/2) partial_(beta^dot-alpha G_(gamma) dot-alpha)",
+            "Dbar^dot-alpha Wbar_(dot-alpha dot-beta dot-gamma) = (i/2) partial^alpha_(dot-beta G_(alpha dot-gamma))",
         ],
         convention: "phi = 1 + chi, epsilon^(01) = 1, D^2 = D_1 D_0, and Dbar^2 = Dbar_1 Dbar_0; displayed Bianchi signs are the translated internal convention",
         prepotential_basis_inputs: 64,
@@ -866,11 +1041,23 @@ pub fn verify() -> MinimalScalarCurvatureReport {
         conjugate_scalar_vector_bianchi_residuals,
         weyl_vector_bianchi_relations_checked,
         weyl_vector_bianchi_residuals,
+        conjugate_weyl_vector_bianchi_relations_checked,
+        conjugate_weyl_vector_bianchi_residuals,
         unconstrained_compensator_mutation_residuals,
         momentum_fiber_cohomology_checks,
-        non_null_momentum_fibers_exact_at_potential_term,
-        null_momentum_fibers_have_dimension_two,
-        boundary: "linearized old-minimal curvature complex and sampled exact momentum-fiber cohomology; polynomial-module cohomology and equations of motion remain open",
+        nonzero_momentum_fibers_exact_at_potential_term,
+        chiral_only_null_cohomology_dimension,
+        euler_lagrange_source_equations: "Superspace Eqs. (5.5.45) and (5.5.48), with vanishing cosmological and matter sources",
+        euler_lagrange_equation: "G_(alpha dot-alpha) = 0, R = 0, and Rbar = 0",
+        euler_lagrange_momentum_checks,
+        euler_null_bosonic_cohomology_dimension,
+        euler_null_fermionic_cohomology_dimension,
+        euler_null_classes_detected_by_chiral_weyl_bosonic,
+        euler_null_classes_detected_by_chiral_weyl_fermionic,
+        euler_null_classes_detected_by_conjugate_weyl_bosonic,
+        euler_null_classes_detected_by_conjugate_weyl_fermionic,
+        euler_non_null_fibers_have_zero_cohomology,
+        boundary: "linearized old-minimal curvature complex, known source-free Euler-Lagrange operator, and sampled momentum-fiber cohomology; polynomial-module cohomology, helicity identification, and nonlinear equations remain open",
         passed,
     }
 }
@@ -916,6 +1103,8 @@ mod tests {
         let report = verify();
         assert_eq!(report.weyl_vector_bianchi_relations_checked, 192);
         assert_eq!(report.weyl_vector_bianchi_residuals, 0);
+        assert_eq!(report.conjugate_weyl_vector_bianchi_relations_checked, 192);
+        assert_eq!(report.conjugate_weyl_vector_bianchi_residuals, 0);
     }
 
     #[test]
@@ -927,7 +1116,8 @@ mod tests {
     #[test]
     fn momentum_fiber_cohomology_separates_zero_null_and_non_null_momenta() {
         let report = verify();
-        assert!(report.non_null_momentum_fibers_exact_at_potential_term);
+        assert!(report.nonzero_momentum_fibers_exact_at_potential_term);
+        assert_eq!(report.chiral_only_null_cohomology_dimension, 2);
         assert_eq!(
             report
                 .momentum_fiber_cohomology_checks
@@ -936,13 +1126,38 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![
                 ("zero", 26),
-                ("null", 2),
-                ("null", 2),
-                ("null", 2),
+                ("null", 0),
+                ("null", 0),
+                ("null", 0),
                 ("non-null", 0),
                 ("non-null", 0),
                 ("non-null", 0),
             ]
         );
+    }
+    #[test]
+    fn known_euler_lagrange_operator_has_the_massless_parity_split() {
+        let report = verify();
+        assert_eq!(report.euler_null_bosonic_cohomology_dimension, 2);
+        assert_eq!(report.euler_null_fermionic_cohomology_dimension, 2);
+        assert_eq!(report.euler_null_classes_detected_by_chiral_weyl_bosonic, 1);
+        assert_eq!(
+            report.euler_null_classes_detected_by_chiral_weyl_fermionic,
+            1
+        );
+        assert_eq!(
+            report.euler_null_classes_detected_by_conjugate_weyl_bosonic,
+            1
+        );
+        assert_eq!(
+            report.euler_null_classes_detected_by_conjugate_weyl_fermionic,
+            1
+        );
+        assert!(report.euler_non_null_fibers_have_zero_cohomology);
+        assert!(report
+            .euler_lagrange_momentum_checks
+            .iter()
+            .filter(|check| check.momentum_class == "null")
+            .all(|check| check.middle_cohomology_dimension == 4));
     }
 }

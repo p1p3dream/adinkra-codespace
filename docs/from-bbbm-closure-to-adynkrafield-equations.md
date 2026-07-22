@@ -353,10 +353,11 @@ the gauge map is implemented directly in superspace below. See
 The gauge-curvature sequence is also implemented. The complete
 64-component prepotential gauge map in Eq. (2.21) contains 192 sparse
 differential terms and obeys every Grassmann-bidegree selection rule. The
-chiral super-Weyl curvature in Eq. (5.2.5) of *Superspace* is nonzero, chiral
-on all 64 prepotential basis inputs, and annihilates the complete 64-component
-gauge image. The calculation checks 512 chirality relations and 256 gauge-
-invariance relations with zero residuals in exact arithmetic. See
+super-Weyl curvature pair in Eq. (5.2.5) of *Superspace* is nonzero, has the
+required chirality and antichirality on all 64 prepotential basis inputs, and
+annihilates the complete 64-component gauge image. The calculation checks 512
+chirality, 512 antichirality, and 512 combined gauge-invariance relations with
+zero residuals in exact arithmetic. See
 [`adynkra-4d-n1-gauge-curvature.md`](adynkra-4d-n1-gauge-curvature.md).
 
 The old-minimal compensator pair and the `R`, `Rbar`, and `G_a` curvatures are
@@ -364,19 +365,29 @@ now implemented from Eqs. (7.4.2b) and (7.5.19) of *Superspace*. The
 calculation verifies 160 chirality relations for `R`, 160 antichirality
 relations for `Rbar`, 128 scalar gauge-invariance relations, and 256 vector
 gauge-invariance relations with zero residuals. The scalar-vector Bianchi
-identity, its conjugate, and the Weyl-vector Bianchi identity each pass 192
+identity, its conjugate, and both Weyl-vector Bianchi identities each pass 192
 complete-basis relations with zero residuals in the old-minimal `W_alpha = 0`
 specialization of Eq. (5.4.18). Removing the compensator terms produces 48
 residuals. Treating the chiral compensator as unconstrained produces 52 Bianchi
 residuals.
 
 Exact momentum-fiber rank calculations now test the middle term of the gauge
-and curvature complex. The 72-dimensional allowed potential space has zero
-middle cohomology at three non-null rational momenta. Three null momenta have
-two-dimensional cohomology, while zero momentum has dimension 26. The null
-result is consistent with a characteristic massless sector, but its
-little-group and named-component content has not yet been identified. These
-fiber calculations do not establish polynomial-module exactness.
+and curvature complex. The complete curvature pair gives zero middle
+cohomology at all six tested nonzero rational momenta. Omitting the conjugate
+super-Weyl curvature produces the previously reported two-dimensional null
+cohomology, showing that it was an incomplete-curvature artifact. Zero momentum
+has dimension 26. These fiber calculations do not establish polynomial-module
+exactness.
+
+The known source-free linearized old-minimal equation from Eqs. (5.5.45) and
+(5.5.48), `G = R = Rbar = 0`, is now implemented as a separate
+Euler-Lagrange operator. Its cohomology vanishes at all three non-null probes
+and has dimension four at all three null probes. The canonical null fiber
+splits into two bosonic and two fermionic classes, matching the component
+degree count of massless four-dimensional `N=1` supergravity. The chiral and
+conjugate super-Weyl curvatures each detect one bosonic and one fermionic class.
+Explicit helicity signs and independent reconstruction of the quadratic action
+remain open.
 
 ## Ordered research plan
 
@@ -415,11 +426,14 @@ fiber calculations do not establish polynomial-module exactness.
    intertwiners, fundamental Clebsch-Gordan maps, and all repeated sectors in
    the six published genomes complete.**
 3. Construct the prepotential gauge and curvature complex. **Gauge map and
-   linearized old-minimal curvature complex through both independent Bianchi
-   identities complete. Exact momentum-fiber cohomology is complete at one
-   zero, three null, and three non-null rational probes. Null-representative
-   identification and polynomial-module cohomology remain open.**
-4. Reproduce a known linearized supergravity equation.
+   linearized old-minimal curvature complex through the conjugate super-Weyl
+   pair and all corresponding Bianchi identities complete. Exact
+   momentum-fiber cohomology is complete at one zero, three null, and three
+   non-null rational probes. Polynomial-module cohomology remains open.**
+4. Reproduce a known linearized supergravity equation. **The source-free
+   old-minimal equation `G = R = Rbar = 0` is implemented and its null and
+   non-null fibers are validated. Independent action reconstruction remains
+   open.**
 5. Express that equation as an Adynkrafield operator.
 6. Apply the validated operators to the eleven-dimensional scalar superfield
    and test its complete irreducible reduction.

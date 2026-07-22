@@ -25,9 +25,10 @@ rank is 39 at zero momentum and 48 at each of four nonzero rational momentum
 probes. These ranks are diagnostics of the displayed finite matrices, not a
 claim about polynomial-module cohomology.
 
-## Chiral super-Weyl curvature
+## Super-Weyl curvature pair
 
-The implementation also encodes Eq. (5.2.5) of *Superspace*:
+The implementation also encodes Eq. (5.2.5) of *Superspace* and its complex
+conjugate:
 
 ```text
 W_(alpha beta gamma)
@@ -39,14 +40,15 @@ The spinor-metric convention is `epsilon^(01) = 1`, with
 `Dbar^2 = Dbar_1 Dbar_0` as in Eq. (3.4.10) of *Superspace*.
 
 The calculation uses all 64 prepotential basis inputs and the four components
-of the symmetric rank-three spinor. The operator is nonzero on 152 of the 256
+of each symmetric rank-three spinor. Each operator is nonzero on 152 of the 256
 input-output pairs.
 
-Two complete operator identities pass in exact Gaussian-rational arithmetic:
+Four complete operator identities pass in exact Gaussian-rational arithmetic:
 
 - chirality: 512 relations, zero residuals;
+- conjugate antichirality: 512 relations, zero residuals;
 - gauge invariance: 256 relations on the complete gauge-parameter basis, zero
-  residuals.
+  residuals for each member of the pair.
 
 A mutation test removes the spinor derivative from the gauge map and produces
 nonzero curvature residuals.
@@ -54,7 +56,7 @@ nonzero curvature residuals.
 Thus the composition
 
 ```text
-gauge parameter -> prepotential -> chiral super-Weyl curvature
+gauge parameter -> prepotential -> super-Weyl curvature pair
 ```
 
 vanishes exactly in the implemented conventions.
@@ -100,10 +102,12 @@ Dbar^dot-alpha G_(alpha dot-alpha) = -D_alpha R
 D^alpha G_(alpha dot-alpha) = Dbar_dot-alpha Rbar
 D^alpha W_(alpha beta gamma)
   = -(i/2) partial_(beta^dot-alpha G_(gamma) dot-alpha)
+Dbar^dot-alpha Wbar_(dot-alpha dot-beta dot-gamma)
+  = (i/2) partial^alpha_(dot-beta G_(alpha dot-gamma))
 ```
 
 Each scalar-vector identity passes 192 relations on the complete prepotential
-and chiral-compensator prepotential bases. The Weyl-vector identity passes 192
+and chiral-compensator prepotential bases. Each Weyl-vector identity passes 192
 relations on the complete supergravity prepotential basis. All residuals vanish
 in exact Gaussian-rational arithmetic. Replacing the chiral compensator pair
 with unconstrained scalar inputs produces 52 nonzero residuals. This mutation
@@ -120,17 +124,37 @@ chiral compensator. The middle cohomology is
 ```text
 momentum class   gauge rank   curvature kernel   cohomology
 zero                  40             66              26
-null                  48             50               2
+null                  48             48               0
 non-null              48             48               0
 ```
 
 The null and non-null results were each reproduced at three distinct rational
-momenta. Thus no curvature-free, non-gauge potential survives in the tested
-non-null fibers. The two-dimensional null-fiber cohomology is a
-characteristic-space result. Its
-identification with the known massless supergravity states requires an explicit
-little-group and component analysis and is not claimed here. The 26-dimensional
-zero-momentum result includes zero-mode degeneracies.
+momenta. Thus no curvature-free, non-gauge potential survives at any tested
+nonzero momentum. Omitting the conjugate super-Weyl curvature produces a
+two-dimensional null-fiber cohomology. The earlier two-dimensional result was
+therefore an incomplete-curvature artifact, not a physical-state result. The
+26-dimensional zero-momentum result includes zero-mode degeneracies.
+
+## Known linearized equation
+
+For vanishing cosmological and matter sources, Eqs. (5.5.45) and (5.5.48) of
+*Superspace* give the old-minimal supergravity equations
+
+```text
+G_(alpha dot-alpha) = 0
+R = 0
+Rbar = 0
+```
+
+The same exact momentum-fiber calculation was applied to this Euler-Lagrange
+operator. Its middle cohomology is zero at all three non-null probes and has
+dimension four at all three null probes. At the canonical null momentum, the
+four classes split by Grassmann parity into two bosonic and two fermionic
+classes. The chiral super-Weyl curvature detects one bosonic and one fermionic
+class; its conjugate detects the other bosonic and fermionic classes. This
+agrees with the component degree count and conjugate-helicity organization of
+the massless four-dimensional `N=1` supergravity multiplet. The signs of the
+individual helicities have not yet been assigned to explicit representatives.
 
 These are exact ranks of evaluated finite matrices. They are not a proof of
 exactness over the full polynomial ring.
@@ -138,7 +162,8 @@ exactness over the full polynomial ring.
 ## Artifacts
 
 - `src/prepotential_gauge.rs`: gauge differential and rank diagnostics
-- `src/prepotential_curvature.rs`: chiral curvature and operator identities
+- `src/prepotential_curvature.rs`: super-Weyl curvature pair and operator
+  identities
 - `src/minimal_supergravity_curvatures.rs`: old-minimal compensator, scalar and
   vector curvatures, and Bianchi identities
 - `results/adynkra_4d_n1_prepotential_gauge_validation.json`
@@ -161,10 +186,10 @@ cargo test minimal_supergravity_curvatures
 ## Boundary
 
 This completes the linearized gauge map and the old-minimal curvature complex
-through `R`, `Rbar`, `G_a`, `W_(alpha beta gamma)`, the independent Bianchi
-identities, and exact momentum-fiber rank tests. Polynomial-module cohomology,
-identification of the null-fiber representatives, and the Euler-Lagrange
-operator remain open.
+through `R`, `Rbar`, `G_a`, the super-Weyl curvature pair, the independent
+Bianchi identities, the known source-free Euler-Lagrange operator, and exact
+momentum-fiber rank tests. Polynomial-module cohomology, helicity assignment,
+action reconstruction, and the Adynkrafield form of the operator remain open.
 
 ## References
 
@@ -173,4 +198,4 @@ operator remain open.
 2. S. J. Gates Jr., M. T. Grisaru, M. Rocek, and W. Siegel, *Superspace, or One
    Thousand and One Lessons in Supersymmetry*,
    [arXiv:hep-th/0108200](https://arxiv.org/abs/hep-th/0108200), Eqs. (3.1.22),
-   (5.2.5), (5.4.18), (7.4.2b), and (7.5.19).
+   (5.2.5), (5.4.18), (5.5.45), (5.5.48), (7.4.2b), and (7.5.19).
