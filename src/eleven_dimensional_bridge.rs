@@ -7,6 +7,7 @@
 //! is killed by all five simple-root raising operators.  This module builds
 //! those sparse integer systems directly from the spinor weights.
 
+use num_rational::Ratio;
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
 
@@ -101,8 +102,161 @@ pub struct ElevenDimensionalBridgeReport {
     pub exact_kernel_vectors_verified: usize,
     pub all_expected_kernel_vectors_verified: bool,
     pub spinor_descendant_audits: Vec<SpinorDescendantAudit>,
+    pub vector_spinor_target_audit: VectorSpinorTargetAudit,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct VectorSpinorTargetAudit {
+    pub tensor_product_dimension: usize,
+    pub generated_irrep_dimension: usize,
+    pub expected_irrep_dimension: usize,
+    pub distinct_weights: usize,
+    pub multiplicity_one_weights: usize,
+    pub multiplicity_five_weights: usize,
+    pub maximum_weight_multiplicity: usize,
+    pub nonzero_lowering_actions: usize,
+    pub passed: bool,
+}
+
+type TensorVector = HashMap<usize, Ratio<i64>>;
+
+fn vector_weights() -> Vec<Weight> {
+    let mut weights = Vec::new();
+    for axis in 0..5 {
+        let mut positive = [0_i8; 5];
+        positive[axis] = 2;
+        weights.push(positive);
+        let mut negative = [0_i8; 5];
+        negative[axis] = -2;
+        weights.push(negative);
+    }
+    weights.push([0_i8; 5]);
+    weights
+}
+
+fn lower_vector_weight(weight: Weight, root: usize, weights: &[Weight]) -> Option<(usize, i64)> {
+    let mut target = weight;
+    if root < 4 {
+        if weight[root] == 2 {
+            target[root] = 0;
+            target[root + 1] = 2;
+        } else if weight[root + 1] == -2 {
+            target[root] = -2;
+            target[root + 1] = 0;
+        } else {
+            return None;
+        }
+        Some((weights.iter().position(|item| *item == target).unwrap(), 1))
+    } else if weight[4] == 2 {
+        Some((weights.iter().position(|item| *item == [0; 5]).unwrap(), 1))
+    } else if weight == [0; 5] {
+        target[4] = -2;
+        Some((weights.iter().position(|item| *item == target).unwrap(), 2))
+    } else {
+        None
+    }
+}
+
+fn lower_target_tensor(
+    source: &TensorVector,
+    root: usize,
+    vectors: &[Weight],
+    spinors: &[Weight; 32],
+) -> TensorVector {
+    let mut target = TensorVector::new();
+    for (&index, coefficient) in source {
+        let vector_index = index / 32;
+        let spinor_index = index % 32;
+        if let Some((next, factor)) = lower_vector_weight(vectors[vector_index], root, vectors) {
+            *target.entry(next * 32 + spinor_index).or_default() +=
+                coefficient.clone() * Ratio::from_integer(factor);
+        }
+        if let Some(next) = lowered_spinor_index(spinor_index, root, spinors) {
+            *target.entry(vector_index * 32 + next).or_default() += coefficient.clone();
+        }
+    }
+    target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    target
+}
+
+fn tensor_weight(vector: &TensorVector, vectors: &[Weight], spinors: &[Weight; 32]) -> Weight {
+    let index = *vector.keys().next().unwrap();
+    add(vectors[index / 32], spinors[index % 32])
+}
+
+fn add_target_basis(vector: TensorVector, basis: &mut Vec<(usize, TensorVector)>) -> bool {
+    let mut residual = vector;
+    basis.sort_unstable_by_key(|(pivot, _)| *pivot);
+    for (pivot, existing) in basis.iter() {
+        let Some(value) = residual.get(pivot).cloned() else {
+            continue;
+        };
+        let factor = value / existing[pivot].clone();
+        for (&index, coefficient) in existing {
+            *residual.entry(index).or_default() -= factor.clone() * coefficient.clone();
+        }
+        residual.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    }
+    if residual.is_empty() {
+        return false;
+    }
+    let pivot = *residual.keys().min().unwrap();
+    let normalization = residual[&pivot].clone();
+    for coefficient in residual.values_mut() {
+        *coefficient /= normalization.clone();
+    }
+    basis.push((pivot, residual));
+    true
+}
+
+fn audit_vector_spinor_target(spinors: &[Weight; 32]) -> VectorSpinorTargetAudit {
+    use std::collections::VecDeque;
+    let vectors = vector_weights();
+    let vector_highest = vectors
+        .iter()
+        .position(|weight| *weight == [2, 0, 0, 0, 0])
+        .unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let start = HashMap::from([(vector_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let mut by_weight = HashMap::<Weight, Vec<(usize, TensorVector)>>::new();
+    add_target_basis(start.clone(), by_weight.entry([3, 1, 1, 1, 1]).or_default());
+    let mut queue = VecDeque::from([start]);
+    let mut generated_irrep_dimension = 1;
+    let mut nonzero_lowering_actions = 0;
+    while let Some(state) = queue.pop_front() {
+        for root in 0..5 {
+            let descendant = lower_target_tensor(&state, root, &vectors, spinors);
+            if descendant.is_empty() {
+                continue;
+            }
+            nonzero_lowering_actions += 1;
+            let weight = tensor_weight(&descendant, &vectors, spinors);
+            if add_target_basis(descendant.clone(), by_weight.entry(weight).or_default()) {
+                generated_irrep_dimension += 1;
+                queue.push_back(descendant);
+            }
+        }
+    }
+    let multiplicity_one_weights = by_weight.values().filter(|basis| basis.len() == 1).count();
+    let multiplicity_five_weights = by_weight.values().filter(|basis| basis.len() == 5).count();
+    let maximum_weight_multiplicity = by_weight.values().map(Vec::len).max().unwrap_or(0);
+    VectorSpinorTargetAudit {
+        tensor_product_dimension: 11 * 32,
+        generated_irrep_dimension,
+        expected_irrep_dimension: 320,
+        distinct_weights: by_weight.len(),
+        multiplicity_one_weights,
+        multiplicity_five_weights,
+        maximum_weight_multiplicity,
+        nonzero_lowering_actions,
+        passed: generated_irrep_dimension == 320
+            && by_weight.len() == 192
+            && multiplicity_one_weights == 160
+            && multiplicity_five_weights == 32
+            && maximum_weight_multiplicity == 5,
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -575,13 +729,15 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             audit_full_spinor_descendants(index + 1, &spinor_basis, &decode_kernel(bytes), &weights)
         })
         .collect::<Vec<_>>();
+    let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
     let passed = systems
         .iter()
         .all(|system| system.exact_sparse_system_constructed)
         && exact_kernel_vectors_verified == 3
         && spinor_descendant_audits
             .iter()
-            .all(|audit| audit.exact_full_spinor_intertwiner_verified);
+            .all(|audit| audit.exact_full_spinor_intertwiner_verified)
+        && vector_spinor_target_audit.passed;
 
     ElevenDimensionalBridgeReport {
         schema_version: "adynkra.11d.level15-bridge.v1",
@@ -616,6 +772,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
         spinor_descendant_audits,
+        vector_spinor_target_audit,
         boundary: "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
         passed,
     }
@@ -677,6 +834,13 @@ mod tests {
             assert_eq!(audit.repeated_path_mismatches, 0);
             assert!(audit.exact_full_spinor_intertwiner_verified);
         }
+        let target = &report.vector_spinor_target_audit;
+        assert_eq!(target.generated_irrep_dimension, 320);
+        assert_eq!(target.distinct_weights, 192);
+        assert_eq!(target.multiplicity_one_weights, 160);
+        assert_eq!(target.multiplicity_five_weights, 32);
+        assert_eq!(target.nonzero_lowering_actions, 752);
+        assert!(target.passed);
         let vector_spinor = &report.systems[1];
         assert_eq!(vector_spinor.source_weight_space_columns, 388_720);
         assert_eq!(vector_spinor.total_rows, 1_174_806);

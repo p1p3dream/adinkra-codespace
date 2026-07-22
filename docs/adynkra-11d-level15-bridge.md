@@ -82,6 +82,14 @@ including 17 states reached by more than one lowering path. Both source copies
 have zero path mismatches. The first copy has support 374,246 at every weight;
 the second has support 6,435 at every weight.
 
+The `(10001)` target module is now generated independently inside
+$(10000)\otimes(00001)$. Exact rational Chevalley lowering from its highest
+weight produces dimension 320, with 192 distinct weights and 752 nonzero
+lowering actions. Its weight multiplicities are 160 weights of multiplicity
+one and 32 weights of multiplicity five. This is the complete target-side
+gamma-traceless vector-spinor module inside the 352-dimensional tensor
+product.
+
 ## Generic bridge
 
 Before normalization, the most general leading symbol is
@@ -102,8 +110,9 @@ vectors are now exact. Their covariant descendants remain.
 
 This pass makes the source-embedding problem explicit and reproducible and
 supplies all three exact highest-weight vectors and both complete 32-component
-spinor intertwiners. It does not yet materialize the complete 320-component
-vector-spinor descendant set. Consequently:
+spinor intertwiners. It also materializes the complete 320-dimensional target
+module. The remaining `(10001)` work is to propagate the source vector through
+the same 752 lowering actions and verify every target relation. Consequently:
 
 - the three coefficients have not yet been substituted into the torsion
   constraints of Eq. (2.7);

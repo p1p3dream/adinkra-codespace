@@ -464,6 +464,17 @@
       "exact_full_spinor_intertwiner_verified": true
     }
   ],
+  "vector_spinor_target_audit": {
+    "tensor_product_dimension": 352,
+    "generated_irrep_dimension": 320,
+    "expected_irrep_dimension": 320,
+    "distinct_weights": 192,
+    "multiplicity_one_weights": 160,
+    "multiplicity_five_weights": 32,
+    "maximum_weight_multiplicity": 5,
+    "nonzero_lowering_actions": 752,
+    "passed": true
+  },
   "boundary": "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
   "passed": true
 }
