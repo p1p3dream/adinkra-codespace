@@ -76,6 +76,25 @@
   #beat-scrub { flex: 1; accent-color: var(--accent); }
   #beat-index { font-size: 11px; color: var(--ink-dim); min-width: 34px; text-align: center; }
 
+  #isolate-bar {
+    top: 108px; right: 22px; width: 250px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; backdrop-filter: blur(8px);
+  }
+  #isolate-bar .label {
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-dim); margin-bottom: 8px;
+  }
+  #isolate-controls { display: flex; flex-wrap: wrap; gap: 6px; }
+  #isolate-controls button {
+    background: none; border: 1px solid var(--line); border-radius: 4px;
+    color: var(--ink); font: inherit; font-size: 11.5px; padding: 4px 10px; cursor: pointer;
+  }
+  #isolate-controls button:hover { border-color: var(--accent); color: #fff; }
+  #isolate-controls button.active { border-color: var(--accent); color: #fff; background: rgba(154, 184, 232, 0.14); }
+  #isolate-controls button[hidden] { display: none; }
+  #isolate-hint { margin-top: 8px; font-size: 10.5px; line-height: 1.5; color: var(--ink-faint); }
+
   #inspector {
     bottom: 108px; right: 22px; width: 250px;
     background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
@@ -168,6 +187,17 @@
 <div id="check-strip" class="hud"></div>
 
 <div id="verdict" class="hud"></div>
+
+<div id="isolate-bar" class="hud">
+  <div class="label">Isolate</div>
+  <div id="isolate-controls">
+    <button id="iso-all" class="active">All</button>
+    <button id="iso-octets">Named octets</button>
+    <button id="iso-168">The 168</button>
+    <button id="iso-reps">Coset reps</button>
+  </div>
+  <div id="isolate-hint">Hide the fog and click only the meaningful nodes.</div>
+</div>
 
 <div id="inspector" class="hud"></div>
 
@@ -304,6 +334,7 @@ function showBeat(index, { snapDataset = false } = {}) {
     instrument.setDataset(beat.dataset, atlases[beat.dataset]);
     selection.length = 0;
     updateInspector();
+    resetIsolate();
   }
   if (beat.enterSnap && !snapDataset) instrument.snapTargets(beat.enterSnap);
   instrument.setTargets(beat.targets);
@@ -351,6 +382,86 @@ $("beat-play").addEventListener("click", () => {
     }
     showBeat(beatIndex + 1);
   }, 13000);
+});
+
+// Isolate control. Independent overlay on top of any beat state (fog,
+// gather, gold ignition). The sets are exact, computed from the active
+// dataset. Named octets and The 168 are S8-only concepts, so those
+// buttons hide when the S4 solid is loaded. Coset reps and All work for
+// any dataset. Isolate resets to All on any dataset swap.
+const isoButtons = {
+  all: $("iso-all"),
+  octets: $("iso-octets"),
+  the168: $("iso-168"),
+  reps: $("iso-reps"),
+};
+
+// Union of the 8 member ranks across a list of right-slice ids.
+function unionOfSlices(atlas, sliceIds) {
+  const set = new Set();
+  for (const id of sliceIds) {
+    const members = atlas.right_slices[id];
+    if (members) for (const r of members) set.add(r);
+  }
+  return set;
+}
+
+// Build the rank sets for the currently loaded dataset. Returns null for
+// sets that do not apply to this dataset (so the button can hide).
+function isolateSetsFor(name) {
+  const atlas = atlases[name];
+  const isS8 = atlas.metadata.n === 8;
+  const octets = isS8
+    ? unionOfSlices(atlas, garden.named_octets.map(o => o.right_slice_id))
+    : null;
+  const the168 = isS8
+    ? unionOfSlices(atlas, atlas.abnormal_right_slices)
+    : null;
+  const reps = new Set(atlas.right_slices.map(s => s[0]));
+  return { octets, the168, reps };
+}
+
+let isolateSets = null;
+
+function setActiveIsoButton(key) {
+  for (const [k, btn] of Object.entries(isoButtons)) {
+    btn.classList.toggle("active", k === key);
+  }
+}
+
+// Refresh which buttons apply to the current dataset. S4 hides the two
+// S8-only sets and, if one was active, falls back to All.
+function refreshIsolateButtons() {
+  isolateSets = isolateSetsFor(instrument.datasetName);
+  isoButtons.octets.hidden = isolateSets.octets === null;
+  isoButtons.the168.hidden = isolateSets.the168 === null;
+}
+
+// Reset to All. Called on every dataset swap.
+function resetIsolate() {
+  refreshIsolateButtons();
+  instrument.setFilter(null);
+  setActiveIsoButton("all");
+}
+
+isoButtons.all.addEventListener("click", () => {
+  instrument.setFilter(null);
+  setActiveIsoButton("all");
+});
+isoButtons.octets.addEventListener("click", () => {
+  if (!isolateSets || !isolateSets.octets) return;
+  instrument.setFilter(isolateSets.octets);
+  setActiveIsoButton("octets");
+});
+isoButtons.the168.addEventListener("click", () => {
+  if (!isolateSets || !isolateSets.the168) return;
+  instrument.setFilter(isolateSets.the168);
+  setActiveIsoButton("the168");
+});
+isoButtons.reps.addEventListener("click", () => {
+  if (!isolateSets) return;
+  instrument.setFilter(isolateSets.reps);
+  setActiveIsoButton("reps");
 });
 
 // Vertex inspection and pair measurement.
@@ -415,6 +526,7 @@ if (params.get("clean") === "1") revealStage();
 // window is short; the gate makes it feel instant regardless.
 requestAnimationFrame(() => {
   instrument.setDataset(beats[startBeat].dataset, atlases[beats[startBeat].dataset]);
+  resetIsolate();
   showBeat(startBeat, { snapDataset: true });
   instrument.snapTargets(beats[startBeat].targets);
   instrument.start();
@@ -424,7 +536,7 @@ requestAnimationFrame(() => {
 });
 
 // Console handle for inspection and scripted demos.
-window.the168 = { instrument, beats, showBeat, atlases, garden };
+window.the168 = { instrument, beats, showBeat, atlases, garden, isolateSetsFor };
 
 // ?picktest=1 exercises GPU color-ID picking end to end: project a
 // few known vertices to screen coordinates through the same SO(7)
@@ -462,6 +574,71 @@ if (params.get("picktest") === "1") {
     div.textContent = "picktest " + results.join(" ");
     document.body.appendChild(div);
   }, 1200);
+}
+
+// ?isotest=1 proves the isolate pick-pass gate: isolate to a known set,
+// then pick at the screen position of a kept member (must return a kept
+// rank) and at the position of a filtered-out node (must return null,
+// because its point size is 0 in the pick pass). Writes the outcome to
+// the DOM for a headless run to assert on.
+if (params.get("isotest") === "1") {
+  setTimeout(() => {
+    const inst = instrument;
+    const sets = isolateSetsFor(inst.datasetName);
+    const keepSet = sets.the168 || sets.reps;
+
+    // Render the full pick scene once with no isolate (baseline) and once
+    // isolated, scanning every pixel of the pick target. A hidden node is
+    // truly ungated only if NO filtered-out rank ever appears in the pick
+    // buffer while isolated. This is deterministic regardless of rotation.
+    const scanPickRanks = () => {
+      inst._tick(performance.now());
+      const { renderer, camera } = inst;
+      const w = 320, h = 320;
+      if (inst.pickTarget.width !== w || inst.pickTarget.height !== h) inst.pickTarget.setSize(w, h);
+      renderer.setRenderTarget(inst.pickTarget);
+      renderer.setClearColor(0xffffff, 1);
+      renderer.clear();
+      renderer.render(inst.pickScene, camera);
+      const buf = new Uint8Array(w * h * 4);
+      renderer.readRenderTargetPixels(inst.pickTarget, 0, 0, w, h, buf);
+      renderer.setRenderTarget(null);
+      const ranks = new Set();
+      for (let i = 0; i < buf.length; i += 4) {
+        const id = buf[i] * 65536 + buf[i + 1] * 256 + buf[i + 2];
+        if (id < inst.vertexCount) ranks.add(id);
+      }
+      return ranks;
+    };
+
+    inst.setFilter(null);
+    const baseRanks = scanPickRanks();
+    inst.setFilter(new Set());
+    const emptyRanks = scanPickRanks();
+    inst.setFilter(keepSet);
+    const isoRanks = scanPickRanks();
+
+    let leaked = 0;
+    for (const r of isoRanks) if (!keepSet.has(r)) leaked += 1;
+    const someKeptVisible = [...isoRanks].some(r => keepSet.has(r));
+
+    const uIso = inst.pickMaterial.uniforms.uIsolate.value;
+    const filt = inst.filterAttr.array;
+    const keptRank0 = [...keepSet][0];
+    const div = document.createElement("div");
+    div.id = "isotest-result";
+    div.textContent = "isotest isolate=" + inst.isolate
+      + " pickUIsolate=" + uIso
+      + " filterKept0=" + filt[keptRank0]
+      + " filterHidden1=" + filt[1]
+      + " baseVisible=" + baseRanks.size
+      + " emptyVisible=" + emptyRanks.size
+      + " isoVisible=" + isoRanks.size
+      + " leakedHidden=" + leaked
+      + " someKeptVisible=" + someKeptVisible
+      + " gatePass=" + (leaked === 0 && someKeptVisible);
+    document.body.appendChild(div);
+  }, 1400);
 }
 </script>
 </body>

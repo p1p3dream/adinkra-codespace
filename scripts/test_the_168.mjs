@@ -235,5 +235,54 @@ console.log("== the Ledger vs the JSON ==");
   check("no em dashes anywhere in narrative or Ledger text", !allText.includes("\u2014"));
 }
 
+console.log("== isolate filter sets ==");
+{
+  // Union of the 8 member ranks over a list of right-slice ids.
+  const unionOfSlices = (atlas, ids) => {
+    const set = new Set();
+    for (const id of ids) for (const r of atlas.right_slices[id]) set.add(r);
+    return set;
+  };
+
+  // Named octets: the 7 garden octets, each a right slice of 8 members.
+  const namedIds = garden.named_octets.map(o => o.right_slice_id);
+  const named = unionOfSlices(s8, namedIds);
+  check("named octets isolate set = 56 ranks (7 disjoint octets)",
+    named.size === 56, `${named.size}`);
+
+  // The 168: 168 abnormal right slices, 8 members each, disjoint.
+  const the168 = unionOfSlices(s8, s8.abnormal_right_slices);
+  check("the 168 isolate set = 1,344 ranks", the168.size === 1344, `${the168.size}`);
+
+  // Coset reps: first member of every right slice, one per coset.
+  const reps = new Set(s8.right_slices.map(s => s[0]));
+  check("coset reps isolate set = 5,040 ranks", reps.size === 5040, `${reps.size}`);
+
+  // Every rank in every set is a valid S8 vertex index.
+  const allInRange = set => [...set].every(r => Number.isInteger(r) && r >= 0 && r < 40320);
+  check("every isolate rank is in [0, 40320)",
+    allInRange(named) && allInRange(the168) && allInRange(reps));
+
+  // The setFilter mapping: 1 for members, 0 otherwise, over the whole cloud.
+  const buildFilter = (set, count) => {
+    const arr = new Float32Array(count);
+    for (const r of set) if (r >= 0 && r < count) arr[r] = 1;
+    return arr;
+  };
+  const f168 = buildFilter(the168, 40320);
+  let ones = 0;
+  for (let i = 0; i < f168.length; i += 1) ones += f168[i];
+  const sample168 = s8.abnormal_right_slices[0];
+  const memberOk = s8.right_slices[sample168].every(r => f168[r] === 1);
+  const nonMember = [...Array(40320).keys()].find(r => !the168.has(r));
+  check("setFilter mapping marks exactly the 1,344 members (1 in, 0 out)",
+    ones === 1344 && memberOk && f168[nonMember] === 0, `${ones} ones`);
+
+  // S4 has no S8-only sets, but coset reps still apply (6 cosets of 4).
+  const s4reps = new Set(s4.right_slices.map(s => s[0]));
+  check("S4 coset reps isolate set = 6 ranks, all in [0, 24)",
+    s4reps.size === 6 && [...s4reps].every(r => r >= 0 && r < 24), `${s4reps.size}`);
+}
+
 console.log(failures === 0 ? "\nALL CHECKS PASSED" : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

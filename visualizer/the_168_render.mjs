@@ -32,6 +32,7 @@ const VERTEX_SHADER = /* glsl */ `
   attribute float aRightHue; // hashed right slice id in [0,1)
   attribute float aLeftHue;  // hashed left slice id in [0,1)
   attribute float aGold;     // 1.0 iff member of one of the 168
+  attribute float aFilter;   // 1.0 kept, 0.0 filtered out (isolate mode)
   #ifdef POINTS
   attribute float aId;        // vertex rank, for GPU picking
   attribute float aHighlight; // 0 none, 1 white, 2 green, 3 amber
@@ -48,6 +49,7 @@ const VERTEX_SHADER = /* glsl */ `
   uniform float uForeshadow; // brightness lift on the 168 before gold
   uniform float uGold;      // 0 = normal palette, 1 = gold ignition
   uniform float uAlpha;
+  uniform float uIsolate;   // 0 = show all, 1 = isolate to aFilter members
   #ifdef POINTS
   uniform float uPointSize;
   uniform float uPixelRatio;
@@ -55,6 +57,7 @@ const VERTEX_SHADER = /* glsl */ `
 
   varying vec3 vColor;
   varying float vAlpha;
+  varying float vKeep;   // 0 iff this vertex is filtered out in isolate mode
   #ifdef POINTS
   varying float vId;
   #endif
@@ -109,17 +112,29 @@ const VERTEX_SHADER = /* glsl */ `
     vColor = mix(muted, goldColor, uGold * aGold);
     vAlpha = uAlpha * mix(1.0, mix(0.5, 1.35, aGold), uGold);
 
+    // Isolate overlay. In isolate mode keep is aFilter (0 hides), else 1.
+    // Applied to alpha here so both points and edges fade filtered-out
+    // members. Reapplied after the highlight overrides in the POINTS
+    // block so a filtered-out highlighted node still stays hidden.
+    float keep = mix(1.0, aFilter, uIsolate);
+    vAlpha *= keep;
+    vKeep = keep;
+
     #ifdef POINTS
     vId = aId;
     float boost = 1.0 + 0.9 * uGold * aGold;
+    // Enlarge kept nodes while isolating so the meaningful subset is easy
+    // to click without the surrounding fog.
+    boost *= 1.0 + 1.6 * uIsolate * aFilter;
     float hl = aHighlight;
     if (hl > 0.5 && hl < 1.5) { vColor = vec3(0.96, 0.97, 1.0); boost = 2.1; vAlpha = 1.0; }
     if (hl > 1.5 && hl < 2.5) { vColor = vec3(0.22, 0.83, 0.55); boost = 2.1; vAlpha = 1.0; }
     if (hl > 2.5) { vColor = vec3(0.85, 0.55, 0.13); boost = 2.1; vAlpha = 1.0; }
+    vAlpha *= keep;
     #ifdef PICKING
-    gl_PointSize = max(5.0, uPointSize * boost) * uPixelRatio * (26.0 / -mvPosition.z);
+    gl_PointSize = max(5.0, uPointSize * boost) * uPixelRatio * (26.0 / -mvPosition.z) * keep;
     #else
-    gl_PointSize = uPointSize * boost * uPixelRatio * (26.0 / -mvPosition.z);
+    gl_PointSize = uPointSize * boost * uPixelRatio * (26.0 / -mvPosition.z) * keep;
     #endif
     #endif
   }
@@ -129,9 +144,15 @@ const POINT_FRAGMENT_SHADER = /* glsl */ `
   precision highp float;
   varying vec3 vColor;
   varying float vAlpha;
+  varying float vKeep;
   varying float vId;
 
   void main() {
+    // Isolate gate. Some drivers clamp gl_PointSize to a minimum of 1,
+    // so a size-0 filtered node can still emit a fragment. Discarding
+    // here makes a hidden node truly unrendered AND unpickable, since the
+    // pick color is written below this guard.
+    if (vKeep < 0.5) discard;
     vec2 uv = gl_PointCoord - 0.5;
     float r2 = dot(uv, uv);
     if (r2 > 0.25) discard;
@@ -152,7 +173,11 @@ const EDGE_FRAGMENT_SHADER = /* glsl */ `
   precision highp float;
   varying vec3 vColor;
   varying float vAlpha;
+  varying float vKeep;
   void main() {
+    // An edge fragment is kept only if its endpoint survives the isolate
+    // gate; vAlpha already carries keep, this discards the fully hidden ones.
+    if (vKeep < 0.5) discard;
     gl_FragColor = vec4(vColor, vAlpha);
   }
 `;
@@ -204,6 +229,8 @@ export class Instrument168 {
     this.dataset = null;
     this.onPick = null;
     this.frameCallback = null;
+    this.isolate = 0;
+    this.filterAttr = null;
 
     this._buildMaterials();
     this._bindResize();
@@ -224,6 +251,7 @@ export class Instrument168 {
       uForeshadow: { value: 0 },
       uGold: { value: 0 },
       uAlpha: { value: 0.55 },
+      uIsolate: { value: 0 },
       uPointSize: { value: 2.6 },
       uPixelRatio: { value: this.pixelRatio },
     });
@@ -279,6 +307,8 @@ export class Instrument168 {
     const rightHue = new Float32Array(count);
     const leftHue = new Float32Array(count);
     const gold = new Float32Array(count);
+    const filter = new Float32Array(count);
+    filter.fill(1);
     const ids = new Float32Array(count);
     const highlight = new Float32Array(count);
     const positions = new Float32Array(count * 3);
@@ -311,6 +341,7 @@ export class Instrument168 {
     const attrRightHue = new THREE.BufferAttribute(rightHue, 1);
     const attrLeftHue = new THREE.BufferAttribute(leftHue, 1);
     const attrGold = new THREE.BufferAttribute(gold, 1);
+    const attrFilter = new THREE.BufferAttribute(filter, 1);
     pointGeometry.setAttribute("position", attrPos);
     pointGeometry.setAttribute("aPa", attrPa);
     pointGeometry.setAttribute("aPb", attrPb);
@@ -319,6 +350,7 @@ export class Instrument168 {
     pointGeometry.setAttribute("aRightHue", attrRightHue);
     pointGeometry.setAttribute("aLeftHue", attrLeftHue);
     pointGeometry.setAttribute("aGold", attrGold);
+    pointGeometry.setAttribute("aFilter", attrFilter);
     pointGeometry.setAttribute("aId", new THREE.BufferAttribute(ids, 1));
     pointGeometry.setAttribute("aHighlight", new THREE.BufferAttribute(highlight, 1));
 
@@ -342,6 +374,7 @@ export class Instrument168 {
     edgeGeometry.setAttribute("aRightHue", attrRightHue);
     edgeGeometry.setAttribute("aLeftHue", attrLeftHue);
     edgeGeometry.setAttribute("aGold", attrGold);
+    edgeGeometry.setAttribute("aFilter", attrFilter);
     edgeGeometry.setIndex(new THREE.BufferAttribute(edgeIndex, 1));
 
     this.points = new THREE.Points(pointGeometry, this.pointMaterial);
@@ -358,6 +391,8 @@ export class Instrument168 {
     this.datasetName = name;
     this.dataset = atlas;
     this.highlightAttr = pointGeometry.getAttribute("aHighlight");
+    this.filterAttr = attrFilter;
+    this.isolate = 0;
     this.vertexCount = count;
   }
 
@@ -398,6 +433,27 @@ export class Instrument168 {
       for (const [rank, code] of map) arr[rank] = code;
     }
     this.highlightAttr.needsUpdate = true;
+  }
+
+  /**
+   * Isolate the display to a set of vertex ranks. Pass null to clear the
+   * isolate overlay and show everything again. Filtered-out nodes get
+   * point size 0 in every material, so they are neither drawn nor pickable.
+   */
+  setFilter(rankSetOrNull) {
+    if (!this.filterAttr) return;
+    const arr = this.filterAttr.array;
+    if (rankSetOrNull === null || rankSetOrNull === undefined) {
+      arr.fill(1);
+      this.isolate = 0;
+    } else {
+      arr.fill(0);
+      for (const r of rankSetOrNull) {
+        if (r >= 0 && r < arr.length) arr[r] = 1;
+      }
+      this.isolate = 1;
+    }
+    this.filterAttr.needsUpdate = true;
   }
 
   /** GPU color-ID picking. Returns a vertex rank or null. */
@@ -483,6 +539,7 @@ export class Instrument168 {
       u.uMoirePhase.value = this.moirePhase;
       u.uForeshadow.value = s.foreshadow;
       u.uGold.value = s.gold;
+      u.uIsolate.value = this.isolate;
       u.uPointSize.value = s.pointSize;
       u.uPixelRatio.value = this.pixelRatio;
     }
