@@ -435,6 +435,13 @@ function refreshIsolateButtons() {
   isolateSets = isolateSetsFor(instrument.datasetName);
   isoButtons.octets.hidden = isolateSets.octets === null;
   isoButtons.the168.hidden = isolateSets.the168 === null;
+  // Show the size of each set in its label so the count is honest and
+  // current for whichever dataset is loaded (S4 reps is 6, not 5,040).
+  const total = atlases[instrument.datasetName].permutations.length;
+  isoButtons.all.textContent = `All (${total.toLocaleString()})`;
+  if (isolateSets.octets) isoButtons.octets.textContent = `Named octets (${isolateSets.octets.size})`;
+  if (isolateSets.the168) isoButtons.the168.textContent = `The 168 (${isolateSets.the168.size.toLocaleString()})`;
+  isoButtons.reps.textContent = `Coset reps (${isolateSets.reps.size.toLocaleString()})`;
 }
 
 // Reset to All. Called on every dataset swap.
