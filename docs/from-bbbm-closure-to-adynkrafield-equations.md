@@ -323,6 +323,12 @@ The implementation is documented in
 representation-inventory baseline only. Track 2, Step 2, supercovariant
 derivatives and multiplicity intertwiners, remains open.
 
+The source-convention supercovariant derivative algebra in Eq. (2.22) is also
+implemented. All 160 anticommutator relations on the complete Grassmann basis
+close exactly. This completes the derivative-algebra baseline for Step 2, but
+not the irreducible multiplicity intertwiners. See
+[`adynkra-4d-n1-derivatives.md`](adynkra-4d-n1-derivatives.md).
+
 ## Ordered research plan
 
 ### Track 0: validated 10D supergravity baseline and embedding scan
@@ -356,6 +362,7 @@ derivatives and multiplicity intertwiners, remains open.
 1. Reproduce the four-dimensional `N=1` supergravity-prepotential genome.
    **Complete for the six published genomes in Eqs. (3.6)-(3.11).**
 2. Implement supercovariant derivatives and multiplicity intertwiners.
+   **Derivative algebra complete; irreducible multiplicity intertwiners open.**
 3. Construct the prepotential gauge and curvature complex.
 4. Reproduce a known linearized supergravity equation.
 5. Express that equation as an Adynkrafield operator.
@@ -399,6 +406,7 @@ cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
 cargo run --release -- adynkra-genome-build
 cargo run --release -- adynkra-genome-verify
+cargo run --release -- adynkra-derivative-verify
 cargo test
 ```
 

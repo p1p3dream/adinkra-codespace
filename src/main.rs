@@ -41,6 +41,7 @@ mod search;
 mod signed_perm;
 mod sr_hole;
 mod streamed_gadget;
+mod supercovariant_derivative;
 mod tendim_data;
 mod tendim_generate;
 mod viz_export;
@@ -94,6 +95,7 @@ fn main() {
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
+        "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -160,6 +162,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
+    eprintln!("  adynkra-derivative-verify Verify the 4D N=1 derivative algebra in Eq. 2.22");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -284,6 +287,14 @@ fn cmd_adynkra_genome_build(args: &[String]) {
 
 fn cmd_adynkra_genome_verify() {
     let report = adynkra_genome::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_derivative_verify() {
+    let report = supercovariant_derivative::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
