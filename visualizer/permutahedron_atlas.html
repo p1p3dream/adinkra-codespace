@@ -36,6 +36,7 @@
     #neighbors button { padding:5px 7px; text-align:left; }
     #distance strong { color:var(--gold); font-size:20px; }
     .legend { display:flex; flex-wrap:wrap; gap:5px 10px; color:var(--muted); font-size:12px; }
+    .muted { color:var(--muted); }
     .dot { width:8px; height:8px; display:inline-block; border-radius:50%; margin-right:4px; }
     #error { color:#ff9b9b; white-space:pre-wrap; }
     #correlator { overflow:auto; max-height:260px; }
@@ -92,6 +93,7 @@
     <section><h2>Exact graph distance</h2><div id="distance" class="mono-box">Two selections required.</div></section>
     <section><h2>Selected neighbors</h2><div id="neighbors">None</div></section>
     <section><h2>Source record</h2><div id="source" class="mono-box">None</div></section>
+    <section><h2>Garden sign scan</h2><div id="garden" class="mono-box">Loading.</div></section>
     <section><h2>Named correlator matrix</h2><div id="correlator" class="mono-box">Not supplied.</div></section>
     <section><h2>Self-checks</h2><div id="checks" class="mono-box">Running</div></section>
   </aside>
@@ -101,8 +103,9 @@ import { factorial, inversionCount, kendallDistance, normalizePermutation, parse
 
 const $ = id => document.getElementById(id);
 const canvas = $("canvas"), ctx = canvas.getContext("2d", { alpha:false });
-const state = { n:8, data:null, permutations:[], positions:null, levels:null, adjacency:null, primary:null, secondary:null, scale:1, dx:0, dy:0, drag:null, representation:new Set(), visible:null };
+const state = { n:8, data:null, garden:null, permutations:[], positions:null, levels:null, adjacency:null, primary:null, secondary:null, scale:1, dx:0, dy:0, drag:null, representation:new Set(), visible:null };
 const files = { 4:"../data/permutahedron_s4_atlas.json", 8:"../data/permutahedron_s8_atlas.json" };
+const gardenFile = "../data/permutahedron_s8_garden.json";
 const palette = ["#48d5ca","#61c9e8","#7bb2ff","#a998ff","#d790df","#ee83ae","#ff8d82","#ffae69","#eacb63"];
 
 function edgeParts(edge) { return Array.isArray(edge) ? edge : [edge.source, edge.target, edge.generator]; }
@@ -112,12 +115,13 @@ function representationLabel(item, i) { return item?.label ?? item?.name ?? item
 function representationMembers(item) { return item?.member_ranks ?? item?.members ?? item?.ranks ?? []; }
 
 async function load(n) {
-  state.n=n; state.primary=null; state.secondary=null; state.adjacency=null; state.scale=1; state.dx=state.dy=0;
+  state.n=n; state.garden=null; state.primary=null; state.secondary=null; state.adjacency=null; state.scale=1; state.dx=state.dy=0;
   $("error").textContent=""; $("complete").className=""; $("complete").textContent="loading dataset";
   $("s4").classList.toggle("active",n===4); $("s8").classList.toggle("active",n===8);
   try {
     const response=await fetch(files[n]); if(!response.ok) throw new Error(`${response.status} ${response.statusText}: ${files[n]}`);
     state.data=await response.json(); const audit=validateDataset(state.data);
+    if(n===8){const gardenResponse=await fetch(gardenFile);if(!gardenResponse.ok)throw new Error(`${gardenResponse.status} ${gardenResponse.statusText}: ${gardenFile}`);state.garden=await gardenResponse.json();if(!state.garden.passed||state.garden.cosets_scanned!==5040)throw new Error("Garden scan did not pass its completeness checks");}
     state.permutations=state.data.permutations.map((entry,rank)=>normalizePermutation(entry,n,rank));
     state.levels=Uint8Array.from(state.permutations, inversionCount);
     state.positions=makePositions(); state.visible=new Uint8Array(audit.vertices).fill(1);
@@ -191,8 +195,19 @@ function nearest(x,y) { let best=null,d2=Infinity;for(let r=0;r<state.permutatio
 function ensureAdjacency(){if(state.adjacency)return;state.adjacency=Array.from({length:state.permutations.length},()=>[]);for(const edge of state.data.edges){const [a,b,g]=edgeParts(edge);state.adjacency[a].push({rank:b,generator:g});state.adjacency[b].push({rank:a,generator:g});}}
 function select(rank){if(rank===null)return;if(state.primary===null||state.secondary!==null){state.primary=rank;state.secondary=null;}else if(rank!==state.primary)state.secondary=rank;updateDetails();render();}
 function vertexHtml(rank){if(rank===null)return"Select a vertex.";const p=state.permutations[rank],sideR=state.data.right_slice_by_rank?.[rank],sideL=state.data.left_slice_by_rank?.[rank];return `<dl class="kv"><dt>ID</dt><dd>${stableId(state.n,rank)}</dd><dt>rank</dt><dd>${rank}</dd><dt>address</dt><dd>${p.join("")}</dd><dt>inversions</dt><dd>${state.levels[rank]}</dd><dt>right slice</dt><dd>${sideR??"not assigned"}</dd><dt>left slice</dt><dd>${sideL??"not assigned"}</dd></dl>`;}
+function gardenHtml(rank){
+  if(state.n!==8)return"The complete sign scan currently applies to the S8 R8 octets.";
+  if(!state.garden)return"Garden scan unavailable.";
+  const summary=`<strong>${state.garden.signable_cosets.toLocaleString()} / ${state.garden.cosets_scanned.toLocaleString()}</strong> right cosets admit Garden signs.<br><strong>${state.garden.normalizer.normalizer_cosets}</strong> ab-normal cosets are the quotient N<sub>S8</sub>(R8)/R8.<br><span class="muted">Existence of a signing is separate from a published Boolean-factor assignment.</span>`;
+  if(rank===null)return summary;
+  const slice=state.data.right_slice_by_rank?.[rank],record=state.garden.cosets?.[slice];
+  if(!record)return summary;
+  const named=(state.data.representations??[]).filter(item=>item.member_ranks?.includes(rank));
+  const publication=named.length?`<br><strong>Published record:</strong> ${named.map(item=>`${escapeHtml(item.id)}: ${escapeHtml(item.garden_status)}`).join(", ")}`:"";
+  return `${summary}${publication}<hr><dl class="kv"><dt>right slice</dt><dd>${slice}</dd><dt>ab-normal</dt><dd>${record.abnormal?"yes":"no"}</dd><dt>signing exists</dt><dd>${record.garden_signing_exists?"yes":"no"}</dd><dt>GF(2) rank</dt><dd>${record.equation_rank}</dd><dt>nullity</dt><dd>${record.nullity}</dd><dt>signings</dt><dd>${record.solution_count.toLocaleString()}</dd><dt>canonical mask</dt><dd>${record.canonical_sign_mask}</dd></dl>`;
+}
 function updateDetails(){ $("primary").innerHTML=vertexHtml(state.primary);$("secondary").innerHTML=vertexHtml(state.secondary);if(state.primary!==null&&state.secondary!==null){const d=kendallDistance(state.permutations[state.primary],state.permutations[state.secondary]);$("distance").innerHTML=`<strong>${d}</strong><br>Kendall tau / weak-Bruhat graph distance`;}else $("distance").textContent="Two selections required.";
-  if(state.primary===null){$("neighbors").textContent="None";$("source").textContent="None";return;}ensureAdjacency();$("neighbors").innerHTML=state.adjacency[state.primary].map(({rank,generator})=>`<button data-rank="${rank}">${stableId(state.n,rank)} · generator ${generator??"?"} · ${state.permutations[rank].join("")}</button>`).join("");$("neighbors").querySelectorAll("button").forEach(b=>b.onclick=()=>select(Number(b.dataset.rank)));$("source").textContent=JSON.stringify({record:state.data.permutations[state.primary],source:state.data.metadata?.source??state.data.metadata?.sources??state.data.metadata?.references??"generated atlas record"},null,2);}
+  $("garden").innerHTML=gardenHtml(state.primary);if(state.primary===null){$("neighbors").textContent="None";$("source").textContent="None";return;}ensureAdjacency();$("neighbors").innerHTML=state.adjacency[state.primary].map(({rank,generator})=>`<button data-rank="${rank}">${stableId(state.n,rank)} · generator ${generator??"?"} · ${state.permutations[rank].join("")}</button>`).join("");$("neighbors").querySelectorAll("button").forEach(b=>b.onclick=()=>select(Number(b.dataset.rank)));$("source").textContent=JSON.stringify({record:state.data.permutations[state.primary],source:state.data.metadata?.source??state.data.metadata?.sources??state.data.metadata?.references??"generated atlas record"},null,2);}
 
 $("go").onclick=()=>{const found=parseAddress($("search").value,state.n);if(!found){$("searchError").textContent="No valid stable ID, rank, or one-line address.";return;}$("searchError").textContent="";select(found.rank);};
 $("search").onkeydown=e=>{if(e.key==="Enter")$("go").click();};

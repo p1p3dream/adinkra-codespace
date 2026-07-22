@@ -34,6 +34,7 @@ mod pipeline;
 mod permutahedron;
 mod permutahedron_atlas;
 mod permutahedron_fixtures;
+mod permutahedron_garden;
 mod ranking;
 mod search;
 mod signed_perm;
@@ -89,6 +90,7 @@ fn main() {
         "tendim-convention-scan" => cmd_tendim_convention_scan(),
         "perm-atlas-build" => cmd_perm_atlas_build(&args),
         "perm-atlas-verify" => cmd_perm_atlas_verify(),
+        "perm-garden-scan" => cmd_perm_garden_scan(&args),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -150,6 +152,8 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-atlas-build [dir] [report]");
     eprintln!("                          Build complete S4 and S8 permutahedron atlases");
     eprintln!("  perm-atlas-verify       Verify graphs, paper correlators, cosets, and embeddings");
+    eprintln!("  perm-garden-scan [json]");
+    eprintln!("                          Solve Garden signs for all 5,040 R8 cosets");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -234,6 +238,23 @@ fn cmd_perm_atlas_verify() {
     if !report.passed {
         std::process::exit(2);
     }
+}
+
+fn cmd_perm_garden_scan(args: &[String]) {
+    let output = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_garden.json");
+    let report = permutahedron_garden::write_complete_garden_scan(std::path::Path::new(output));
+    println!(
+        "{{\"output\":{},\"cosets_scanned\":{},\"signable_cosets\":{},\"abnormal_cosets\":{},\"normalizer_order\":{},\"passed\":{}}}",
+        serde_json::to_string(output).unwrap(),
+        report.cosets_scanned,
+        report.signable_cosets,
+        report.contingency.abnormal_and_signable,
+        report.normalizer.normalizer_order,
+        report.passed
+    );
 }
 
 fn cmd_export_3d_assets(args: &[String]) {

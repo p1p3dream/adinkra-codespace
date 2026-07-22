@@ -15,6 +15,7 @@ use crate::permutahedron_fixtures::{
     S8_REPRESENTATION_OCTETS, S8_REPRESENTATION_SOURCE, S8_VERTEX_COUNT, SourceDocument,
     SourceLocator, reconstruct_s4_bruhat_correlator,
 };
+use crate::permutahedron_garden::{CompleteGardenScan, complete_garden_scan};
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
@@ -161,11 +162,50 @@ pub struct PermutahedronValidation {
     pub schema_version: &'static str,
     pub s4: S4Validation,
     pub s8: S8Validation,
+    pub garden: GardenValidation,
     pub s4_artifact: &'static str,
     pub s8_artifact: &'static str,
+    pub garden_artifact: &'static str,
     pub browser: &'static str,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GardenValidation {
+    pub cosets_scanned: usize,
+    pub signable_cosets: usize,
+    pub unsignable_cosets: usize,
+    pub equation_rank: usize,
+    pub equation_nullity: usize,
+    pub solutions_per_coset: u64,
+    pub independent_sparse_verifications: usize,
+    pub dense_entries_checked: usize,
+    pub dense_residual_entries: usize,
+    pub normalizer_order: usize,
+    pub normalizer_quotient_cosets: usize,
+    pub passed: bool,
+}
+
+impl From<&CompleteGardenScan> for GardenValidation {
+    fn from(scan: &CompleteGardenScan) -> Self {
+        assert_eq!(scan.rank_histogram.len(), 1, "Garden rank must be uniform");
+        assert_eq!(scan.nullity_histogram.len(), 1, "Garden nullity must be uniform");
+        Self {
+            cosets_scanned: scan.cosets_scanned,
+            signable_cosets: scan.signable_cosets,
+            unsignable_cosets: scan.unsignable_cosets,
+            equation_rank: scan.rank_histogram[0].value,
+            equation_nullity: scan.nullity_histogram[0].value,
+            solutions_per_coset: scan.solution_count_per_coset,
+            independent_sparse_verifications: scan.independent_sparse_verifications,
+            dense_entries_checked: scan.dense_entries_checked,
+            dense_residual_entries: scan.dense_residual_entries,
+            normalizer_order: scan.normalizer.normalizer_order,
+            normalizer_quotient_cosets: scan.normalizer.normalizer_cosets,
+            passed: scan.passed,
+        }
+    }
 }
 
 fn permutation_string(permutation: Permutation) -> String {
@@ -659,15 +699,19 @@ fn build_s8() -> (PermutahedronAtlas, S8Validation) {
 pub fn verify() -> PermutahedronValidation {
     let (_, s4) = build_s4();
     let (_, s8) = build_s8();
-    let passed = s4.passed && s8.passed;
+    let garden_scan = complete_garden_scan();
+    let garden = GardenValidation::from(&garden_scan);
+    let passed = s4.passed && s8.passed && garden.passed;
     PermutahedronValidation {
         schema_version: SCHEMA_VERSION,
         s4,
         s8,
+        garden,
         s4_artifact: "data/permutahedron_s4_atlas.json",
         s8_artifact: "data/permutahedron_s8_atlas.json",
+        garden_artifact: "data/permutahedron_s8_garden.json",
         browser: "visualizer/permutahedron_atlas.html",
-        boundary: "The atlas completes finite permutation, coset, and Bruhat-distance calculations. It does not solve general sign assignment or construct a field equation.",
+        boundary: "The atlas completes finite permutation, coset, Bruhat-distance, and R8-coset Garden-sign feasibility calculations. It does not solve arbitrary sign assignment or construct a field equation.",
         passed,
     }
 }
@@ -689,15 +733,19 @@ pub fn build_artifacts(output_directory: &Path, validation_path: &Path) -> Permu
     }
     let (s4_atlas, s4) = build_s4();
     let (s8_atlas, s8) = build_s8();
-    let passed = s4.passed && s8.passed;
+    let garden_scan = complete_garden_scan();
+    let garden = GardenValidation::from(&garden_scan);
+    let passed = s4.passed && s8.passed && garden.passed;
     let report = PermutahedronValidation {
         schema_version: SCHEMA_VERSION,
         s4,
         s8,
+        garden,
         s4_artifact: "data/permutahedron_s4_atlas.json",
         s8_artifact: "data/permutahedron_s8_atlas.json",
+        garden_artifact: "data/permutahedron_s8_garden.json",
         browser: "visualizer/permutahedron_atlas.html",
-        boundary: "The atlas completes finite permutation, coset, and Bruhat-distance calculations. It does not solve general sign assignment or construct a field equation.",
+        boundary: "The atlas completes finite permutation, coset, Bruhat-distance, and R8-coset Garden-sign feasibility calculations. It does not solve arbitrary sign assignment or construct a field equation.",
         passed,
     };
     assert!(report.passed, "permutahedron validation failed");
@@ -711,6 +759,11 @@ pub fn build_artifacts(output_directory: &Path, validation_path: &Path) -> Permu
         &s8_atlas,
     )
     .expect("write S8 atlas");
+    write_json(
+        &output_directory.join("permutahedron_s8_garden.json"),
+        &garden_scan,
+    )
+    .expect("write S8 Garden scan");
     write_json(validation_path, &report).expect("write validation report");
     report
 }
@@ -733,5 +786,13 @@ mod tests {
         assert_eq!(report.s8.named_magic_failures, 0);
         assert_eq!(report.s8.all_coset_intra_rows_checked, 40_320);
         assert_eq!(report.s8.all_coset_intra_failures, 0);
+        assert_eq!(report.garden.cosets_scanned, 5_040);
+        assert_eq!(report.garden.signable_cosets, 5_040);
+        assert_eq!(report.garden.unsignable_cosets, 0);
+        assert_eq!(report.garden.equation_rank, 45);
+        assert_eq!(report.garden.equation_nullity, 19);
+        assert_eq!(report.garden.dense_residual_entries, 0);
+        assert_eq!(report.garden.normalizer_order, 1_344);
+        assert_eq!(report.garden.normalizer_quotient_cosets, 168);
     }
 }

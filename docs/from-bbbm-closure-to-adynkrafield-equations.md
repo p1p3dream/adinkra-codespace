@@ -293,6 +293,10 @@ the four-dimensional `N=2` program [2,3,7,8]. The finite atlas is now complete:
    atlas;
 5. the requested `56 x 56` two-point matrix for those seven octets is computed;
 6. a searchable browser atlas covers the complete vertex, edge, and coset data.
+7. all 5,040 right `R_8` cosets admit Garden signs; every affine sign system has
+   rank 45 and nullity 19;
+8. the 168 coincident slices are precisely the cosets in
+   `N_{S_8}(R_8)/R_8`, which is `GL(3,2)`.
 
 The implementation and validation report are documented in
 [`permutahedron-atlas.md`](permutahedron-atlas.md).
@@ -300,8 +304,10 @@ The implementation and validation report are documented in
 This track can reveal representation embeddings and invariant structure. It
 does not by itself provide a differential field equation. It should run as a
 supporting atlas and validation program while the nonclosure and Adynkrafield
-differential work proceeds. General sign assignment, the structure behind the
-168 coincident slices, and the relation of the atlas to nonclosure remain open.
+differential work proceeds. The scoped `R_8` sign-feasibility and 168-coset
+questions are complete. The closure of particular Boolean-factor assignments,
+their four-dimensional interpretation, and the relation of the atlas to
+nonclosure remain separate questions.
 
 ## Ordered research plan
 
@@ -349,8 +355,9 @@ differential work proceeds. General sign assignment, the structure behind the
 2. Reproduce the published correlator calculations. **Complete for the full
    `S_4` matrix and the seven named `S_8` octets.**
 3. Test the proposed lower-color embeddings and the organization of nonclosure
-   terms. **The published octets are located; the nonclosure organization
-   remains open.**
+   terms. **All 5,040 unsigned octets admit Garden signs, so ab-normality is not
+   a sign-feasibility discriminator. The nonclosure of particular published
+   Boolean factors remains separate.**
 4. Feed any invariant structures into Tracks 1 and 2.
 
 The immediate equation priority is Track 2, Steps 1-5. Track 0 provides a
@@ -374,6 +381,7 @@ cargo run --release -- tendim-reproduce
 cargo run --release -- tendim-convention-scan
 cargo run --release -- perm-atlas-build
 cargo run --release -- perm-atlas-verify
+cargo run --release -- perm-garden-scan
 cargo test
 ```
 

@@ -264,6 +264,8 @@ Implementation:
   algorithms;
 - `src/permutahedron_fixtures.rs`: page-located paper fixtures;
 - `src/permutahedron_atlas.rs`: validation and deterministic export;
+- `src/permutahedron_garden.rs`: complete `GF(2)` Garden-sign scan and
+  normalizer analysis;
 - `visualizer/permutahedron_atlas.html`: browser atlas;
 - `visualizer/permutahedron_core.mjs`: independent browser rank and distance
   implementation.
@@ -274,13 +276,16 @@ Artifacts:
 |---|---|
 | `data/permutahedron_s4_atlas.json` | `0738927f723ffd16b310ff7a7bcbafa8629b791583524a165a9c1635c008be2c` |
 | `data/permutahedron_s8_atlas.json` | `b178d1642d05f1b7e0b9b5b5befdf3fb3c412717b80202c9836fe1bf061f4ba3` |
-| `results/permutahedron_validation.json` | `d5328f76691b647f7ee04a06f13397c5fa1ea13fcd114c1af26ef4cdfbdbe74e` |
+| `data/permutahedron_s8_garden.json` | `9e0d983f678ee89704809008ea5fdeea993fbb5d535f53564477b9a313056a67` |
+| `results/permutahedron_validation.json` | `feb3d95a19a525dd538e53baa2b56018988629fe8576ce6cbc29d39174973cc1` |
 
 Regenerate and verify:
 
 ```sh
 cargo run --release -- perm-atlas-build
 cargo run --release -- perm-atlas-verify
+cargo run --release -- perm-garden-scan
+node scripts/test_permutahedron_atlas.mjs
 ```
 
 The validation checks the complete vertex and edge sets, all 21 published `S4`
@@ -289,6 +294,14 @@ left-right slices, the 30 conjugate `R8` subgroups, all 40,320 intra-coset
 magic-number rows, and the `56 x 56` named-octet matrix. Bruhat correlators are
 graph distances and are not holoraumy gadgets.
 
+The Garden scan solves 5,040 affine sign systems over `GF(2)`. Each has rank 45,
+nullity 19, and 524,288 solutions. One solution per coset is checked by the
+independent sparse Garden verifier and by 4,096 dense integer matrix entries,
+for 20,643,840 checked entries and zero residuals. The same finite enumeration
+finds `|N_S8(R8)| = 1,344` and verifies that the 168 coincident cosets are
+exactly `N_S8(R8)/R8`.
+
 The full `S8` all-pairs distance matrix is not stored. The two-point distance is
-computed from the one-line addresses when requested. The atlas does not solve
-general sign assignment or construct a supersymmetric field equation.
+computed from the one-line addresses when requested. The atlas solves sign
+feasibility for right cosets of the stated `R8`, not arbitrary permutation
+collections, and does not construct a supersymmetric field equation.
