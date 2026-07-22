@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v2",
+  "schema_version": "adynkra.11d.level15-bridge.v3",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -432,7 +432,7 @@
       "target_sector": "gamma-traceless vector-spinor"
     }
   ],
-  "equation_2_7_status": "the final gamma^[2] projection has rank zero on the three bridge channels; the two spinor source descendant systems are exact and the 320-dimensional source descendant system remains",
+  "equation_2_7_status": "the final gamma^[2] projection has rank zero on the three bridge channels; all 384 source descendant states are generated and their complete simple-root action is verified",
   "coefficient_solution_status": "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b, leaving the unique non-gamma-trace c channel with a canonical source-line normalization but an unfixed physical scale",
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
@@ -477,6 +477,24 @@
     "maximum_weight_multiplicity": 5,
     "nonzero_lowering_actions": 752,
     "passed": true
+  },
+  "vector_spinor_source_descendant_audit": {
+    "target_states_expected": 320,
+    "target_states_generated": 320,
+    "distinct_weights": 192,
+    "nonzero_lowering_actions_checked": 776,
+    "zero_lowering_actions_checked": 824,
+    "total_lowering_actions_checked": 1600,
+    "independent_state_discoveries": 319,
+    "dependent_target_relations_checked": 457,
+    "dependent_target_relation_mismatches": 0,
+    "nonzero_relation_residual_terms": 0,
+    "maximum_absolute_relation_residual": 0,
+    "zero_action_mismatches": 0,
+    "minimum_source_state_support": 260267,
+    "maximum_source_state_support": 555664,
+    "maximum_absolute_source_coefficient": 18480,
+    "exact_full_vector_spinor_intertwiner_verified": true
   },
   "final_equation_2_7_projection": {
     "source_equation": "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
@@ -551,6 +569,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes both spinor source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The 320-dimensional source descendant system and the physical normalization of c remain.",
+  "boundary": "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The physical normalization of c and the curvature complex remain.",
   "passed": true
 }

@@ -105,7 +105,27 @@ Here $I_{32}^{(1)}$, $I_{32}^{(2)}$, and $I_{320}$ denote kernel vectors of
 the two exact sparse systems above, followed by the target projectors already
 verified in `src/eleven_dimensional_clifford.rs`. All three highest-weight
 vectors are now exact. Both 32-component spinor descendant systems are exact.
-The 320-component source descendant system remains to be constructed.
+The 320-component gamma-traceless vector-spinor source descendant system is
+also exact.
+
+## Complete `(10001)` source intertwiner
+
+The verifier lowers the primitive `(10001)` source vector through the complete
+320-dimensional target module. The layer-adapted target basis has 192 weights.
+Across its 320 states, the verifier evaluates all 1,600 simple-root actions:
+
+- 776 actions are nonzero and 824 vanish;
+- 319 nonzero actions discover a new independent state;
+- 457 nonzero actions reproduce a target-space linear relation; and
+- every one of those 457 relations holds on the level-15 source vectors with
+  zero exact residual.
+
+Every target-zero action also vanishes on the source. Source-state supports
+range from 260,267 to 555,664 exterior basis terms, and the largest absolute
+integer coefficient is 18,480. The count of nonzero actions depends on the
+basis selected inside the 32 weights of multiplicity five. The invariant
+result is that all 320 states are generated and the complete simple-root
+action agrees between source and target.
 
 ## Canonical computational normalization
 
@@ -133,18 +153,17 @@ curvature convention, a Bianchi identity, or matching to a component field.
 This pass makes the source-embedding problem explicit and reproducible and
 supplies all three exact highest-weight vectors and both complete 32-component
 spinor intertwiners. It also materializes the complete 320-dimensional target
-module and fixes a canonical computational normalization of the surviving
-source highest-weight line. The remaining `(10001)` work is to propagate the
-source vector through the same 752 lowering actions and verify every target
-relation. Consequently:
+module, verifies its full source intertwiner, and fixes a canonical
+computational normalization of the surviving source highest-weight line.
+Consequently:
 
 - the final two-form torsion projection has now been evaluated at the
   representation level and has rank zero on the three coefficients;
 - Eq. (2.7) therefore does not select a unique combination of the three bridge
   channels; and
-- generic-momentum gauge reducibility and a complete curvature complex remain
-  open. The scalar-divergence kernel test has identified the direct two-form
-  and five-form channels.
+- the physical normalization of $c$, generic-momentum gauge reducibility, and
+  a complete curvature complex remain open. The scalar-divergence kernel test
+  has identified the direct two-form and five-form channels.
 
 ## Primary-source dependency for Eq. (2.7)
 

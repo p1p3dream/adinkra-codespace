@@ -104,12 +104,33 @@ pub struct ElevenDimensionalBridgeReport {
     pub all_expected_kernel_vectors_verified: bool,
     pub spinor_descendant_audits: Vec<SpinorDescendantAudit>,
     pub vector_spinor_target_audit: VectorSpinorTargetAudit,
+    pub vector_spinor_source_descendant_audit: VectorSpinorSourceDescendantAudit,
     pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
     pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
     pub inherited_spinor_gauge_audit: InheritedSpinorGaugeAudit,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct VectorSpinorSourceDescendantAudit {
+    pub target_states_expected: usize,
+    pub target_states_generated: usize,
+    pub distinct_weights: usize,
+    pub nonzero_lowering_actions_checked: usize,
+    pub zero_lowering_actions_checked: usize,
+    pub total_lowering_actions_checked: usize,
+    pub independent_state_discoveries: usize,
+    pub dependent_target_relations_checked: usize,
+    pub dependent_target_relation_mismatches: usize,
+    pub nonzero_relation_residual_terms: usize,
+    pub maximum_absolute_relation_residual: u64,
+    pub zero_action_mismatches: usize,
+    pub minimum_source_state_support: usize,
+    pub maximum_source_state_support: usize,
+    pub maximum_absolute_source_coefficient: i64,
+    pub exact_full_vector_spinor_intertwiner_verified: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -648,6 +669,261 @@ fn lower_pairs(source: &[(u32, i64)], root: usize, weights: &[Weight; 32]) -> Ve
     lowered
 }
 
+#[derive(Clone)]
+struct VectorSpinorIntertwinerState {
+    target: TensorVector,
+    source: Vec<(u32, i64)>,
+}
+
+fn target_span_coefficients(
+    candidate: &TensorVector,
+    basis: &[VectorSpinorIntertwinerState],
+) -> Option<Vec<Ratio<i64>>> {
+    let dimension = basis.len();
+    if dimension == 0 {
+        return None;
+    }
+    let zero = Ratio::from_integer(0);
+    let mut rows = basis
+        .iter()
+        .enumerate()
+        .map(|(index, state)| {
+            let mut coordinates = vec![zero.clone(); dimension];
+            coordinates[index] = Ratio::from_integer(1);
+            (state.target.clone(), coordinates)
+        })
+        .collect::<Vec<_>>();
+    let mut rank = 0;
+    for column in 0..11 * 32 {
+        let Some(pivot_row) = (rank..dimension).find(|row| {
+            rows[*row]
+                .0
+                .get(&column)
+                .is_some_and(|value| *value != zero)
+        }) else {
+            continue;
+        };
+        rows.swap(rank, pivot_row);
+        let normalization = rows[rank].0[&column].clone();
+        for value in rows[rank].0.values_mut() {
+            *value /= normalization.clone();
+        }
+        for value in &mut rows[rank].1 {
+            *value /= normalization.clone();
+        }
+        let pivot_vector = rows[rank].0.clone();
+        let pivot_coordinates = rows[rank].1.clone();
+        for row in 0..dimension {
+            if row == rank {
+                continue;
+            }
+            let Some(factor) = rows[row].0.get(&column).cloned() else {
+                continue;
+            };
+            for (&index, value) in &pivot_vector {
+                *rows[row].0.entry(index).or_default() -= factor.clone() * value.clone();
+            }
+            rows[row].0.retain(|_, value| *value != zero);
+            for (value, pivot_value) in rows[row].1.iter_mut().zip(&pivot_coordinates) {
+                *value -= factor.clone() * pivot_value.clone();
+            }
+        }
+        rank += 1;
+        if rank == dimension {
+            break;
+        }
+    }
+    assert_eq!(rank, dimension);
+
+    let mut residual = candidate.clone();
+    let mut solution = vec![zero.clone(); dimension];
+    for (row, coordinates) in &rows {
+        let pivot = *row.keys().min().unwrap();
+        let Some(factor) = residual.get(&pivot).cloned() else {
+            continue;
+        };
+        for (&index, value) in row {
+            *residual.entry(index).or_default() -= factor.clone() * value.clone();
+        }
+        residual.retain(|_, value| *value != zero);
+        for (value, coordinate) in solution.iter_mut().zip(coordinates) {
+            *value += factor.clone() * coordinate.clone();
+        }
+    }
+    residual.is_empty().then_some(solution)
+}
+
+fn gcd_i64(mut left: i64, mut right: i64) -> i64 {
+    left = left.abs();
+    right = right.abs();
+    while right != 0 {
+        let remainder = left % right;
+        left = right;
+        right = remainder;
+    }
+    left
+}
+
+fn lcm_i64(left: i64, right: i64) -> i64 {
+    left / gcd_i64(left, right) * right
+}
+
+fn source_relation_residual(
+    candidate: &[(u32, i64)],
+    basis: &[VectorSpinorIntertwinerState],
+    coefficients: &[Ratio<i64>],
+) -> (usize, u64) {
+    let denominator = coefficients.iter().fold(1_i64, |common, coefficient| {
+        lcm_i64(common, *coefficient.denom())
+    });
+    let mut residual = HashMap::<u32, i128>::new();
+    for &(mask, value) in candidate {
+        *residual.entry(mask).or_insert(0) += i128::from(denominator) * i128::from(value);
+    }
+    for (state, coefficient) in basis.iter().zip(coefficients) {
+        let numerator = *coefficient.numer() * (denominator / *coefficient.denom());
+        for &(mask, value) in &state.source {
+            *residual.entry(mask).or_insert(0) -= i128::from(numerator) * i128::from(value);
+        }
+    }
+    residual.retain(|_, value| *value != 0);
+    let maximum_absolute_residual = residual
+        .values()
+        .map(|value| value.unsigned_abs())
+        .max()
+        .unwrap_or(0);
+    (
+        residual.len(),
+        u64::try_from(maximum_absolute_residual).unwrap(),
+    )
+}
+
+fn audit_full_vector_spinor_source_descendants(
+    source_basis: &[u32],
+    coefficients: &[i16],
+    spinors: &[Weight; 32],
+) -> VectorSpinorSourceDescendantAudit {
+    let vectors = vector_weights();
+    let vector_highest = vectors
+        .iter()
+        .position(|weight| *weight == [2, 0, 0, 0, 0])
+        .unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_target =
+        HashMap::from([(vector_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_source = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients.iter().copied())
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<Vec<_>>();
+    let mut current = BTreeMap::from([(
+        [3, 1, 1, 1, 1],
+        vec![VectorSpinorIntertwinerState {
+            target: highest_target,
+            source: highest_source,
+        }],
+    )]);
+    let mut distinct_weights = 1;
+    let mut target_states_generated = 1;
+    let mut nonzero_lowering_actions_checked = 0;
+    let mut zero_lowering_actions_checked = 0;
+    let mut independent_state_discoveries = 0;
+    let mut dependent_target_relations_checked = 0;
+    let mut dependent_target_relation_mismatches = 0;
+    let mut nonzero_relation_residual_terms = 0;
+    let mut maximum_absolute_relation_residual = 0;
+    let mut zero_action_mismatches = 0;
+    let mut minimum_source_state_support = usize::MAX;
+    let mut maximum_source_state_support = 0;
+    let mut maximum_absolute_source_coefficient = 0_i64;
+
+    while !current.is_empty() {
+        let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
+        for states in current.into_values() {
+            for state in states {
+                minimum_source_state_support = minimum_source_state_support.min(state.source.len());
+                maximum_source_state_support = maximum_source_state_support.max(state.source.len());
+                maximum_absolute_source_coefficient = maximum_absolute_source_coefficient.max(
+                    state
+                        .source
+                        .iter()
+                        .map(|(_, coefficient)| coefficient.abs())
+                        .max()
+                        .unwrap_or(0),
+                );
+                for root in 0..5 {
+                    let target_descendant =
+                        lower_target_tensor(&state.target, root, &vectors, spinors);
+                    let source_descendant = lower_pairs(&state.source, root, spinors);
+                    if target_descendant.is_empty() {
+                        zero_lowering_actions_checked += 1;
+                        zero_action_mismatches += usize::from(!source_descendant.is_empty());
+                        continue;
+                    }
+                    nonzero_lowering_actions_checked += 1;
+                    let weight = tensor_weight(&target_descendant, &vectors, spinors);
+                    let target_weight_was_new = !next.contains_key(&weight);
+                    let basis = next.entry(weight).or_default();
+                    if let Some(span_coefficients) =
+                        target_span_coefficients(&target_descendant, basis)
+                    {
+                        dependent_target_relations_checked += 1;
+                        let (residual_terms, maximum_absolute_residual) =
+                            source_relation_residual(&source_descendant, basis, &span_coefficients);
+                        dependent_target_relation_mismatches += usize::from(residual_terms != 0);
+                        nonzero_relation_residual_terms += residual_terms;
+                        maximum_absolute_relation_residual =
+                            maximum_absolute_relation_residual.max(maximum_absolute_residual);
+                    } else {
+                        if target_weight_was_new {
+                            distinct_weights += 1;
+                        }
+                        independent_state_discoveries += 1;
+                        target_states_generated += 1;
+                        basis.push(VectorSpinorIntertwinerState {
+                            target: target_descendant,
+                            source: source_descendant,
+                        });
+                    }
+                }
+            }
+        }
+        current = next;
+    }
+
+    let exact_full_vector_spinor_intertwiner_verified = target_states_generated == 320
+        && distinct_weights == 192
+        && nonzero_lowering_actions_checked + zero_lowering_actions_checked == 320 * 5
+        && independent_state_discoveries == 319
+        && independent_state_discoveries + dependent_target_relations_checked
+            == nonzero_lowering_actions_checked
+        && dependent_target_relation_mismatches == 0
+        && nonzero_relation_residual_terms == 0
+        && maximum_absolute_relation_residual == 0
+        && zero_action_mismatches == 0;
+    VectorSpinorSourceDescendantAudit {
+        target_states_expected: 320,
+        target_states_generated,
+        distinct_weights,
+        nonzero_lowering_actions_checked,
+        zero_lowering_actions_checked,
+        total_lowering_actions_checked: nonzero_lowering_actions_checked
+            + zero_lowering_actions_checked,
+        independent_state_discoveries,
+        dependent_target_relations_checked,
+        dependent_target_relation_mismatches,
+        nonzero_relation_residual_terms,
+        maximum_absolute_relation_residual,
+        zero_action_mismatches,
+        minimum_source_state_support,
+        maximum_source_state_support,
+        maximum_absolute_source_coefficient,
+        exact_full_vector_spinor_intertwiner_verified,
+    }
+}
+
 fn audit_full_spinor_descendants(
     source_copy: usize,
     source_basis: &[u32],
@@ -929,6 +1205,12 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         })
         .collect::<Vec<_>>();
     let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
+    let vector_spinor_source_basis = weight_basis([3, 1, 1, 1, 1], &left, &right);
+    let vector_spinor_source_descendant_audit = audit_full_vector_spinor_source_descendants(
+        &vector_spinor_source_basis,
+        &decode_kernel(VECTOR_SPINOR_KERNEL),
+        &weights,
+    );
     let final_equation_2_7_projection = audit_final_equation_2_7_projection();
     let clifford = crate::eleven_dimensional_clifford::verify();
     let local_gamma_trace_quotient = audit_local_gamma_trace_quotient(&clifford);
@@ -942,13 +1224,14 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             .iter()
             .all(|audit| audit.exact_full_spinor_intertwiner_verified)
         && vector_spinor_target_audit.passed
+        && vector_spinor_source_descendant_audit.exact_full_vector_spinor_intertwiner_verified
         && final_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
         && canonical_source_line_normalization.passed
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v2",
+        schema_version: "adynkra.11d.level15-bridge.v3",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -974,18 +1257,19 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
                 target_sector: "gamma-traceless vector-spinor",
             },
         ],
-        equation_2_7_status: "the final gamma^[2] projection has rank zero on the three bridge channels; the two spinor source descendant systems are exact and the 320-dimensional source descendant system remains",
+        equation_2_7_status: "the final gamma^[2] projection has rank zero on the three bridge channels; all 384 source descendant states are generated and their complete simple-root action is verified",
         coefficient_solution_status: "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b, leaving the unique non-gamma-trace c channel with a canonical source-line normalization but an unfixed physical scale",
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
         spinor_descendant_audits,
         vector_spinor_target_audit,
+        vector_spinor_source_descendant_audit,
         final_equation_2_7_projection,
         local_gamma_trace_quotient,
         canonical_source_line_normalization,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes both spinor source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The 320-dimensional source descendant system and the physical normalization of c remain.",
+        boundary: "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The physical normalization of c and the curvature complex remain.",
         passed,
     }
 }
@@ -1000,11 +1284,9 @@ mod tests {
         let weights = spinor_weights();
         let unique: HashSet<_> = weights.into_iter().collect();
         assert_eq!(unique.len(), 32);
-        assert!(
-            weights
-                .iter()
-                .all(|weight| weight.iter().all(|x| x.abs() == 1))
-        );
+        assert!(weights
+            .iter()
+            .all(|weight| weight.iter().all(|x| x.abs() == 1)));
     }
 
     #[test]
@@ -1043,12 +1325,10 @@ mod tests {
         assert_eq!(spinor.total_rows, 1_943_600);
         assert_eq!(spinor.total_nonzero_entries, 7_412_645);
         assert_eq!(spinor.exact_kernel_vectors.len(), 2);
-        assert!(
-            spinor
-                .exact_kernel_vectors
-                .iter()
-                .all(|kernel| kernel.exact_kernel_verified)
-        );
+        assert!(spinor
+            .exact_kernel_vectors
+            .iter()
+            .all(|kernel| kernel.exact_kernel_verified));
         assert_eq!(spinor.exact_kernel_vectors[0].nonzero_coefficients, 374_246);
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
         assert_eq!(spinor.exact_kernel_vectors[0].squared_norm, 426_254_400);
@@ -1068,6 +1348,19 @@ mod tests {
         assert_eq!(target.multiplicity_five_weights, 32);
         assert_eq!(target.nonzero_lowering_actions, 752);
         assert!(target.passed);
+        let source_descendants = &report.vector_spinor_source_descendant_audit;
+        assert_eq!(source_descendants.target_states_generated, 320);
+        assert_eq!(source_descendants.distinct_weights, 192);
+        assert_eq!(source_descendants.nonzero_lowering_actions_checked, 776);
+        assert_eq!(source_descendants.zero_lowering_actions_checked, 824);
+        assert_eq!(source_descendants.total_lowering_actions_checked, 1_600);
+        assert_eq!(source_descendants.independent_state_discoveries, 319);
+        assert_eq!(source_descendants.dependent_target_relations_checked, 457);
+        assert_eq!(source_descendants.dependent_target_relation_mismatches, 0);
+        assert_eq!(source_descendants.nonzero_relation_residual_terms, 0);
+        assert_eq!(source_descendants.maximum_absolute_relation_residual, 0);
+        assert_eq!(source_descendants.zero_action_mismatches, 0);
+        assert!(source_descendants.exact_full_vector_spinor_intertwiner_verified);
         let projection = &report.final_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);
         assert_eq!(projection.remaining_hook_dynkin_label, "11000");
