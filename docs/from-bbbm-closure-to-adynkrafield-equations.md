@@ -309,6 +309,20 @@ questions are complete. The closure of particular Boolean-factor assignments,
 their four-dimensional interpretation, and the relation of the atlas to
 nonclosure remain separate questions.
 
+## Status update: four-dimensional genome baseline
+
+Track 2, Step 1 is complete. The Rust representation engine reproduces all six
+four-dimensional `N=1` genomes in Eqs. (3.6)-(3.11) of [6]. A separate literal
+source fixture checks all 47 terms, their left and right level degrees,
+multiplicities, and factorial coefficients. The generated dimensions are 4, 8,
+8, 16, 32, and 64 for the chiral, 2-form gauge, 1-form variant gauge, 1-form
+gauge, matter-gravitino, and supergravity genomes, respectively.
+
+The implementation is documented in
+[`adynkra-4d-n1-genomes.md`](adynkra-4d-n1-genomes.md). This completes the
+representation-inventory baseline only. Track 2, Step 2, supercovariant
+derivatives and multiplicity intertwiners, remains open.
+
 ## Ordered research plan
 
 ### Track 0: validated 10D supergravity baseline and embedding scan
@@ -340,6 +354,7 @@ nonclosure remain separate questions.
 ### Track 2: Adynkrafield equation
 
 1. Reproduce the four-dimensional `N=1` supergravity-prepotential genome.
+   **Complete for the six published genomes in Eqs. (3.6)-(3.11).**
 2. Implement supercovariant derivatives and multiplicity intertwiners.
 3. Construct the prepotential gauge and curvature complex.
 4. Reproduce a known linearized supergravity equation.
@@ -382,6 +397,8 @@ cargo run --release -- tendim-convention-scan
 cargo run --release -- perm-atlas-build
 cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
+cargo run --release -- adynkra-genome-build
+cargo run --release -- adynkra-genome-verify
 cargo test
 ```
 

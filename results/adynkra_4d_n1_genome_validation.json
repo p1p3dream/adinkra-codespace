@@ -1,0 +1,65 @@
+{
+  "schema_version": "adynkra-4d-n1-genome-validation-v1",
+  "source_arxiv": "2407.09334",
+  "equations_checked": "3.6-3.11",
+  "genomes_checked": 6,
+  "terms_checked": 47,
+  "mismatched_genomes": 0,
+  "checks": [
+    {
+      "id": "chiral",
+      "equation": "3.6",
+      "expected_terms": 3,
+      "generated_terms": 3,
+      "expected_total_dimension": 4,
+      "generated_total_dimension": 4,
+      "exact_match": true
+    },
+    {
+      "id": "two_form_gauge",
+      "equation": "3.7",
+      "expected_terms": 4,
+      "generated_terms": 4,
+      "expected_total_dimension": 8,
+      "generated_total_dimension": 8,
+      "exact_match": true
+    },
+    {
+      "id": "one_form_variant_gauge",
+      "equation": "3.8",
+      "expected_terms": 3,
+      "generated_terms": 3,
+      "expected_total_dimension": 8,
+      "generated_total_dimension": 8,
+      "exact_match": true
+    },
+    {
+      "id": "one_form_gauge",
+      "equation": "3.9",
+      "expected_terms": 9,
+      "generated_terms": 9,
+      "expected_total_dimension": 16,
+      "generated_total_dimension": 16,
+      "exact_match": true
+    },
+    {
+      "id": "matter_gravitino",
+      "equation": "3.10",
+      "expected_terms": 12,
+      "generated_terms": 12,
+      "expected_total_dimension": 32,
+      "generated_total_dimension": 32,
+      "exact_match": true
+    },
+    {
+      "id": "supergravity",
+      "equation": "3.11",
+      "expected_terms": 16,
+      "generated_terms": 16,
+      "expected_total_dimension": 64,
+      "generated_total_dimension": 64,
+      "exact_match": true
+    }
+  ],
+  "passed": true
+}

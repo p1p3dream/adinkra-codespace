@@ -1,0 +1,607 @@
+{
+  "schema_version": "adynkra-4d-n1-genomes-v1",
+  "source_arxiv": "2407.09334",
+  "source_version": 1,
+  "source_pdf_sha256": "64f0ae888933a8a6ff7b768c73d21656baa557ef7b089aab9f6252129ee58f81",
+  "source_pdf_pages": "15-16 (journal-style page numbers; PDF pages 15-16)",
+  "representation_convention": "complexified Spin(1,3) Dynkin labels [a,b] for SL(2)_L x SL(2)_R",
+  "coefficient_convention": "each bidegree (p,q) carries 1/(p! q!) from the genome exponential",
+  "boundary": "representation content and multiplicities only; no Clebsch-Gordan coefficients or component transformation laws",
+  "genomes": [
+    {
+      "id": "chiral",
+      "name": "chiral supermultiplet",
+      "source_equation": "3.6",
+      "seed": {
+        "left": 0,
+        "right": 0
+      },
+      "right_levels_included": false,
+      "terms": [
+        {
+          "left_degree": 0,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        }
+      ],
+      "total_representation_dimension": 4
+    },
+    {
+      "id": "two_form_gauge",
+      "name": "2-form gauge-field supermultiplet",
+      "source_equation": "3.7",
+      "seed": {
+        "left": 1,
+        "right": 0
+      },
+      "right_levels_included": false,
+      "terms": [
+        {
+          "left_degree": 0,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 2,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        }
+      ],
+      "total_representation_dimension": 8
+    },
+    {
+      "id": "one_form_variant_gauge",
+      "name": "1-form variant gauge-field supermultiplet",
+      "source_equation": "3.8",
+      "seed": {
+        "left": 0,
+        "right": 1
+      },
+      "right_levels_included": false,
+      "terms": [
+        {
+          "left_degree": 0,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        }
+      ],
+      "total_representation_dimension": 8
+    },
+    {
+      "id": "one_form_gauge",
+      "name": "1-form gauge-field supermultiplet",
+      "source_equation": "3.9",
+      "seed": {
+        "left": 0,
+        "right": 0
+      },
+      "right_levels_included": true,
+      "terms": [
+        {
+          "left_degree": 0,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 1,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 2,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 2,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 1,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 2,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 4
+        }
+      ],
+      "total_representation_dimension": 16
+    },
+    {
+      "id": "matter_gravitino",
+      "name": "matter-gravitino supermultiplet",
+      "source_equation": "3.10",
+      "seed": {
+        "left": 1,
+        "right": 0
+      },
+      "right_levels_included": true,
+      "terms": [
+        {
+          "left_degree": 0,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 2,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 2,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 2,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 2,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 2,
+          "irrep": {
+            "left": 2,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 2,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 4
+        }
+      ],
+      "total_representation_dimension": 32
+    },
+    {
+      "id": "supergravity",
+      "name": "supergravity supermultiplet",
+      "source_equation": "3.11",
+      "seed": {
+        "left": 1,
+        "right": 1
+      },
+      "right_levels_included": true,
+      "terms": [
+        {
+          "left_degree": 0,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 2
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 0,
+          "irrep": {
+            "left": 2,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 0,
+          "right_degree": 2,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 0,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 0,
+            "right": 2
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 2,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 1,
+          "irrep": {
+            "left": 2,
+            "right": 2
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 1
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 0,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 2,
+          "irrep": {
+            "left": 0,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 1,
+          "right_degree": 2,
+          "irrep": {
+            "left": 2,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 0
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 1,
+          "irrep": {
+            "left": 1,
+            "right": 2
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 2
+        },
+        {
+          "left_degree": 2,
+          "right_degree": 2,
+          "irrep": {
+            "left": 1,
+            "right": 1
+          },
+          "multiplicity": 1,
+          "coefficient_numerator": 1,
+          "coefficient_denominator": 4
+        }
+      ],
+      "total_representation_dimension": 64
+    }
+  ]
+}

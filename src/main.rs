@@ -1,4 +1,5 @@
 mod baselines;
+mod adynkra_genome;
 mod bbbm;
 mod bbbm_closure;
 mod bbbm_component;
@@ -91,6 +92,8 @@ fn main() {
         "perm-atlas-build" => cmd_perm_atlas_build(&args),
         "perm-atlas-verify" => cmd_perm_atlas_verify(),
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
+        "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
+        "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -154,6 +157,9 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-atlas-verify       Verify graphs, paper correlators, cosets, and embeddings");
     eprintln!("  perm-garden-scan [json]");
     eprintln!("                          Solve Garden signs for all 5,040 R8 cosets");
+    eprintln!("  adynkra-genome-build [data-json] [validation-json]");
+    eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
+    eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -255,6 +261,33 @@ fn cmd_perm_garden_scan(args: &[String]) {
         report.normalizer.normalizer_order,
         report.passed
     );
+}
+
+fn cmd_adynkra_genome_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/adynkra_4d_n1_genomes.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_4d_n1_genome_validation.json");
+    let report = adynkra_genome::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_genome_verify() {
+    let report = adynkra_genome::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
 }
 
 fn cmd_export_3d_assets(args: &[String]) {
