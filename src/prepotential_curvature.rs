@@ -57,12 +57,11 @@ fn permutations(values: [usize; 3]) -> [[usize; 3]; 6] {
 }
 
 fn bar_d_squared(polynomial: &Polynomial) -> Polynomial {
-    // epsilon^(01) = 1 gives Dbar^2 = 2 Dbar_1 Dbar_0.
+    // Superspace Eq. (3.4.10): Dbar^2 = (1/2) Dbar^dot-alpha Dbar_dot-alpha.
     apply(
         Derivative::Right(1),
         &apply(Derivative::Right(0), polynomial),
     )
-    .scale(gaussian(2, 0, 1))
 }
 
 fn contracted_vector_derivative(beta: usize, h_gamma: &[Polynomial]) -> Polynomial {
@@ -193,7 +192,7 @@ pub fn verify() -> PrepotentialCurvatureReport {
         sources: ["hep-th/0108200", "2407.09334"],
         source_equations: ["5.2.5 and 5.2.7", "2.21 and 2.22"],
         curvature: "W_{alpha beta gamma} = -(i/3!) Dbar^2 D_(alpha partial_{beta dot-beta} H_{gamma)}^dot-beta",
-        convention: "epsilon^(01) = 1 and Dbar^2 = 2 Dbar_1 Dbar_0",
+        convention: "epsilon^(01) = 1 and Dbar^2 = Dbar_1 Dbar_0, following Superspace Eq. (3.4.10)",
         symmetric_weyl_components: 4,
         prepotential_basis_inputs: 64,
         gauge_parameter_basis_inputs: 64,

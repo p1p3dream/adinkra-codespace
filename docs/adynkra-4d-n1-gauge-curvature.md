@@ -35,8 +35,8 @@ W_(alpha beta gamma)
       H_(gamma))^dot-beta
 ```
 
-The spinor-metric convention is `epsilon^(01) = 1`, so
-`Dbar^2 = 2 Dbar_1 Dbar_0`.
+The spinor-metric convention is `epsilon^(01) = 1`, with
+`Dbar^2 = Dbar_1 Dbar_0` as in Eq. (3.4.10) of *Superspace*.
 
 The calculation uses all 64 prepotential basis inputs and the four components
 of the symmetric rank-three spinor. The operator is nonzero on 152 of the 256
@@ -59,12 +59,36 @@ gauge parameter -> prepotential -> chiral super-Weyl curvature
 
 vanishes exactly in the implemented conventions.
 
+## Old-minimal scalar curvature
+
+The old-minimal chiral compensator and scalar curvature from Eqs. (7.4.2b) and
+(7.5.19) of *Superspace* are also implemented:
+
+```text
+delta chi_bar = (1/3) D^2 Dbar^dot-alpha Lbar_dot-alpha
+R = Dbar^2 (chi_bar - (i/3) partial_a H^a)
+```
+
+Here `phi = 1 + chi`, so the factor `1/3` follows by linearizing the source
+transformation of `phi^3`. The validation checks:
+
+- chirality on all 64 prepotential and 16 compensator basis inputs: 160
+  relations, zero residuals;
+- gauge invariance on all 64 gauge-parameter basis inputs: zero residuals;
+- removal of the compensator: 24 nonzero residuals.
+
+The last check establishes that the compensator contribution is required for
+the scalar curvature identity.
+
 ## Artifacts
 
 - `src/prepotential_gauge.rs`: gauge differential and rank diagnostics
 - `src/prepotential_curvature.rs`: chiral curvature and operator identities
+- `src/minimal_supergravity_curvatures.rs`: old-minimal compensator and scalar
+  curvature
 - `results/adynkra_4d_n1_prepotential_gauge_validation.json`
 - `results/adynkra_4d_n1_prepotential_curvature_validation.json`
+- `results/adynkra_4d_n1_minimal_scalar_curvature_validation.json`
 
 ## Reproduction
 
@@ -73,14 +97,17 @@ cargo run --release -- adynkra-prepotential-gauge-verify \
   > results/adynkra_4d_n1_prepotential_gauge_validation.json
 cargo run --release -- adynkra-prepotential-curvature-verify \
   > results/adynkra_4d_n1_prepotential_curvature_validation.json
+cargo run --release -- adynkra-minimal-curvature-verify \
+  > results/adynkra_4d_n1_minimal_scalar_curvature_validation.json
 cargo test prepotential
+cargo test minimal_supergravity_curvatures
 ```
 
 ## Boundary
 
-This completes the gauge map and the conformal super-Weyl part of the
-linearized curvature complex. It does not yet implement the remaining
-supergravity curvatures, their Bianchi identities, a compensator choice,
+This completes the gauge map, the conformal super-Weyl curvature, and the
+old-minimal scalar curvature with its chiral compensator. It does not yet
+implement the vector curvature `G_a`, the Bianchi identities,
 polynomial-module cohomology, or an Euler-Lagrange equation.
 
 ## References

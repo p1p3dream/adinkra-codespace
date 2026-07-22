@@ -9,7 +9,7 @@
     "2.21 and 2.22"
   ],
   "curvature": "W_{alpha beta gamma} = -(i/3!) Dbar^2 D_(alpha partial_{beta dot-beta} H_{gamma)}^dot-beta",
-  "convention": "epsilon^(01) = 1 and Dbar^2 = 2 Dbar_1 Dbar_0",
+  "convention": "epsilon^(01) = 1 and Dbar^2 = Dbar_1 Dbar_0, following Superspace Eq. (3.4.10)",
   "symmetric_weyl_components": 4,
   "prepotential_basis_inputs": 64,
   "gauge_parameter_basis_inputs": 64,

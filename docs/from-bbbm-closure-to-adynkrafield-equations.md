@@ -361,6 +361,13 @@ supergravity curvatures, Bianchi identities, compensator choice, and
 cohomology are open. See
 [`adynkra-4d-n1-gauge-curvature.md`](adynkra-4d-n1-gauge-curvature.md).
 
+The old-minimal compensator and chiral scalar curvature are now implemented
+from Eqs. (7.4.2b) and (7.5.19) of *Superspace*. The scalar curvature is chiral
+on all 80 prepotential-plus-compensator basis inputs and gauge invariant on all
+64 gauge-parameter basis inputs. Removing the compensator produces 24 nonzero
+residuals. The vector curvature `G_a` and the coupled Bianchi identities remain
+open.
+
 ## Ordered research plan
 
 ### Track 0: validated 10D supergravity baseline and embedding scan
@@ -398,8 +405,9 @@ cohomology are open. See
    intertwiners, fundamental Clebsch-Gordan maps, and all repeated sectors in
    the six published genomes complete.**
 3. Construct the prepotential gauge and curvature complex. **Gauge map and
-   chiral super-Weyl curvature complete; remaining curvatures, Bianchi
-   identities, compensator choice, and cohomology open.**
+   chiral super-Weyl curvature complete; old-minimal compensator and scalar
+   curvature complete; vector curvature, Bianchi identities, and cohomology
+   open.**
 4. Reproduce a known linearized supergravity equation.
 5. Express that equation as an Adynkrafield operator.
 6. Apply the validated operators to the eleven-dimensional scalar superfield
