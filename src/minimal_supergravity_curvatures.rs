@@ -80,15 +80,15 @@ fn gaussian(real: i64, imaginary: i64, denominator: i64) -> GaussianRational {
     )
 }
 
-fn zero_h() -> Vec<Vec<Polynomial>> {
+pub(crate) fn zero_h() -> Vec<Vec<Polynomial>> {
     vec![vec![Polynomial::default(); 2]; 2]
 }
 
-fn d_squared(polynomial: &Polynomial) -> Polynomial {
+pub(crate) fn d_squared(polynomial: &Polynomial) -> Polynomial {
     apply(Derivative::Left(1), &apply(Derivative::Left(0), polynomial))
 }
 
-fn d_bar_squared(polynomial: &Polynomial) -> Polynomial {
+pub(crate) fn d_bar_squared(polynomial: &Polynomial) -> Polynomial {
     apply(
         Derivative::Right(1),
         &apply(Derivative::Right(0), polynomial),
@@ -115,7 +115,7 @@ fn vector_pair(index: usize) -> (usize, usize) {
     (index / 2, index % 2)
 }
 
-fn raised_vector_component(vector: &[Polynomial], target: usize) -> Polynomial {
+pub(crate) fn raised_vector_component(vector: &[Polynomial], target: usize) -> Polynomial {
     let (target_alpha, target_dotted) = vector_pair(target);
     let mut result = Polynomial::default();
     for source in 0..4 {
@@ -194,7 +194,7 @@ fn levi_civita_lower(a: usize, b: usize, c: usize, d: usize) -> GaussianRational
     gaussian(0, first - second, 1)
 }
 
-fn vector_curvature(
+pub(crate) fn vector_curvature(
     h: &[Vec<Polynomial>],
     chi: &Polynomial,
     chi_bar: &Polynomial,
@@ -253,7 +253,7 @@ fn vector_curvature(
     )
 }
 
-fn spacetime_divergence(h: &[Vec<Polynomial>]) -> Polynomial {
+pub(crate) fn spacetime_divergence(h: &[Vec<Polynomial>]) -> Polynomial {
     // Source bispinor convention for partial_a H^a, with epsilon^(01)=1.
     h[0][0]
         .clone()
@@ -273,14 +273,14 @@ fn spacetime_divergence(h: &[Vec<Polynomial>]) -> Polynomial {
         .add(h[1][1].clone().spacetime_derivative(0))
 }
 
-fn scalar_curvature(h: &[Vec<Polynomial>], chi_bar: &Polynomial) -> Polynomial {
+pub(crate) fn scalar_curvature(h: &[Vec<Polynomial>], chi_bar: &Polynomial) -> Polynomial {
     let interior = chi_bar
         .clone()
         .add(spacetime_divergence(h).scale(gaussian(0, -1, 3)));
     d_bar_squared(&interior)
 }
 
-fn conjugate_scalar_curvature(h: &[Vec<Polynomial>], chi: &Polynomial) -> Polynomial {
+pub(crate) fn conjugate_scalar_curvature(h: &[Vec<Polynomial>], chi: &Polynomial) -> Polynomial {
     let interior = chi
         .clone()
         .add(spacetime_divergence(h).scale(gaussian(0, 1, 3)));
@@ -295,7 +295,7 @@ fn raised_d(alpha_parameter: usize, input: &Polynomial) -> Polynomial {
     }
 }
 
-fn gauge_image_l(alpha: usize, mask: u8) -> (Vec<Vec<Polynomial>>, Polynomial) {
+pub(crate) fn gauge_image_l(alpha: usize, mask: u8) -> (Vec<Vec<Polynomial>>, Polynomial) {
     let mut h = zero_h();
     let input = Polynomial::basis(mask);
     for dotted in 0..2 {
@@ -313,7 +313,7 @@ fn raised_d_bar(dotted_parameter: usize, input: &Polynomial) -> Polynomial {
     }
 }
 
-fn gauge_image_l_bar(
+pub(crate) fn gauge_image_l_bar(
     dotted: usize,
     mask: u8,
     include_compensator: bool,

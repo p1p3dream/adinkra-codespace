@@ -159,6 +159,45 @@ individual helicities have not yet been assigned to explicit representatives.
 These are exact ranks of evaluated finite matrices. They are not a proof of
 exactness over the full polynomial ring.
 
+## Quadratic action and variation
+
+The flat-background quadratic old-minimal action in Eq. (7.2.36) of
+*Superspace* was implemented separately from the curvature formula:
+
+```text
+S^(2) = integral d^4x d^4theta [
+  -3 chi_bar chi
+  + i (chi - chi_bar) partial.H
+  - (1/2) H.(box - D^2 Dbar^2 - Dbar^2 D^2)H
+  - (1/4) (partial.H)^2
+  + (1/12) ([Dbar,D]H)^2
+]
+```
+
+Its polarized Hessian was compared with the implemented curvature operator on
+the complete 96-element ambient polynomial basis: 64 components for `H`, 16
+for `chi`, and 16 for `chi_bar`, before imposing the compensator projections.
+The comparison covers 138,240 matrix entries over 15 momentum evaluations and
+has zero residuals.
+The 15-point evaluation matrix has determinant `-1440`, so it has full rank on
+the 15 momentum monomials of degree at most two that can occur in the Hessian.
+This converts the finite evaluations into a coefficient-level certificate for
+the quadratic momentum-polynomial operator.
+
+The resulting first variations are
+
+```text
+delta S / delta H = -G
+Dbar^2 (delta S / delta chi) = -3 R
+D^2 (delta S / delta chi_bar) = -3 Rbar
+```
+
+All 192 compensator-projection relations vanish. The graded Hessian is formally
+self-adjoint on all 138,240 entries, and the gauge map satisfies all 384
+component Noether relations with zero residuals. This is a reconstruction and
+verification of the published linearized action, not a new supergravity
+action.
+
 ## Artifacts
 
 - `src/prepotential_gauge.rs`: gauge differential and rank diagnostics
@@ -166,9 +205,12 @@ exactness over the full polynomial ring.
   identities
 - `src/minimal_supergravity_curvatures.rs`: old-minimal compensator, scalar and
   vector curvatures, and Bianchi identities
+- `src/minimal_supergravity_action.rs`: quadratic action, variation,
+  self-adjointness, and Noether identities
 - `results/adynkra_4d_n1_prepotential_gauge_validation.json`
 - `results/adynkra_4d_n1_prepotential_curvature_validation.json`
 - `results/adynkra_4d_n1_minimal_curvature_complex_validation.json`
+- `results/adynkra_4d_n1_minimal_action_validation.json`
 
 ## Reproduction
 
@@ -179,8 +221,11 @@ cargo run --release -- adynkra-prepotential-curvature-verify \
   > results/adynkra_4d_n1_prepotential_curvature_validation.json
 cargo run --release -- adynkra-minimal-curvature-verify \
   > results/adynkra_4d_n1_minimal_curvature_complex_validation.json
+cargo run --release -- adynkra-minimal-action-verify \
+  > results/adynkra_4d_n1_minimal_action_validation.json
 cargo test prepotential
 cargo test minimal_supergravity_curvatures
+cargo test minimal_supergravity_action
 ```
 
 ## Boundary
@@ -188,8 +233,9 @@ cargo test minimal_supergravity_curvatures
 This completes the linearized gauge map and the old-minimal curvature complex
 through `R`, `Rbar`, `G_a`, the super-Weyl curvature pair, the independent
 Bianchi identities, the known source-free Euler-Lagrange operator, and exact
-momentum-fiber rank tests. Polynomial-module cohomology, helicity assignment,
-action reconstruction, and the Adynkrafield form of the operator remain open.
+momentum-fiber rank tests. The published quadratic action has also been
+reconstructed and varied back to that operator. Polynomial-module cohomology,
+helicity assignment, and the Adynkrafield form of the operator remain open.
 
 ## References
 
@@ -199,3 +245,4 @@ action reconstruction, and the Adynkrafield form of the operator remain open.
    Thousand and One Lessons in Supersymmetry*,
    [arXiv:hep-th/0108200](https://arxiv.org/abs/hep-th/0108200), Eqs. (3.1.22),
    (5.2.5), (5.4.18), (5.5.45), (5.5.48), (7.4.2b), and (7.5.19).
+   The quadratic-action check uses Eqs. (7.2.36) and (7.4.1).

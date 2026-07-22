@@ -386,8 +386,12 @@ and has dimension four at all three null probes. The canonical null fiber
 splits into two bosonic and two fermionic classes, matching the component
 degree count of massless four-dimensional `N=1` supergravity. The chiral and
 conjugate super-Weyl curvatures each detect one bosonic and one fermionic class.
-Explicit helicity signs and independent reconstruction of the quadratic action
-remain open.
+The published quadratic action in Eq. (7.2.36) has now been implemented
+separately and varied back to the same curvature operator. Its 96 by 96 graded
+Hessian agrees on a full-rank 15-point quadratic-momentum interpolation design:
+138,240 entries, zero variation residuals, zero self-adjointness residuals, 192
+compensator projections with zero residuals, and 384 gauge Noether relations
+with zero residuals. Explicit helicity signs remain open.
 
 ## Ordered research plan
 
@@ -432,8 +436,9 @@ remain open.
    non-null rational probes. Polynomial-module cohomology remains open.**
 4. Reproduce a known linearized supergravity equation. **The source-free
    old-minimal equation `G = R = Rbar = 0` is implemented and its null and
-   non-null fibers are validated. Independent action reconstruction remains
-   open.**
+   non-null fibers are validated. The published quadratic action is also
+   reconstructed, its variation returns the same equation, its graded Hessian
+   is formally self-adjoint, and its gauge Noether identity holds.**
 5. Express that equation as an Adynkrafield operator.
 6. Apply the validated operators to the eleven-dimensional scalar superfield
    and test its complete irreducible reduction.
@@ -451,7 +456,7 @@ remain open.
    Boolean factors remains separate.**
 4. Feed any invariant structures into Tracks 1 and 2.
 
-The immediate equation priority is Track 2, Steps 1-5. Track 0 provides a
+The immediate equation priority is Track 2, Steps 5-6. Track 0 provides a
 validated 10D measurement and bounded embedding program. Track 1, Steps 1-3,
 remain useful for decomposing the BBBM obstruction, but a finite extension is
 not presumed. Track 3 is bounded and valuable, but it should not displace the
@@ -473,6 +478,7 @@ cargo run --release -- tendim-convention-scan
 cargo run --release -- perm-atlas-build
 cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
+cargo run --release -- adynkra-minimal-action-verify
 cargo run --release -- adynkra-genome-build
 cargo run --release -- adynkra-genome-verify
 cargo run --release -- adynkra-derivative-verify

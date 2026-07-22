@@ -31,6 +31,7 @@ mod holoraumy;
 mod lorentz;
 mod lr_matrix;
 mod minimal_supergravity_curvatures;
+mod minimal_supergravity_action;
 mod lorentz_intertwiners;
 mod nauty_canonical;
 mod orientation;
@@ -108,6 +109,7 @@ fn main() {
         "adynkra-prepotential-gauge-verify" => cmd_adynkra_prepotential_gauge_verify(),
         "adynkra-prepotential-curvature-verify" => cmd_adynkra_prepotential_curvature_verify(),
         "adynkra-minimal-curvature-verify" => cmd_adynkra_minimal_curvature_verify(),
+        "adynkra-minimal-action-verify" => cmd_adynkra_minimal_action_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -181,6 +183,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-prepotential-gauge-verify Verify the supergravity prepotential gauge map");
     eprintln!("  adynkra-prepotential-curvature-verify Verify the chiral super-Weyl curvature");
     eprintln!("  adynkra-minimal-curvature-verify Verify the old-minimal curvature complex");
+    eprintln!("  adynkra-minimal-action-verify Verify the quadratic old-minimal action");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -361,6 +364,14 @@ fn cmd_adynkra_prepotential_curvature_verify() {
 
 fn cmd_adynkra_minimal_curvature_verify() {
     let report = minimal_supergravity_curvatures::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_minimal_action_verify() {
+    let report = minimal_supergravity_action::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
