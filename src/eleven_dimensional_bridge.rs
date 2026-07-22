@@ -107,6 +107,8 @@ pub struct ElevenDimensionalBridgeReport {
     pub vector_spinor_source_descendant_audit: VectorSpinorSourceDescendantAudit,
     pub level_sixteen_derivative_channel_audit: LevelSixteenDerivativeChannelAudit,
     pub level_sixteen_exterior_derivative_audit: LevelSixteenExteriorDerivativeAudit,
+    pub dimension_zero_torsion_sector_audit: DimensionZeroTorsionSectorAudit,
+    pub spacetime_completion_audit: SpacetimeCompletionAudit,
     pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
     pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
@@ -285,6 +287,220 @@ pub struct LevelSixteenExteriorDerivativeAudit {
     pub channels: Vec<LevelSixteenExteriorChannelAudit>,
     pub interpretation: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TorsionSectorChannelAudit {
+    pub dynkin_label: &'static str,
+    pub dimension: u64,
+    pub tensor_role: &'static str,
+    pub removed_by_conventional_constraint: bool,
+    pub exterior_image_nonzero: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DimensionZeroTorsionSectorAudit {
+    pub source_equations: &'static str,
+    pub two_form_vector_dimension: u64,
+    pub two_form_vector_channels: Vec<TorsionSectorChannelAudit>,
+    pub two_form_conventional_dimension: u64,
+    pub two_form_remaining_hook_dimension: u64,
+    pub two_form_remaining_hook_nonzero: bool,
+    pub five_form_vector_dimension: u64,
+    pub five_form_vector_channels: Vec<TorsionSectorChannelAudit>,
+    pub five_form_conventional_dimension: u64,
+    pub five_form_remaining_hook_dimension: u64,
+    pub five_form_remaining_hook_nonzero: bool,
+    pub complementary_derivative_channels: Vec<TorsionSectorChannelAudit>,
+    pub complete_dimension_partition: bool,
+    pub interpretation: &'static str,
+    pub passed: bool,
+}
+
+fn audit_dimension_zero_torsion_sectors(
+    exterior: &LevelSixteenExteriorDerivativeAudit,
+) -> DimensionZeroTorsionSectorAudit {
+    let image_nonzero = |label: &str| {
+        exterior
+            .channels
+            .iter()
+            .find(|channel| channel.dynkin_label == label)
+            .unwrap()
+            .exterior_image_nonzero_certified
+    };
+    let two_form_vector_channels = vec![
+        TorsionSectorChannelAudit {
+            dynkin_label: "10000",
+            dimension: 11,
+            tensor_role: "trace vector",
+            removed_by_conventional_constraint: true,
+            exterior_image_nonzero: image_nonzero("10000"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "00100",
+            dimension: 165,
+            tensor_role: "totally antisymmetric three-form",
+            removed_by_conventional_constraint: true,
+            exterior_image_nonzero: image_nonzero("00100"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "11000",
+            dimension: 429,
+            tensor_role: "traceless two-form-vector hook",
+            removed_by_conventional_constraint: false,
+            exterior_image_nonzero: image_nonzero("11000"),
+        },
+    ];
+    let five_form_vector_channels = vec![
+        TorsionSectorChannelAudit {
+            dynkin_label: "00010",
+            dimension: 330,
+            tensor_role: "trace four-form",
+            removed_by_conventional_constraint: true,
+            exterior_image_nonzero: image_nonzero("00010"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "00002",
+            dimension: 462,
+            tensor_role: "totally antisymmetric six-form",
+            removed_by_conventional_constraint: true,
+            exterior_image_nonzero: image_nonzero("00002"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "10002",
+            dimension: 4_290,
+            tensor_role: "traceless five-form-vector hook",
+            removed_by_conventional_constraint: false,
+            exterior_image_nonzero: image_nonzero("10002"),
+        },
+    ];
+    let complementary_derivative_channels = vec![
+        TorsionSectorChannelAudit {
+            dynkin_label: "01000",
+            dimension: 55,
+            tensor_role: "two-form complement",
+            removed_by_conventional_constraint: false,
+            exterior_image_nonzero: image_nonzero("01000"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "20000",
+            dimension: 65,
+            tensor_role: "symmetric traceless rank-two complement",
+            removed_by_conventional_constraint: false,
+            exterior_image_nonzero: image_nonzero("20000"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "10100",
+            dimension: 1_430,
+            tensor_role: "mixed-symmetry complement",
+            removed_by_conventional_constraint: false,
+            exterior_image_nonzero: image_nonzero("10100"),
+        },
+        TorsionSectorChannelAudit {
+            dynkin_label: "10010",
+            dimension: 3_003,
+            tensor_role: "mixed-symmetry complement",
+            removed_by_conventional_constraint: false,
+            exterior_image_nonzero: image_nonzero("10010"),
+        },
+    ];
+    let two_form_vector_dimension = two_form_vector_channels
+        .iter()
+        .map(|channel| channel.dimension)
+        .sum();
+    let five_form_vector_dimension = five_form_vector_channels
+        .iter()
+        .map(|channel| channel.dimension)
+        .sum();
+    let complementary_dimension = complementary_derivative_channels
+        .iter()
+        .map(|channel| channel.dimension)
+        .sum::<u64>();
+    let complete_dimension_partition =
+        two_form_vector_dimension + five_form_vector_dimension + complementary_dimension == 10_240;
+    let two_form_remaining_hook_nonzero = image_nonzero("11000");
+    let five_form_remaining_hook_nonzero = image_nonzero("10002");
+    let passed = two_form_vector_dimension == 605
+        && five_form_vector_dimension == 5_082
+        && complementary_dimension == 4_553
+        && complete_dimension_partition
+        && !two_form_remaining_hook_nonzero
+        && five_form_remaining_hook_nonzero;
+    DimensionZeroTorsionSectorAudit {
+        source_equations: "Eqs. (38)-(40) of hep-th/0101037 and the final line of Eq. (2.7) of arXiv:2007.05097",
+        two_form_vector_dimension,
+        two_form_vector_channels,
+        two_form_conventional_dimension: 176,
+        two_form_remaining_hook_dimension: 429,
+        two_form_remaining_hook_nonzero,
+        five_form_vector_dimension,
+        five_form_vector_channels,
+        five_form_conventional_dimension: 792,
+        five_form_remaining_hook_dimension: 4_290,
+        five_form_remaining_hook_nonzero,
+        complementary_derivative_channels,
+        complete_dimension_partition,
+        interpretation: "at the exterior symbol, the conventional trace and antisymmetric pieces of X_[2] are nonzero but its 429-dimensional hook vanishes; the conventional four-form and six-form pieces of X_[5] and its 4290-dimensional hook are nonzero; this identifies the representation sectors but does not impose the full superspace Bianchi identities",
+        passed,
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SpacetimeCompletionTerm {
+    pub spacetime_momentum_power: usize,
+    pub spinor_derivative_order: usize,
+    pub total_half_derivative_units: usize,
+    pub scalar_source_level: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SpacetimeCompletionAudit {
+    pub derivative_algebra: &'static str,
+    pub fixed_total_half_derivative_units: usize,
+    pub allowed_local_terms: Vec<SpacetimeCompletionTerm>,
+    pub leading_exterior_term_verified: bool,
+    pub lower_spinor_level_terms_required_for_generic_momentum: bool,
+    pub cited_sources_print_completion_coefficients: bool,
+    pub full_generic_momentum_completion_determined: bool,
+    pub interpretation: &'static str,
+    pub passed: bool,
+}
+
+fn audit_spacetime_completion() -> SpacetimeCompletionAudit {
+    let allowed_local_terms = (0..=7)
+        .map(|spacetime_momentum_power| {
+            let spinor_derivative_order = 15 - 2 * spacetime_momentum_power;
+            SpacetimeCompletionTerm {
+                spacetime_momentum_power,
+                spinor_derivative_order,
+                total_half_derivative_units: spinor_derivative_order + 2 * spacetime_momentum_power,
+                scalar_source_level: spinor_derivative_order,
+            }
+        })
+        .collect::<Vec<_>>();
+    let leading_exterior_term_verified = true;
+    let lower_spinor_level_terms_required_for_generic_momentum = true;
+    let cited_sources_print_completion_coefficients = false;
+    let full_generic_momentum_completion_determined = false;
+    let passed = allowed_local_terms.len() == 8
+        && allowed_local_terms
+            .iter()
+            .all(|term| term.total_half_derivative_units == 15)
+        && leading_exterior_term_verified
+        && lower_spinor_level_terms_required_for_generic_momentum
+        && !cited_sources_print_completion_coefficients
+        && !full_generic_momentum_completion_determined;
+    SpacetimeCompletionAudit {
+        derivative_algebra: "{D_alpha,D_beta}=i Gamma^a_{alpha beta} p_a",
+        fixed_total_half_derivative_units: 15,
+        allowed_local_terms,
+        leading_exterior_term_verified,
+        lower_spinor_level_terms_required_for_generic_momentum,
+        cited_sources_print_completion_coefficients,
+        full_generic_momentum_completion_determined,
+        interpretation: "a Lorentz-covariant local completion may mix p^r D^(15-2r) V for r=0 through 7; the completed exterior symbol fixes only the r=0 term, while the cited papers do not print the seven lower-level coefficient systems",
+        passed,
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -1802,6 +2018,9 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &weights,
         );
     let level_sixteen_derivative_channel_audit = audit_level_sixteen_derivative_channels();
+    let dimension_zero_torsion_sector_audit =
+        audit_dimension_zero_torsion_sectors(&level_sixteen_exterior_derivative_audit);
+    let spacetime_completion_audit = audit_spacetime_completion();
     let final_equation_2_7_projection = audit_final_equation_2_7_projection();
     let clifford = crate::eleven_dimensional_clifford::verify();
     let local_gamma_trace_quotient = audit_local_gamma_trace_quotient(&clifford);
@@ -1820,6 +2039,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && vector_spinor_source_descendant_audit.exact_full_vector_spinor_intertwiner_verified
         && level_sixteen_derivative_channel_audit.passed
         && level_sixteen_exterior_derivative_audit.passed
+        && dimension_zero_torsion_sector_audit.passed
+        && spacetime_completion_audit.passed
         && final_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
         && canonical_source_line_normalization.passed
@@ -1827,7 +2048,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v5",
+        schema_version: "adynkra.11d.level15-bridge.v6",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -1863,12 +2084,14 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         vector_spinor_source_descendant_audit,
         level_sixteen_derivative_channel_audit,
         level_sixteen_exterior_derivative_audit,
+        dimension_zero_torsion_sector_audit,
+        spacetime_completion_audit,
         final_equation_2_7_projection,
         local_gamma_trace_quotient,
         canonical_source_line_normalization,
         linearized_scale_freedom_audit,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and resolves the zero-spacetime-momentum exterior symbol on all ten level-16 channels. A component normalization of V, spacetime-derivative terms, and identification of the eight nonzero images with the supergravity curvature complex remain.",
+        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, resolves the zero-spacetime-momentum exterior symbol, and identifies its dimension-zero X_[2] and X_[5] representation sectors. A component normalization of V, the seven lower-level momentum-completion systems, and the full superspace Bianchi complex remain.",
         passed,
     }
 }
@@ -1989,6 +2212,34 @@ mod tests {
     }
 
     #[test]
+    fn spacetime_completion_has_eight_local_derivative_orders() {
+        let audit = audit_spacetime_completion();
+        assert_eq!(audit.allowed_local_terms.len(), 8);
+        assert_eq!(
+            audit
+                .allowed_local_terms
+                .iter()
+                .map(|term| (term.spacetime_momentum_power, term.spinor_derivative_order))
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 15),
+                (1, 13),
+                (2, 11),
+                (3, 9),
+                (4, 7),
+                (5, 5),
+                (6, 3),
+                (7, 1)
+            ]
+        );
+        assert!(audit.leading_exterior_term_verified);
+        assert!(audit.lower_spinor_level_terms_required_for_generic_momentum);
+        assert!(!audit.cited_sources_print_completion_coefficients);
+        assert!(!audit.full_generic_momentum_completion_determined);
+        assert!(audit.passed);
+    }
+
+    #[test]
     #[ignore = "constructs 3.1 million rows and 12 million exact sparse entries"]
     fn full_level_15_system_matches_independent_counts() {
         let report = verify();
@@ -2050,6 +2301,21 @@ mod tests {
         assert_eq!(exterior.inventory_zero_fingerprint_crosschecks, 2);
         assert!(exterior.channels.iter().all(|channel| channel.passed));
         assert!(exterior.passed);
+        let torsion = &report.dimension_zero_torsion_sector_audit;
+        assert_eq!(torsion.two_form_vector_dimension, 605);
+        assert_eq!(torsion.two_form_conventional_dimension, 176);
+        assert_eq!(torsion.two_form_remaining_hook_dimension, 429);
+        assert!(!torsion.two_form_remaining_hook_nonzero);
+        assert_eq!(torsion.five_form_vector_dimension, 5_082);
+        assert_eq!(torsion.five_form_conventional_dimension, 792);
+        assert_eq!(torsion.five_form_remaining_hook_dimension, 4_290);
+        assert!(torsion.five_form_remaining_hook_nonzero);
+        assert!(torsion.complete_dimension_partition);
+        assert!(torsion.passed);
+        let completion = &report.spacetime_completion_audit;
+        assert_eq!(completion.allowed_local_terms.len(), 8);
+        assert!(!completion.full_generic_momentum_completion_determined);
+        assert!(completion.passed);
         let projection = &report.final_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);
         assert_eq!(projection.remaining_hook_dynkin_label, "11000");

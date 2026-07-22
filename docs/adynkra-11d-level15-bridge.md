@@ -169,6 +169,68 @@ zero proof. The `(11000)` is the 429-dimensional hook left by the conventional
 decomposition of the two-form-vector torsion, so its absence gives the
 vanishing of the final Eq. (2.7) projection.
 
+## Dimension-zero torsion sectors
+
+Equations (38)-(40) of hep-th/0101037 identify the two dimension-zero torsion
+field strengths as a two-form-vector and a five-form-vector. Their irreducible
+decompositions account for six of the ten derivative channels.
+
+For the two-form-vector,
+
+\[
+55\mathbin{\otimes}11=(10000)\oplus(00100)\oplus(11000),
+\qquad 605=11+165+429.
+\]
+
+The 11-dimensional trace vector and 165-dimensional three-form have nonzero
+exterior images and are removed by the conventional constraints in Eq. (40).
+The remaining 429-dimensional hook has zero image. Thus the scalar bridge has
+no surviving $X_{[2]}$ hook at the exterior symbol.
+
+For the five-form-vector,
+
+\[
+462\mathbin{\otimes}11=(00010)\oplus(00002)\oplus(10002),
+\qquad 5{,}082=330+462+4{,}290.
+\]
+
+The 330-dimensional trace four-form and 462-dimensional six-form have nonzero
+images and are removed by the conventional constraints. The remaining
+4,290-dimensional hook also has a nonzero image. The exterior symbol therefore
+contains a candidate $X_{[5]}$ hook after the conventional projections.
+
+The other four derivative channels have total dimension 4,553:
+
+\[
+(01000)\oplus(20000)\oplus(10100)\oplus(10010).
+\]
+
+Together, $605+5{,}082+4{,}553=10{,}240$. This identifies the representation
+sectors in the dimension-zero torsion formulas. It does not impose the full
+superspace Bianchi identities.
+
+## Spacetime completion boundary
+
+The flat superspace derivative algebra is
+
+\[
+\{D_\alpha,D_\beta\}=i(\Gamma^a)_{\alpha\beta}p_a.
+\]
+
+Consequently, a local Lorentz-covariant completion with the same engineering
+order can mix eight derivative orders:
+
+\[
+D^{15}V,\ pD^{13}V,\ p^2D^{11}V,\ p^3D^9V,\
+p^4D^7V,\ p^5D^5V,\ p^6D^3V,\ p^7DV.
+\]
+
+The present calculation fixes the first term. The cited papers state that the
+bridge contains fifteen spinor derivatives but do not print coefficient
+systems for the seven lower-spinor-level momentum terms. Those systems must be
+constructed before claiming a generic-momentum bridge or a complete curvature
+complex.
+
 ## Canonical computational normalization
 
 The surviving `(10001)` highest-weight kernel is a primitive integer vector
@@ -218,10 +280,10 @@ Consequently:
   representation level and has rank zero on the three coefficients;
 - Eq. (2.7) therefore does not select a unique combination of the three bridge
   channels; and
-- component normalization of $V$, spacetime-derivative terms,
-  generic-momentum gauge reducibility, and identification of the eight nonzero
-  images with the curvature complex remain open. The scalar-divergence kernel
-  test has identified the direct two-form and five-form channels.
+- component normalization of $V$, the seven lower-level momentum-completion
+  systems, generic-momentum gauge reducibility, and the full superspace Bianchi
+  complex remain open. The exterior symbol identifies the dimension-zero
+  $X_{[2]}$ and $X_{[5]}$ representation sectors.
 
 ## Primary-source dependency for Eq. (2.7)
 

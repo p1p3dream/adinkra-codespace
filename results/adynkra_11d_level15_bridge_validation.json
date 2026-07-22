@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v5",
+  "schema_version": "adynkra.11d.level15-bridge.v6",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -818,6 +818,156 @@
     "interpretation": "the exterior symbol is nonzero on each of the eight level-16 channels allowed by the scalar inventory; the 01000 and 11000 images vanish, as required by the scalar inventory; nonzero modular residues certify that the corresponding integer exterior images are nonzero; spacetime-derivative terms and curvature identifications are not included",
     "passed": true
   },
+  "dimension_zero_torsion_sector_audit": {
+    "source_equations": "Eqs. (38)-(40) of hep-th/0101037 and the final line of Eq. (2.7) of arXiv:2007.05097",
+    "two_form_vector_dimension": 605,
+    "two_form_vector_channels": [
+      {
+        "dynkin_label": "10000",
+        "dimension": 11,
+        "tensor_role": "trace vector",
+        "removed_by_conventional_constraint": true,
+        "exterior_image_nonzero": true
+      },
+      {
+        "dynkin_label": "00100",
+        "dimension": 165,
+        "tensor_role": "totally antisymmetric three-form",
+        "removed_by_conventional_constraint": true,
+        "exterior_image_nonzero": true
+      },
+      {
+        "dynkin_label": "11000",
+        "dimension": 429,
+        "tensor_role": "traceless two-form-vector hook",
+        "removed_by_conventional_constraint": false,
+        "exterior_image_nonzero": false
+      }
+    ],
+    "two_form_conventional_dimension": 176,
+    "two_form_remaining_hook_dimension": 429,
+    "two_form_remaining_hook_nonzero": false,
+    "five_form_vector_dimension": 5082,
+    "five_form_vector_channels": [
+      {
+        "dynkin_label": "00010",
+        "dimension": 330,
+        "tensor_role": "trace four-form",
+        "removed_by_conventional_constraint": true,
+        "exterior_image_nonzero": true
+      },
+      {
+        "dynkin_label": "00002",
+        "dimension": 462,
+        "tensor_role": "totally antisymmetric six-form",
+        "removed_by_conventional_constraint": true,
+        "exterior_image_nonzero": true
+      },
+      {
+        "dynkin_label": "10002",
+        "dimension": 4290,
+        "tensor_role": "traceless five-form-vector hook",
+        "removed_by_conventional_constraint": false,
+        "exterior_image_nonzero": true
+      }
+    ],
+    "five_form_conventional_dimension": 792,
+    "five_form_remaining_hook_dimension": 4290,
+    "five_form_remaining_hook_nonzero": true,
+    "complementary_derivative_channels": [
+      {
+        "dynkin_label": "01000",
+        "dimension": 55,
+        "tensor_role": "two-form complement",
+        "removed_by_conventional_constraint": false,
+        "exterior_image_nonzero": false
+      },
+      {
+        "dynkin_label": "20000",
+        "dimension": 65,
+        "tensor_role": "symmetric traceless rank-two complement",
+        "removed_by_conventional_constraint": false,
+        "exterior_image_nonzero": true
+      },
+      {
+        "dynkin_label": "10100",
+        "dimension": 1430,
+        "tensor_role": "mixed-symmetry complement",
+        "removed_by_conventional_constraint": false,
+        "exterior_image_nonzero": true
+      },
+      {
+        "dynkin_label": "10010",
+        "dimension": 3003,
+        "tensor_role": "mixed-symmetry complement",
+        "removed_by_conventional_constraint": false,
+        "exterior_image_nonzero": true
+      }
+    ],
+    "complete_dimension_partition": true,
+    "interpretation": "at the exterior symbol, the conventional trace and antisymmetric pieces of X_[2] are nonzero but its 429-dimensional hook vanishes; the conventional four-form and six-form pieces of X_[5] and its 4290-dimensional hook are nonzero; this identifies the representation sectors but does not impose the full superspace Bianchi identities",
+    "passed": true
+  },
+  "spacetime_completion_audit": {
+    "derivative_algebra": "{D_alpha,D_beta}=i Gamma^a_{alpha beta} p_a",
+    "fixed_total_half_derivative_units": 15,
+    "allowed_local_terms": [
+      {
+        "spacetime_momentum_power": 0,
+        "spinor_derivative_order": 15,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 15
+      },
+      {
+        "spacetime_momentum_power": 1,
+        "spinor_derivative_order": 13,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 13
+      },
+      {
+        "spacetime_momentum_power": 2,
+        "spinor_derivative_order": 11,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 11
+      },
+      {
+        "spacetime_momentum_power": 3,
+        "spinor_derivative_order": 9,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 9
+      },
+      {
+        "spacetime_momentum_power": 4,
+        "spinor_derivative_order": 7,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 7
+      },
+      {
+        "spacetime_momentum_power": 5,
+        "spinor_derivative_order": 5,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 5
+      },
+      {
+        "spacetime_momentum_power": 6,
+        "spinor_derivative_order": 3,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 3
+      },
+      {
+        "spacetime_momentum_power": 7,
+        "spinor_derivative_order": 1,
+        "total_half_derivative_units": 15,
+        "scalar_source_level": 1
+      }
+    ],
+    "leading_exterior_term_verified": true,
+    "lower_spinor_level_terms_required_for_generic_momentum": true,
+    "cited_sources_print_completion_coefficients": false,
+    "full_generic_momentum_completion_determined": false,
+    "interpretation": "a Lorentz-covariant local completion may mix p^r D^(15-2r) V for r=0 through 7; the completed exterior symbol fixes only the r=0 term, while the cited papers do not print the seven lower-level coefficient systems",
+    "passed": true
+  },
   "final_equation_2_7_projection": {
     "source_equation": "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
     "linearized_formula_source": "Eqs. (39)-(40) of hep-th/0101037",
@@ -902,6 +1052,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and resolves the zero-spacetime-momentum exterior symbol on all ten level-16 channels. A component normalization of V, spacetime-derivative terms, and identification of the eight nonzero images with the supergravity curvature complex remain.",
+  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, resolves the zero-spacetime-momentum exterior symbol, and identifies its dimension-zero X_[2] and X_[5] representation sectors. A component normalization of V, the seven lower-level momentum-completion systems, and the full superspace Bianchi complex remain.",
   "passed": true
 }
