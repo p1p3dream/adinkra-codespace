@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra-11d-prepotential-inventories-v1",
+  "schema_version": "adynkra-11d-prepotential-bridge-v2",
   "source_arxiv": "2002.08502",
   "source_location": "Appendix F, Table 4, and the note in proof with Table 5",
   "lorentz_algebra": "B5 = so(11)",
@@ -761,10 +761,78 @@
   "spinor_every_level_matches_tensor_dimension": true,
   "spinor_parity_dimensions_match": true,
   "spinor_table_5_checks_pass": true,
+  "semi_prepotential_source_arxiv": "2007.05097",
+  "semi_prepotential_source_statement": "the discussion after Eq. (2.7) requires H_beta^c(V) to involve fifteen spinor derivatives",
+  "scalar_to_vector_spinor_derivative_order": 15,
+  "formal_spinor_to_vector_spinor_composite_derivative_order": 16,
+  "vector_spinor_dimension": 352,
+  "semi_prepotential_bridge_channels": [
+    {
+      "dynkin_label": "00001",
+      "dimension": 32,
+      "interpretation": "gamma trace",
+      "source_level_15_multiplicity": 2,
+      "target_vector_spinor_multiplicity": 1,
+      "equivariant_symbol_channels": 2
+    },
+    {
+      "dynkin_label": "10001",
+      "dimension": 320,
+      "interpretation": "gamma-traceless vector-spinor",
+      "source_level_15_multiplicity": 1,
+      "target_vector_spinor_multiplicity": 1,
+      "equivariant_symbol_channels": 1
+    }
+  ],
+  "semi_prepotential_equivariant_symbol_dimension": 3,
+  "semi_prepotential_target_content_present": true,
+  "gauge_rule_source_arxiv": "2007.05097",
+  "gauge_rule_source_statement": "the introduction states that a supergravity prepotential transforms as a first spinor derivative of a Lorentz-compatible parameter superfield and identifies this as a conjectural rule in the high-dimensional cases",
+  "spinor_gauge_parameter_channels": [
+    {
+      "form_degree": 0,
+      "dynkin_label": "00000",
+      "dimension": 1,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 1,
+      "dynkin_label": "10000",
+      "dimension": 11,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 2,
+      "dynkin_label": "01000",
+      "dimension": 55,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 3,
+      "dynkin_label": "00100",
+      "dimension": 165,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 4,
+      "dynkin_label": "00010",
+      "dimension": 330,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 5,
+      "dynkin_label": "00002",
+      "dimension": 462,
+      "multiplicity_in_spinor_square": 1
+    }
+  ],
+  "spinor_gauge_parameter_channel_count": 6,
+  "spinor_gauge_parameter_dimensions_sum": 1024,
+  "cited_sources_print_gauge_channel_selection": false,
   "every_level_matches_exterior_power": true,
   "aggregate_counts_match_publication": true,
   "parity_dimensions_match": true,
   "distinguished_representation_checks_pass": true,
-  "boundary": "reproduction of the published scalar-superfield Lorentz inventory and the spinor-prepotential candidate counts in Table 5; no eleven-dimensional gauge constraint, differential operator, action, or field equation is derived",
+  "boundary": "the source-defined fifteen-derivative bridge has three Lorentz-equivariant leading-symbol channels, and six Lorentz-compatible first-derivative gauge-parameter channels are possible; the two cited sources do not select their coefficients or print a gauge complex, so no eleven-dimensional curvature, action, or field equation is derived",
   "passed": true
 }

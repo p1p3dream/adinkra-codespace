@@ -114,6 +114,71 @@ This confirms the representation-content statement behind the paper's
 spinor-prepotential conjecture. It does not establish that the conjectured
 field has the required gauge complex or dynamics.
 
+## Source-defined bridge to the semi-prepotential
+
+The prepotential notation is not uniform across the source papers. In
+arXiv:2007.05097, the scalar conformal compensator is written as \(\Psi\) and
+the vector-spinor semi-prepotential as \(H_\alpha{}^a\). In the note in proof
+of arXiv:2002.08502, \(\Psi_\alpha\) instead denotes the conjectured
+fundamental spinor prepotential. The verifier keeps these objects separate.
+
+The discussion following Eq. (2.7) of arXiv:2007.05097 states that the
+functional dependence \(H_\alpha{}^a(V)\) must involve fifteen spinor
+derivatives. The target vector-spinor decomposes as
+
+\[
+ (10000)\otimes(00001)=(00001)\oplus(10001),
+ \qquad 352=32+320.
+\]
+
+The level-15 scalar inventory contains
+
+\[
+ 2(00001)\oplus(10001)\oplus\text{other irreps}.
+\]
+
+Consequently, the leading symbol of a Lorentz-equivariant map
+
+\[
+ D^{15}V\longrightarrow H_\alpha{}^a
+\]
+
+has three channels in the Dynkin-label representation convention: two into
+the gamma trace and one into the gamma-traceless vector-spinor. Both target
+irreps are present. Composing this with the conjectured relation
+\(V=D^\alpha\Psi_\alpha\) gives a formal sixteen-spinor-derivative bridge from
+\(\Psi_\alpha\) to \(H_\alpha{}^a\).
+
+This reduces the unspecified leading-symbol problem to three coefficients.
+The two cited papers do not give the three intertwiners or their coefficients.
+The torsion constraints in Eq. (2.7) are therefore the next equations to apply,
+not a result already encoded here.
+
+## Gauge-parameter channel census
+
+The introduction of arXiv:2007.05097 states a conjectural high-dimensional
+rule: a supergravity prepotential transforms as one spinor derivative of a
+Lorentz-compatible parameter superfield. For a spinor prepotential, the
+possible parameter representations are the channels in
+
+\[
+ (00001)\otimes(00001)
+ = (00000)\oplus(10000)\oplus(01000)\oplus(00100)
+   \oplus(00010)\oplus(00002).
+\]
+
+These are the scalar, vector, two-form, three-form, four-form, and five-form,
+with dimensions
+
+\[
+ 1+11+55+165+330+462=1024=32^2.
+\]
+
+Each occurs once. This is a complete census of Lorentz-compatible
+first-derivative parameter channels. It is not a claim that all six are gauge
+symmetries. The two cited papers do not select a channel combination, give its
+coefficients, or state its gauge-for-gauge reducibility.
+
 ## What this establishes
 
 This completes the representation-inventory gate for applying the
@@ -126,11 +191,14 @@ validated four-dimensional Adynkrafield machinery in eleven dimensions:
 3. the middle-level supergravity candidates and the missing 55-dimensional
    representation are detected directly from the scalar inventory;
 4. the full spinor-superfield inventory is derived by the minuscule tensor
-   rule, and all Table 5 multiplicities are reproduced.
+   rule, and all Table 5 multiplicities are reproduced;
+5. the fifteen-derivative bridge is reduced to three leading-symbol channels;
+6. the six possible first-derivative gauge-parameter channels are enumerated.
 
-It does not select eleven-dimensional superspace constraints, construct the
-spinor prepotential's gauge transformations, or derive an eleven-dimensional
-action or field equation. Those are separate steps.
+It does not solve the proposed eleven-dimensional torsion constraints for the
+three bridge coefficients, select the spinor prepotential's gauge
+transformation, or derive an eleven-dimensional action or field equation.
+Those are separate steps.
 
 ## Reproduction
 
@@ -144,9 +212,12 @@ cargo test eleven_dimensional_prepotential
 
 Implementation: `src/eleven_dimensional_prepotential.rs`
 
-## Reference
+## References
 
-S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Adinkra Foundation of Component
-Decomposition and the Scan for Superconformal Multiplets in 11D, N = 1
-Superspace," JHEP 09 (2020) 089,
-[arXiv:2002.08502](https://arxiv.org/abs/2002.08502).
+1. S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Adinkra Foundation of Component
+   Decomposition and the Scan for Superconformal Multiplets in 11D, N = 1
+   Superspace," JHEP 09 (2020) 089,
+   [arXiv:2002.08502](https://arxiv.org/abs/2002.08502).
+2. S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Weyl Covariance, and Proposals
+   for Superconformal Prepotentials in 10D Superspaces,"
+   [arXiv:2007.05097](https://arxiv.org/abs/2007.05097).

@@ -77,6 +77,24 @@ pub struct DistinguishedRepresentationCheck {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct SemiPrepotentialBridgeChannel {
+    pub dynkin_label: &'static str,
+    pub dimension: u64,
+    pub interpretation: &'static str,
+    pub source_level_15_multiplicity: usize,
+    pub target_vector_spinor_multiplicity: usize,
+    pub equivariant_symbol_channels: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SpinorGaugeParameterChannel {
+    pub form_degree: usize,
+    pub dynkin_label: &'static str,
+    pub dimension: u64,
+    pub multiplicity_in_spinor_square: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct ElevenDimensionalScalarReport {
     pub schema_version: &'static str,
     pub source_arxiv: &'static str,
@@ -110,6 +128,20 @@ pub struct ElevenDimensionalScalarReport {
     pub spinor_every_level_matches_tensor_dimension: bool,
     pub spinor_parity_dimensions_match: bool,
     pub spinor_table_5_checks_pass: bool,
+    pub semi_prepotential_source_arxiv: &'static str,
+    pub semi_prepotential_source_statement: &'static str,
+    pub scalar_to_vector_spinor_derivative_order: usize,
+    pub formal_spinor_to_vector_spinor_composite_derivative_order: usize,
+    pub vector_spinor_dimension: u64,
+    pub semi_prepotential_bridge_channels: Vec<SemiPrepotentialBridgeChannel>,
+    pub semi_prepotential_equivariant_symbol_dimension: usize,
+    pub semi_prepotential_target_content_present: bool,
+    pub gauge_rule_source_arxiv: &'static str,
+    pub gauge_rule_source_statement: &'static str,
+    pub spinor_gauge_parameter_channels: Vec<SpinorGaugeParameterChannel>,
+    pub spinor_gauge_parameter_channel_count: usize,
+    pub spinor_gauge_parameter_dimensions_sum: u64,
+    pub cited_sources_print_gauge_channel_selection: bool,
     pub every_level_matches_exterior_power: bool,
     pub aggregate_counts_match_publication: bool,
     pub parity_dimensions_match: bool,
@@ -442,6 +474,67 @@ pub fn verify() -> ElevenDimensionalScalarReport {
     })
     .collect::<Vec<_>>();
 
+    let semi_prepotential_bridge_channels = [
+        ("00001", "gamma trace", 1_usize),
+        ("10001", "gamma-traceless vector-spinor", 1_usize),
+    ]
+    .into_iter()
+    .map(|(label, interpretation, target_multiplicity)| {
+        let source_multiplicity = multiplicity(15, label);
+        SemiPrepotentialBridgeChannel {
+            dynkin_label: label,
+            dimension: b5_weyl_dimension(parse_dynkin(label)),
+            interpretation,
+            source_level_15_multiplicity: source_multiplicity,
+            target_vector_spinor_multiplicity: target_multiplicity,
+            equivariant_symbol_channels: source_multiplicity * target_multiplicity,
+        }
+    })
+    .collect::<Vec<_>>();
+    let semi_prepotential_equivariant_symbol_dimension = semi_prepotential_bridge_channels
+        .iter()
+        .map(|channel| channel.equivariant_symbol_channels)
+        .sum();
+    let semi_prepotential_target_content_present = semi_prepotential_bridge_channels
+        .iter()
+        .all(|channel| channel.source_level_15_multiplicity > 0);
+
+    let spinor_square = tensor_with_spinor(parse_dynkin("00001"));
+    let spinor_gauge_parameter_channels = [
+        (0, "00000"),
+        (1, "10000"),
+        (2, "01000"),
+        (3, "00100"),
+        (4, "00010"),
+        (5, "00002"),
+    ]
+    .into_iter()
+    .map(|(form_degree, label)| {
+        let dynkin = parse_dynkin(label);
+        SpinorGaugeParameterChannel {
+            form_degree,
+            dynkin_label: label,
+            dimension: b5_weyl_dimension(dynkin),
+            multiplicity_in_spinor_square: spinor_square
+                .iter()
+                .filter(|&&channel| channel == dynkin)
+                .count(),
+        }
+    })
+    .collect::<Vec<_>>();
+    let spinor_gauge_parameter_channel_count = spinor_gauge_parameter_channels.len();
+    let spinor_gauge_parameter_dimensions_sum = spinor_gauge_parameter_channels
+        .iter()
+        .map(|channel| {
+            channel.dimension * u64::try_from(channel.multiplicity_in_spinor_square).unwrap()
+        })
+        .sum();
+    let gauge_parameter_census_passes = spinor_gauge_parameter_channel_count == 6
+        && spinor_gauge_parameter_dimensions_sum == 32 * 32
+        && spinor_gauge_parameter_channels
+            .iter()
+            .all(|channel| channel.multiplicity_in_spinor_square == 1);
+
     let every_level_matches_exterior_power = level_checks
         .iter()
         .all(|check| check.matches_exterior_power);
@@ -472,10 +565,13 @@ pub fn verify() -> ElevenDimensionalScalarReport {
         && spinor_every_level_matches_tensor_dimension
         && spinor_parity_dimensions_match
         && spinor_tensor_product_dimension_residuals == 0
-        && spinor_table_5_checks_pass;
+        && spinor_table_5_checks_pass
+        && semi_prepotential_target_content_present
+        && semi_prepotential_equivariant_symbol_dimension == 3
+        && gauge_parameter_census_passes;
 
     ElevenDimensionalScalarReport {
-        schema_version: "adynkra-11d-prepotential-inventories-v1",
+        schema_version: "adynkra-11d-prepotential-bridge-v2",
         source_arxiv: "2002.08502",
         source_location: "Appendix F, Table 4, and the note in proof with Table 5",
         lorentz_algebra: "B5 = so(11)",
@@ -507,11 +603,25 @@ pub fn verify() -> ElevenDimensionalScalarReport {
         spinor_every_level_matches_tensor_dimension,
         spinor_parity_dimensions_match,
         spinor_table_5_checks_pass,
+        semi_prepotential_source_arxiv: "2007.05097",
+        semi_prepotential_source_statement: "the discussion after Eq. (2.7) requires H_beta^c(V) to involve fifteen spinor derivatives",
+        scalar_to_vector_spinor_derivative_order: 15,
+        formal_spinor_to_vector_spinor_composite_derivative_order: 16,
+        vector_spinor_dimension: 352,
+        semi_prepotential_bridge_channels,
+        semi_prepotential_equivariant_symbol_dimension,
+        semi_prepotential_target_content_present,
+        gauge_rule_source_arxiv: "2007.05097",
+        gauge_rule_source_statement: "the introduction states that a supergravity prepotential transforms as a first spinor derivative of a Lorentz-compatible parameter superfield and identifies this as a conjectural rule in the high-dimensional cases",
+        spinor_gauge_parameter_channels,
+        spinor_gauge_parameter_channel_count,
+        spinor_gauge_parameter_dimensions_sum,
+        cited_sources_print_gauge_channel_selection: false,
         every_level_matches_exterior_power,
         aggregate_counts_match_publication,
         parity_dimensions_match,
         distinguished_representation_checks_pass,
-        boundary: "reproduction of the published scalar-superfield Lorentz inventory and the spinor-prepotential candidate counts in Table 5; no eleven-dimensional gauge constraint, differential operator, action, or field equation is derived",
+        boundary: "the source-defined fifteen-derivative bridge has three Lorentz-equivariant leading-symbol channels, and six Lorentz-compatible first-derivative gauge-parameter channels are possible; the two cited sources do not select their coefficients or print a gauge complex, so no eleven-dimensional curvature, action, or field equation is derived",
         passed,
     }
 }
@@ -610,5 +720,32 @@ mod tests {
         assert_eq!(spinor_multiplicity(17, "00100"), 8);
         assert_eq!(spinor_multiplicity(18, "00001"), 5);
         assert_eq!(spinor_multiplicity(18, "10001"), 8);
+    }
+
+    #[test]
+    fn fifteen_derivative_bridge_has_three_equivariant_symbol_channels() {
+        let report = verify();
+        assert_eq!(multiplicity(15, "00001"), 2);
+        assert_eq!(multiplicity(15, "10001"), 1);
+        assert_eq!(report.vector_spinor_dimension, 32 + 320);
+        assert_eq!(report.scalar_to_vector_spinor_derivative_order, 15);
+        assert_eq!(
+            report.formal_spinor_to_vector_spinor_composite_derivative_order,
+            16
+        );
+        assert_eq!(report.semi_prepotential_equivariant_symbol_dimension, 3);
+        assert!(report.semi_prepotential_target_content_present);
+    }
+
+    #[test]
+    fn spinor_prepotential_has_six_lorentz_compatible_parameter_channels() {
+        let report = verify();
+        assert_eq!(report.spinor_gauge_parameter_channel_count, 6);
+        assert_eq!(report.spinor_gauge_parameter_dimensions_sum, 32 * 32);
+        assert!(report
+            .spinor_gauge_parameter_channels
+            .iter()
+            .all(|channel| channel.multiplicity_in_spinor_square == 1));
+        assert!(!report.cited_sources_print_gauge_channel_selection);
     }
 }

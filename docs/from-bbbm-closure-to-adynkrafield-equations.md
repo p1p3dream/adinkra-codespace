@@ -286,10 +286,15 @@ The published spinor-prepotential candidate `Psi_alpha`, related by
 `SO(11)` spinor tensor rule. Every level has dimension
 `32 binomial(32,n)`, every individual tensor product passes its dimension
 identity, and all six middle-level multiplicities in Table 5 of Reference
-[10] are reproduced. The next gate is a specified gauge complex. Only after
-that is fixed can the validated derivative and reducibility machinery define
-a candidate eleven-dimensional curvature operator and locate its physical
-quotient.
+[10] are reproduced. The fifteen-spinor-derivative bridge specified in
+Reference [11], from `V` to the vector-spinor semi-prepotential, has also been
+reduced to three
+Lorentz-equivariant leading-symbol channels: two gamma-trace channels and one
+gamma-traceless channel. The conjectural first-derivative gauge rule permits
+six Lorentz parameter types, but References [10] and [11] do not select their
+combination or coefficients. Solving the proposed torsion constraints for the three
+bridge coefficients and fixing that gauge map are the next gates before a
+curvature operator or physical quotient can be defined.
 
 ## Role of the permutahedron program
 
@@ -471,8 +476,10 @@ a new field equation or a polynomial-module proof.
    level passes its exterior-power dimension identity, and the published field
    counts and middle-level supergravity representations are recovered. The
    full spinor-prepotential candidate inventory is also derived and its Table
-   5 multiplicities are reproduced. The gauge complex and differential
-   operator remain open.**
+   5 multiplicities are reproduced. The fifteen-derivative bridge has three
+   leading-symbol channels, and the possible first-derivative gauge domain has
+   six Lorentz channels. Their coefficients, reducibility, curvature complex,
+   and differential operator remain open.**
 7. Determine which representation products and intertwiners are required for a
    nonlinear extension.
 
@@ -553,3 +560,6 @@ cargo test
 10. S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Adinkra Foundation of Component
     Decomposition and the Scan for Superconformal Multiplets in 11D, N = 1
     Superspace," [arXiv:2002.08502](https://arxiv.org/abs/2002.08502).
+11. S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, "Weyl Covariance, and Proposals
+    for Superconformal Prepotentials in 10D Superspaces,"
+    [arXiv:2007.05097](https://arxiv.org/abs/2007.05097).
