@@ -19,6 +19,12 @@ const SIMPLE_ROOTS: [Weight; 5] = [
     [0, 0, 0, 2, -2],
     [0, 0, 0, 0, 2],
 ];
+const SPINOR_KERNEL_1: &[u8] =
+    include_bytes!("../data/eleven_dimensional_bridge/00001_highest_weight_kernel_1.i16le");
+const SPINOR_KERNEL_2: &[u8] =
+    include_bytes!("../data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le");
+const VECTOR_SPINOR_KERNEL: &[u8] =
+    include_bytes!("../data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le");
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RaisingBlockReport {
@@ -94,8 +100,25 @@ pub struct ElevenDimensionalBridgeReport {
     pub expected_kernel_vectors: usize,
     pub exact_kernel_vectors_verified: usize,
     pub all_expected_kernel_vectors_verified: bool,
+    pub spinor_descendant_audits: Vec<SpinorDescendantAudit>,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SpinorDescendantAudit {
+    pub source_copy: usize,
+    pub target_dynkin_label: &'static str,
+    pub target_states_expected: usize,
+    pub target_states_generated: usize,
+    pub nonzero_lowering_actions_expected: usize,
+    pub nonzero_lowering_actions_checked: usize,
+    pub independent_state_discoveries: usize,
+    pub repeated_path_checks: usize,
+    pub repeated_path_mismatches: usize,
+    pub minimum_state_support: usize,
+    pub maximum_state_support: usize,
+    pub exact_full_spinor_intertwiner_verified: bool,
 }
 
 fn spinor_weights() -> [Weight; 32] {
@@ -264,6 +287,83 @@ fn lower_sparse(
     descendant
 }
 
+fn lower_pairs(source: &[(u32, i64)], root: usize, weights: &[Weight; 32]) -> Vec<(u32, i64)> {
+    let source = source.iter().copied().collect::<HashMap<_, _>>();
+    let mut lowered = lower_sparse(&source, root, weights)
+        .into_iter()
+        .collect::<Vec<_>>();
+    lowered.sort_unstable_by_key(|(mask, _)| *mask);
+    lowered
+}
+
+fn audit_full_spinor_descendants(
+    source_copy: usize,
+    source_basis: &[u32],
+    coefficients: &[i16],
+    weights: &[Weight; 32],
+) -> SpinorDescendantAudit {
+    use std::collections::VecDeque;
+
+    let highest = [1_i8; 5];
+    let highest_vector = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients.iter().copied())
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<Vec<_>>();
+    let mut states = HashMap::<Weight, Vec<(u32, i64)>>::new();
+    states.insert(highest, highest_vector);
+    let mut queue = VecDeque::from([highest]);
+    let mut nonzero_lowering_actions_checked = 0;
+    let mut independent_state_discoveries = 0;
+    let mut repeated_path_checks = 0;
+    let mut repeated_path_mismatches = 0;
+
+    while let Some(weight) = queue.pop_front() {
+        let vector = states[&weight].clone();
+        for root in 0..5 {
+            let target = subtract(weight, SIMPLE_ROOTS[root]);
+            if !weights.contains(&target) {
+                continue;
+            }
+            nonzero_lowering_actions_checked += 1;
+            let descendant = lower_pairs(&vector, root, weights);
+            assert!(!descendant.is_empty());
+            if let Some(existing) = states.get(&target) {
+                repeated_path_checks += 1;
+                repeated_path_mismatches += usize::from(existing != &descendant);
+            } else {
+                independent_state_discoveries += 1;
+                states.insert(target, descendant);
+                queue.push_back(target);
+            }
+        }
+    }
+
+    let minimum_state_support = states.values().map(Vec::len).min().unwrap_or(0);
+    let maximum_state_support = states.values().map(Vec::len).max().unwrap_or(0);
+    let target_states_generated = states.len();
+    SpinorDescendantAudit {
+        source_copy,
+        target_dynkin_label: "00001",
+        target_states_expected: 32,
+        target_states_generated,
+        nonzero_lowering_actions_expected: 48,
+        nonzero_lowering_actions_checked,
+        independent_state_discoveries,
+        repeated_path_checks,
+        repeated_path_mismatches,
+        minimum_state_support,
+        maximum_state_support,
+        exact_full_spinor_intertwiner_verified: target_states_generated == 32
+            && nonzero_lowering_actions_checked == 48
+            && independent_state_discoveries == 31
+            && repeated_path_checks == 17
+            && repeated_path_mismatches == 0,
+    }
+}
+
 fn build_system(
     dynkin_label: &'static str,
     representation_dimension: usize,
@@ -417,6 +517,13 @@ fn integer_gcd(left: i16, right: i16) -> i16 {
     }
 }
 
+fn decode_kernel(bytes: &[u8]) -> Vec<i16> {
+    bytes
+        .chunks_exact(2)
+        .map(|pair| i16::from_le_bytes([pair[0], pair[1]]))
+        .collect()
+}
+
 pub fn verify() -> ElevenDimensionalBridgeReport {
     let weights = spinor_weights();
     let left = half_groups(0, &weights);
@@ -433,15 +540,11 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &[
                 (
                     "data/eleven_dimensional_bridge/00001_highest_weight_kernel_1.i16le",
-                    include_bytes!(
-                        "../data/eleven_dimensional_bridge/00001_highest_weight_kernel_1.i16le"
-                    ),
+                    SPINOR_KERNEL_1,
                 ),
                 (
                     "data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le",
-                    include_bytes!(
-                        "../data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le"
-                    ),
+                    SPINOR_KERNEL_2,
                 ),
             ],
         ),
@@ -455,9 +558,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &weights,
             &[(
                 "data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le",
-                include_bytes!(
-                    "../data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le"
-                ),
+                VECTOR_SPINOR_KERNEL,
             )],
         ),
     ];
@@ -466,10 +567,21 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         .flat_map(|system| &system.exact_kernel_vectors)
         .filter(|kernel| kernel.exact_kernel_verified)
         .count();
+    let spinor_basis = weight_basis([1, 1, 1, 1, 1], &left, &right);
+    let spinor_descendant_audits = [SPINOR_KERNEL_1, SPINOR_KERNEL_2]
+        .into_iter()
+        .enumerate()
+        .map(|(index, bytes)| {
+            audit_full_spinor_descendants(index + 1, &spinor_basis, &decode_kernel(bytes), &weights)
+        })
+        .collect::<Vec<_>>();
     let passed = systems
         .iter()
         .all(|system| system.exact_sparse_system_constructed)
-        && exact_kernel_vectors_verified == 3;
+        && exact_kernel_vectors_verified == 3
+        && spinor_descendant_audits
+            .iter()
+            .all(|audit| audit.exact_full_spinor_intertwiner_verified);
 
     ElevenDimensionalBridgeReport {
         schema_version: "adynkra.11d.level15-bridge.v1",
@@ -503,6 +615,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
+        spinor_descendant_audits,
         boundary: "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
         passed,
     }
@@ -556,6 +669,14 @@ mod tests {
         );
         assert_eq!(spinor.exact_kernel_vectors[0].nonzero_coefficients, 374_246);
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
+        assert_eq!(report.spinor_descendant_audits.len(), 2);
+        for audit in &report.spinor_descendant_audits {
+            assert_eq!(audit.target_states_generated, 32);
+            assert_eq!(audit.nonzero_lowering_actions_checked, 48);
+            assert_eq!(audit.repeated_path_checks, 17);
+            assert_eq!(audit.repeated_path_mismatches, 0);
+            assert!(audit.exact_full_spinor_intertwiner_verified);
+        }
         let vector_spinor = &report.systems[1];
         assert_eq!(vector_spinor.source_weight_space_columns, 388_720);
         assert_eq!(vector_spinor.total_rows, 1_174_806);

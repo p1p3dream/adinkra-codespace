@@ -434,6 +434,36 @@
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
   "all_expected_kernel_vectors_verified": true,
+  "spinor_descendant_audits": [
+    {
+      "source_copy": 1,
+      "target_dynkin_label": "00001",
+      "target_states_expected": 32,
+      "target_states_generated": 32,
+      "nonzero_lowering_actions_expected": 48,
+      "nonzero_lowering_actions_checked": 48,
+      "independent_state_discoveries": 31,
+      "repeated_path_checks": 17,
+      "repeated_path_mismatches": 0,
+      "minimum_state_support": 374246,
+      "maximum_state_support": 374246,
+      "exact_full_spinor_intertwiner_verified": true
+    },
+    {
+      "source_copy": 2,
+      "target_dynkin_label": "00001",
+      "target_states_expected": 32,
+      "target_states_generated": 32,
+      "nonzero_lowering_actions_expected": 48,
+      "nonzero_lowering_actions_checked": 48,
+      "independent_state_discoveries": 31,
+      "repeated_path_checks": 17,
+      "repeated_path_mismatches": 0,
+      "minimum_state_support": 6435,
+      "maximum_state_support": 6435,
+      "exact_full_spinor_intertwiner_verified": true
+    }
+  ],
   "boundary": "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
   "passed": true
 }

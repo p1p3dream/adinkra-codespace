@@ -76,6 +76,12 @@ first and fifth lowerings are nonzero. Applying the same lowering a second
 time gives zero in every nontrivial case. These are the exact Dynkin strings
 specified by labels `00001` and `10001`.
 
+The two complete spinor intertwiners are now generated. Each produces all 32
+spinor weights. The verifier checks all 48 nonzero simple-root lowering edges,
+including 17 states reached by more than one lowering path. Both source copies
+have zero path mismatches. The first copy has support 374,246 at every weight;
+the second has support 6,435 at every weight.
+
 ## Generic bridge
 
 Before normalization, the most general leading symbol is
@@ -95,8 +101,9 @@ vectors are now exact. Their covariant descendants remain.
 ## Current boundary
 
 This pass makes the source-embedding problem explicit and reproducible and
-supplies all three exact highest-weight vectors. It does not yet provide their
-full covariant descendant sets. Consequently:
+supplies all three exact highest-weight vectors and both complete 32-component
+spinor intertwiners. It does not yet materialize the complete 320-component
+vector-spinor descendant set. Consequently:
 
 - the three coefficients have not yet been substituted into the torsion
   constraints of Eq. (2.7);
