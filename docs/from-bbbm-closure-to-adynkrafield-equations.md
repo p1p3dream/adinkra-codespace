@@ -340,6 +340,27 @@ implemented as complementary exact projectors for both chiralities. Their
 ranks are 2 and 6, and all completeness, orthogonality, idempotency, and
 `sl(2)_L + sl(2)_R` equivariance checks pass.
 
+The fundamental derivative intertwiners are now implemented in an exact
+rational binary-form basis for every Lorentz representation in the six
+published genomes. All 18 left- and right-handed tensor products pass
+projection, reconstruction, cross-channel, and equivariance checks. The three
+repeated representations at total level two are distinguished canonically by
+their `(2,0)` and `(0,2)` bidegrees; the combined chirality selectors have full
+rank. This validation does not by itself fix named-component normalizations;
+the gauge map is implemented directly in superspace below. See
+[`adynkra-4d-n1-derivative-intertwiners.md`](adynkra-4d-n1-derivative-intertwiners.md).
+
+The first gauge-curvature sequence is also implemented. The complete
+64-component prepotential gauge map in Eq. (2.21) contains 192 sparse
+differential terms and obeys every Grassmann-bidegree selection rule. The
+chiral super-Weyl curvature in Eq. (5.2.5) of *Superspace* is nonzero, chiral
+on all 64 prepotential basis inputs, and annihilates the complete 64-component
+gauge image. The calculation checks 512 chirality relations and 256 gauge-
+invariance relations with zero residuals in exact arithmetic. The remaining
+supergravity curvatures, Bianchi identities, compensator choice, and
+cohomology are open. See
+[`adynkra-4d-n1-gauge-curvature.md`](adynkra-4d-n1-gauge-curvature.md).
+
 ## Ordered research plan
 
 ### Track 0: validated 10D supergravity baseline and embedding scan
@@ -373,9 +394,12 @@ ranks are 2 and 6, and all completeness, orthogonality, idempotency, and
 1. Reproduce the four-dimensional `N=1` supergravity-prepotential genome.
    **Complete for the six published genomes in Eqs. (3.6)-(3.11).**
 2. Implement supercovariant derivatives and multiplicity intertwiners.
-   **Derivative algebra, rank-two bosonic intertwiners, and vector-spinor
-   intertwiners complete; repeated-irrep maps open.**
-3. Construct the prepotential gauge and curvature complex.
+   **Derivative algebra, rank-two bosonic intertwiners, vector-spinor
+   intertwiners, fundamental Clebsch-Gordan maps, and all repeated sectors in
+   the six published genomes complete.**
+3. Construct the prepotential gauge and curvature complex. **Gauge map and
+   chiral super-Weyl curvature complete; remaining curvatures, Bianchi
+   identities, compensator choice, and cohomology open.**
 4. Reproduce a known linearized supergravity equation.
 5. Express that equation as an Adynkrafield operator.
 6. Apply the validated operators to the eleven-dimensional scalar superfield

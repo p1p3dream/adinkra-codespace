@@ -1,5 +1,6 @@
 mod baselines;
 mod adynkra_genome;
+mod adynkra_derivative_intertwiners;
 mod bbbm;
 mod bbbm_closure;
 mod bbbm_component;
@@ -37,6 +38,8 @@ mod permutahedron;
 mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
+mod prepotential_gauge;
+mod prepotential_curvature;
 mod ranking;
 mod search;
 mod signed_perm;
@@ -100,6 +103,9 @@ fn main() {
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
         "adynkra-intertwiner-verify" => cmd_adynkra_intertwiner_verify(),
         "adynkra-vector-spinor-verify" => cmd_adynkra_vector_spinor_verify(),
+        "adynkra-derivative-intertwiner-verify" => cmd_adynkra_derivative_intertwiner_verify(),
+        "adynkra-prepotential-gauge-verify" => cmd_adynkra_prepotential_gauge_verify(),
+        "adynkra-prepotential-curvature-verify" => cmd_adynkra_prepotential_curvature_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -169,6 +175,9 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-derivative-verify Verify the 4D N=1 derivative algebra in Eq. 2.22");
     eprintln!("  adynkra-intertwiner-verify Verify the rank-two projectors in Eqs. 2.5 and 2.18");
     eprintln!("  adynkra-vector-spinor-verify Verify the vector-spinor projectors in Eqs. 2.13-2.19");
+    eprintln!("  adynkra-derivative-intertwiner-verify Verify fundamental CG and repeated-irrep maps");
+    eprintln!("  adynkra-prepotential-gauge-verify Verify the supergravity prepotential gauge map");
+    eprintln!("  adynkra-prepotential-curvature-verify Verify the chiral super-Weyl curvature");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -317,6 +326,30 @@ fn cmd_adynkra_intertwiner_verify() {
 
 fn cmd_adynkra_vector_spinor_verify() {
     let report = vector_spinor_intertwiners::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_derivative_intertwiner_verify() {
+    let report = adynkra_derivative_intertwiners::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_prepotential_gauge_verify() {
+    let report = prepotential_gauge::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_prepotential_curvature_verify() {
+    let report = prepotential_curvature::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);

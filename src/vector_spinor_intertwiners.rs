@@ -258,7 +258,7 @@ pub fn verify() -> VectorSpinorIntertwinerReport {
         orthogonality_failures,
         sl2_generators_per_chirality: 6,
         equivariance_commutators_checked,
-        boundary: "vector-spinor irreducible projectors only; repeated-irrep derivative maps and gauge cohomology remain open",
+        boundary: "vector-spinor irreducible projectors only; fundamental derivative intertwiners are validated separately; prepotential gauge-map assembly and cohomology remain open",
         passed,
     }
 }

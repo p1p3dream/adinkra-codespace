@@ -38,9 +38,10 @@ cargo test supercovariant_derivative
 
 ## Boundary
 
-This establishes the source-convention superspace derivative algebra. It does
-not yet construct the irreducible Clebsch-Gordan intertwiners between repeated
-Lorentz representations, the prepotential gauge complex, or its cohomology.
+This establishes the source-convention superspace derivative algebra. The
+irreducible Clebsch-Gordan maps and repeated Lorentz sectors are validated in
+[`adynkra-4d-n1-derivative-intertwiners.md`](adynkra-4d-n1-derivative-intertwiners.md).
+The assembled prepotential gauge complex and its cohomology remain open.
 
 ## Reference
 

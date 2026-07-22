@@ -303,7 +303,7 @@ pub fn verify() -> LorentzIntertwinerReport {
         reconstruction_residual_entries,
         so4_generators_checked: generators.len(),
         equivariance_commutators_checked: generators.len() * projectors.len(),
-        boundary: "rank-two bosonic intertwiners only; vector-spinor intertwiners and repeated-irrep derivative maps remain open",
+        boundary: "rank-two bosonic intertwiners only; vector-spinor and fundamental derivative intertwiners are validated separately; prepotential gauge-map assembly remains open",
         passed,
     }
 }

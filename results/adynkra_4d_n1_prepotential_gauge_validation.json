@@ -1,0 +1,56 @@
+{
+  "schema_version": "adynkra-4d-n1-prepotential-gauge-v1",
+  "source_arxiv": "2407.09334",
+  "source_equations": "2.21 and 2.22",
+  "gauge_map": "delta H_{alpha dot-alpha} = D_alpha Lbar_dot-alpha - Dbar_dot-alpha L_alpha",
+  "convention": "L_alpha and its conjugate are independent over the complexified component space",
+  "parameter_components": 64,
+  "prepotential_components": 64,
+  "sparse_operator_terms": 192,
+  "zero_derivative_terms": 64,
+  "first_derivative_terms": 128,
+  "maximum_spacetime_derivative_order": 1,
+  "level_selection_terms_checked": 192,
+  "level_selection_violations": 0,
+  "zero_momentum_rank": 39,
+  "momentum_rank_checks": [
+    {
+      "momentum": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "rank": 48
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "rank": 48
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "rank": 48
+    },
+    {
+      "momentum": [
+        2,
+        -1,
+        4,
+        3
+      ],
+      "rank": 48
+    }
+  ],
+  "boundary": "exact superspace gauge map only; the chiral super-Weyl curvature is validated separately; named-component matching, the remaining curvatures, Bianchi identities, and cohomology remain open",
+  "passed": true
+}

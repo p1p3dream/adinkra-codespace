@@ -66,8 +66,10 @@ cargo test vector_spinor_intertwiners
 ## Boundary
 
 This supplies explicit irreducible intertwiners for the bosonic rank-two and
-both vector-spinor sectors. Repeated-irrep derivative maps and prepotential
-gauge cohomology remain open.
+both vector-spinor sectors. The fundamental derivative intertwiners and all
+repeated sectors in the six published genomes are documented separately in
+[`adynkra-4d-n1-derivative-intertwiners.md`](adynkra-4d-n1-derivative-intertwiners.md).
+Assembly of the prepotential gauge map and its cohomology remain open.
 
 ## Reference
 

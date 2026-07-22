@@ -1,0 +1,24 @@
+{
+  "schema_version": "adynkra-4d-n1-prepotential-curvature-v1",
+  "sources": [
+    "hep-th/0108200",
+    "2407.09334"
+  ],
+  "source_equations": [
+    "5.2.5 and 5.2.7",
+    "2.21 and 2.22"
+  ],
+  "curvature": "W_{alpha beta gamma} = -(i/3!) Dbar^2 D_(alpha partial_{beta dot-beta} H_{gamma)}^dot-beta",
+  "convention": "epsilon^(01) = 1 and Dbar^2 = 2 Dbar_1 Dbar_0",
+  "symmetric_weyl_components": 4,
+  "prepotential_basis_inputs": 64,
+  "gauge_parameter_basis_inputs": 64,
+  "nonzero_curvature_images": 152,
+  "maximum_curvature_derivative_order": 4,
+  "chirality_relations_checked": 512,
+  "chirality_residuals": 0,
+  "gauge_invariance_relations_checked": 256,
+  "gauge_invariance_residuals": 0,
+  "boundary": "linearized conformal super-Weyl curvature only; the remaining supergravity curvatures, Bianchi complex, compensator choice, cohomology, and Euler-Lagrange equation remain open",
+  "passed": true
+}

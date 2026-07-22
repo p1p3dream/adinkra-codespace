@@ -6,19 +6,19 @@ use num_rational::Ratio;
 use serde::Serialize;
 use std::collections::BTreeMap;
 
-type GaussianRational = Complex<Ratio<i64>>;
+pub(crate) type GaussianRational = Complex<Ratio<i64>>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct Monomial {
-    grassmann_mask: u8,
-    spacetime_derivatives: [u8; 4],
+pub(crate) struct Monomial {
+    pub(crate) grassmann_mask: u8,
+    pub(crate) spacetime_derivatives: [u8; 4],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
-struct Polynomial(BTreeMap<Monomial, GaussianRational>);
+pub(crate) struct Polynomial(pub(crate) BTreeMap<Monomial, GaussianRational>);
 
 #[derive(Debug, Clone, Copy)]
-enum Derivative {
+pub(crate) enum Derivative {
     Left(usize),
     Right(usize),
 }
@@ -58,7 +58,7 @@ fn i_unit() -> GaussianRational {
 }
 
 impl Polynomial {
-    fn basis(mask: u8) -> Self {
+    pub(crate) fn basis(mask: u8) -> Self {
         let mut terms = BTreeMap::new();
         terms.insert(
             Monomial {
@@ -81,14 +81,14 @@ impl Polynomial {
         }
     }
 
-    fn add(mut self, other: Self) -> Self {
+    pub(crate) fn add(mut self, other: Self) -> Self {
         for (monomial, coefficient) in other.0 {
             self.insert(monomial, coefficient);
         }
         self
     }
 
-    fn spacetime_derivative(mut self, index: usize) -> Self {
+    pub(crate) fn spacetime_derivative(mut self, index: usize) -> Self {
         let mut result = Self::default();
         for (mut monomial, coefficient) in std::mem::take(&mut self.0) {
             monomial.spacetime_derivatives[index] += 1;
@@ -97,7 +97,7 @@ impl Polynomial {
         result
     }
 
-    fn scale(mut self, scalar: GaussianRational) -> Self {
+    pub(crate) fn scale(mut self, scalar: GaussianRational) -> Self {
         for coefficient in self.0.values_mut() {
             *coefficient *= scalar.clone();
         }
@@ -146,7 +146,7 @@ fn grassmann_left_multiply(polynomial: &Polynomial, variable: usize) -> Polynomi
     result
 }
 
-fn apply(operator: Derivative, polynomial: &Polynomial) -> Polynomial {
+pub(crate) fn apply(operator: Derivative, polynomial: &Polynomial) -> Polynomial {
     match operator {
         Derivative::Left(alpha) => {
             let mut result = grassmann_derivative(polynomial, alpha);
@@ -233,7 +233,7 @@ pub fn verify() -> SupercovariantDerivativeReport {
         residual_relations,
         same_chirality_anticommutators_zero: same_chirality_ok,
         mixed_anticommutators_are_spacetime_derivatives: mixed_ok,
-        boundary: "exact superspace derivative algebra only; irreducible Clebsch-Gordan intertwiners and prepotential gauge cohomology remain open",
+        boundary: "exact superspace derivative algebra only; irreducible intertwiners are validated separately; prepotential gauge-map assembly and cohomology remain open",
         passed: residual_relations == 0 && same_chirality_ok && mixed_ok,
     }
 }
