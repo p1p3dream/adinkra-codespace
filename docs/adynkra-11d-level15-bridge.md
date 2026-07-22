@@ -168,6 +168,35 @@ one exists, requires an additional condition such as a gauge transformation,
 a curvature normalization, a Bianchi identity, or matching to component
 supergravity.
 
+## Local gamma-trace quotient
+
+Equations (2.2)-(2.3) of arXiv:2007.05097 define the gamma-traceless
+semi-prepotential and its local spinor symmetry:
+
+\[
+\widehat H_\alpha{}^a
+=H_\alpha{}^a-\frac1{11}(\Gamma^a\Gamma_b)_\alpha{}^\beta
+H_\beta{}^b,
+\qquad
+H_\alpha{}^a\longrightarrow H_\alpha{}^a+(\Gamma^a)_\alpha{}^\beta
+\Lambda_\beta.
+\]
+
+The exact Clifford verifier gives rank 32 for the gamma-trace image and rank
+320 for its complement. The $a$ and $b$ maps both land in the `(00001)`
+gamma-trace image. They vanish after applying the rank-320 projector. The $c$
+map lands in `(10001)` and survives. Thus
+
+\[
+\widehat H_\alpha{}^a(V)
+=c\,P_{320}I_{320}(D^{15}V),
+\]
+
+up to normalization. Eq. (2.7) alone leaves a three-dimensional coefficient
+space, but the local gamma-trace quotient leaves one non-gamma-trace bridge
+class. This does not yet fix the normalization of $c$ or establish the gauge
+complex of the underlying scalar or spinor prepotential.
+
 The independent Python program rebuilds the same matrices and numerically
 checks the small eigenvalues of $A^T A$. It was also used to propose integer
 kernel bases. It is a cross-check only. Rust independently reads all three
