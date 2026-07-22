@@ -105,8 +105,41 @@ pub struct ElevenDimensionalBridgeReport {
     pub vector_spinor_target_audit: VectorSpinorTargetAudit,
     pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
+    pub inherited_spinor_gauge_audit: InheritedSpinorGaugeAudit,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct InheritedSpinorGaugeAudit {
+    pub assumed_relation: &'static str,
+    pub direct_parameter_form_degrees: Vec<usize>,
+    pub channels_leaving_scalar_divergence_invariant: Vec<usize>,
+    pub channels_leaving_quotient_bridge_invariant: Vec<usize>,
+    pub invariant_channel_count: usize,
+    pub boundary: &'static str,
+    pub passed: bool,
+}
+
+fn audit_inherited_spinor_gauge(
+    clifford: &crate::eleven_dimensional_clifford::ElevenDimensionalCliffordReport,
+) -> InheritedSpinorGaugeAudit {
+    let direct_parameter_form_degrees = (0..=5).collect::<Vec<_>>();
+    let channels_leaving_scalar_divergence_invariant = clifford
+        .generic_momentum_scalar_divergence_kernel_degrees
+        .clone();
+    let channels_leaving_quotient_bridge_invariant =
+        channels_leaving_scalar_divergence_invariant.clone();
+    let invariant_channel_count = channels_leaving_quotient_bridge_invariant.len();
+    InheritedSpinorGaugeAudit {
+        assumed_relation: "V = D^alpha Psi_alpha and H_hat(V) = c P_320 I_320(D^15 V)",
+        direct_parameter_form_degrees,
+        channels_leaving_scalar_divergence_invariant,
+        channels_leaving_quotient_bridge_invariant,
+        invariant_channel_count,
+        boundary: "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
+        passed: invariant_channel_count == 2,
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -125,8 +158,9 @@ pub struct LocalGammaTraceQuotientAudit {
     pub passed: bool,
 }
 
-fn audit_local_gamma_trace_quotient() -> LocalGammaTraceQuotientAudit {
-    let clifford = crate::eleven_dimensional_clifford::verify();
+fn audit_local_gamma_trace_quotient(
+    clifford: &crate::eleven_dimensional_clifford::ElevenDimensionalCliffordReport,
+) -> LocalGammaTraceQuotientAudit {
     let gamma_trace_coefficients_removed = vec!["a", "b"];
     let surviving_coefficients = vec!["c"];
     let passed = clifford.gamma_trace_projector_rank == 32
@@ -827,7 +861,9 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         .collect::<Vec<_>>();
     let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
     let final_equation_2_7_projection = audit_final_equation_2_7_projection();
-    let local_gamma_trace_quotient = audit_local_gamma_trace_quotient();
+    let clifford = crate::eleven_dimensional_clifford::verify();
+    let local_gamma_trace_quotient = audit_local_gamma_trace_quotient(&clifford);
+    let inherited_spinor_gauge_audit = audit_inherited_spinor_gauge(&clifford);
     let passed = systems
         .iter()
         .all(|system| system.exact_sparse_system_constructed)
@@ -837,7 +873,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             .all(|audit| audit.exact_full_spinor_intertwiner_verified)
         && vector_spinor_target_audit.passed
         && final_equation_2_7_projection.passed
-        && local_gamma_trace_quotient.passed;
+        && local_gamma_trace_quotient.passed
+        && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
         schema_version: "adynkra.11d.level15-bridge.v1",
@@ -875,6 +912,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         vector_spinor_target_audit,
         final_equation_2_7_projection,
         local_gamma_trace_quotient,
+        inherited_spinor_gauge_audit,
         boundary: "This constructs the exact sparse equations and verifies all three highest-weight kernel vectors over every raising row. Their covariant descendants remain to be constructed.",
         passed,
     }
@@ -961,6 +999,14 @@ mod tests {
         assert_eq!(quotient.surviving_coefficients, vec!["c"]);
         assert_eq!(quotient.quotient_bridge_coefficient_dimension, 1);
         assert!(quotient.passed);
+        let gauge = &report.inherited_spinor_gauge_audit;
+        assert_eq!(
+            gauge.channels_leaving_scalar_divergence_invariant,
+            vec![2, 5]
+        );
+        assert_eq!(gauge.channels_leaving_quotient_bridge_invariant, vec![2, 5]);
+        assert_eq!(gauge.invariant_channel_count, 2);
+        assert!(gauge.passed);
         let vector_spinor = &report.systems[1];
         assert_eq!(vector_spinor.source_weight_space_columns, 388_720);
         assert_eq!(vector_spinor.total_rows, 1_174_806);

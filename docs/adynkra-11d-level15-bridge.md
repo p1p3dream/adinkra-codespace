@@ -197,6 +197,22 @@ space, but the local gamma-trace quotient leaves one non-gamma-trace bridge
 class. This does not yet fix the normalization of $c$ or establish the gauge
 complex of the underlying scalar or spinor prepotential.
 
+## Inherited direct gauge channels
+
+Under the formal relation $V=D^\alpha\Psi_\alpha$, the exact generic-momentum
+calculation identifies the two-form and five-form spinor-parameter channels as
+the direct kernel of $V$. Since the quotient bridge is linear in $V$, both
+channels also leave
+
+\[
+\widehat H_\alpha{}^a(V)=c\,P_{320}I_{320}(D^{15}V)
+\]
+
+invariant. This supplies two inherited direct gauge channels for the quotient
+bridge. It does not establish that $V=D\Psi$ is the fundamental 11D
+prepotential relation, determine gauge-for-gauge reducibility, or fix the
+normalization of $c$.
+
 The independent Python program rebuilds the same matrices and numerically
 checks the small eigenvalues of $A^T A$. It was also used to propose integer
 kernel bases. It is a cross-check only. Rust independently reads all three
