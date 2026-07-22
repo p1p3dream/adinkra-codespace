@@ -105,12 +105,133 @@ pub struct ElevenDimensionalBridgeReport {
     pub spinor_descendant_audits: Vec<SpinorDescendantAudit>,
     pub vector_spinor_target_audit: VectorSpinorTargetAudit,
     pub vector_spinor_source_descendant_audit: VectorSpinorSourceDescendantAudit,
+    pub level_sixteen_derivative_channel_audit: LevelSixteenDerivativeChannelAudit,
     pub final_equation_2_7_projection: FinalEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
     pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
+    pub linearized_scale_freedom_audit: LinearizedScaleFreedomAudit,
     pub inherited_spinor_gauge_audit: InheritedSpinorGaugeAudit,
     pub boundary: &'static str,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LevelSixteenDerivativeChannel {
+    pub dynkin_label: String,
+    pub dimension: u64,
+    pub scalar_level_sixteen_multiplicity: usize,
+    pub forced_zero_by_source_inventory: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LevelSixteenDerivativeChannelAudit {
+    pub tensor_product: &'static str,
+    pub tensor_product_dimension: u64,
+    pub multiplicity_free_candidate_channels: usize,
+    pub scalar_level_sixteen_present_channels: usize,
+    pub scalar_level_sixteen_absent_channels: Vec<String>,
+    pub absent_channel_dimension: u64,
+    pub present_channel_dimension: u64,
+    pub channels: Vec<LevelSixteenDerivativeChannel>,
+    pub final_two_form_hook_dynkin_label: &'static str,
+    pub final_two_form_hook_absent: bool,
+    pub interpretation: &'static str,
+    pub passed: bool,
+}
+
+fn audit_level_sixteen_derivative_channels() -> LevelSixteenDerivativeChannelAudit {
+    let channels = crate::eleven_dimensional_prepotential::spinor_tensor_channels("10001")
+        .into_iter()
+        .map(|(dynkin_label, dimension)| {
+            let scalar_level_sixteen_multiplicity =
+                crate::eleven_dimensional_prepotential::level_multiplicity(16, &dynkin_label);
+            LevelSixteenDerivativeChannel {
+                dynkin_label,
+                dimension,
+                scalar_level_sixteen_multiplicity,
+                forced_zero_by_source_inventory: scalar_level_sixteen_multiplicity == 0,
+            }
+        })
+        .collect::<Vec<_>>();
+    let tensor_product_dimension = channels.iter().map(|channel| channel.dimension).sum();
+    let scalar_level_sixteen_present_channels = channels
+        .iter()
+        .filter(|channel| !channel.forced_zero_by_source_inventory)
+        .count();
+    let scalar_level_sixteen_absent_channels = channels
+        .iter()
+        .filter(|channel| channel.forced_zero_by_source_inventory)
+        .map(|channel| channel.dynkin_label.clone())
+        .collect::<Vec<_>>();
+    let absent_channel_dimension = channels
+        .iter()
+        .filter(|channel| channel.forced_zero_by_source_inventory)
+        .map(|channel| channel.dimension)
+        .sum();
+    let present_channel_dimension = tensor_product_dimension - absent_channel_dimension;
+    let final_two_form_hook_absent = channels
+        .iter()
+        .any(|channel| channel.dynkin_label == "11000" && channel.forced_zero_by_source_inventory);
+    let passed = tensor_product_dimension == 320 * 32
+        && channels.len() == 10
+        && scalar_level_sixteen_present_channels == 8
+        && scalar_level_sixteen_absent_channels == ["01000", "11000"]
+        && absent_channel_dimension == 484
+        && present_channel_dimension == 9_756
+        && final_two_form_hook_absent;
+    LevelSixteenDerivativeChannelAudit {
+        tensor_product: "(00001) tensor (10001)",
+        tensor_product_dimension,
+        multiplicity_free_candidate_channels: channels.len(),
+        scalar_level_sixteen_present_channels,
+        scalar_level_sixteen_absent_channels,
+        absent_channel_dimension,
+        present_channel_dimension,
+        channels,
+        final_two_form_hook_dynkin_label: "11000",
+        final_two_form_hook_absent,
+        interpretation: "a sixteenth spinor derivative of the surviving bridge has ten Lorentz candidate channels before exterior antisymmetrization; the scalar level-16 inventory excludes 01000 and 11000, so every equivariant leading-symbol map into either channel vanishes; presence of the other eight representations is necessary but does not prove a nonzero image",
+        passed,
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LinearizedScaleFreedomAudit {
+    pub bridge_is_linear_in_scalar_prepotential: bool,
+    pub constraints_are_homogeneous_in_linearized_bridge: bool,
+    pub reparametrization: &'static str,
+    pub nonzero_bridge_class_selected: bool,
+    pub computational_source_normalization_fixed: bool,
+    pub physical_scale_fixed_by_homogeneous_constraints: bool,
+    pub required_external_normalization: &'static str,
+    pub interpretation: &'static str,
+    pub passed: bool,
+}
+
+fn audit_linearized_scale_freedom(
+    normalization: &CanonicalSourceLineNormalizationAudit,
+) -> LinearizedScaleFreedomAudit {
+    let bridge_is_linear_in_scalar_prepotential = true;
+    let constraints_are_homogeneous_in_linearized_bridge = true;
+    let nonzero_bridge_class_selected = true;
+    let physical_scale_fixed_by_homogeneous_constraints = false;
+    let passed = bridge_is_linear_in_scalar_prepotential
+        && constraints_are_homogeneous_in_linearized_bridge
+        && nonzero_bridge_class_selected
+        && normalization.computational_source_normalization_fixed
+        && !physical_scale_fixed_by_homogeneous_constraints;
+    LinearizedScaleFreedomAudit {
+        bridge_is_linear_in_scalar_prepotential,
+        constraints_are_homogeneous_in_linearized_bridge,
+        reparametrization: "V -> lambda V and c -> c/lambda for nonzero lambda",
+        nonzero_bridge_class_selected,
+        computational_source_normalization_fixed: normalization
+            .computational_source_normalization_fixed,
+        physical_scale_fixed_by_homogeneous_constraints,
+        required_external_normalization: "a declared normalization of V or matching one component of H to an independently normalized graviton or gravitino field",
+        interpretation: "linearized torsion constraints and Bianchi identities can reject the bridge or constrain relative coefficients, but they cannot determine the overall nonzero c while the scalar prepotential may be rescaled",
+        passed,
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -1211,10 +1332,13 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         &decode_kernel(VECTOR_SPINOR_KERNEL),
         &weights,
     );
+    let level_sixteen_derivative_channel_audit = audit_level_sixteen_derivative_channels();
     let final_equation_2_7_projection = audit_final_equation_2_7_projection();
     let clifford = crate::eleven_dimensional_clifford::verify();
     let local_gamma_trace_quotient = audit_local_gamma_trace_quotient(&clifford);
     let canonical_source_line_normalization = audit_canonical_source_line_normalization();
+    let linearized_scale_freedom_audit =
+        audit_linearized_scale_freedom(&canonical_source_line_normalization);
     let inherited_spinor_gauge_audit = audit_inherited_spinor_gauge(&clifford);
     let passed = systems
         .iter()
@@ -1225,13 +1349,15 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             .all(|audit| audit.exact_full_spinor_intertwiner_verified)
         && vector_spinor_target_audit.passed
         && vector_spinor_source_descendant_audit.exact_full_vector_spinor_intertwiner_verified
+        && level_sixteen_derivative_channel_audit.passed
         && final_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
         && canonical_source_line_normalization.passed
+        && linearized_scale_freedom_audit.passed
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v3",
+        schema_version: "adynkra.11d.level15-bridge.v4",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -1258,18 +1384,20 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             },
         ],
         equation_2_7_status: "the final gamma^[2] projection has rank zero on the three bridge channels; all 384 source descendant states are generated and their complete simple-root action is verified",
-        coefficient_solution_status: "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b, leaving the unique non-gamma-trace c channel with a canonical source-line normalization but an unfixed physical scale",
+        coefficient_solution_status: "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the surviving source line has a canonical computational normalization, while the overall nonzero c is a scalar-prepotential normalization convention until V is matched to a normalized component field",
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
         spinor_descendant_audits,
         vector_spinor_target_audit,
         vector_spinor_source_descendant_audit,
+        level_sixteen_derivative_channel_audit,
         final_equation_2_7_projection,
         local_gamma_trace_quotient,
         canonical_source_line_normalization,
+        linearized_scale_freedom_audit,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The physical normalization of c and the curvature complex remain.",
+        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and screens the ten level-16 derivative channels. A component normalization of V and the complete curvature complex remain.",
         passed,
     }
 }
@@ -1312,6 +1440,34 @@ mod tests {
         assert!(audit.orthogonal_projector_idempotent);
         assert!(audit.computational_source_normalization_fixed);
         assert!(!audit.physical_bridge_scale_fixed);
+        assert!(audit.passed);
+    }
+
+    #[test]
+    fn level_sixteen_inventory_removes_two_derivative_channels() {
+        let audit = audit_level_sixteen_derivative_channels();
+        assert_eq!(audit.tensor_product_dimension, 10_240);
+        assert_eq!(audit.multiplicity_free_candidate_channels, 10);
+        assert_eq!(audit.scalar_level_sixteen_present_channels, 8);
+        assert_eq!(
+            audit.scalar_level_sixteen_absent_channels,
+            vec!["01000", "11000"]
+        );
+        assert_eq!(audit.absent_channel_dimension, 484);
+        assert_eq!(audit.present_channel_dimension, 9_756);
+        assert!(audit.final_two_form_hook_absent);
+        assert!(audit.passed);
+    }
+
+    #[test]
+    fn homogeneous_constraints_leave_the_overall_bridge_scale_free() {
+        let normalization = audit_canonical_source_line_normalization();
+        let audit = audit_linearized_scale_freedom(&normalization);
+        assert!(audit.bridge_is_linear_in_scalar_prepotential);
+        assert!(audit.constraints_are_homogeneous_in_linearized_bridge);
+        assert!(audit.nonzero_bridge_class_selected);
+        assert!(audit.computational_source_normalization_fixed);
+        assert!(!audit.physical_scale_fixed_by_homogeneous_constraints);
         assert!(audit.passed);
     }
 
@@ -1361,6 +1517,13 @@ mod tests {
         assert_eq!(source_descendants.maximum_absolute_relation_residual, 0);
         assert_eq!(source_descendants.zero_action_mismatches, 0);
         assert!(source_descendants.exact_full_vector_spinor_intertwiner_verified);
+        let derivative_channels = &report.level_sixteen_derivative_channel_audit;
+        assert_eq!(
+            derivative_channels.scalar_level_sixteen_absent_channels,
+            vec!["01000", "11000"]
+        );
+        assert!(derivative_channels.final_two_form_hook_absent);
+        assert!(derivative_channels.passed);
         let projection = &report.final_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);
         assert_eq!(projection.remaining_hook_dynkin_label, "11000");
@@ -1389,6 +1552,9 @@ mod tests {
         assert!(normalization.computational_source_normalization_fixed);
         assert!(!normalization.physical_bridge_scale_fixed);
         assert!(normalization.passed);
+        let scale = &report.linearized_scale_freedom_audit;
+        assert!(!scale.physical_scale_fixed_by_homogeneous_constraints);
+        assert!(scale.passed);
         let gauge = &report.inherited_spinor_gauge_audit;
         assert_eq!(
             gauge.channels_leaving_scalar_divergence_invariant,

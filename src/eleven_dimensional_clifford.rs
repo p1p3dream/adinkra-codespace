@@ -422,7 +422,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         gamma_tracelessness_entries_checked,
         gamma_tracelessness_residual_entries,
         projector_completeness_residual_entries,
-        boundary: "explicit target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; covariant descendants of the exact level-15 kernel bases, their torsion-constraint coefficients, generic-momentum reducibility, and a complete gauge curvature complex remain open",
+        boundary: "this artifact verifies the target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; the separate level-15 bridge artifact now completes all source descendants, the Eq. (2.7) representation projection, and the gamma-trace quotient; generic-momentum reducibility and a complete gauge curvature complex remain open",
         passed,
     }
 }

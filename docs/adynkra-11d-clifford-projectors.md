@@ -149,21 +149,24 @@ proportional to $p_a\Lambda^a$. The antisymmetric channels retain their
 ordered two-spinor-derivative terms. This is a kernel statement for the
 candidate scalar divergence, not a complete supergravity gauge complex.
 
-## Remaining work on the four requested stages
+## Status of the four requested stages
 
-1. **Bridge intertwiners:** the target projectors and the exact sparse
-   highest-weight systems are now explicit. The systems have 591,810 and
-   388,720 columns. All three highest-weight kernel vectors are extracted and
-   verified exactly over 1,943,600 and 1,174,806 raising equations. Their
-   covariant descendants remain to be constructed. See
-   `docs/adynkra-11d-level15-bridge.md`.
-2. **Torsion constraints:** Eq. (2.7) of arXiv:2007.05097 cannot be evaluated
-   on the three coefficients until the covariant descendants of the three
-   highest-weight vectors are constructed.
-3. **Surviving combination:** no coefficient combination has yet been selected.
+1. **Bridge intertwiners:** complete. The separate bridge verifier constructs
+   all three highest-weight kernels and all 384 descendant states.
+2. **Torsion constraints:** the final Eq. (2.7) projection has rank zero on the
+   three original bridge coefficients because the required `(11000)` hook is
+   absent at scalar level 16.
+3. **Surviving combination:** the local gamma-trace quotient removes the two
+   `(00001)` channels and leaves one `(10001)` channel. Its source line has a
+   fixed computational normalization. The remaining nonzero overall scale is
+   equivalent to rescaling the scalar prepotential until a component
+   convention is supplied.
 4. **Gauge complex:** the direct two-form and five-form channels lie in the
    generic-momentum kernel of the scalar divergence. Reducibility and a
    complete set of curvature operators remain open.
+
+See `docs/adynkra-11d-level15-bridge.md` for the completed source intertwiner,
+level-16 derivative-channel screen, and current boundary.
 
 ## Reproduction
 

@@ -268,6 +268,16 @@ fn tensor_with_spinor(dynkin: B5Dynkin) -> Vec<B5Dynkin> {
     outputs
 }
 
+pub fn spinor_tensor_channels(label: &str) -> Vec<(String, u64)> {
+    tensor_with_spinor(parse_dynkin(label))
+        .into_iter()
+        .map(|dynkin| {
+            let label = dynkin.labels.iter().map(u8::to_string).collect::<String>();
+            (label, b5_weyl_dimension(dynkin))
+        })
+        .collect()
+}
+
 fn spinor_inventory(level: usize) -> Vec<InventoryTerm> {
     let mut multiplicities = BTreeMap::<B5Dynkin, usize>::new();
     for term in inventory(level) {
@@ -699,6 +709,26 @@ mod tests {
         }
         let output_dimension: u64 = outputs.into_iter().map(b5_weyl_dimension).sum();
         assert_eq!(output_dimension, 32 * 32);
+    }
+
+    #[test]
+    fn vector_spinor_times_spinor_has_ten_multiplicity_free_channels() {
+        let channels = spinor_tensor_channels("10001");
+        assert_eq!(channels.len(), 10);
+        assert_eq!(
+            channels.iter().map(|(_, dimension)| dimension).sum::<u64>(),
+            320 * 32
+        );
+        assert_eq!(
+            channels
+                .iter()
+                .map(|(label, _)| label.as_str())
+                .collect::<Vec<_>>(),
+            vec![
+                "00002", "00010", "00100", "01000", "10000", "10002", "10010", "10100", "11000",
+                "20000"
+            ]
+        );
     }
 
     #[test]

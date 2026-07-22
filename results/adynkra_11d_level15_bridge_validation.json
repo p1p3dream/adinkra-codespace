@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v3",
+  "schema_version": "adynkra.11d.level15-bridge.v4",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -433,7 +433,7 @@
     }
   ],
   "equation_2_7_status": "the final gamma^[2] projection has rank zero on the three bridge channels; all 384 source descendant states are generated and their complete simple-root action is verified",
-  "coefficient_solution_status": "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b, leaving the unique non-gamma-trace c channel with a canonical source-line normalization but an unfixed physical scale",
+  "coefficient_solution_status": "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the surviving source line has a canonical computational normalization, while the overall nonzero c is a scalar-prepotential normalization convention until V is matched to a normalized component field",
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
   "all_expected_kernel_vectors_verified": true,
@@ -496,6 +496,84 @@
     "maximum_absolute_source_coefficient": 18480,
     "exact_full_vector_spinor_intertwiner_verified": true
   },
+  "level_sixteen_derivative_channel_audit": {
+    "tensor_product": "(00001) tensor (10001)",
+    "tensor_product_dimension": 10240,
+    "multiplicity_free_candidate_channels": 10,
+    "scalar_level_sixteen_present_channels": 8,
+    "scalar_level_sixteen_absent_channels": [
+      "01000",
+      "11000"
+    ],
+    "absent_channel_dimension": 484,
+    "present_channel_dimension": 9756,
+    "channels": [
+      {
+        "dynkin_label": "00002",
+        "dimension": 462,
+        "scalar_level_sixteen_multiplicity": 1,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "00010",
+        "dimension": 330,
+        "scalar_level_sixteen_multiplicity": 2,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "00100",
+        "dimension": 165,
+        "scalar_level_sixteen_multiplicity": 2,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "01000",
+        "dimension": 55,
+        "scalar_level_sixteen_multiplicity": 0,
+        "forced_zero_by_source_inventory": true
+      },
+      {
+        "dynkin_label": "10000",
+        "dimension": 11,
+        "scalar_level_sixteen_multiplicity": 1,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "10002",
+        "dimension": 4290,
+        "scalar_level_sixteen_multiplicity": 3,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "10010",
+        "dimension": 3003,
+        "scalar_level_sixteen_multiplicity": 1,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "10100",
+        "dimension": 1430,
+        "scalar_level_sixteen_multiplicity": 1,
+        "forced_zero_by_source_inventory": false
+      },
+      {
+        "dynkin_label": "11000",
+        "dimension": 429,
+        "scalar_level_sixteen_multiplicity": 0,
+        "forced_zero_by_source_inventory": true
+      },
+      {
+        "dynkin_label": "20000",
+        "dimension": 65,
+        "scalar_level_sixteen_multiplicity": 1,
+        "forced_zero_by_source_inventory": false
+      }
+    ],
+    "final_two_form_hook_dynkin_label": "11000",
+    "final_two_form_hook_absent": true,
+    "interpretation": "a sixteenth spinor derivative of the surviving bridge has ten Lorentz candidate channels before exterior antisymmetrization; the scalar level-16 inventory excludes 01000 and 11000, so every equivariant leading-symbol map into either channel vanishes; presence of the other eight representations is necessary but does not prove a nonzero image",
+    "passed": true
+  },
   "final_equation_2_7_projection": {
     "source_equation": "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
     "linearized_formula_source": "Eqs. (39)-(40) of hep-th/0101037",
@@ -547,6 +625,17 @@
     "interpretation": "the primitive integer kernel, positive first nonzero coefficient, and exact rank-one orthogonal projector fix a reproducible normalization of the source highest-weight line; they do not fix the physical coefficient c multiplying the bridge",
     "passed": true
   },
+  "linearized_scale_freedom_audit": {
+    "bridge_is_linear_in_scalar_prepotential": true,
+    "constraints_are_homogeneous_in_linearized_bridge": true,
+    "reparametrization": "V -> lambda V and c -> c/lambda for nonzero lambda",
+    "nonzero_bridge_class_selected": true,
+    "computational_source_normalization_fixed": true,
+    "physical_scale_fixed_by_homogeneous_constraints": false,
+    "required_external_normalization": "a declared normalization of V or matching one component of H to an independently normalized graviton or gravitino field",
+    "interpretation": "linearized torsion constraints and Bianchi identities can reject the bridge or constrain relative coefficients, but they cannot determine the overall nonzero c while the scalar prepotential may be rescaled",
+    "passed": true
+  },
   "inherited_spinor_gauge_audit": {
     "assumed_relation": "V = D^alpha Psi_alpha and H_hat(V) = c P_320 I_320(D^15 V)",
     "direct_parameter_form_degrees": [
@@ -569,6 +658,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the exact sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, and fixes the computational normalization of the surviving source highest-weight line. The physical normalization of c and the curvature complex remain.",
+  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, and screens the ten level-16 derivative channels. A component normalization of V and the complete curvature complex remain.",
   "passed": true
 }

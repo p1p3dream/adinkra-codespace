@@ -127,6 +127,31 @@ basis selected inside the 32 weights of multiplicity five. The invariant
 result is that all 320 states are generated and the complete simple-root
 action agrees between source and target.
 
+## Level-16 derivative channels
+
+A further spinor derivative gives the multiplicity-free tensor product
+
+\[
+(00001)\mathbin{\otimes}(10001)=
+(00002)\oplus(00010)\oplus(00100)\oplus(01000)\oplus(10000)
+\oplus(10002)\oplus(10010)\oplus(10100)\oplus(11000)\oplus(20000).
+\]
+
+Its dimension is $32\times320=10{,}240$. Comparison with the scalar
+superfield at level 16 removes two candidate channels:
+
+| channel | dimension | level-16 multiplicity | consequence |
+|---|---:|---:|---|
+| `(01000)` | 55 | 0 | forced to vanish |
+| `(11000)` | 429 | 0 | forced to vanish |
+
+The other eight representations occur at level 16 and have combined dimension
+9,756. Their presence is necessary but does not prove that the exterior
+spinor derivative has a nonzero projection onto each of them. The absent
+`(11000)` is the 429-dimensional hook left by the conventional decomposition
+of the two-form-vector torsion. Its absence gives the vanishing of the final
+Eq. (2.7) projection.
+
 ## Canonical computational normalization
 
 The surviving `(10001)` highest-weight kernel is a primitive integer vector
@@ -145,8 +170,21 @@ P_v(x)=v\,\frac{\langle v,x\rangle}{245{,}044{,}800}.
 
 The verifier checks $P_v(v)=v$ and the corresponding exact identity
 $P_v^2=P_v$. This fixes a reproducible computational normalization for the
-source line. It does not fix the physical scale of $c$. That scale requires a
-curvature convention, a Bianchi identity, or matching to a component field.
+source line. It does not fix the overall scale of $c$.
+
+At linear order the replacement
+
+\[
+V\longrightarrow\lambda V,
+\qquad
+c\longrightarrow c/\lambda
+\]
+
+leaves $\widehat H(V)$ unchanged for nonzero $\lambda$. Homogeneous torsion
+constraints and Bianchi identities can reject the bridge or constrain relative
+coefficients, but cannot remove this rescaling freedom. Fixing the remaining
+scale requires a declared normalization of $V$ or matching a component of
+$H_\alpha{}^a$ to an independently normalized graviton or gravitino field.
 
 ## Current boundary
 
@@ -161,9 +199,9 @@ Consequently:
   representation level and has rank zero on the three coefficients;
 - Eq. (2.7) therefore does not select a unique combination of the three bridge
   channels; and
-- the physical normalization of $c$, generic-momentum gauge reducibility, and
-  a complete curvature complex remain open. The scalar-divergence kernel test
-  has identified the direct two-form and five-form channels.
+- component normalization of $V$, generic-momentum gauge reducibility, and a
+  complete curvature complex remain open. The scalar-divergence kernel test has
+  identified the direct two-form and five-form channels.
 
 ## Primary-source dependency for Eq. (2.7)
 
@@ -237,8 +275,9 @@ map lands in `(10001)` and survives. Thus
 
 up to normalization. Eq. (2.7) alone leaves a three-dimensional coefficient
 space, but the local gamma-trace quotient leaves one non-gamma-trace bridge
-class. This does not yet fix the normalization of $c$ or establish the gauge
-complex of the underlying scalar or spinor prepotential.
+class. The remaining nonzero scale is equivalent to rescaling $V$ until a
+component convention is supplied. The gauge complex of the underlying scalar
+or spinor prepotential is not yet established.
 
 ## Inherited direct gauge channels
 
@@ -254,7 +293,7 @@ channels also leave
 invariant. This supplies two inherited direct gauge channels for the quotient
 bridge. It does not establish that $V=D\Psi$ is the fundamental 11D
 prepotential relation, determine gauge-for-gauge reducibility, or fix the
-normalization of $c$.
+component normalization of $V$.
 
 The independent Python program rebuilds the same matrices and numerically
 checks the small eigenvalues of $A^T A$. It was also used to propose integer
