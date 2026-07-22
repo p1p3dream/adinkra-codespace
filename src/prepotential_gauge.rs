@@ -246,7 +246,7 @@ pub fn verify() -> PrepotentialGaugeReport {
         level_selection_violations,
         zero_momentum_rank,
         momentum_rank_checks,
-        boundary: "exact superspace gauge map only; the chiral super-Weyl curvature is validated separately; named-component matching, the remaining curvatures, Bianchi identities, and cohomology remain open",
+        boundary: "this report covers the exact superspace gauge map; the old-minimal curvature complex is validated in separate artifacts; named-component matching, polynomial-module cohomology, and the Euler-Lagrange equation are separate",
         passed,
     }
 }

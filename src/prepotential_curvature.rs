@@ -73,7 +73,7 @@ fn contracted_vector_derivative(beta: usize, h_gamma: &[Polynomial]) -> Polynomi
         .add(minus(h_gamma[0].clone().spacetime_derivative(2 * beta + 1)))
 }
 
-fn weyl_component(h: &[Vec<Polynomial>], number_of_one_indices: usize) -> Polynomial {
+pub(crate) fn weyl_component(h: &[Vec<Polynomial>], number_of_one_indices: usize) -> Polynomial {
     let indices = match number_of_one_indices {
         0 => [0, 0, 0],
         1 => [0, 0, 1],
@@ -202,7 +202,7 @@ pub fn verify() -> PrepotentialCurvatureReport {
         chirality_residuals,
         gauge_invariance_relations_checked,
         gauge_invariance_residuals,
-        boundary: "linearized conformal super-Weyl curvature only; the remaining supergravity curvatures, Bianchi complex, compensator choice, cohomology, and Euler-Lagrange equation remain open",
+        boundary: "this report covers the conformal super-Weyl curvature; the old-minimal scalar and vector curvatures and Bianchi identities are validated in the minimal-curvature artifact; cohomology and the Euler-Lagrange equation are separate",
         passed,
     }
 }

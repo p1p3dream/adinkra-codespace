@@ -19,6 +19,6 @@
   "chirality_residuals": 0,
   "gauge_invariance_relations_checked": 256,
   "gauge_invariance_residuals": 0,
-  "boundary": "linearized conformal super-Weyl curvature only; the remaining supergravity curvatures, Bianchi complex, compensator choice, cohomology, and Euler-Lagrange equation remain open",
+  "boundary": "this report covers the conformal super-Weyl curvature; the old-minimal scalar and vector curvatures and Bianchi identities are validated in the minimal-curvature artifact; cohomology and the Euler-Lagrange equation are separate",
   "passed": true
 }

@@ -180,7 +180,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-derivative-intertwiner-verify Verify fundamental CG and repeated-irrep maps");
     eprintln!("  adynkra-prepotential-gauge-verify Verify the supergravity prepotential gauge map");
     eprintln!("  adynkra-prepotential-curvature-verify Verify the chiral super-Weyl curvature");
-    eprintln!("  adynkra-minimal-curvature-verify Verify the old-minimal scalar curvature");
+    eprintln!("  adynkra-minimal-curvature-verify Verify the old-minimal curvature complex");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
