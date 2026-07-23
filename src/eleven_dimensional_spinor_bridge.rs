@@ -47,6 +47,8 @@ pub struct ElevenDimensionalSpinorBridgeReport {
     pub direct_derivative_order: usize,
     pub leading_channels: Vec<DirectBridgeChannel>,
     pub leading_map_dimension: usize,
+    pub leading_source_kernel_systems:
+        Vec<crate::eleven_dimensional_bridge::ExteriorHighestWeightSystemShape>,
     pub scalar_factorizing_gamma_traceless_dimension: usize,
     pub nonfactorizing_direct_dimension: usize,
     pub scalar_factorizing_subspace_is_proper: bool,
@@ -55,6 +57,8 @@ pub struct ElevenDimensionalSpinorBridgeReport {
     pub hook_dimension: u64,
     pub hook_channels: Vec<DirectBridgeChannel>,
     pub hook_multiplicity: usize,
+    pub hook_source_kernel_systems:
+        Vec<crate::eleven_dimensional_bridge::ExteriorHighestWeightSystemShape>,
     pub conventional_constraint_set: &'static str,
     pub scalar_strengthened_constraint: &'static str,
     pub source_motivates_strengthened_constraint_by_scalar_prepotential: bool,
@@ -70,7 +74,12 @@ pub struct ElevenDimensionalSpinorBridgeReport {
     pub source_prints_induced_target_gauge_law: bool,
     pub gauge_compatible_quotient_constructed: bool,
     pub representation_level_map_space_constructed: bool,
+    pub exact_source_system_shapes_constructed: bool,
+    pub exact_source_kernel_vectors_constructed: bool,
     pub component_clebsch_maps_constructed: bool,
+    pub derivative_matrix_constructed: bool,
+    pub explicit_intertwiner_pass_status: &'static str,
+    pub next_computational_step: &'static str,
     pub next_required_input: &'static str,
     pub result: &'static str,
     pub boundary: &'static str,
@@ -98,6 +107,20 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         .iter()
         .map(|channel| channel.map_coefficients)
         .sum();
+    let leading_source_kernel_systems =
+        crate::eleven_dimensional_bridge::exterior_highest_weight_system_shapes(
+            16,
+            &[
+                ("10000", 1),
+                ("20000", 1),
+                ("00100", 2),
+                ("00010", 2),
+                ("00002", 1),
+                ("10100", 1),
+                ("10010", 1),
+                ("10002", 3),
+            ],
+        );
 
     let scalar_factorizing_gamma_traceless_dimension = 1;
     let nonfactorizing_direct_dimension =
@@ -108,6 +131,11 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         .iter()
         .map(|channel| channel.map_coefficients)
         .sum();
+    let hook_source_kernel_systems =
+        crate::eleven_dimensional_bridge::exterior_highest_weight_system_shapes(
+            17,
+            &[("10001", 1), ("01001", 2), ("20001", 1), ("11001", 3)],
+        );
 
     let first_momentum_channels =
         crate::eleven_dimensional_prepotential::vector_tensor_gamma_traceless_vector_spinor_channels()
@@ -185,6 +213,28 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
             )
         })
         .collect::<Vec<_>>();
+    let leading_system_signature = leading_source_kernel_systems
+        .iter()
+        .map(|system| {
+            (
+                system.dynkin_label.as_str(),
+                system.source_weight_space_columns,
+                system.total_raising_rows,
+                system.expected_kernel_dimension,
+            )
+        })
+        .collect::<Vec<_>>();
+    let hook_system_signature = hook_source_kernel_systems
+        .iter()
+        .map(|system| {
+            (
+                system.dynkin_label.as_str(),
+                system.source_weight_space_columns,
+                system.total_raising_rows,
+                system.expected_kernel_dimension,
+            )
+        })
+        .collect::<Vec<_>>();
 
     let passed = leading_signature
         == [
@@ -198,10 +248,28 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
             ("10002", 3),
         ]
         && leading_map_dimension == 12
+        && leading_system_signature
+            == [
+                ("10000", 657_520, 2_112_644, 1),
+                ("20000", 353_120, 1_064_136, 1),
+                ("00100", 431_724, 1_377_778, 2),
+                ("00010", 348_240, 1_107_276, 2),
+                ("00002", 280_014, 871_670, 1),
+                ("10100", 227_528, 662_706, 1),
+                ("10010", 181_748, 526_602, 1),
+                ("10002", 144_678, 408_486, 3),
+            ]
         && scalar_factorizing_gamma_traceless_dimension == 1
         && nonfactorizing_direct_dimension == 11
         && hook_signature == [("10001", 1), ("01001", 2), ("20001", 1), ("11001", 3)]
         && hook_multiplicity == 7
+        && hook_system_signature
+            == [
+                ("10001", 388_720, 1_174_806, 1),
+                ("01001", 252_162, 755_329, 2),
+                ("20001", 166_158, 464_815, 1),
+                ("11001", 104_875, 282_011, 3),
+            ]
         && crate::eleven_dimensional_prepotential::b5_dimension("11000") == 429
         && momentum_signature == [("00001", 5), ("01001", 18), ("10001", 8), ("20001", 13)]
         && first_momentum_map_dimension == 44
@@ -218,6 +286,7 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         direct_derivative_order: 16,
         leading_channels,
         leading_map_dimension,
+        leading_source_kernel_systems,
         scalar_factorizing_gamma_traceless_dimension,
         nonfactorizing_direct_dimension,
         scalar_factorizing_subspace_is_proper: true,
@@ -226,6 +295,7 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         hook_dimension: crate::eleven_dimensional_prepotential::b5_dimension("11000"),
         hook_channels,
         hook_multiplicity,
+        hook_source_kernel_systems,
         conventional_constraint_set: "Eq. (2.6), which permits X_[ab]^c in the 429",
         scalar_strengthened_constraint:
             "Eq. (2.7), proposed for a scalar-superfield prepotential and setting the full gamma-two torsion sector to zero",
@@ -242,7 +312,14 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         source_prints_induced_target_gauge_law: false,
         gauge_compatible_quotient_constructed: false,
         representation_level_map_space_constructed: true,
+        exact_source_system_shapes_constructed: true,
+        exact_source_kernel_vectors_constructed: false,
         component_clebsch_maps_constructed: false,
+        derivative_matrix_constructed: false,
+        explicit_intertwiner_pass_status:
+            "all decomposed source-system shapes constructed; exact integer kernel vectors pending",
+        next_computational_step:
+            "construct and verify the twelve level-16 and seven level-17 integer highest-weight kernels",
         next_required_input:
             "select the direct-map coefficients and the spinor-prepotential gauge transformation, including the induced transformation of H_alpha^a",
         result:
@@ -266,6 +343,53 @@ mod tests {
         assert_eq!(report.nonfactorizing_direct_dimension, 11);
         assert_eq!(report.hook_multiplicity, 7);
         assert_eq!(report.first_momentum_map_dimension, 44);
+        assert_eq!(
+            report
+                .leading_source_kernel_systems
+                .iter()
+                .map(|system| {
+                    (
+                        system.dynkin_label.as_str(),
+                        system.source_weight_space_columns,
+                        system.total_raising_rows,
+                        system.expected_kernel_dimension,
+                    )
+                })
+                .collect::<Vec<_>>(),
+            vec![
+                ("10000", 657_520, 2_112_644, 1),
+                ("20000", 353_120, 1_064_136, 1),
+                ("00100", 431_724, 1_377_778, 2),
+                ("00010", 348_240, 1_107_276, 2),
+                ("00002", 280_014, 871_670, 1),
+                ("10100", 227_528, 662_706, 1),
+                ("10010", 181_748, 526_602, 1),
+                ("10002", 144_678, 408_486, 3),
+            ]
+        );
+        assert_eq!(
+            report
+                .hook_source_kernel_systems
+                .iter()
+                .map(|system| {
+                    (
+                        system.dynkin_label.as_str(),
+                        system.source_weight_space_columns,
+                        system.total_raising_rows,
+                        system.expected_kernel_dimension,
+                    )
+                })
+                .collect::<Vec<_>>(),
+            vec![
+                ("10001", 388_720, 1_174_806, 1),
+                ("01001", 252_162, 755_329, 2),
+                ("20001", 166_158, 464_815, 1),
+                ("11001", 104_875, 282_011, 3),
+            ]
+        );
+        assert!(report.exact_source_system_shapes_constructed);
+        assert!(!report.exact_source_kernel_vectors_constructed);
+        assert!(!report.derivative_matrix_constructed);
     }
 
     #[test]

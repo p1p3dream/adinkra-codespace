@@ -39,6 +39,23 @@ that do not factor through \(V\) at the level of Lorentz representations.
 This is a representation-level result. It does not choose the 12
 coefficients or construct their component Clebsch-Gordan tensors.
 
+## Explicit construction status
+
+The explicit intertwiner pass began with the sparse highest-weight systems
+for the scalar irreps that generate the 12 leading channels and seven hook
+channels. Rust now constructs the exact weight-space columns and all five
+simple-root raising-block dimensions for each system.
+
+| Systems | Scalar irreps | Weight-space columns | Raising rows | Expected kernels |
+|---|---:|---:|---:|---:|
+| Level-16 leading sources | 8 | 2,624,572 | 8,131,298 | 12 |
+| Level-17 hook sources | 4 | 911,915 | 2,676,961 | 7 |
+
+These are decomposed systems. They replace a single direct-product solve with
+12 level-16 source embeddings and seven level-17 source embeddings. The exact
+integer kernel vectors, component Clebsch-Gordan maps, and derivative matrix
+have not yet been constructed.
+
 ## The proposed hook cancellation is not the direct-spinor test
 
 Equations (2.6) and (2.7) of arXiv:2007.05097 impose different constraint

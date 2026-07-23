@@ -62,6 +62,17 @@ pub struct HighestWeightSystemReport {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct ExteriorHighestWeightSystemShape {
+    pub dynkin_label: String,
+    pub exterior_degree: usize,
+    pub highest_weight_doubled_coordinates: [i8; 5],
+    pub source_weight_space_columns: usize,
+    pub raising_block_rows: [usize; 5],
+    pub total_raising_rows: usize,
+    pub expected_kernel_dimension: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct ExactKernelVectorReport {
     pub artifact: &'static str,
     pub scalar_type: &'static str,
@@ -3051,6 +3062,41 @@ fn build_system(
         exact_kernel_vectors,
         raising_blocks,
     }
+}
+
+pub fn exterior_highest_weight_system_shapes(
+    exterior_degree: u8,
+    labels_and_multiplicities: &[(&str, usize)],
+) -> Vec<ExteriorHighestWeightSystemShape> {
+    let weights = spinor_weights();
+    let left = half_groups(0, &weights);
+    let right = half_groups(16, &weights);
+    labels_and_multiplicities
+        .iter()
+        .map(|(dynkin_label, expected_kernel_dimension)| {
+            let highest_weight = dynkin_highest_weight(dynkin_label);
+            let source_weight_space_columns =
+                weight_basis(exterior_degree, highest_weight, &left, &right).len();
+            let raising_block_rows = std::array::from_fn(|root| {
+                weight_basis(
+                    exterior_degree,
+                    add(highest_weight, SIMPLE_ROOTS[root]),
+                    &left,
+                    &right,
+                )
+                .len()
+            });
+            ExteriorHighestWeightSystemShape {
+                dynkin_label: (*dynkin_label).to_owned(),
+                exterior_degree: usize::from(exterior_degree),
+                highest_weight_doubled_coordinates: highest_weight,
+                source_weight_space_columns,
+                raising_block_rows,
+                total_raising_rows: raising_block_rows.iter().sum(),
+                expected_kernel_dimension: *expected_kernel_dimension,
+            }
+        })
+        .collect()
 }
 
 fn integer_gcd(left: i16, right: i16) -> i16 {

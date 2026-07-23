@@ -65,6 +65,176 @@
     }
   ],
   "leading_map_dimension": 12,
+  "leading_source_kernel_systems": [
+    {
+      "dynkin_label": "10000",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 657520,
+      "raising_block_rows": [
+        283888,
+        431724,
+        431724,
+        431724,
+        533584
+      ],
+      "total_raising_rows": 2112644,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "20000",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 353120,
+      "raising_block_rows": [
+        97664,
+        227528,
+        227528,
+        227528,
+        283888
+      ],
+      "total_raising_rows": 1064136,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "00100",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 431724,
+      "raising_block_rows": [
+        283888,
+        283888,
+        181748,
+        280014,
+        348240
+      ],
+      "total_raising_rows": 1377778,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "00010",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "source_weight_space_columns": 348240,
+      "raising_block_rows": [
+        227528,
+        227528,
+        227528,
+        144678,
+        280014
+      ],
+      "total_raising_rows": 1107276,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "00002",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "source_weight_space_columns": 280014,
+      "raising_block_rows": [
+        181748,
+        181748,
+        181748,
+        181748,
+        144678
+      ],
+      "total_raising_rows": 871670,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "10100",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 227528,
+      "raising_block_rows": [
+        97664,
+        146680,
+        91936,
+        144678,
+        181748
+      ],
+      "total_raising_rows": 662706,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "10010",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        2,
+        0
+      ],
+      "source_weight_space_columns": 181748,
+      "raising_block_rows": [
+        76888,
+        116328,
+        116328,
+        72380,
+        144678
+      ],
+      "total_raising_rows": 526602,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "10002",
+      "exterior_degree": 16,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "source_weight_space_columns": 144678,
+      "raising_block_rows": [
+        60298,
+        91936,
+        91936,
+        91936,
+        72380
+      ],
+      "total_raising_rows": 408486,
+      "expected_kernel_dimension": 3
+    }
+  ],
   "scalar_factorizing_gamma_traceless_dimension": 1,
   "nonfactorizing_direct_dimension": 11,
   "scalar_factorizing_subspace_is_proper": true,
@@ -102,6 +272,92 @@
     }
   ],
   "hook_multiplicity": 7,
+  "hook_source_kernel_systems": [
+    {
+      "dynkin_label": "10001",
+      "exterior_degree": 17,
+      "highest_weight_doubled_coordinates": [
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight_space_columns": 388720,
+      "raising_block_rows": [
+        166158,
+        252162,
+        252162,
+        252162,
+        252162
+      ],
+      "total_raising_rows": 1174806,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "01001",
+      "exterior_degree": 17,
+      "highest_weight_doubled_coordinates": [
+        3,
+        3,
+        1,
+        1,
+        1
+      ],
+      "source_weight_space_columns": 252162,
+      "raising_block_rows": [
+        166158,
+        104875,
+        161432,
+        161432,
+        161432
+      ],
+      "total_raising_rows": 755329,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "20001",
+      "exterior_degree": 17,
+      "highest_weight_doubled_coordinates": [
+        5,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight_space_columns": 166158,
+      "raising_block_rows": [
+        45315,
+        104875,
+        104875,
+        104875,
+        104875
+      ],
+      "total_raising_rows": 464815,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "11001",
+      "exterior_degree": 17,
+      "highest_weight_doubled_coordinates": [
+        5,
+        3,
+        1,
+        1,
+        1
+      ],
+      "source_weight_space_columns": 104875,
+      "raising_block_rows": [
+        45315,
+        41036,
+        65220,
+        65220,
+        65220
+      ],
+      "total_raising_rows": 282011,
+      "expected_kernel_dimension": 3
+    }
+  ],
   "conventional_constraint_set": "Eq. (2.6), which permits X_[ab]^c in the 429",
   "scalar_strengthened_constraint": "Eq. (2.7), proposed for a scalar-superfield prepotential and setting the full gamma-two torsion sector to zero",
   "source_motivates_strengthened_constraint_by_scalar_prepotential": true,
@@ -183,7 +439,12 @@
   "source_prints_induced_target_gauge_law": false,
   "gauge_compatible_quotient_constructed": false,
   "representation_level_map_space_constructed": true,
+  "exact_source_system_shapes_constructed": true,
+  "exact_source_kernel_vectors_constructed": false,
   "component_clebsch_maps_constructed": false,
+  "derivative_matrix_constructed": false,
+  "explicit_intertwiner_pass_status": "all decomposed source-system shapes constructed; exact integer kernel vectors pending",
+  "next_computational_step": "construct and verify the twelve level-16 and seven level-17 integer highest-weight kernels",
   "next_required_input": "select the direct-map coefficients and the spinor-prepotential gauge transformation, including the induced transformation of H_alpha^a",
   "result": "the scalar factorization occupies one of twelve direct leading directions; eleven nonfactorizing directions remain, and the seven-dimensional 429 hook map space is allowed rather than an Eq. (2.7) cancellation obstruction",
   "boundary": "this is an exact Lorentz-representation calculation, not a component Clebsch construction, gauge quotient, torsion solution, action, or field equation",
