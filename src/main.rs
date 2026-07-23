@@ -1,7 +1,7 @@
-mod baselines;
+mod adynkra_derivative_intertwiners;
 mod adynkra_genome;
 mod adynkrafield_operator;
-mod adynkra_derivative_intertwiners;
+mod baselines;
 mod bbbm;
 mod bbbm_closure;
 mod bbbm_component;
@@ -25,30 +25,30 @@ mod chromotopology;
 mod code;
 mod dashing;
 mod decompose;
-mod enhance;
-mod eleven_dimensional_clifford;
 mod eleven_dimensional_bridge;
+mod eleven_dimensional_clifford;
 mod eleven_dimensional_level16_couplings;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_spinor_bridge;
 mod eleven_dimensional_spinor_bridge_kernels;
+mod enhance;
 mod eval;
 mod filters;
 mod holoraumy;
 mod lorentz;
-mod lr_matrix;
-mod minimal_supergravity_curvatures;
-mod minimal_supergravity_action;
 mod lorentz_intertwiners;
+mod lr_matrix;
+mod minimal_supergravity_action;
+mod minimal_supergravity_curvatures;
 mod nauty_canonical;
 mod orientation;
-mod pipeline;
 mod permutahedron;
 mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
-mod prepotential_gauge;
+mod pipeline;
 mod prepotential_curvature;
+mod prepotential_gauge;
 mod ranking;
 mod search;
 mod signed_perm;
@@ -57,13 +57,13 @@ mod streamed_gadget;
 mod supercovariant_derivative;
 mod tendim_data;
 mod tendim_generate;
-mod viz_export;
 mod vector_spinor_intertwiners;
+mod viz_export;
 
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{enumerate_codes, DoublyEvenCode};
+use code::{DoublyEvenCode, enumerate_codes};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -124,6 +124,10 @@ fn main() {
         "adynkra-11d-level16-coupling-precheck" => cmd_adynkra_11d_level16_coupling_precheck(),
         "adynkra-11d-level16-coupling-build" => cmd_adynkra_11d_level16_coupling_build(&args),
         "adynkra-11d-level16-coupling-verify" => cmd_adynkra_11d_level16_coupling_verify(&args),
+        "adynkra-11d-level17-hook-precheck" => cmd_adynkra_11d_level17_hook_precheck(),
+        "adynkra-11d-level17-hook-build" => cmd_adynkra_11d_level17_hook_build(&args),
+        "adynkra-11d-level17-hook-verify" => cmd_adynkra_11d_level17_hook_verify(&args),
+        "adynkra-11d-level17-derivative-matrix" => cmd_adynkra_11d_level17_derivative_matrix(),
         "adynkra-11d-spinor-bridge-verify" => cmd_adynkra_11d_spinor_bridge_verify(),
         "adynkra-11d-spinor-kernel-verify" => cmd_adynkra_11d_spinor_kernel_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
@@ -159,8 +163,12 @@ fn print_usage(prog: &str) {
     eprintln!("                          emits a re-checkable JSON witness per code class.");
     eprintln!("                          Budget env vars (hangings are SAMPLED):");
     eprintln!("                            ADINKRA_LIFT_CHAINS   source-raise chains (default 32)");
-    eprintln!("                            ADINKRA_LIFT_MAXRANK  max hangings/code   (default 512)");
-    eprintln!("                          Low-k strata (k<=4) need a larger budget to reach 145/145:");
+    eprintln!(
+        "                            ADINKRA_LIFT_MAXRANK  max hangings/code   (default 512)"
+    );
+    eprintln!(
+        "                          Low-k strata (k<=4) need a larger budget to reach 145/145:"
+    );
     eprintln!("                            ADINKRA_LIFT_CHAINS=128 ADINKRA_LIFT_MAXRANK=8000");
     eprintln!("  worldsheet-verify [catalog] [certificate]");
     eprintln!("                          Verify the retained 145-class spin-sum witnesses");
@@ -168,7 +176,9 @@ fn print_usage(prog: &str) {
     eprintln!("                          and compute the gadget on irreducible pieces");
     eprintln!("  decompose-k-disk <k> [json] [--f64]");
     eprintln!("                          like decompose-k but spills W to a disk scratch file");
-    eprintln!("                          (--f64 = exact f64 store + Gram; trustworthy value count)");
+    eprintln!(
+        "                          (--f64 = exact f64 store + Gram; trustworthy value count)"
+    );
     eprintln!("  decompose-structure <k> [json]");
     eprintln!("                          basis-invariant Schur structure (commutant only, no eig;");
     eprintln!("                          scales to k<=3 where the dense path cannot reach)");
@@ -194,20 +204,38 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
     eprintln!("  adynkra-derivative-verify Verify the 4D N=1 derivative algebra in Eq. 2.22");
     eprintln!("  adynkra-intertwiner-verify Verify the rank-two projectors in Eqs. 2.5 and 2.18");
-    eprintln!("  adynkra-vector-spinor-verify Verify the vector-spinor projectors in Eqs. 2.13-2.19");
-    eprintln!("  adynkra-derivative-intertwiner-verify Verify fundamental CG and repeated-irrep maps");
+    eprintln!(
+        "  adynkra-vector-spinor-verify Verify the vector-spinor projectors in Eqs. 2.13-2.19"
+    );
+    eprintln!(
+        "  adynkra-derivative-intertwiner-verify Verify fundamental CG and repeated-irrep maps"
+    );
     eprintln!("  adynkra-prepotential-gauge-verify Verify the supergravity prepotential gauge map");
     eprintln!("  adynkra-prepotential-curvature-verify Verify the chiral super-Weyl curvature");
     eprintln!("  adynkra-minimal-curvature-verify Verify the old-minimal curvature complex");
     eprintln!("  adynkra-minimal-action-verify Verify the quadratic old-minimal action");
     eprintln!("  adynkrafield-operator-verify Verify the old-minimal Adynkrafield operator");
-    eprintln!("  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories");
+    eprintln!(
+        "  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories"
+    );
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!("  adynkra-11d-bridge-verify Verify the 11D bridge and first lower symbol");
-    eprintln!("  adynkra-11d-level16-coupling-precheck Verify the fixed level-16 work list and multiplicities");
-    eprintln!("  adynkra-11d-level16-coupling-build --label LABEL Build one exact abstract coupling");
-    eprintln!("  adynkra-11d-level16-coupling-verify --label LABEL --copy N Verify one embedded coupling");
-    eprintln!("  adynkra-11d-level16-coupling-verify --all [--resume] Verify all 12 embedded couplings");
+    eprintln!(
+        "  adynkra-11d-level16-coupling-precheck Verify the fixed level-16 work list and multiplicities"
+    );
+    eprintln!(
+        "  adynkra-11d-level16-coupling-build --label LABEL Build one exact abstract coupling"
+    );
+    eprintln!(
+        "  adynkra-11d-level16-coupling-verify --label LABEL --copy N Verify one embedded coupling"
+    );
+    eprintln!(
+        "  adynkra-11d-level16-coupling-verify --all [--resume] Verify all 12 embedded couplings"
+    );
+    eprintln!("  adynkra-11d-level17-hook-precheck Verify the seven-copy hook manifest");
+    eprintln!("  adynkra-11d-level17-hook-build --label LABEL Build one hook coupling");
+    eprintln!("  adynkra-11d-level17-hook-verify --all [--resume] Verify all seven hook couplings");
+    eprintln!("  adynkra-11d-level17-derivative-matrix Build the exact 7-by-12 derivative matrix");
     eprintln!("  adynkra-11d-spinor-bridge-verify Audit the direct 11D spinor bridge");
     eprintln!("  adynkra-11d-spinor-kernel-verify Verify its 19 source kernels exactly");
     eprintln!("  export-3d-assets [json] [output-dir]");
@@ -216,7 +244,10 @@ fn print_usage(prog: &str) {
 }
 
 fn cmd_sr_hole(args: &[String]) {
-    let path = args.get(2).map(String::as_str).unwrap_or("adinkra_codes_n16.json");
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("adinkra_codes_n16.json");
     let report = sr_hole::run(path);
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
 }
@@ -448,9 +479,7 @@ fn option_value<'a>(args: &'a [String], option: &str) -> Option<&'a str> {
         .map(String::as_str)
 }
 
-fn read_passed_checkpoint<T: serde::de::DeserializeOwned>(
-    path: &std::path::Path,
-) -> Option<T> {
+fn read_passed_checkpoint<T: serde::de::DeserializeOwned>(path: &std::path::Path) -> Option<T> {
     let payload = std::fs::read(path).ok()?;
     let value: serde_json::Value = serde_json::from_slice(&payload).ok()?;
     if value.get("passed").and_then(|passed| passed.as_bool()) != Some(true) {
@@ -570,10 +599,7 @@ fn cmd_adynkra_11d_level16_coupling_verify(args: &[String]) {
                 })
                 .collect::<Vec<_>>()
         });
-        let abstract_couplings = completed
-            .iter()
-            .map(|(report, _)| report.clone())
-            .collect();
+        let abstract_couplings = completed.iter().map(|(report, _)| report.clone()).collect();
         let embedded_copies = completed
             .into_iter()
             .flat_map(|(_, reports)| reports)
@@ -634,6 +660,182 @@ fn cmd_adynkra_11d_level16_coupling_verify(args: &[String]) {
     }
 }
 
+fn cmd_adynkra_11d_level17_hook_precheck() {
+    let report = eleven_dimensional_level16_couplings::verify_hook_precheck();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_level17_hook_build(args: &[String]) {
+    let label = option_value(args, "--label").unwrap_or_else(|| {
+        eprintln!("Missing --label");
+        std::process::exit(64);
+    });
+    let report = eleven_dimensional_level16_couplings::build_hook_abstract(label);
+    let output = std::path::PathBuf::from(format!(
+        "results/adynkra_11d_level17_hook_{label}_abstract.json"
+    ));
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_level17_hook_verify(args: &[String]) {
+    let resume = args.iter().any(|argument| argument == "--resume");
+    if !args.iter().any(|argument| argument == "--all") {
+        let label = option_value(args, "--label").unwrap_or_else(|| {
+            eprintln!("Missing --label or --all");
+            std::process::exit(64);
+        });
+        let copy = option_value(args, "--copy")
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or_else(|| {
+                eprintln!("Missing or invalid --copy");
+                std::process::exit(64);
+            });
+        let abstract_report = eleven_dimensional_level16_couplings::build_hook_abstract(label);
+        let report = eleven_dimensional_level16_couplings::verify_hook_copy_with_abstract(
+            &abstract_report,
+            copy,
+        );
+        let output = std::path::PathBuf::from(format!(
+            "results/adynkra_11d_level17_hook_{label}_copy{copy}.json"
+        ));
+        eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+            .unwrap();
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+        if !report.passed {
+            std::process::exit(2);
+        }
+        return;
+    }
+    let jobs = eleven_dimensional_level16_couplings::hook_copy_manifest()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let memory_budget_gib = std::env::var("ADINKRA_LEVEL17_RAM_GIB")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(48);
+    let estimated_memory_gib_per_worker = std::env::var("ADINKRA_LEVEL17_WORKER_GIB")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(10)
+        .max(1);
+    let requested_workers = std::env::var("ADINKRA_LEVEL17_WORKERS")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(4)
+        .max(1);
+    let execution_workers = requested_workers
+        .min(memory_budget_gib / estimated_memory_gib_per_worker)
+        .min(jobs.len())
+        .max(1);
+    eprintln!(
+        "level-17 hook workers={execution_workers}, memory budget={memory_budget_gib} GiB, estimate={estimated_memory_gib_per_worker} GiB/worker"
+    );
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(execution_workers)
+        .build()
+        .unwrap();
+    use rayon::prelude::*;
+    let completed = pool.install(|| {
+        jobs.par_iter()
+            .map(|(label, copies)| {
+                let abstract_output = std::path::PathBuf::from(format!(
+                    "results/adynkra_11d_level17_hook_{label}_abstract.json"
+                ));
+                let saved_abstract = resume
+                    .then(|| read_passed_checkpoint(&abstract_output))
+                    .flatten();
+                let abstract_was_reused = saved_abstract.is_some();
+                let abstract_report = saved_abstract.unwrap_or_else(|| {
+                    eleven_dimensional_level16_couplings::build_hook_abstract(label)
+                });
+                if !abstract_was_reused {
+                    eleven_dimensional_level16_couplings::write_atomic_json(
+                        &abstract_output,
+                        &abstract_report,
+                        abstract_report.passed,
+                    )
+                    .unwrap();
+                }
+                eprintln!("certified abstract hook coupling {label}");
+                let copy_reports = copies
+                    .iter()
+                    .map(|copy| {
+                        let copy_output = std::path::PathBuf::from(format!(
+                            "results/adynkra_11d_level17_hook_{label}_copy{copy}.json"
+                        ));
+                        let saved_copy = resume
+                            .then(|| read_passed_checkpoint(&copy_output))
+                            .flatten();
+                        let copy_was_reused = saved_copy.is_some();
+                        let copy_report = saved_copy.unwrap_or_else(|| {
+                            eleven_dimensional_level16_couplings::verify_hook_copy_with_abstract(
+                                &abstract_report,
+                                *copy,
+                            )
+                        });
+                        if !copy_was_reused {
+                            eleven_dimensional_level16_couplings::write_atomic_json(
+                                &copy_output,
+                                &copy_report,
+                                copy_report.passed,
+                            )
+                            .unwrap();
+                        }
+                        eprintln!("certified hook coupling {label} copy {copy}");
+                        copy_report
+                    })
+                    .collect::<Vec<_>>();
+                (abstract_report, copy_reports)
+            })
+            .collect::<Vec<_>>()
+    });
+    let abstract_couplings = completed.iter().map(|(report, _)| report.clone()).collect();
+    let embedded_copies = completed
+        .into_iter()
+        .flat_map(|(_, reports)| reports)
+        .collect();
+    let report = eleven_dimensional_level16_couplings::summarize_hooks(
+        abstract_couplings,
+        embedded_copies,
+        execution_workers,
+        memory_budget_gib,
+        estimated_memory_gib_per_worker,
+        resume,
+    );
+    let output = std::path::PathBuf::from("results/adynkra_11d_level17_hook_couplings_all.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_level17_derivative_matrix() {
+    let report = eleven_dimensional_level16_couplings::build_level17_derivative_matrix();
+    let output = std::path::PathBuf::from("results/adynkra_11d_level17_derivative_matrix.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
 fn cmd_adynkra_11d_spinor_bridge_verify() {
     let report = eleven_dimensional_spinor_bridge::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
@@ -674,7 +876,11 @@ fn cmd_enumerate(args: &[String]) {
     let start = Instant::now();
     let codes = enumerate_codes(n);
     let elapsed = start.elapsed();
-    eprintln!("Found {} codes (before dedup) in {:?}", codes.len(), elapsed);
+    eprintln!(
+        "Found {} codes (before dedup) in {:?}",
+        codes.len(),
+        elapsed
+    );
 
     let start = Instant::now();
     let unique = deduplicate(codes);
@@ -704,14 +910,7 @@ fn cmd_enumerate(args: &[String]) {
         } else {
             ""
         };
-        println!(
-            "  [{}] [{},{},{}]{}",
-            i,
-            code.n,
-            code.k(),
-            d,
-            decomp
-        );
+        println!("  [{}] [{},{},{}]{}", i, code.n, code.k(), d, decomp);
         for (j, &row) in code.generators.iter().enumerate() {
             let bits: String = (0..n)
                 .map(|col| if row & (1 << col) != 0 { '1' } else { '0' })
@@ -743,10 +942,7 @@ fn cmd_count(args: &[String]) {
 
         let nontrivial: Vec<&DoublyEvenCode> = unique.iter().filter(|c| c.k() > 0).collect();
         let max_k = unique.iter().map(|c| c.k()).max().unwrap_or(0);
-        let indecomposable = nontrivial
-            .iter()
-            .filter(|c| !is_decomposable(c))
-            .count();
+        let indecomposable = nontrivial.iter().filter(|c| !is_decomposable(c)).count();
 
         println!(
             "{:>3} | {:>12} | {:>12} | {:>10} | {:>5} | {:>13}",
@@ -873,12 +1069,8 @@ fn cmd_invariants(args: &[String]) {
 fn cmd_validate() {
     println!("=== Doubly-Even Code Enumeration Validation ===");
     println!();
-    println!(
-        "Enumerating codes for N=4 through N=8 and comparing against known results."
-    );
-    println!(
-        "Reference: Doran et al., arXiv:0806.0050 (doubly-even codes and Adinkra graphs)."
-    );
+    println!("Enumerating codes for N=4 through N=8 and comparing against known results.");
+    println!("Reference: Doran et al., arXiv:0806.0050 (doubly-even codes and Adinkra graphs).");
     println!();
 
     println!(
@@ -898,10 +1090,7 @@ fn cmd_validate() {
 
         let nontrivial: Vec<&DoublyEvenCode> = unique.iter().filter(|c| c.k() > 0).collect();
         let max_k = unique.iter().map(|c| c.k()).max().unwrap_or(0);
-        let indecomposable = nontrivial
-            .iter()
-            .filter(|c| !is_decomposable(c))
-            .count();
+        let indecomposable = nontrivial.iter().filter(|c| !is_decomposable(c)).count();
 
         println!(
             "{:>3} | {:>10} | {:>12} | {:>10} | {:>5} | {:>13}",
@@ -923,22 +1112,19 @@ fn cmd_validate() {
 
         // N=8: the extended Hamming [8,4,4] code should be present
         if n == 8 {
-            let has_8_4 = nontrivial.iter().any(|c| c.k() == 4 && c.min_distance() == 4);
+            let has_8_4 = nontrivial
+                .iter()
+                .any(|c| c.k() == 4 && c.min_distance() == 4);
             if has_8_4 {
                 eprintln!("  OK: found [8,4,4] extended Hamming code at N=8");
             } else {
-                eprintln!(
-                    "  FAIL: did not find [8,4,4] extended Hamming code at N=8"
-                );
+                eprintln!("  FAIL: did not find [8,4,4] extended Hamming code at N=8");
                 all_ok = false;
             }
 
             // Check: max k at N=8 should be 4 (the Hamming code)
             if max_k < 4 {
-                eprintln!(
-                    "  FAIL: max k at N=8 is {}, expected at least 4",
-                    max_k
-                );
+                eprintln!("  FAIL: max k at N=8 is {}, expected at least 4", max_k);
                 all_ok = false;
             }
         }
@@ -959,10 +1145,7 @@ fn cmd_validate() {
 
     // Additional validation: verify the Hamming code directly
     println!("--- Direct Hamming [8,4,4] Verification ---");
-    let hamming = DoublyEvenCode::new(
-        8,
-        vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-    );
+    let hamming = DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000]);
     let is_de = hamming.is_doubly_even();
     let d = hamming.min_distance();
     let we = hamming.weight_enumerator();
@@ -1109,24 +1292,39 @@ fn cmd_decompose_k(args: &[String], allow_disk: bool) {
 
 fn cmd_decompose_structure(args: &[String]) {
     let k = parse_usize_arg(args, 2, "decompose-structure <k> [json]");
-    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    let json_path = if args.len() > 3 {
+        args[3].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_decompose_structure(json_path, k);
 }
 
 fn cmd_lift_scan(args: &[String]) {
     let k = parse_usize_arg(args, 2, "lift-scan <k> [json]");
-    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    let json_path = if args.len() > 3 {
+        args[3].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_lift_scan(json_path, k);
 }
 
 fn cmd_lift_construct(args: &[String]) {
     let k = parse_usize_arg(args, 2, "lift-construct <k> [json]");
-    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    let json_path = if args.len() > 3 {
+        args[3].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_lift_construct(json_path, k);
 }
 
 fn cmd_worldsheet_verify(args: &[String]) {
-    let catalog_path = args.get(2).map(String::as_str).unwrap_or("adinkra_codes_n16.json");
+    let catalog_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("adinkra_codes_n16.json");
     let certificate_path = args
         .get(3)
         .map(String::as_str)
@@ -1136,21 +1334,41 @@ fn cmd_worldsheet_verify(args: &[String]) {
 
 fn cmd_enhance_scan(args: &[String]) {
     let k = parse_usize_arg(args, 2, "enhance-scan <k> [json]");
-    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    let json_path = if args.len() > 3 {
+        args[3].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_enhance_scan(json_path, k);
 }
 
 fn cmd_central_charge(args: &[String]) {
     let k = parse_usize_arg(args, 2, "central-charge <k> [json]");
-    let json_path = if args.len() > 3 { args[3].as_str() } else { "adinkra_codes_n16.json" };
+    let json_path = if args.len() > 3 {
+        args[3].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_central_charge(json_path, k);
 }
 
 fn cmd_lift_attack(args: &[String]) {
     let code_index = parse_usize_arg(args, 2, "lift-search <code_index> [iters] [seed] [json]");
-    let iters = if args.len() > 3 { args[3].parse().unwrap_or(20000) } else { 20000 };
-    let seed = if args.len() > 4 { args[4].parse().unwrap_or(1) } else { 1 };
-    let json_path = if args.len() > 5 { args[5].as_str() } else { "adinkra_codes_n16.json" };
+    let iters = if args.len() > 3 {
+        args[3].parse().unwrap_or(20000)
+    } else {
+        20000
+    };
+    let seed = if args.len() > 4 {
+        args[4].parse().unwrap_or(1)
+    } else {
+        1
+    };
+    let json_path = if args.len() > 5 {
+        args[5].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_lift_attack(json_path, code_index, iters, seed);
 }
 
@@ -1158,7 +1376,11 @@ fn cmd_q_scan(args: &[String]) {
     let k = parse_usize_arg(args, 2, "q-scan <k> [json] [--no-struct]");
     // --no-struct skips the commutant_dim/Schur label (Q + support only, fast).
     let compute_struct = !args.iter().any(|a| a == "--no-struct");
-    let json_path = args.iter().skip(3).find(|a| !a.starts_with("--")).map(|s| s.as_str())
+    let json_path = args
+        .iter()
+        .skip(3)
+        .find(|a| !a.starts_with("--"))
+        .map(|s| s.as_str())
         .unwrap_or("adinkra_codes_n16.json");
     pipeline::run_q_scan(json_path, k, compute_struct);
 }
@@ -1180,8 +1402,16 @@ fn cmd_decompose_audit(args: &[String]) {
 
 fn cmd_decompose_probe(args: &[String]) {
     let k = parse_usize_arg(args, 2, "decompose-probe <k> <num_reps> [json]");
-    let num = if args.len() > 3 { args[3].parse::<usize>().unwrap_or(8) } else { 8 };
-    let json_path = if args.len() > 4 { args[4].as_str() } else { "adinkra_codes_n16.json" };
+    let num = if args.len() > 3 {
+        args[3].parse::<usize>().unwrap_or(8)
+    } else {
+        8
+    };
+    let json_path = if args.len() > 4 {
+        args[4].as_str()
+    } else {
+        "adinkra_codes_n16.json"
+    };
     pipeline::run_decompose_probe(json_path, k, num);
 }
 

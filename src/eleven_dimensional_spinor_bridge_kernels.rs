@@ -6,8 +6,8 @@
 //! arithmetic.
 
 use crate::eleven_dimensional_bridge::{
-    verify_exterior_highest_weight_kernel_fixtures, ExteriorHighestWeightKernelFixture,
-    HighestWeightSystemReport,
+    ExteriorHighestWeightKernelFixture, HighestWeightSystemReport,
+    verify_exterior_highest_weight_kernel_fixtures,
 };
 use serde::Serialize;
 
@@ -39,86 +39,133 @@ kernel!(L17_11001_2, "level17_11001_highest_weight_kernel_2.i16le");
 kernel!(L17_11001_3, "level17_11001_highest_weight_kernel_3.i16le");
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct Level16FixtureRef {
+pub(crate) struct SpinorBridgeFixtureRef {
     pub dynkin_label: &'static str,
     pub copy: usize,
     pub artifact: &'static str,
     pub bytes: &'static [u8],
 }
 
-pub(crate) fn level16_fixtures() -> Vec<Level16FixtureRef> {
+pub(crate) fn level16_fixtures() -> Vec<SpinorBridgeFixtureRef> {
     vec![
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "10000",
             copy: 1,
             artifact: "level16_10000_highest_weight_kernel.i16le",
             bytes: L16_10000,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "20000",
             copy: 1,
             artifact: "level16_20000_highest_weight_kernel.i16le",
             bytes: L16_20000,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "00100",
             copy: 1,
             artifact: "level16_00100_highest_weight_kernel_1.i16le",
             bytes: L16_00100_1,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "00100",
             copy: 2,
             artifact: "level16_00100_highest_weight_kernel_2.i16le",
             bytes: L16_00100_2,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "00010",
             copy: 1,
             artifact: "level16_00010_highest_weight_kernel_1.i16le",
             bytes: L16_00010_1,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "00010",
             copy: 2,
             artifact: "level16_00010_highest_weight_kernel_2.i16le",
             bytes: L16_00010_2,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "00002",
             copy: 1,
             artifact: "level16_00002_highest_weight_kernel.i16le",
             bytes: L16_00002,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "10100",
             copy: 1,
             artifact: "level16_10100_highest_weight_kernel.i16le",
             bytes: L16_10100,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "10010",
             copy: 1,
             artifact: "level16_10010_highest_weight_kernel.i16le",
             bytes: L16_10010,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "10002",
             copy: 1,
             artifact: "level16_10002_highest_weight_kernel_1.i16le",
             bytes: L16_10002_1,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "10002",
             copy: 2,
             artifact: "level16_10002_highest_weight_kernel_2.i16le",
             bytes: L16_10002_2,
         },
-        Level16FixtureRef {
+        SpinorBridgeFixtureRef {
             dynkin_label: "10002",
             copy: 3,
             artifact: "level16_10002_highest_weight_kernel_3.i16le",
             bytes: L16_10002_3,
+        },
+    ]
+}
+
+pub(crate) fn level17_fixtures() -> Vec<SpinorBridgeFixtureRef> {
+    vec![
+        SpinorBridgeFixtureRef {
+            dynkin_label: "10001",
+            copy: 1,
+            artifact: "level17_10001_highest_weight_kernel.i16le",
+            bytes: L17_10001,
+        },
+        SpinorBridgeFixtureRef {
+            dynkin_label: "01001",
+            copy: 1,
+            artifact: "level17_01001_highest_weight_kernel_1.i16le",
+            bytes: L17_01001_1,
+        },
+        SpinorBridgeFixtureRef {
+            dynkin_label: "01001",
+            copy: 2,
+            artifact: "level17_01001_highest_weight_kernel_2.i16le",
+            bytes: L17_01001_2,
+        },
+        SpinorBridgeFixtureRef {
+            dynkin_label: "20001",
+            copy: 1,
+            artifact: "level17_20001_highest_weight_kernel.i16le",
+            bytes: L17_20001,
+        },
+        SpinorBridgeFixtureRef {
+            dynkin_label: "11001",
+            copy: 1,
+            artifact: "level17_11001_highest_weight_kernel_1.i16le",
+            bytes: L17_11001_1,
+        },
+        SpinorBridgeFixtureRef {
+            dynkin_label: "11001",
+            copy: 2,
+            artifact: "level17_11001_highest_weight_kernel_2.i16le",
+            bytes: L17_11001_2,
+        },
+        SpinorBridgeFixtureRef {
+            dynkin_label: "11001",
+            copy: 3,
+            artifact: "level17_11001_highest_weight_kernel_3.i16le",
+            bytes: L17_11001_3,
         },
     ]
 }
@@ -379,8 +426,7 @@ pub fn verify() -> DirectSpinorKernelReport {
         leading_source_target_couplings_constructed,
         expected_leading_source_target_couplings,
         derivative_matrix_constructed: false,
-        boundary:
-            "this verifies the nineteen source embeddings, the unique hook target coupling, and three of twelve leading source-to-vector-spinor couplings; the other nine leading couplings, seven hook source couplings, and the 7-by-12 exterior-derivative matrix remain separate",
+        boundary: "this verifies the nineteen source embeddings, the unique hook target coupling, and three of twelve leading source-to-vector-spinor couplings; the other nine leading couplings, seven hook source couplings, and the 7-by-12 exterior-derivative matrix remain separate",
         passed,
     }
 }
@@ -398,13 +444,14 @@ mod tests {
         assert_eq!(report.integer_kernel_vectors_verified, 19);
         assert_eq!(report.nonzero_raising_residual_rows, 0);
         assert!(report.second_leading_source_target_coupling.passed);
-        assert!(report
-            .additional_leading_source_target_couplings
-            .iter()
-            .all(|coupling| coupling.passed));
+        assert!(
+            report
+                .additional_leading_source_target_couplings
+                .iter()
+                .all(|coupling| coupling.passed)
+        );
         assert_eq!(
-            report.additional_leading_source_target_couplings[0]
-                .primitive_domain_coefficients,
+            report.additional_leading_source_target_couplings[0].primitive_domain_coefficients,
             [4, -3, 2, -1, -2, 2, -4, -2, 4, -4, 2, -4, 4, -4]
         );
         assert_eq!(report.leading_source_target_couplings_constructed, 3);

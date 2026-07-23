@@ -298,6 +298,22 @@ pub(crate) fn translation_bilinears() -> Vec<Matrix> {
         .collect()
 }
 
+pub(crate) fn spinor_charge_bilinear() -> Matrix {
+    let gammas = gamma_matrices();
+    let mut charge = charge_conjugation(&gammas);
+    let (phases, _, cartan_mismatches, lowering_actions, lowering_residuals) =
+        chevalley_basis_phases(&gammas);
+    assert_eq!(cartan_mismatches, 0);
+    assert_eq!(lowering_actions, 48);
+    assert_eq!(lowering_residuals, 0);
+    for row in 0..32 {
+        for column in 0..32 {
+            charge[row][column] *= g(phases[row] * phases[column], 0);
+        }
+    }
+    charge
+}
+
 pub(crate) fn translation_bilinear_basis_alignment() -> (usize, usize, usize, usize) {
     let gammas = gamma_matrices();
     let (_, cartan_entries, cartan_mismatches, lowering_actions, lowering_residuals) =

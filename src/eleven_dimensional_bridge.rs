@@ -864,8 +864,7 @@ fn audit_first_momentum_completion(
         && correction_span_rank <= 3
         && augmented_span_rank <= 4;
     FirstMomentumCompletionAudit {
-        normal_form_term:
-            "p D_[13] V in H_alpha^a(V), whose exterior derivative contributes at p D_[14] V",
+        normal_form_term: "p D_[13] V in H_alpha^a(V), whose exterior derivative contributes at p D_[14] V",
         target_dynkin_label: "10001",
         target_dimension: 320,
         vector_times_target_dimension,
@@ -1839,6 +1838,110 @@ pub struct DirectHookTargetCouplingAudit {
     pub raising_residual_terms: usize,
     pub multiplicity_one_coupling_constructed: bool,
     pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DirectHookTargetCouplingTerm {
+    pub outer_spinor_index: usize,
+    pub vector_spinor_weight: Weight,
+    pub vector_spinor_basis_index: usize,
+    pub pbw_word_simple_roots: Vec<u8>,
+    pub primitive_coefficient: i64,
+}
+
+#[derive(Clone)]
+struct TargetStateWithWord {
+    target: TensorVector,
+    pbw_word: Vec<u8>,
+}
+
+fn generate_layer_adapted_vector_spinor_target_states_with_words(
+    spinors: &[Weight; 32],
+) -> BTreeMap<Weight, Vec<TargetStateWithWord>> {
+    let vectors = vector_weights();
+    let vector_highest = vectors
+        .iter()
+        .position(|weight| *weight == [2, 0, 0, 0, 0])
+        .unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_weight = [3, 1, 1, 1, 1];
+    let highest = TargetStateWithWord {
+        target: HashMap::from([(vector_highest * 32 + spinor_highest, Ratio::from_integer(1))]),
+        pbw_word: Vec::new(),
+    };
+    let mut all = BTreeMap::from([(highest_weight, vec![highest.clone()])]);
+    let mut current = BTreeMap::from([(highest_weight, vec![highest])]);
+    while !current.is_empty() {
+        let mut next = BTreeMap::<Weight, Vec<TargetStateWithWord>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let target_descendant =
+                        lower_target_tensor(&state.target, root, &vectors, spinors);
+                    if target_descendant.is_empty() {
+                        continue;
+                    }
+                    let weight = tensor_weight(&target_descendant, &vectors, spinors);
+                    let basis = next.entry(weight).or_default();
+                    let target_basis = basis
+                        .iter()
+                        .map(|entry| VectorSpinorIntertwinerState {
+                            target: entry.target.clone(),
+                            source: Vec::new(),
+                        })
+                        .collect::<Vec<_>>();
+                    if target_span_coefficients(&target_descendant, &target_basis, 11 * 32)
+                        .is_none()
+                    {
+                        let mut pbw_word = state.pbw_word.clone();
+                        pbw_word.push(u8::try_from(root + 1).unwrap());
+                        basis.push(TargetStateWithWord {
+                            target: target_descendant,
+                            pbw_word,
+                        });
+                    }
+                }
+            }
+        }
+        for (weight, states) in &next {
+            all.insert(*weight, states.clone());
+        }
+        current = next;
+    }
+    all
+}
+
+pub fn direct_hook_target_coupling_terms() -> Vec<DirectHookTargetCouplingTerm> {
+    let spinors = spinor_weights();
+    let plans = build_exterior_channel_plans(&spinors);
+    let hook = plans
+        .iter()
+        .find(|plan| plan.dynkin_label == "11000")
+        .unwrap();
+    assert_eq!(hook.highest_weight_kernel_dimension, 1);
+    assert_eq!(hook.raising_residual_terms, 0);
+    let word_states = generate_layer_adapted_vector_spinor_target_states_with_words(&spinors);
+    let reference_states = generate_layer_adapted_vector_spinor_target_states(&spinors);
+    hook.domain
+        .iter()
+        .zip(&hook.primitive_highest_weight_coefficients)
+        .map(|(entry, coefficient)| {
+            let word_state =
+                &word_states[&entry.vector_spinor_weight][entry.vector_spinor_basis_index];
+            assert_eq!(
+                word_state.target,
+                reference_states[&entry.vector_spinor_weight][entry.vector_spinor_basis_index]
+                    .target
+            );
+            DirectHookTargetCouplingTerm {
+                outer_spinor_index: entry.outer_spinor_index,
+                vector_spinor_weight: entry.vector_spinor_weight,
+                vector_spinor_basis_index: entry.vector_spinor_basis_index,
+                pbw_word_simple_roots: word_state.pbw_word.clone(),
+                primitive_coefficient: *coefficient,
+            }
+        })
+        .collect()
 }
 
 fn ratio_nullspace(rows: &[Vec<Ratio<i64>>], columns: usize) -> Vec<Vec<Ratio<i64>>> {
@@ -3909,9 +4012,11 @@ mod tests {
         let weights = spinor_weights();
         let unique: HashSet<_> = weights.into_iter().collect();
         assert_eq!(unique.len(), 32);
-        assert!(weights
-            .iter()
-            .all(|weight| weight.iter().all(|x| x.abs() == 1)));
+        assert!(
+            weights
+                .iter()
+                .all(|weight| weight.iter().all(|x| x.abs() == 1))
+        );
     }
 
     #[test]
@@ -4068,10 +4173,12 @@ mod tests {
         assert_eq!(spinor.total_rows, 1_943_600);
         assert_eq!(spinor.total_nonzero_entries, 7_412_645);
         assert_eq!(spinor.exact_kernel_vectors.len(), 2);
-        assert!(spinor
-            .exact_kernel_vectors
-            .iter()
-            .all(|kernel| kernel.exact_kernel_verified));
+        assert!(
+            spinor
+                .exact_kernel_vectors
+                .iter()
+                .all(|kernel| kernel.exact_kernel_verified)
+        );
         assert_eq!(spinor.exact_kernel_vectors[0].nonzero_coefficients, 374_246);
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
         assert_eq!(spinor.exact_kernel_vectors[0].squared_norm, 426_254_400);
@@ -4100,10 +4207,12 @@ mod tests {
             level13_two_form_spinor.exact_kernel_vectors[1].nonzero_coefficients,
             145_065
         );
-        assert!(level13_two_form_spinor
-            .exact_kernel_vectors
-            .iter()
-            .all(|kernel| kernel.exact_kernel_verified));
+        assert!(
+            level13_two_form_spinor
+                .exact_kernel_vectors
+                .iter()
+                .all(|kernel| kernel.exact_kernel_verified)
+        );
         assert_eq!(report.spinor_descendant_audits.len(), 2);
         for audit in &report.spinor_descendant_audits {
             assert_eq!(audit.target_states_generated, 32);
