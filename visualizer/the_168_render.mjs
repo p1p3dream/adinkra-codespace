@@ -224,6 +224,7 @@ export class Instrument168 {
     this.userPitch = 0;
     this.rotorTime = 0;
     this.moirePhase = 0;
+    this.frozen = false; // when true, idle SO(7) rotation halts; manual drag still works
     this.lastFrame = null;
     this.datasetName = null;
     this.dataset = null;
@@ -561,7 +562,7 @@ export class Instrument168 {
         this.state[key] += (this.target[key] - this.state[key]) * rate;
       }
 
-      this.rotorTime += dt * this.state.rotorSpeed;
+      if (!this.frozen) this.rotorTime += dt * this.state.rotorSpeed;
       this.moirePhase += dt * 2.2;
 
       const angles = idleAngles(this.rotorTime, 1);

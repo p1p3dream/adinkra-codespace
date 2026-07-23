@@ -93,6 +93,13 @@
   #isolate-controls button:hover { border-color: var(--accent); color: #fff; }
   #isolate-controls button.active { border-color: var(--accent); color: #fff; background: rgba(154, 184, 232, 0.14); }
   #isolate-controls button[hidden] { display: none; }
+  #iso-freeze {
+    margin-top: 8px; width: 100%;
+    background: none; border: 1px solid var(--line); border-radius: 4px;
+    color: var(--ink); font: inherit; font-size: 11.5px; padding: 4px 10px; cursor: pointer;
+  }
+  #iso-freeze:hover { border-color: var(--accent); color: #fff; }
+  #iso-freeze.active { border-color: var(--accent); color: #fff; background: rgba(154, 184, 232, 0.14); }
   #isolate-hint { margin-top: 8px; font-size: 10.5px; line-height: 1.5; color: var(--ink-faint); }
 
   #inspector {
@@ -196,7 +203,8 @@
     <button id="iso-168">The 168</button>
     <button id="iso-reps">Coset reps</button>
   </div>
-  <div id="isolate-hint">Hide the fog and click only the meaningful nodes.</div>
+  <button id="iso-freeze">Freeze rotation</button>
+  <div id="isolate-hint">Hide the fog and click only the meaningful nodes. Space toggles rotation.</div>
 </div>
 
 <div id="inspector" class="hud"></div>
@@ -449,26 +457,48 @@ function resetIsolate() {
   refreshIsolateButtons();
   instrument.setFilter(null);
   setActiveIsoButton("all");
+  setFrozen(false);
 }
+
+// Motion freeze. Rotate to understand the 7D shape, freeze to click it.
+// Isolating a subset auto-freezes so the kept nodes hold still; All resumes.
+const freezeBtn = $("iso-freeze");
+function setFrozen(v) {
+  instrument.frozen = v;
+  freezeBtn.classList.toggle("active", v);
+  freezeBtn.textContent = v ? "Resume rotation" : "Freeze rotation";
+}
+freezeBtn.addEventListener("click", () => setFrozen(!instrument.frozen));
+window.addEventListener("keydown", (e) => {
+  // Space toggles rotation, unless a text field or button already owns the key.
+  if (e.code === "Space" && !/^(INPUT|TEXTAREA|BUTTON)$/.test(e.target.tagName)) {
+    e.preventDefault();
+    setFrozen(!instrument.frozen);
+  }
+});
 
 isoButtons.all.addEventListener("click", () => {
   instrument.setFilter(null);
   setActiveIsoButton("all");
+  setFrozen(false);
 });
 isoButtons.octets.addEventListener("click", () => {
   if (!isolateSets || !isolateSets.octets) return;
   instrument.setFilter(isolateSets.octets);
   setActiveIsoButton("octets");
+  setFrozen(true);
 });
 isoButtons.the168.addEventListener("click", () => {
   if (!isolateSets || !isolateSets.the168) return;
   instrument.setFilter(isolateSets.the168);
   setActiveIsoButton("the168");
+  setFrozen(true);
 });
 isoButtons.reps.addEventListener("click", () => {
   if (!isolateSets) return;
   instrument.setFilter(isolateSets.reps);
   setActiveIsoButton("reps");
+  setFrozen(true);
 });
 
 // Vertex inspection and pair measurement.
