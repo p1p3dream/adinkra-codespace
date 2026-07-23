@@ -31,6 +31,18 @@ CASES = {
     (15, "10001"): ((3, 1, 1, 1, 1), 1),
     (13, "00001"): ((1, 1, 1, 1, 1), 1),
     (13, "01001"): ((3, 3, 1, 1, 1), 2),
+    (16, "10000"): ((2, 0, 0, 0, 0), 1),
+    (16, "20000"): ((4, 0, 0, 0, 0), 1),
+    (16, "00100"): ((2, 2, 2, 0, 0), 2),
+    (16, "00010"): ((2, 2, 2, 2, 0), 2),
+    (16, "00002"): ((2, 2, 2, 2, 2), 1),
+    (16, "10100"): ((4, 2, 2, 0, 0), 1),
+    (16, "10010"): ((4, 2, 2, 2, 0), 1),
+    (16, "10002"): ((4, 2, 2, 2, 2), 3),
+    (17, "10001"): ((3, 1, 1, 1, 1), 1),
+    (17, "01001"): ((3, 3, 1, 1, 1), 2),
+    (17, "20001"): ((5, 1, 1, 1, 1), 1),
+    (17, "11001"): ((5, 3, 1, 1, 1), 3),
 }
 
 
@@ -172,9 +184,78 @@ def discover_integer_scale(vector, maximum=32767, tolerance=2e-5):
     raise RuntimeError(f"no integral scale through {maximum}; best candidate {detail}")
 
 
+def integer_candidate(vector, maximum=32767, tolerance=2e-5):
+    normalized = vector / np.max(np.abs(vector))
+    scale = discover_integer_scale(normalized, maximum, tolerance)
+    approximation = normalized * scale
+    coefficients = np.rint(approximation).astype(np.int64)
+    if np.max(np.abs(approximation - coefficients)) > tolerance:
+        raise RuntimeError("integer candidate exceeded the rounding tolerance")
+    coefficient_gcd = 0
+    for coefficient in coefficients:
+        coefficient_gcd = math.gcd(coefficient_gcd, abs(int(coefficient)))
+    return coefficients // coefficient_gcd
+
+
+def extract_rank_three_clustered_basis(eigenvectors):
+    """Recover the level-17 (11001) lattice from its numerical nullspace."""
+    basis = eigenvectors[:, :3]
+    _, _, pivots = la.qr(basis.T, pivoting=True, mode="economic")
+    normalized = basis @ np.linalg.inv(basis[pivots[:3], :])
+
+    first = None
+    for column in normalized.T:
+        try:
+            first = integer_candidate(column)
+            break
+        except RuntimeError:
+            continue
+    if first is None:
+        raise RuntimeError("no first integer direction in the rank-three kernel")
+
+    first_coordinates = basis.T @ first
+    complement_coordinates = la.null_space(first_coordinates.reshape(1, 3))
+    complement = basis @ complement_coordinates
+    angles = np.mod(np.arctan2(complement[:, 1], complement[:, 0]), np.pi)
+    active = np.linalg.norm(complement, axis=1) > 1e-10
+    rounded = np.round(angles[active], 6)
+    values, counts = np.unique(rounded, return_counts=True)
+
+    for cluster in np.argsort(counts)[::-1][:32]:
+        selected = active & (np.abs(angles - values[cluster]) < 2e-6)
+        rows = complement[selected].copy()
+        reference = rows[0]
+        rows[np.sum(rows * reference, axis=1) < 0] *= -1
+        row = rows.mean(axis=0)
+        for direction in (np.asarray([-row[1], row[0]]), row):
+            try:
+                second = integer_candidate(complement @ direction)
+            except RuntimeError:
+                continue
+            coordinate_constraints = np.vstack(
+                (first_coordinates, basis.T @ second)
+            )
+            remaining_coordinates = la.null_space(coordinate_constraints)
+            if remaining_coordinates.shape != (3, 1):
+                continue
+            try:
+                third = integer_candidate(
+                    basis @ remaining_coordinates[:, 0]
+                )
+            except RuntimeError:
+                continue
+            integers = np.column_stack((first, second, third))
+            if np.linalg.matrix_rank(basis.T @ integers) == 3:
+                return integers
+    raise RuntimeError("the rank-three clustered lattice recovery failed")
+
+
 def extract_integer_kernels(degree, label, matrix, eigenvectors, output_directory):
     expected_nullity = CASES[(degree, label)][1]
-    if expected_nullity == 1:
+    if (degree, label) == (17, "11001"):
+        normalized = extract_rank_three_clustered_basis(eigenvectors).astype(np.float64)
+        scales = [1] * expected_nullity
+    elif expected_nullity == 1:
         normalized = eigenvectors[:, :1] / np.max(np.abs(eigenvectors[:, 0]))
         scales = [discover_integer_scale(normalized[:, 0])]
     elif (degree, label) == (13, "01001"):
@@ -252,8 +333,12 @@ def extract_integer_kernels(degree, label, matrix, eigenvectors, output_director
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--degree", type=int, choices=[13, 15], default=15)
-    parser.add_argument("--label", choices=["00001", "01001", "10001"], required=True)
+    parser.add_argument("--degree", type=int, choices=[13, 15, 16, 17], default=15)
+    parser.add_argument(
+        "--label",
+        choices=sorted({label for _, label in CASES}),
+        required=True,
+    )
     parser.add_argument("--iterations", type=int, default=600)
     parser.add_argument("--tolerance", type=float, default=1e-8)
     parser.add_argument("--seed", type=int, default=1)

@@ -1,0 +1,2915 @@
+{
+  "schema_version": "adynkra-11d-spinor-bridge-kernels-v1",
+  "role": "exact Rust verification of the decomposed direct-spinor source embeddings",
+  "leading_systems": [
+    {
+      "dynkin_label": "10000",
+      "representation_dimension": 11,
+      "highest_weight_doubled_coordinates": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 657520,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            4,
+            -2,
+            0,
+            0,
+            0
+          ],
+          "rows": 283888,
+          "nonzero_entries": 1105520,
+          "row_degree_histogram": {
+            "3": 76400,
+            "4": 161120,
+            "5": 46368
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            2,
+            2,
+            -2,
+            0,
+            0
+          ],
+          "rows": 431724,
+          "nonzero_entries": 1393288,
+          "row_degree_histogram": {
+            "2": 58948,
+            "3": 224224,
+            "4": 140040,
+            "5": 8512
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            2,
+            0,
+            2,
+            -2,
+            0
+          ],
+          "rows": 431724,
+          "nonzero_entries": 1393288,
+          "row_degree_histogram": {
+            "2": 58948,
+            "3": 224224,
+            "4": 140040,
+            "5": 8512
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            2,
+            0,
+            0,
+            2,
+            -2
+          ],
+          "rows": 431724,
+          "nonzero_entries": 1393288,
+          "row_degree_histogram": {
+            "2": 58948,
+            "3": 224224,
+            "4": 140040,
+            "5": 8512
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            2,
+            0,
+            0,
+            0,
+            2
+          ],
+          "rows": 533584,
+          "nonzero_entries": 2988624,
+          "row_degree_histogram": {
+            "2": 568,
+            "3": 10624,
+            "4": 70320,
+            "5": 162176,
+            "6": 189840,
+            "7": 76032,
+            "8": 24024
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 2112644,
+      "total_nonzero_entries": 8274008,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_10000_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 657520,
+          "nonzero_coefficients": 594896,
+          "minimum_coefficient": -1320,
+          "maximum_coefficient": 1320,
+          "coefficient_gcd": 1,
+          "squared_norm": 560102400,
+          "raising_rows_checked": 2112644,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 594896,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                594896,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "20000",
+      "representation_dimension": 65,
+      "highest_weight_doubled_coordinates": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 353120,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            6,
+            -2,
+            0,
+            0,
+            0
+          ],
+          "rows": 97664,
+          "nonzero_entries": 448128,
+          "row_degree_histogram": {
+            "4": 44448,
+            "5": 48960,
+            "6": 4256
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            4,
+            2,
+            -2,
+            0,
+            0
+          ],
+          "rows": 227528,
+          "nonzero_entries": 713120,
+          "row_degree_histogram": {
+            "2": 37448,
+            "3": 125008,
+            "4": 62160,
+            "5": 2912
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            4,
+            0,
+            2,
+            -2,
+            0
+          ],
+          "rows": 227528,
+          "nonzero_entries": 713120,
+          "row_degree_histogram": {
+            "2": 37448,
+            "3": 125008,
+            "4": 62160,
+            "5": 2912
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            4,
+            0,
+            0,
+            2,
+            -2
+          ],
+          "rows": 227528,
+          "nonzero_entries": 713120,
+          "row_degree_histogram": {
+            "2": 37448,
+            "3": 125008,
+            "4": 62160,
+            "5": 2912
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            4,
+            0,
+            0,
+            0,
+            2
+          ],
+          "rows": 283888,
+          "nonzero_entries": 1526448,
+          "row_degree_histogram": {
+            "3": 9520,
+            "4": 40320,
+            "5": 108864,
+            "6": 84000,
+            "7": 41184
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1064136,
+      "total_nonzero_entries": 4113936,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_20000_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 353120,
+          "nonzero_coefficients": 293816,
+          "minimum_coefficient": -1320,
+          "maximum_coefficient": 1320,
+          "coefficient_gcd": 1,
+          "squared_norm": 1432569600,
+          "raising_rows_checked": 1064136,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 2,
+              "nonzero_terms": 461792,
+              "second_lowering_nonzero_terms": 293816,
+              "lowering_power_nonzero_terms": [
+                461792,
+                293816,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "00100",
+      "representation_dimension": 165,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 431724,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            4,
+            0,
+            2,
+            0,
+            0
+          ],
+          "rows": 283888,
+          "nonzero_entries": 918448,
+          "row_degree_histogram": {
+            "2": 38104,
+            "3": 146720,
+            "4": 93240,
+            "5": 5824
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            2,
+            4,
+            0,
+            0,
+            0
+          ],
+          "rows": 283888,
+          "nonzero_entries": 918448,
+          "row_degree_histogram": {
+            "2": 38104,
+            "3": 146720,
+            "4": 93240,
+            "5": 5824
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            2,
+            2,
+            4,
+            -2,
+            0
+          ],
+          "rows": 181748,
+          "nonzero_entries": 697108,
+          "row_degree_histogram": {
+            "3": 54496,
+            "4": 102640,
+            "5": 24612
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            2,
+            2,
+            2,
+            2,
+            -2
+          ],
+          "rows": 280014,
+          "nonzero_entries": 886102,
+          "row_degree_histogram": {
+            "2": 43365,
+            "3": 151144,
+            "4": 81585,
+            "5": 3920
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            2,
+            2,
+            2,
+            0,
+            2
+          ],
+          "rows": 348240,
+          "nonzero_entries": 1899180,
+          "row_degree_histogram": {
+            "2": 438,
+            "3": 8592,
+            "4": 51660,
+            "5": 118944,
+            "6": 115080,
+            "7": 47520,
+            "8": 6006
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1377778,
+      "total_nonzero_entries": 5319286,
+      "published_multiplicity": 2,
+      "expected_kernel_dimension": 2,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_00100_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 431724,
+          "nonzero_coefficients": 410860,
+          "minimum_coefficient": -4620,
+          "maximum_coefficient": 4620,
+          "coefficient_gcd": 1,
+          "squared_norm": 1307015424,
+          "raising_rows_checked": 1377778,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 410860,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                410860,
+                0
+              ],
+              "maximum_absolute_coefficient": 4620,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level16_00100_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 431724,
+          "nonzero_coefficients": 6864,
+          "minimum_coefficient": -1,
+          "maximum_coefficient": 1,
+          "coefficient_gcd": 1,
+          "squared_norm": 6864,
+          "raising_rows_checked": 1377778,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 6864,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                6864,
+                0
+              ],
+              "maximum_absolute_coefficient": 1,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "00010",
+      "representation_dimension": 330,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 348240,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            4,
+            0,
+            2,
+            2,
+            0
+          ],
+          "rows": 227528,
+          "nonzero_entries": 728440,
+          "row_degree_histogram": {
+            "2": 32664,
+            "3": 120264,
+            "4": 70680,
+            "5": 3920
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            2,
+            4,
+            0,
+            2,
+            0
+          ],
+          "rows": 227528,
+          "nonzero_entries": 728440,
+          "row_degree_histogram": {
+            "2": 32664,
+            "3": 120264,
+            "4": 70680,
+            "5": 3920
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            2,
+            2,
+            4,
+            0,
+            0
+          ],
+          "rows": 227528,
+          "nonzero_entries": 728440,
+          "row_degree_histogram": {
+            "2": 32664,
+            "3": 120264,
+            "4": 70680,
+            "5": 3920
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            2,
+            2,
+            2,
+            4,
+            -2
+          ],
+          "rows": 144678,
+          "nonzero_entries": 550678,
+          "row_degree_histogram": {
+            "3": 45716,
+            "4": 81280,
+            "5": 17682
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "rows": 280014,
+          "nonzero_entries": 1506688,
+          "row_degree_histogram": {
+            "2": 402,
+            "3": 7504,
+            "4": 45105,
+            "5": 98336,
+            "6": 92400,
+            "7": 33264,
+            "8": 3003
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1107276,
+      "total_nonzero_entries": 4242686,
+      "published_multiplicity": 2,
+      "expected_kernel_dimension": 2,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_00010_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 348240,
+          "nonzero_coefficients": 276456,
+          "minimum_coefficient": -660,
+          "maximum_coefficient": 660,
+          "coefficient_gcd": 1,
+          "squared_norm": 248325792,
+          "raising_rows_checked": 1107276,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 276456,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                276456,
+                0
+              ],
+              "maximum_absolute_coefficient": 660,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level16_00010_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 348240,
+          "nonzero_coefficients": 3432,
+          "minimum_coefficient": -1,
+          "maximum_coefficient": 1,
+          "coefficient_gcd": 1,
+          "squared_norm": 3432,
+          "raising_rows_checked": 1107276,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 3432,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                3432,
+                0
+              ],
+              "maximum_absolute_coefficient": 1,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "00002",
+      "representation_dimension": 462,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 280014,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            4,
+            0,
+            2,
+            2,
+            2
+          ],
+          "rows": 181748,
+          "nonzero_entries": 575756,
+          "row_degree_histogram": {
+            "2": 27890,
+            "3": 98032,
+            "4": 53250,
+            "5": 2576
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            2,
+            4,
+            0,
+            2,
+            2
+          ],
+          "rows": 181748,
+          "nonzero_entries": 575756,
+          "row_degree_histogram": {
+            "2": 27890,
+            "3": 98032,
+            "4": 53250,
+            "5": 2576
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            2,
+            2,
+            4,
+            0,
+            2
+          ],
+          "rows": 181748,
+          "nonzero_entries": 575756,
+          "row_degree_histogram": {
+            "2": 27890,
+            "3": 98032,
+            "4": 53250,
+            "5": 2576
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            2,
+            2,
+            2,
+            4,
+            0
+          ],
+          "rows": 181748,
+          "nonzero_entries": 575756,
+          "row_degree_histogram": {
+            "2": 27890,
+            "3": 98032,
+            "4": 53250,
+            "5": 2576
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            2,
+            2,
+            2,
+            2,
+            4
+          ],
+          "rows": 144678,
+          "nonzero_entries": 946660,
+          "row_degree_histogram": {
+            "4": 1876,
+            "5": 18042,
+            "6": 49168,
+            "7": 52800,
+            "8": 20790,
+            "9": 2002
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 871670,
+      "total_nonzero_entries": 3249684,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_00002_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 280014,
+          "nonzero_coefficients": 159501,
+          "minimum_coefficient": -660,
+          "maximum_coefficient": 3960,
+          "coefficient_gcd": 1,
+          "squared_norm": 210038400,
+          "raising_rows_checked": 871670,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 2,
+              "nonzero_terms": 277368,
+              "second_lowering_nonzero_terms": 159501,
+              "lowering_power_nonzero_terms": [
+                277368,
+                159501,
+                0
+              ],
+              "maximum_absolute_coefficient": 990,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "10100",
+      "representation_dimension": 1430,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        0,
+        0
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 227528,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            6,
+            0,
+            2,
+            0,
+            0
+          ],
+          "rows": 97664,
+          "nonzero_entries": 378968,
+          "row_degree_histogram": {
+            "3": 26976,
+            "4": 55400,
+            "5": 15288
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            4,
+            4,
+            0,
+            0,
+            0
+          ],
+          "rows": 146680,
+          "nonzero_entries": 459640,
+          "row_degree_histogram": {
+            "2": 24244,
+            "3": 80384,
+            "4": 40260,
+            "5": 1792
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            4,
+            2,
+            4,
+            -2,
+            0
+          ],
+          "rows": 91936,
+          "nonzero_entries": 344592,
+          "row_degree_histogram": {
+            "3": 32224,
+            "4": 50640,
+            "5": 9072
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            4,
+            2,
+            2,
+            2,
+            -2
+          ],
+          "rows": 144678,
+          "nonzero_entries": 444240,
+          "row_degree_histogram": {
+            "2": 26984,
+            "3": 81624,
+            "4": 34950,
+            "5": 1120
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            4,
+            2,
+            2,
+            0,
+            2
+          ],
+          "rows": 181748,
+          "nonzero_entries": 951168,
+          "row_degree_histogram": {
+            "2": 320,
+            "3": 5936,
+            "4": 33540,
+            "5": 68992,
+            "6": 57120,
+            "7": 15840
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 662706,
+      "total_nonzero_entries": 2578608,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_10100_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 227528,
+          "nonzero_coefficients": 218616,
+          "minimum_coefficient": -1540,
+          "maximum_coefficient": 1540,
+          "coefficient_gcd": 1,
+          "squared_norm": 678585600,
+          "raising_rows_checked": 662706,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 218616,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                218616,
+                0
+              ],
+              "maximum_absolute_coefficient": 1540,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 218616,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                218616,
+                0
+              ],
+              "maximum_absolute_coefficient": 1540,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "10010",
+      "representation_dimension": 3003,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        2,
+        0
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 181748,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            6,
+            0,
+            2,
+            2,
+            0
+          ],
+          "rows": 76888,
+          "nonzero_entries": 295708,
+          "row_degree_histogram": {
+            "3": 22596,
+            "4": 43540,
+            "5": 10752
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            4,
+            4,
+            0,
+            2,
+            0
+          ],
+          "rows": 116328,
+          "nonzero_entries": 360632,
+          "row_degree_histogram": {
+            "2": 20412,
+            "3": 64976,
+            "4": 29820,
+            "5": 1120
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            4,
+            2,
+            4,
+            0,
+            0
+          ],
+          "rows": 116328,
+          "nonzero_entries": 360632,
+          "row_degree_histogram": {
+            "2": 20412,
+            "3": 64976,
+            "4": 29820,
+            "5": 1120
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            4,
+            2,
+            2,
+            4,
+            -2
+          ],
+          "rows": 72380,
+          "nonzero_entries": 269170,
+          "row_degree_histogram": {
+            "3": 26650,
+            "4": 39430,
+            "5": 6300
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            4,
+            2,
+            2,
+            2,
+            2
+          ],
+          "rows": 144678,
+          "nonzero_entries": 746824,
+          "row_degree_histogram": {
+            "2": 288,
+            "3": 5200,
+            "4": 28830,
+            "5": 56336,
+            "6": 44520,
+            "7": 9504
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 526602,
+      "total_nonzero_entries": 2032966,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_10010_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 181748,
+          "nonzero_coefficients": 155196,
+          "minimum_coefficient": -440,
+          "maximum_coefficient": 440,
+          "coefficient_gcd": 1,
+          "squared_norm": 134640000,
+          "raising_rows_checked": 526602,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 155196,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                155196,
+                0
+              ],
+              "maximum_absolute_coefficient": 440,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 155196,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                155196,
+                0
+              ],
+              "maximum_absolute_coefficient": 440,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "10002",
+      "representation_dimension": 4290,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "exterior_degree": 16,
+      "source_weight_space_columns": 144678,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            6,
+            0,
+            2,
+            2,
+            2
+          ],
+          "rows": 60298,
+          "nonzero_entries": 229846,
+          "row_degree_histogram": {
+            "3": 18822,
+            "4": 34000,
+            "5": 7476
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            4,
+            4,
+            0,
+            2,
+            2
+          ],
+          "rows": 91936,
+          "nonzero_entries": 281940,
+          "row_degree_histogram": {
+            "2": 17202,
+            "3": 52072,
+            "4": 21990,
+            "5": 672
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            4,
+            2,
+            4,
+            0,
+            2
+          ],
+          "rows": 91936,
+          "nonzero_entries": 281940,
+          "row_degree_histogram": {
+            "2": 17202,
+            "3": 52072,
+            "4": 21990,
+            "5": 672
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            4,
+            2,
+            2,
+            4,
+            0
+          ],
+          "rows": 91936,
+          "nonzero_entries": 281940,
+          "row_degree_histogram": {
+            "2": 17202,
+            "3": 52072,
+            "4": 21990,
+            "5": 672
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            4,
+            2,
+            2,
+            2,
+            4
+          ],
+          "rows": 72380,
+          "nonzero_entries": 457468,
+          "row_degree_histogram": {
+            "4": 1300,
+            "5": 11532,
+            "6": 28168,
+            "7": 25440,
+            "8": 5940
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 408486,
+      "total_nonzero_entries": 1533134,
+      "published_multiplicity": 3,
+      "expected_kernel_dimension": 3,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level16_10002_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 144678,
+          "nonzero_coefficients": 140932,
+          "minimum_coefficient": -5280,
+          "maximum_coefficient": 5280,
+          "coefficient_gcd": 1,
+          "squared_norm": 1908522000,
+          "raising_rows_checked": 408486,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 140932,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                140932,
+                0
+              ],
+              "maximum_absolute_coefficient": 5280,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 2,
+              "nonzero_terms": 178880,
+              "second_lowering_nonzero_terms": 140932,
+              "lowering_power_nonzero_terms": [
+                178880,
+                140932,
+                0
+              ],
+              "maximum_absolute_coefficient": 2240,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level16_10002_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 144678,
+          "nonzero_coefficients": 92824,
+          "minimum_coefficient": -1320,
+          "maximum_coefficient": 1320,
+          "coefficient_gcd": 1,
+          "squared_norm": 113097600,
+          "raising_rows_checked": 408486,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 92824,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                92824,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 2,
+              "nonzero_terms": 155688,
+              "second_lowering_nonzero_terms": 92824,
+              "lowering_power_nonzero_terms": [
+                155688,
+                92824,
+                0
+              ],
+              "maximum_absolute_coefficient": 550,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level16_10002_highest_weight_kernel_3.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 144678,
+          "nonzero_coefficients": 6468,
+          "minimum_coefficient": -3,
+          "maximum_coefficient": 3,
+          "coefficient_gcd": 1,
+          "squared_norm": 13860,
+          "raising_rows_checked": 408486,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 6468,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                6468,
+                0
+              ],
+              "maximum_absolute_coefficient": 3,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 2,
+              "nonzero_terms": 11088,
+              "second_lowering_nonzero_terms": 6468,
+              "lowering_power_nonzero_terms": [
+                11088,
+                6468,
+                0
+              ],
+              "maximum_absolute_coefficient": 2,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "hook_systems": [
+    {
+      "dynkin_label": "10001",
+      "representation_dimension": 320,
+      "highest_weight_doubled_coordinates": [
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 17,
+      "source_weight_space_columns": 388720,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            5,
+            -1,
+            1,
+            1,
+            1
+          ],
+          "rows": 166158,
+          "nonzero_entries": 643104,
+          "row_degree_histogram": {
+            "3": 46728,
+            "4": 94230,
+            "5": 25200
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            3,
+            3,
+            -1,
+            1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            3,
+            1,
+            3,
+            -1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            3,
+            1,
+            1,
+            3,
+            -1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            3,
+            1,
+            1,
+            1,
+            3
+          ],
+          "rows": 252162,
+          "nonzero_entries": 1513601,
+          "row_degree_histogram": {
+            "3": 1093,
+            "4": 15080,
+            "5": 60774,
+            "6": 97104,
+            "7": 61380,
+            "8": 16731
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1174806,
+      "total_nonzero_entries": 4551287,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level17_10001_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 388720,
+          "nonzero_coefficients": 260267,
+          "minimum_coefficient": -1320,
+          "maximum_coefficient": 1320,
+          "coefficient_gcd": 1,
+          "squared_norm": 245044800,
+          "raising_rows_checked": 1174806,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 260267,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                260267,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 260267,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                260267,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "01001",
+      "representation_dimension": 1408,
+      "highest_weight_doubled_coordinates": [
+        3,
+        3,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 17,
+      "source_weight_space_columns": 252162,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            5,
+            1,
+            1,
+            1,
+            1
+          ],
+          "rows": 166158,
+          "nonzero_entries": 539384,
+          "row_degree_histogram": {
+            "2": 21818,
+            "3": 85196,
+            "4": 55560,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            3,
+            5,
+            -1,
+            1,
+            1
+          ],
+          "rows": 104875,
+          "nonzero_entries": 399395,
+          "row_degree_histogram": {
+            "3": 33020,
+            "4": 58940,
+            "5": 12915
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            3,
+            3,
+            3,
+            -1,
+            1
+          ],
+          "rows": 161432,
+          "nonzero_entries": 500672,
+          "row_degree_histogram": {
+            "2": 28288,
+            "3": 89992,
+            "4": 41640,
+            "5": 1512
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            3,
+            3,
+            1,
+            3,
+            -1
+          ],
+          "rows": 161432,
+          "nonzero_entries": 500672,
+          "row_degree_histogram": {
+            "2": 28288,
+            "3": 89992,
+            "4": 41640,
+            "5": 1512
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            3,
+            3,
+            1,
+            1,
+            3
+          ],
+          "rows": 161432,
+          "nonzero_entries": 945374,
+          "row_degree_histogram": {
+            "3": 870,
+            "4": 11510,
+            "5": 44184,
+            "6": 63420,
+            "7": 36300,
+            "8": 5148
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 755329,
+      "total_nonzero_entries": 2885497,
+      "published_multiplicity": 2,
+      "expected_kernel_dimension": 2,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level17_01001_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 252162,
+          "nonzero_coefficients": 244145,
+          "minimum_coefficient": -9900,
+          "maximum_coefficient": 9900,
+          "coefficient_gcd": 1,
+          "squared_norm": 4594782192,
+          "raising_rows_checked": 755329,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 244145,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                244145,
+                0
+              ],
+              "maximum_absolute_coefficient": 9900,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 244145,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                244145,
+                0
+              ],
+              "maximum_absolute_coefficient": 9900,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level17_01001_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 252162,
+          "nonzero_coefficients": 6864,
+          "minimum_coefficient": -2,
+          "maximum_coefficient": 2,
+          "coefficient_gcd": 1,
+          "squared_norm": 12012,
+          "raising_rows_checked": 755329,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 6864,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                6864,
+                0
+              ],
+              "maximum_absolute_coefficient": 2,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 6864,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                6864,
+                0
+              ],
+              "maximum_absolute_coefficient": 2,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "20001",
+      "representation_dimension": 1760,
+      "highest_weight_doubled_coordinates": [
+        5,
+        1,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 17,
+      "source_weight_space_columns": 166158,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            7,
+            -1,
+            1,
+            1,
+            1
+          ],
+          "rows": 45315,
+          "nonzero_entries": 207068,
+          "row_degree_histogram": {
+            "4": 21299,
+            "5": 22224,
+            "6": 1792
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            5,
+            3,
+            -1,
+            1,
+            1
+          ],
+          "rows": 104875,
+          "nonzero_entries": 318648,
+          "row_degree_histogram": {
+            "2": 20878,
+            "3": 59824,
+            "4": 23445,
+            "5": 728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            5,
+            1,
+            3,
+            -1,
+            1
+          ],
+          "rows": 104875,
+          "nonzero_entries": 318648,
+          "row_degree_histogram": {
+            "2": 20878,
+            "3": 59824,
+            "4": 23445,
+            "5": 728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            5,
+            1,
+            1,
+            3,
+            -1
+          ],
+          "rows": 104875,
+          "nonzero_entries": 318648,
+          "row_degree_histogram": {
+            "2": 20878,
+            "3": 59824,
+            "4": 23445,
+            "5": 728
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            5,
+            1,
+            1,
+            1,
+            3
+          ],
+          "rows": 104875,
+          "nonzero_entries": 598061,
+          "row_degree_histogram": {
+            "3": 719,
+            "4": 8780,
+            "5": 32592,
+            "6": 41664,
+            "7": 21120
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 464815,
+      "total_nonzero_entries": 1761073,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level17_20001_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 166158,
+          "nonzero_coefficients": 110181,
+          "minimum_coefficient": -1320,
+          "maximum_coefficient": 1320,
+          "coefficient_gcd": 1,
+          "squared_norm": 537213600,
+          "raising_rows_checked": 464815,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 2,
+              "nonzero_terms": 173172,
+              "second_lowering_nonzero_terms": 110181,
+              "lowering_power_nonzero_terms": [
+                173172,
+                110181,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 110181,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                110181,
+                0
+              ],
+              "maximum_absolute_coefficient": 1320,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "11001",
+      "representation_dimension": 10240,
+      "highest_weight_doubled_coordinates": [
+        5,
+        3,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 17,
+      "source_weight_space_columns": 104875,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            7,
+            1,
+            1,
+            1,
+            1
+          ],
+          "rows": 45315,
+          "nonzero_entries": 176565,
+          "row_degree_histogram": {
+            "3": 12150,
+            "4": 25710,
+            "5": 7455
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            5,
+            5,
+            -1,
+            1,
+            1
+          ],
+          "rows": 41036,
+          "nonzero_entries": 151209,
+          "row_degree_histogram": {
+            "3": 16043,
+            "4": 21885,
+            "5": 3108
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            5,
+            3,
+            3,
+            -1,
+            1
+          ],
+          "rows": 65220,
+          "nonzero_entries": 193976,
+          "row_degree_histogram": {
+            "2": 14612,
+            "3": 37904,
+            "4": 12480,
+            "5": 224
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            5,
+            3,
+            1,
+            3,
+            -1
+          ],
+          "rows": 65220,
+          "nonzero_entries": 193976,
+          "row_degree_histogram": {
+            "2": 14612,
+            "3": 37904,
+            "4": 12480,
+            "5": 224
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            5,
+            3,
+            1,
+            1,
+            3
+          ],
+          "rows": 65220,
+          "nonzero_entries": 362873,
+          "row_degree_histogram": {
+            "3": 547,
+            "4": 6665,
+            "5": 22386,
+            "6": 26712,
+            "7": 8910
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 282011,
+      "total_nonzero_entries": 1078599,
+      "published_multiplicity": 3,
+      "expected_kernel_dimension": 3,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "level17_11001_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 104875,
+          "nonzero_coefficients": 12474,
+          "minimum_coefficient": -20,
+          "maximum_coefficient": 20,
+          "coefficient_gcd": 1,
+          "squared_norm": 533610,
+          "raising_rows_checked": 282011,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 12474,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                12474,
+                0
+              ],
+              "maximum_absolute_coefficient": 20,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 12474,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                12474,
+                0
+              ],
+              "maximum_absolute_coefficient": 20,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 12474,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                12474,
+                0
+              ],
+              "maximum_absolute_coefficient": 20,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level17_11001_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 104875,
+          "nonzero_coefficients": 104202,
+          "minimum_coefficient": -15960,
+          "maximum_coefficient": 15960,
+          "coefficient_gcd": 1,
+          "squared_norm": 19957014000,
+          "raising_rows_checked": 282011,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 104202,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                104202,
+                0
+              ],
+              "maximum_absolute_coefficient": 15960,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 104202,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                104202,
+                0
+              ],
+              "maximum_absolute_coefficient": 15960,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 104202,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                104202,
+                0
+              ],
+              "maximum_absolute_coefficient": 15960,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "level17_11001_highest_weight_kernel_3.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 104875,
+          "nonzero_coefficients": 104400,
+          "minimum_coefficient": -28740,
+          "maximum_coefficient": 28740,
+          "coefficient_gcd": 1,
+          "squared_norm": 55594539000,
+          "raising_rows_checked": 282011,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 104400,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                104400,
+                0
+              ],
+              "maximum_absolute_coefficient": 28740,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 104400,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                104400,
+                0
+              ],
+              "maximum_absolute_coefficient": 28740,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "expected_lowering_string_length": 0,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                0
+              ],
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "expected_lowering_string_length": 1,
+              "nonzero_terms": 104400,
+              "second_lowering_nonzero_terms": 0,
+              "lowering_power_nonzero_terms": [
+                104400,
+                0
+              ],
+              "maximum_absolute_coefficient": 28740,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "systems_verified": 12,
+  "expected_systems": 12,
+  "integer_kernel_vectors_verified": 19,
+  "expected_integer_kernel_vectors": 19,
+  "raising_rows_checked": 15429636,
+  "nonzero_raising_residual_rows": 0,
+  "every_first_lowering_string_verified": true,
+  "derivative_matrix_constructed": false,
+  "boundary": "this verifies the nineteen source embeddings; the Clebsch-Gordan coupling to the target vector-spinor and the 12-by-7 exterior-derivative matrix remain separate",
+  "passed": true
+}

@@ -72,6 +72,12 @@ pub struct ExteriorHighestWeightSystemShape {
     pub expected_kernel_dimension: usize,
 }
 
+pub struct ExteriorHighestWeightKernelFixture {
+    pub exterior_degree: u8,
+    pub dynkin_label: &'static str,
+    pub kernel_artifacts: &'static [(&'static str, &'static [u8])],
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct ExactKernelVectorReport {
     pub artifact: &'static str,
@@ -93,8 +99,10 @@ pub struct ExactKernelVectorReport {
 pub struct FirstLoweringReport {
     pub simple_root: usize,
     pub expected_nonzero_from_dynkin_label: bool,
+    pub expected_lowering_string_length: usize,
     pub nonzero_terms: usize,
     pub second_lowering_nonzero_terms: usize,
+    pub lowering_power_nonzero_terms: Vec<usize>,
     pub maximum_absolute_coefficient: i64,
     pub matches_highest_weight_string: bool,
 }
@@ -2998,23 +3006,38 @@ fn build_system(
             let first_lowering_descendants = (0..5)
                 .map(|root| {
                     let descendant = first_lowering(&source_basis, &coefficients, root, weights);
-                    let second_descendant = lower_sparse(&descendant, root, weights);
-                    let expected_nonzero_from_dynkin_label = dynkin_label.as_bytes()[root] != b'0';
+                    let expected_lowering_string_length =
+                        usize::from(dynkin_label.as_bytes()[root] - b'0');
+                    let expected_nonzero_from_dynkin_label = expected_lowering_string_length != 0;
+                    let mut lowering_power_nonzero_terms = vec![descendant.len()];
+                    let mut current_descendant = descendant.clone();
+                    for _ in 0..expected_lowering_string_length {
+                        current_descendant = lower_sparse(&current_descendant, root, weights);
+                        lowering_power_nonzero_terms.push(current_descendant.len());
+                    }
+                    let matches_highest_weight_string = lowering_power_nonzero_terms
+                        .iter()
+                        .take(expected_lowering_string_length)
+                        .all(|terms| *terms != 0)
+                        && lowering_power_nonzero_terms
+                            .get(expected_lowering_string_length)
+                            .is_some_and(|terms| *terms == 0);
                     FirstLoweringReport {
                         simple_root: root + 1,
                         expected_nonzero_from_dynkin_label,
+                        expected_lowering_string_length,
                         nonzero_terms: descendant.len(),
-                        second_lowering_nonzero_terms: second_descendant.len(),
+                        second_lowering_nonzero_terms: lowering_power_nonzero_terms
+                            .get(1)
+                            .copied()
+                            .unwrap_or(0),
+                        lowering_power_nonzero_terms,
                         maximum_absolute_coefficient: descendant
                             .values()
                             .map(|coefficient| coefficient.abs())
                             .max()
                             .unwrap_or(0),
-                        matches_highest_weight_string: if expected_nonzero_from_dynkin_label {
-                            !descendant.is_empty() && second_descendant.is_empty()
-                        } else {
-                            descendant.is_empty()
-                        },
+                        matches_highest_weight_string,
                     }
                 })
                 .collect::<Vec<_>>();
@@ -3095,6 +3118,33 @@ pub fn exterior_highest_weight_system_shapes(
                 total_raising_rows: raising_block_rows.iter().sum(),
                 expected_kernel_dimension: *expected_kernel_dimension,
             }
+        })
+        .collect()
+}
+
+pub fn verify_exterior_highest_weight_kernel_fixtures(
+    fixtures: &[ExteriorHighestWeightKernelFixture],
+) -> Vec<HighestWeightSystemReport> {
+    let weights = spinor_weights();
+    let left = half_groups(0, &weights);
+    let right = half_groups(16, &weights);
+    fixtures
+        .iter()
+        .map(|fixture| {
+            build_system(
+                fixture.exterior_degree,
+                fixture.dynkin_label,
+                usize::try_from(crate::eleven_dimensional_prepotential::b5_dimension(
+                    fixture.dynkin_label,
+                ))
+                .unwrap(),
+                dynkin_highest_weight(fixture.dynkin_label),
+                fixture.kernel_artifacts.len(),
+                &left,
+                &right,
+                &weights,
+                fixture.kernel_artifacts,
+            )
         })
         .collect()
 }

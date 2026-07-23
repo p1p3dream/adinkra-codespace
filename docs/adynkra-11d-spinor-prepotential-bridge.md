@@ -52,9 +52,18 @@ simple-root raising-block dimensions for each system.
 | Level-17 hook sources | 4 | 911,915 | 2,676,961 | 7 |
 
 These are decomposed systems. They replace a single direct-product solve with
-12 level-16 source embeddings and seven level-17 source embeddings. The exact
-integer kernel vectors, component Clebsch-Gordan maps, and derivative matrix
-have not yet been constructed.
+12 level-16 source embeddings and seven level-17 source embeddings.
+
+All 19 integer highest-weight kernels are now constructed. The Rust verifier
+rebuilds every simple-root raising equation and checks 15,429,636
+kernel-row relations with integer arithmetic. Every residual is zero. It also
+checks the complete highest-weight lowering string for every simple root.
+
+The numerical sparse calculation is retained only as an independent method
+for proposing the integer vectors. The stored vectors are accepted only after
+the Rust verifier checks them exactly. The component Clebsch-Gordan coupling
+to the target vector-spinor and the derivative matrix have not yet been
+constructed.
 
 ## The proposed hook cancellation is not the direct-spinor test
 
@@ -151,11 +160,27 @@ Repository: <https://github.com/p1p3dream/adinkra-codespace>
 ```bash
 cargo run --release -- adynkra-11d-spinor-bridge-verify \
   > results/adynkra_11d_spinor_bridge_validation.json
+cargo run --release -- adynkra-11d-spinor-kernel-verify \
+  > results/adynkra_11d_spinor_bridge_kernel_validation.json
 cargo test eleven_dimensional_spinor_bridge
 ```
 
 Implementation:
-`src/eleven_dimensional_spinor_bridge.rs`
+`src/eleven_dimensional_spinor_bridge.rs` and
+`src/eleven_dimensional_spinor_bridge_kernels.rs`
+
+Independent numerical kernel proposal:
+
+```bash
+python3 scripts/crosscheck_11d_level15_bridge.py \
+  --degree 16 --label 10002 --iterations 1200 --tolerance 1e-11 \
+  --integer-artifact-directory data/eleven_dimensional_spinor_bridge
+python3 scripts/crosscheck_11d_level15_bridge.py \
+  --degree 17 --label 11001 --iterations 1800 --tolerance 1e-12 --seed 29 \
+  --integer-artifact-directory data/eleven_dimensional_spinor_bridge
+```
+
+The same command covers each level-16 and level-17 source label listed above.
 
 ## References
 

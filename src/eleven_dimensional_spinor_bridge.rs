@@ -313,13 +313,13 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         gauge_compatible_quotient_constructed: false,
         representation_level_map_space_constructed: true,
         exact_source_system_shapes_constructed: true,
-        exact_source_kernel_vectors_constructed: false,
+        exact_source_kernel_vectors_constructed: true,
         component_clebsch_maps_constructed: false,
         derivative_matrix_constructed: false,
         explicit_intertwiner_pass_status:
-            "all decomposed source-system shapes constructed; exact integer kernel vectors pending",
+            "all twelve leading and seven hook source embeddings constructed and verified as exact integer highest-weight kernels",
         next_computational_step:
-            "construct and verify the twelve level-16 and seven level-17 integer highest-weight kernels",
+            "couple the source embeddings to the target irreps and construct the exact 7-by-12 exterior-derivative matrix",
         next_required_input:
             "select the direct-map coefficients and the spinor-prepotential gauge transformation, including the induced transformation of H_alpha^a",
         result:
@@ -388,7 +388,7 @@ mod tests {
             ]
         );
         assert!(report.exact_source_system_shapes_constructed);
-        assert!(!report.exact_source_kernel_vectors_constructed);
+        assert!(report.exact_source_kernel_vectors_constructed);
         assert!(!report.derivative_matrix_constructed);
     }
 

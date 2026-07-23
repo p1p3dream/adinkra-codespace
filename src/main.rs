@@ -30,6 +30,7 @@ mod eleven_dimensional_clifford;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_spinor_bridge;
+mod eleven_dimensional_spinor_bridge_kernels;
 mod eval;
 mod filters;
 mod holoraumy;
@@ -120,6 +121,7 @@ fn main() {
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
         "adynkra-11d-bridge-verify" => cmd_adynkra_11d_bridge_verify(),
         "adynkra-11d-spinor-bridge-verify" => cmd_adynkra_11d_spinor_bridge_verify(),
+        "adynkra-11d-spinor-kernel-verify" => cmd_adynkra_11d_spinor_kernel_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
@@ -199,6 +201,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!("  adynkra-11d-bridge-verify Verify the 11D bridge and first lower symbol");
     eprintln!("  adynkra-11d-spinor-bridge-verify Audit the direct 11D spinor bridge");
+    eprintln!("  adynkra-11d-spinor-kernel-verify Verify its 19 source kernels exactly");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
@@ -424,6 +427,14 @@ fn cmd_adynkra_11d_bridge_verify() {
 
 fn cmd_adynkra_11d_spinor_bridge_verify() {
     let report = eleven_dimensional_spinor_bridge::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_spinor_kernel_verify() {
+    let report = eleven_dimensional_spinor_bridge_kernels::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
