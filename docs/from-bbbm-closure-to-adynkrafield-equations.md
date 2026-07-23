@@ -292,9 +292,19 @@ reduced to three
 Lorentz-equivariant leading-symbol channels: two gamma-trace channels and one
 gamma-traceless channel. The conjectural first-derivative gauge rule permits
 six Lorentz parameter types, but References [10] and [11] do not select their
-combination or coefficients. Solving the proposed torsion constraints for the three
-bridge coefficients and fixing that gauge map are the next gates before a
-curvature operator or physical quotient can be defined.
+combination or coefficients.
+
+The direct map from `Psi_alpha` to the gamma-traceless vector-spinor has now
+been counted independently of the scalar factorization. Its leading map space
+has dimension 12. One gamma-traceless direction factors through `V`, leaving
+11 direct nonfactorizing directions. The direct level-17 `(11000)` hook space
+has dimension 7, and the first momentum-correction map space has dimension 44.
+Equation (2.7) was proposed in connection with the scalar-prepotential route.
+The conventional constraints in Eq. (2.6) permit the `(11000)` hook, so an
+Eq. (2.7) cancellation is not the appropriate test of the direct spinor
+candidate. A direct gauge quotient remains undefined because the sources do
+not select the gauge-channel combination or give the induced transformation
+of the target vector-spinor.
 
 The target-side Clifford data are now explicit. Eleven 32-dimensional gamma
 matrices, the charge-conjugation matrix, and the rank-32 gamma-trace and
@@ -302,7 +312,9 @@ rank-320 gamma-traceless vector-spinor projectors pass their rational-arithmetic
 checks. For the direct first-derivative gauge ansatz, the zero-momentum
 two-derivative contraction vanishes in the one-, two-, and five-form channels
 and is not identically zero in the scalar, three-form, and four-form channels.
-The three source embeddings inside `exterior^15(32)` remain open.
+The three scalar source embeddings inside `exterior^15(32)` are constructed.
+The direct spinor map spaces are counted at the representation level;
+component Clebsch-Gordan maps and their coefficients remain open.
 
 ## Role of the permutahedron program
 
@@ -484,12 +496,17 @@ a new field equation or a polynomial-module proof.
    level passes its exterior-power dimension identity, and the published field
    counts and middle-level supergravity representations are recovered. The
    full spinor-prepotential candidate inventory is also derived and its Table
-   5 multiplicities are reproduced. The fifteen-derivative bridge has three
-   leading-symbol channels, and the possible first-derivative gauge domain has
-   six Lorentz channels. The vector-spinor target projectors are explicit, and
-   the six direct gauge channels are split by their zero-momentum contraction.
-   The source embeddings, coefficients, generic-momentum reducibility,
-   curvature complex, and differential operator remain open.**
+   5 multiplicities are reproduced. The scalar-factorizing
+   fifteen-derivative bridge has three leading-symbol channels, and the direct
+   spinor bridge has 12 gamma-traceless leading directions, 11 of which do not
+   factor through the scalar. The direct hook space has multiplicity 7 and the
+   first momentum-correction space has dimension 44. The Eq. (2.7) hook
+   cancellation is not applied to the direct route because Eq. (2.6) permits
+   that hook. The possible first-derivative gauge domain has six Lorentz
+   channels, but the source does not select their combination or print the
+   induced target transformation. Component direct-map tensors, coefficients,
+   the gauge quotient, curvature complex, and differential operator remain
+   open.**
 7. Determine which representation products and intertwiners are required for a
    nonlinear extension.
 

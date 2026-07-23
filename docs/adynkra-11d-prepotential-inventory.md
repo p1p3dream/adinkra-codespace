@@ -149,10 +149,16 @@ irreps are present. Composing this with the conjectured relation
 \(V=D^\alpha\Psi_\alpha\) gives a formal sixteen-spinor-derivative bridge from
 \(\Psi_\alpha\) to \(H_\alpha{}^a\).
 
-This reduces the unspecified leading-symbol problem to three coefficients.
-The two cited papers do not give the three intertwiners or their coefficients.
-The torsion constraints in Eq. (2.7) are therefore the next equations to apply,
-not a result already encoded here.
+This reduces the scalar-factorizing leading-symbol problem to three
+coefficients. The two cited papers do not give the three intertwiners or their
+coefficients. Equation (2.7) is the strengthened constraint proposed in
+connection with this scalar-superfield route.
+
+The direct spinor-prepotential route is different. Its gamma-traceless
+leading map space has dimension 12, only one direction factors through the
+scalar \(V\), and its level-17 `(11000)` hook content is permitted by the
+conventional constraints in Eq. (2.6). The direct route is documented in
+[`adynkra-11d-spinor-prepotential-bridge.md`](adynkra-11d-spinor-prepotential-bridge.md).
 
 ## Gauge-parameter channel census
 
@@ -200,7 +206,7 @@ validated four-dimensional Adynkrafield machinery in eleven dimensions:
    the induced scalar variation at zero momentum and three that do not.
 
 It does not solve the proposed eleven-dimensional torsion constraints for the
-three bridge coefficients, select the spinor prepotential's gauge
+scalar-factorizing bridge, select the spinor prepotential's gauge
 transformation, or derive an eleven-dimensional action or field equation.
 Those are separate steps.
 

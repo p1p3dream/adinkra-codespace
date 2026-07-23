@@ -1,0 +1,191 @@
+{
+  "schema_version": "adynkra-11d-spinor-bridge-v1",
+  "inventory_source_arxiv": "2002.08502, Added Note in Proof, Eqs. (6.1)-(6.3)",
+  "constraint_source_arxiv": "2007.05097, Eqs. (2.6)-(2.7)",
+  "proposed_fundamental_prepotential": "unconstrained spinor superfield Psi_alpha",
+  "semi_prepotential_relation": "V = D^alpha Psi_alpha",
+  "target": "gamma-traceless vector-spinor H_alpha^a, Dynkin label (10001)",
+  "direct_derivative_order": 16,
+  "leading_channels": [
+    {
+      "source_dynkin_label": "10000",
+      "source_dimension": 11,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "20000",
+      "source_dimension": 65,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "00100",
+      "source_dimension": 165,
+      "source_multiplicity": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "source_dynkin_label": "00010",
+      "source_dimension": 330,
+      "source_multiplicity": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "source_dynkin_label": "00002",
+      "source_dimension": 462,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "10100",
+      "source_dimension": 1430,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "10010",
+      "source_dimension": 3003,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "10002",
+      "source_dimension": 4290,
+      "source_multiplicity": 3,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 3
+    }
+  ],
+  "leading_map_dimension": 12,
+  "scalar_factorizing_gamma_traceless_dimension": 1,
+  "nonfactorizing_direct_dimension": 11,
+  "scalar_factorizing_subspace_is_proper": true,
+  "hook_derivative_order": 17,
+  "hook_dynkin_label": "11000",
+  "hook_dimension": 429,
+  "hook_channels": [
+    {
+      "source_dynkin_label": "10001",
+      "source_dimension": 320,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "01001",
+      "source_dimension": 1408,
+      "source_multiplicity": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "source_dynkin_label": "20001",
+      "source_dimension": 1760,
+      "source_multiplicity": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "source_dynkin_label": "11001",
+      "source_dimension": 10240,
+      "source_multiplicity": 3,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 3
+    }
+  ],
+  "hook_multiplicity": 7,
+  "conventional_constraint_set": "Eq. (2.6), which permits X_[ab]^c in the 429",
+  "scalar_strengthened_constraint": "Eq. (2.7), proposed for a scalar-superfield prepotential and setting the full gamma-two torsion sector to zero",
+  "source_motivates_strengthened_constraint_by_scalar_prepotential": true,
+  "direct_hook_is_permitted_by_conventional_constraints": true,
+  "direct_hook_cancellation_required": false,
+  "scalar_strengthened_constraint_applied_to_spinor_route": false,
+  "first_momentum_channels": [
+    {
+      "intermediate_dynkin_label": "00001",
+      "intermediate_dimension": 32,
+      "multiplicity_in_vector_tensor_target": 1,
+      "multiplicity_at_spinor_level_14": 5,
+      "map_coefficients": 5
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "intermediate_dimension": 1408,
+      "multiplicity_in_vector_tensor_target": 1,
+      "multiplicity_at_spinor_level_14": 18,
+      "map_coefficients": 18
+    },
+    {
+      "intermediate_dynkin_label": "10001",
+      "intermediate_dimension": 320,
+      "multiplicity_in_vector_tensor_target": 1,
+      "multiplicity_at_spinor_level_14": 8,
+      "map_coefficients": 8
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "intermediate_dimension": 1760,
+      "multiplicity_in_vector_tensor_target": 1,
+      "multiplicity_at_spinor_level_14": 13,
+      "map_coefficients": 13
+    }
+  ],
+  "first_momentum_map_dimension": 44,
+  "gauge_parameter_channels": [
+    {
+      "form_degree": 0,
+      "dynkin_label": "00000",
+      "dimension": 1,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 1,
+      "dynkin_label": "10000",
+      "dimension": 11,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 2,
+      "dynkin_label": "01000",
+      "dimension": 55,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 3,
+      "dynkin_label": "00100",
+      "dimension": 165,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 4,
+      "dynkin_label": "00010",
+      "dimension": 330,
+      "multiplicity_in_spinor_square": 1
+    },
+    {
+      "form_degree": 5,
+      "dynkin_label": "00002",
+      "dimension": 462,
+      "multiplicity_in_spinor_square": 1
+    }
+  ],
+  "gauge_parameter_channel_count": 6,
+  "gauge_parameter_dimensions_sum": 1024,
+  "source_selects_gauge_channel_combination": false,
+  "source_prints_induced_target_gauge_law": false,
+  "gauge_compatible_quotient_constructed": false,
+  "representation_level_map_space_constructed": true,
+  "component_clebsch_maps_constructed": false,
+  "next_required_input": "select the direct-map coefficients and the spinor-prepotential gauge transformation, including the induced transformation of H_alpha^a",
+  "result": "the scalar factorization occupies one of twelve direct leading directions; eleven nonfactorizing directions remain, and the seven-dimensional 429 hook map space is allowed rather than an Eq. (2.7) cancellation obstruction",
+  "boundary": "this is an exact Lorentz-representation calculation, not a component Clebsch construction, gauge quotient, torsion solution, action, or field equation",
+  "passed": true
+}

@@ -208,6 +208,10 @@ pub fn b5_weyl_dimension(dynkin: B5Dynkin) -> u64 {
     u64::try_from(*dimension.numer()).unwrap()
 }
 
+pub fn b5_dimension(label: &str) -> u64 {
+    b5_weyl_dimension(parse_dynkin(label))
+}
+
 fn binomial(n: usize, k: usize) -> u64 {
     let k = k.min(n - k);
     (0..k).fold(1_u64, |value, index| {
@@ -234,6 +238,32 @@ fn multiplicity(level: usize, label: &str) -> usize {
 
 pub fn level_multiplicity(level: usize, label: &str) -> usize {
     multiplicity(level, label)
+}
+
+pub fn spinor_level_channel_sources(level: usize, target_label: &str) -> Vec<(String, u64, usize)> {
+    let target = parse_dynkin(target_label);
+    inventory(level)
+        .into_iter()
+        .filter(|term| tensor_with_spinor(term.dynkin).contains(&target))
+        .map(|term| {
+            (
+                term.dynkin
+                    .labels
+                    .iter()
+                    .map(u8::to_string)
+                    .collect::<String>(),
+                term.dimension,
+                term.multiplicity,
+            )
+        })
+        .collect()
+}
+
+pub fn spinor_level_multiplicity(level: usize, target_label: &str) -> usize {
+    spinor_level_channel_sources(level, target_label)
+        .iter()
+        .map(|(_, _, multiplicity)| *multiplicity)
+        .sum()
 }
 
 /// Decompose a B5 irrep tensored with the 32-dimensional minuscule spinor.
@@ -804,6 +834,17 @@ mod tests {
         assert_eq!(spinor_multiplicity(17, "00100"), 8);
         assert_eq!(spinor_multiplicity(18, "00001"), 5);
         assert_eq!(spinor_multiplicity(18, "10001"), 8);
+    }
+
+    #[test]
+    fn direct_spinor_bridge_channel_counts_are_reproduced() {
+        assert_eq!(spinor_level_multiplicity(16, "10001"), 12);
+        assert_eq!(spinor_level_multiplicity(17, "11000"), 7);
+        assert_eq!(spinor_level_multiplicity(14, "00001"), 5);
+        assert_eq!(spinor_level_multiplicity(14, "01001"), 18);
+        assert_eq!(spinor_level_multiplicity(14, "10001"), 8);
+        assert_eq!(spinor_level_multiplicity(14, "20001"), 13);
+        assert_eq!(b5_dimension("11000"), 429);
     }
 
     #[test]
