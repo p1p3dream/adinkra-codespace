@@ -9,6 +9,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 const TARGET_DYNKIN_LABEL: &str = "10001";
 const GOLDEN_COMMIT: &str = "89f20fc";
@@ -162,11 +163,21 @@ struct WeightSpace {
 }
 
 #[derive(Debug)]
+struct CsrExteriorAction {
+    target_weight: Weight,
+    target_dimension: usize,
+    source_offsets: Vec<usize>,
+    destination_indices: Vec<usize>,
+    signs: Vec<i8>,
+}
+
+#[derive(Debug)]
 struct ExteriorModel {
     spinors: [Weight; 32],
     left: HashMap<(u8, Weight), Vec<u16>>,
     right: HashMap<(u8, Weight), Vec<u16>>,
     spaces: BTreeMap<Weight, WeightSpace>,
+    actions: BTreeMap<(Weight, usize, bool), Arc<CsrExteriorAction>>,
     maximum_absolute_accumulator: i128,
 }
 
@@ -248,6 +259,7 @@ impl ExteriorModel {
             left: half_groups(0, &spinors),
             right: half_groups(16, &spinors),
             spaces: BTreeMap::new(),
+            actions: BTreeMap::new(),
             maximum_absolute_accumulator: 0,
         }
     }
@@ -263,6 +275,107 @@ impl ExteriorModel {
                 .collect();
             WeightSpace { masks, index }
         })
+    }
+
+    fn action(
+        &mut self,
+        source_weight: Weight,
+        root: usize,
+        raising: bool,
+    ) -> Arc<CsrExteriorAction> {
+        let key = (source_weight, root, raising);
+        if let Some(action) = self.actions.get(&key) {
+            return Arc::clone(action);
+        }
+        let target_weight = if raising {
+            add(source_weight, SIMPLE_ROOTS[root])
+        } else {
+            subtract(source_weight, SIMPLE_ROOTS[root])
+        };
+        let source_masks = self.space(16, source_weight).masks.clone();
+        let target_index = self.space(16, target_weight).index.clone();
+        let mut source_offsets = Vec::with_capacity(source_masks.len() + 1);
+        let mut destination_indices = Vec::new();
+        let mut signs = Vec::new();
+        source_offsets.push(0);
+        for source_mask in source_masks {
+            for occupied_index in 0..32 {
+                if source_mask & (1_u32 << occupied_index) == 0 {
+                    continue;
+                }
+                let replacement_index = if raising {
+                    raised_spinor_index(occupied_index, root, &self.spinors)
+                } else {
+                    lowered_spinor_index(occupied_index, root, &self.spinors)
+                };
+                let Some(replacement_index) = replacement_index else {
+                    continue;
+                };
+                if source_mask & (1_u32 << replacement_index) != 0 {
+                    continue;
+                }
+                let output_mask =
+                    (source_mask ^ (1_u32 << occupied_index)) | (1_u32 << replacement_index);
+                destination_indices.push(
+                    *target_index
+                        .get(&output_mask)
+                        .expect("exterior action left its target weight space"),
+                );
+                signs.push(
+                    i8::try_from(exterior_replacement_sign(
+                        source_mask,
+                        occupied_index,
+                        replacement_index,
+                    ))
+                    .unwrap(),
+                );
+            }
+            source_offsets.push(destination_indices.len());
+        }
+        let action = Arc::new(CsrExteriorAction {
+            target_weight,
+            target_dimension: target_index.len(),
+            source_offsets,
+            destination_indices,
+            signs,
+        });
+        self.actions.insert(key, Arc::clone(&action));
+        action
+    }
+
+    fn apply_action(&mut self, source: &DenseState, root: usize, raising: bool) -> DenseState {
+        let action = self.action(source.weight, root, raising);
+        let mut accumulator = vec![0_i128; action.target_dimension];
+        for (source_index, coefficient) in source.coefficients.iter().copied().enumerate() {
+            if coefficient == 0 {
+                continue;
+            }
+            for edge in action.source_offsets[source_index]..action.source_offsets[source_index + 1]
+            {
+                let destination = action.destination_indices[edge];
+                accumulator[destination] = accumulator[destination]
+                    .checked_add(i128::from(action.signs[edge]) * i128::from(coefficient))
+                    .expect("i128 overflow in exact CSR exterior action");
+                self.maximum_absolute_accumulator = self
+                    .maximum_absolute_accumulator
+                    .max(accumulator[destination].abs());
+            }
+        }
+        let coefficients = accumulator
+            .into_iter()
+            .map(|value| {
+                i64::try_from(value).expect("CSR exterior coefficient exceeds i64 storage")
+            })
+            .collect();
+        let mut pbw_word = source.pbw_word.clone();
+        if !raising {
+            pbw_word.push(u8::try_from(root + 1).unwrap());
+        }
+        DenseState {
+            weight: action.target_weight,
+            pbw_word,
+            coefficients,
+        }
     }
 
     fn fixture_state(&mut self, dynkin_label: &str, fixture_bytes: &[u8]) -> DenseState {
@@ -282,96 +395,12 @@ impl ExteriorModel {
     }
 
     fn lower(&mut self, source: &DenseState, root: usize) -> DenseState {
-        let target_weight = subtract(source.weight, SIMPLE_ROOTS[root]);
-        let source_masks = self.space(16, source.weight).masks.clone();
-        let target_index = self.space(16, target_weight).index.clone();
-        let mut accumulator = vec![0_i128; target_index.len()];
-        for (source_index, (&source_mask, &coefficient)) in
-            source_masks.iter().zip(&source.coefficients).enumerate()
-        {
-            let _ = source_index;
-            if coefficient == 0 {
-                continue;
-            }
-            for upper_index in 0..32 {
-                if source_mask & (1_u32 << upper_index) == 0 {
-                    continue;
-                }
-                let Some(lower_index) = lowered_spinor_index(upper_index, root, &self.spinors)
-                else {
-                    continue;
-                };
-                if source_mask & (1_u32 << lower_index) != 0 {
-                    continue;
-                }
-                let output_mask = (source_mask ^ (1_u32 << upper_index)) | (1_u32 << lower_index);
-                let destination = *target_index
-                    .get(&output_mask)
-                    .expect("lowered mask absent from canonical target weight space");
-                let sign = exterior_replacement_sign(source_mask, lower_index, upper_index);
-                accumulator[destination] = accumulator[destination]
-                    .checked_add(i128::from(sign) * i128::from(coefficient))
-                    .expect("i128 overflow in exact dense lowering");
-                self.maximum_absolute_accumulator = self
-                    .maximum_absolute_accumulator
-                    .max(accumulator[destination].abs());
-            }
-        }
-        let coefficients = accumulator
-            .into_iter()
-            .map(|value| {
-                i64::try_from(value).expect("dense lowering coefficient exceeds i64 storage")
-            })
-            .collect();
-        let mut pbw_word = source.pbw_word.clone();
-        pbw_word.push(u8::try_from(root + 1).unwrap());
-        DenseState {
-            weight: target_weight,
-            pbw_word,
-            coefficients,
-        }
+        self.apply_action(source, root, false)
     }
 
     fn raise_coefficients(&mut self, source: &DenseState, root: usize) -> (Weight, Vec<i64>) {
-        let target_weight = add(source.weight, SIMPLE_ROOTS[root]);
-        let source_masks = self.space(16, source.weight).masks.clone();
-        let target_index = self.space(16, target_weight).index.clone();
-        let mut accumulator = vec![0_i128; target_index.len()];
-        for (&source_mask, &coefficient) in source_masks.iter().zip(&source.coefficients) {
-            if coefficient == 0 {
-                continue;
-            }
-            for lower_index in 0..32 {
-                if source_mask & (1_u32 << lower_index) == 0 {
-                    continue;
-                }
-                let Some(upper_index) = raised_spinor_index(lower_index, root, &self.spinors)
-                else {
-                    continue;
-                };
-                if source_mask & (1_u32 << upper_index) != 0 {
-                    continue;
-                }
-                let output_mask = (source_mask ^ (1_u32 << lower_index)) | (1_u32 << upper_index);
-                let destination = *target_index
-                    .get(&output_mask)
-                    .expect("raised mask absent from canonical target weight space");
-                let sign = exterior_replacement_sign(source_mask, lower_index, upper_index);
-                accumulator[destination] = accumulator[destination]
-                    .checked_add(i128::from(sign) * i128::from(coefficient))
-                    .expect("i128 overflow in exact dense raising");
-                self.maximum_absolute_accumulator = self
-                    .maximum_absolute_accumulator
-                    .max(accumulator[destination].abs());
-            }
-        }
-        let coefficients = accumulator
-            .into_iter()
-            .map(|value| {
-                i64::try_from(value).expect("dense raising coefficient exceeds i64 storage")
-            })
-            .collect();
-        (target_weight, coefficients)
+        let raised = self.apply_action(source, root, true);
+        (raised.weight, raised.coefficients)
     }
 }
 
