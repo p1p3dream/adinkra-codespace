@@ -210,6 +210,9 @@ pub struct AbstractCouplingCertificate {
     pub exact_raising_residual_terms_by_simple_root: [usize; 5],
     pub maximum_absolute_checked_accumulator: i128,
     pub storage_type: String,
+    pub exterior_action_storage: String,
+    pub csr_actions_built: usize,
+    pub csr_nonzero_entries: usize,
     pub multiplicity_one: bool,
     pub passed: bool,
 }
@@ -953,6 +956,12 @@ fn build_abstract_from_fixture(
         && primitive.len() == domain.len()
         && residuals == [0; 5]
         && primitive_coefficient_gcd == 1;
+    let csr_actions_built = model.actions.len();
+    let csr_nonzero_entries = model
+        .actions
+        .values()
+        .map(|action| action.destination_indices.len())
+        .sum();
     let states = domain.into_iter().map(|(_, state)| state).collect();
     (
         AbstractCouplingCertificate {
@@ -980,6 +989,10 @@ fn build_abstract_from_fixture(
                 .maximum_absolute_accumulator
                 .max(residual_maximum),
             storage_type: "i64 coefficients with checked i128 accumulation".to_string(),
+            exterior_action_storage: "precomputed CSR over sorted exterior-mask weight spaces"
+                .to_string(),
+            csr_actions_built,
+            csr_nonzero_entries,
             multiplicity_one,
             passed,
         },
@@ -1317,5 +1330,24 @@ mod tests {
             .exact_raising_residual_terms_by_simple_root
             .iter()
             .any(|terms| *terms != 0));
+    }
+
+    #[test]
+    fn atomic_checkpoint_requires_and_preserves_a_passing_report() {
+        let path = std::env::temp_dir().join(format!(
+            "adinkra-level16-atomic-checkpoint-{}.json",
+            std::process::id()
+        ));
+        let _ = fs::remove_file(&path);
+        let passing = serde_json::json!({"schema_version": "test", "passed": true});
+        write_atomic_json(&path, &passing, true).unwrap();
+        let restored: serde_json::Value =
+            serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        assert_eq!(restored["passed"], true);
+        fs::remove_file(&path).unwrap();
+
+        let failing = serde_json::json!({"schema_version": "test", "passed": false});
+        assert!(write_atomic_json(&path, &failing, false).is_err());
+        assert!(!path.exists());
     }
 }
