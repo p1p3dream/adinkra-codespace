@@ -839,7 +839,7 @@
       "target_sector": "gamma-traceless vector-spinor"
     }
   ],
-  "equation_2_7_status": "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels; the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook, and the three level-13 corrections do not cancel it; lower symbols and the full superspace Bianchi system remain",
+  "equation_2_7_status": "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels; the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook, and the complete level-13 correction space does not cancel it; the stated local polynomial scalar bridge fails this part of Eq. (2.7)",
   "coefficient_solution_status": "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the first lower-symbol correction space does not cancel the generic-momentum 11000 term in the surviving c channel",
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
@@ -1821,7 +1821,7 @@
     "correction_span_rank": 2,
     "augmented_span_rank": 3,
     "exact_non_cancellation_certificate": true,
-    "implication": "the three first lower-symbol corrections do not span the leading p D_[14] two-form-hook term; this closes the first cancellation gate, but not the lower-symbol recursion or the full superspace Bianchi problem",
+    "implication": "the complete first lower-symbol correction space does not span the leading p D_[14] two-form-hook term; terms with two or more momenta lie in different normal-form bidegrees and cannot cancel this coefficient; the stated local polynomial scalar bridge therefore fails this part of Eq. (2.7)",
     "passed": true
   },
   "zero_momentum_equation_2_7_projection": {
@@ -1908,6 +1908,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This verifies the level-15 bridge intertwiners, the level-16 exterior symbol, the level-14 momentum contractions, the three level-13 source intertwiners, and the first lower-symbol cancellation system. The 64 exact integer functionals give correction rank two and augmented rank three, so the three p D_[13] corrections cannot cancel the leading p D_[14] term in the 11000 hook. This result does not close later lower symbols or the full superspace Bianchi complex.",
+  "boundary": "This verifies the level-15 bridge intertwiners, the level-16 exterior symbol, the level-14 momentum contractions, the three level-13 source intertwiners, and the first lower-symbol cancellation system. The 64 exact integer functionals give correction rank two and augmented rank three, so the complete p D_[13] correction space cannot cancel the leading p D_[14] term in the 11000 hook. Higher-momentum terms occupy different normal-form bidegrees and cannot repair this coefficient. This rules out the stated local polynomial scalar bridge under this constraint. It does not rule out nonlocal operators, additional prepotentials, or a different constraint or gauge complex.",
   "passed": true
 }

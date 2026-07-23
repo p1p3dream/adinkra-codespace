@@ -297,9 +297,11 @@ functionals. The validation artifact records the full 64-by-4 integer matrix.
 The three correction columns have rank two. Adding the leading
 $pD_{[14]}V$ column raises the rank to three. Therefore the leading term is not
 in the span of these corrections, and no choice of the three first
-lower-symbol coefficients cancels it. This result applies to the first lower
-symbol. It does not settle later lower symbols or the full superspace Bianchi
-system.
+lower-symbol coefficients cancels it. Terms with two or more momenta contribute
+to different normal-form bidegrees and cannot change this $pD_{[14]}V$
+coefficient. The stated local polynomial scalar bridge therefore fails the
+`(11000)` part of Eq. (2.7). This does not rule out nonlocal operators,
+additional prepotentials, or a different constraint or gauge complex.
 
 ## Canonical computational normalization
 
@@ -352,10 +354,11 @@ Consequently:
   coefficients;
 - the level-14 momentum contraction into the same hook is nonzero, so the
   level-16 inventory does not settle Eq. (2.7) at generic momentum; and
-- three first-completion coefficients are available, but their projected
-  images have rank two and do not span the leading hook term. Later
-  lower-symbol terms, component normalization of $V$, generic-momentum gauge
-  reducibility, and the superspace Bianchi complex remain open.
+- the complete first-completion space has projected rank two and does not span
+  the leading hook term. Higher-momentum terms cannot change this independent
+  normal-form coefficient. The stated local polynomial scalar bridge fails
+  this constraint. Nonlocal operators, additional prepotentials, and different
+  constraint or gauge complexes are outside this calculation.
 
 ## Primary-source dependency for Eq. (2.7)
 
@@ -375,9 +378,10 @@ In Eq. (39), the `(11000)` hook is the hook projection of
 $(\gamma_{ab})^{\gamma\delta}D_\gamma H_\delta{}^c$; the displayed holonomy
 terms occupy the trace-vector and three-form sectors removed by the
 conventional constraints.
-The first lower-symbol completion does not cancel the nonzero level-14 term.
-Further lower symbols and the Bianchi complex must be included before assigning
-a final rank to Eq. (2.7) on the bridge.
+The complete first lower-symbol space does not cancel the nonzero level-14
+term. Higher-momentum terms lie in different normal-form bidegrees. Under the
+stated local polynomial ansatz, the bridge therefore fails Eq. (2.7) in the
+`(11000)` channel.
 
 ## Zero-momentum exterior projection
 
@@ -433,9 +437,9 @@ map lands in `(10001)` and survives. Thus
 
 up to normalization. The zero-momentum exterior test leaves a three-dimensional
 coefficient space, while the local gamma-trace quotient leaves one
-non-gamma-trace bridge class. The first generic-momentum lower-symbol
-cancellation test fails on that class. The remaining nonzero scale is
-equivalent to rescaling
+non-gamma-trace bridge class. The complete first generic-momentum
+lower-symbol space fails to cancel the hook term on that class. The remaining
+nonzero scale is equivalent to rescaling
 $V$ until a component convention is supplied. The gauge complex of the
 underlying scalar or spinor prepotential is not yet established.
 
