@@ -448,6 +448,17 @@ fn option_value<'a>(args: &'a [String], option: &str) -> Option<&'a str> {
         .map(String::as_str)
 }
 
+fn read_passed_checkpoint<T: serde::de::DeserializeOwned>(
+    path: &std::path::Path,
+) -> Option<T> {
+    let payload = std::fs::read(path).ok()?;
+    let value: serde_json::Value = serde_json::from_slice(&payload).ok()?;
+    if value.get("passed").and_then(|passed| passed.as_bool()) != Some(true) {
+        return None;
+    }
+    serde_json::from_value(value).ok()
+}
+
 fn cmd_adynkra_11d_level16_coupling_build(args: &[String]) {
     let label = option_value(args, "--label").unwrap_or_else(|| {
         eprintln!("Missing --label");
@@ -470,23 +481,112 @@ fn cmd_adynkra_11d_level16_coupling_build(args: &[String]) {
 
 fn cmd_adynkra_11d_level16_coupling_verify(args: &[String]) {
     if args.iter().any(|argument| argument == "--all") {
-        let output = std::path::PathBuf::from("results/adynkra_11d_level16_couplings_all.json");
-        if args.iter().any(|argument| argument == "--resume") && output.exists() {
-            let payload = std::fs::read_to_string(&output).unwrap_or_else(|error| {
-                eprintln!("Failed to read {}: {error}", output.display());
-                std::process::exit(2);
-            });
-            let parsed: serde_json::Value =
-                serde_json::from_str(&payload).unwrap_or_else(|error| {
-                    eprintln!("Failed to validate {}: {error}", output.display());
-                    std::process::exit(2);
-                });
-            if parsed.get("passed").and_then(|value| value.as_bool()) == Some(true) {
-                print!("{payload}");
-                return;
-            }
+        let resume = args.iter().any(|argument| argument == "--resume");
+        let mut copies_by_label = std::collections::BTreeMap::<&str, Vec<usize>>::new();
+        for fixture in eleven_dimensional_spinor_bridge_kernels::level16_fixtures() {
+            copies_by_label
+                .entry(fixture.dynkin_label)
+                .or_default()
+                .push(fixture.copy);
         }
-        let report = eleven_dimensional_level16_couplings::verify_all();
+        let jobs = copies_by_label.into_iter().collect::<Vec<_>>();
+        let memory_budget_gib = std::env::var("ADINKRA_LEVEL16_RAM_GIB")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(48);
+        let estimated_memory_gib_per_worker = std::env::var("ADINKRA_LEVEL16_WORKER_GIB")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(6)
+            .max(1);
+        let requested_workers = std::env::var("ADINKRA_LEVEL16_WORKERS")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(4)
+            .max(1);
+        let execution_workers = requested_workers
+            .min(memory_budget_gib / estimated_memory_gib_per_worker)
+            .min(jobs.len())
+            .max(1);
+        eprintln!(
+            "level-16 coupling workers={execution_workers}, memory budget={memory_budget_gib} GiB, estimate={estimated_memory_gib_per_worker} GiB/worker"
+        );
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(execution_workers)
+            .build()
+            .unwrap();
+        use rayon::prelude::*;
+        let completed = pool.install(|| {
+            jobs.par_iter()
+                .map(|(label, copies)| {
+                    let abstract_output = std::path::PathBuf::from(format!(
+                        "results/adynkra_11d_level16_coupling_{label}_abstract.json"
+                    ));
+                    let saved_abstract = resume
+                        .then(|| read_passed_checkpoint(&abstract_output))
+                        .flatten();
+                    let abstract_was_reused = saved_abstract.is_some();
+                    let abstract_report = saved_abstract.unwrap_or_else(|| {
+                        eleven_dimensional_level16_couplings::build_abstract(label)
+                    });
+                    if !abstract_was_reused {
+                        eleven_dimensional_level16_couplings::write_atomic_json(
+                            &abstract_output,
+                            &abstract_report,
+                            abstract_report.passed,
+                        )
+                        .unwrap();
+                    }
+                    eprintln!("certified abstract coupling {label}");
+                    let copy_reports = copies
+                        .iter()
+                        .map(|copy| {
+                            let copy_output = std::path::PathBuf::from(format!(
+                                "results/adynkra_11d_level16_coupling_{label}_copy{copy}.json"
+                            ));
+                            let saved_copy = resume
+                                .then(|| read_passed_checkpoint(&copy_output))
+                                .flatten();
+                            let copy_was_reused = saved_copy.is_some();
+                            let copy_report = saved_copy.unwrap_or_else(|| {
+                                eleven_dimensional_level16_couplings::verify_copy_with_abstract(
+                                    &abstract_report,
+                                    *copy,
+                                )
+                            });
+                            if !copy_was_reused {
+                                eleven_dimensional_level16_couplings::write_atomic_json(
+                                    &copy_output,
+                                    &copy_report,
+                                    copy_report.passed,
+                                )
+                                .unwrap();
+                            }
+                            eprintln!("certified embedded coupling {label} copy {copy}");
+                            copy_report
+                        })
+                        .collect::<Vec<_>>();
+                    (abstract_report, copy_reports)
+                })
+                .collect::<Vec<_>>()
+        });
+        let abstract_couplings = completed
+            .iter()
+            .map(|(report, _)| report.clone())
+            .collect();
+        let embedded_copies = completed
+            .into_iter()
+            .flat_map(|(_, reports)| reports)
+            .collect();
+        let report = eleven_dimensional_level16_couplings::summarize_all(
+            abstract_couplings,
+            embedded_copies,
+            execution_workers,
+            memory_budget_gib,
+            estimated_memory_gib_per_worker,
+            resume,
+        );
+        let output = std::path::PathBuf::from("results/adynkra_11d_level16_couplings_all.json");
         eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
             .unwrap_or_else(|error| {
                 eprintln!("Failed to checkpoint {}: {error}", output.display());

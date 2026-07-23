@@ -4,7 +4,7 @@
 use num_bigint::BigInt;
 use num_rational::Ratio;
 use num_traits::{One, Signed, ToPrimitive, Zero};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, File};
 use std::io::{self, Write};
@@ -170,7 +170,7 @@ struct ExteriorModel {
     maximum_absolute_accumulator: i128,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CanonicalDomainBasisEntry {
     pub free_spinor_index: usize,
     pub free_spinor_weight: Weight,
@@ -178,15 +178,15 @@ pub struct CanonicalDomainBasisEntry {
     pub pbw_word_simple_roots: Vec<u8>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AbstractCouplingCertificate {
-    pub schema_version: &'static str,
-    pub role: &'static str,
+    pub schema_version: String,
+    pub role: String,
     pub source_dynkin_label: String,
     pub source_fixture_copy: usize,
-    pub target_dynkin_label: &'static str,
-    pub basis_method: &'static str,
-    pub dependency_test: &'static str,
+    pub target_dynkin_label: String,
+    pub basis_method: String,
+    pub dependency_test: String,
     pub product_weight_domain_dimension: usize,
     pub source_weight_spaces_used: usize,
     pub source_weight_multiplicities: Vec<(Weight, usize)>,
@@ -198,19 +198,19 @@ pub struct AbstractCouplingCertificate {
     pub maximum_absolute_primitive_coefficient: i64,
     pub exact_raising_residual_terms_by_simple_root: [usize; 5],
     pub maximum_absolute_checked_accumulator: i128,
-    pub storage_type: &'static str,
+    pub storage_type: String,
     pub multiplicity_one: bool,
     pub passed: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddedCouplingCertificate {
-    pub schema_version: &'static str,
-    pub role: &'static str,
+    pub schema_version: String,
+    pub role: String,
     pub source_dynkin_label: String,
     pub source_copy: usize,
     pub source_fixture: String,
-    pub target_dynkin_label: &'static str,
+    pub target_dynkin_label: String,
     pub abstract_coupling_source_copy: usize,
     pub product_weight_domain_dimension: usize,
     pub primitive_domain_coefficients: Vec<i64>,
@@ -221,10 +221,10 @@ pub struct EmbeddedCouplingCertificate {
     pub passed: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AllCouplingCertificateReport {
-    pub schema_version: &'static str,
-    pub role: &'static str,
+    pub schema_version: String,
+    pub role: String,
     pub abstract_couplings: Vec<AbstractCouplingCertificate>,
     pub embedded_copies: Vec<EmbeddedCouplingCertificate>,
     pub distinct_source_irreps_certified: usize,
@@ -232,7 +232,11 @@ pub struct AllCouplingCertificateReport {
     pub expected_distinct_source_irreps: usize,
     pub expected_embedded_source_copies: usize,
     pub every_residual_is_exactly_zero: bool,
-    pub boundary: &'static str,
+    pub execution_workers: usize,
+    pub memory_budget_gib: usize,
+    pub estimated_memory_gib_per_worker: usize,
+    pub resumed_from_atomic_checkpoints: bool,
+    pub boundary: String,
     pub passed: bool,
 }
 
@@ -923,15 +927,16 @@ fn build_abstract_from_fixture(
     let states = domain.into_iter().map(|(_, state)| state).collect();
     (
         AbstractCouplingCertificate {
-            schema_version: "adynkra-11d-level16-abstract-coupling-v1",
-            role: "exact canonical abstract coupling into (10001)",
+            schema_version: "adynkra-11d-level16-abstract-coupling-v1".to_string(),
+            role: "exact canonical abstract coupling into (10001)".to_string(),
             source_dynkin_label: dynkin_label.to_string(),
             source_fixture_copy: fixture_copy,
-            target_dynkin_label: TARGET_DYNKIN_LABEL,
+            target_dynkin_label: TARGET_DYNKIN_LABEL.to_string(),
             basis_method:
-                "lexicographic PBW lowering words with exact exterior-realization Gram rank",
+                "lexicographic PBW lowering words with exact exterior-realization Gram rank"
+                    .to_string(),
             dependency_test:
-                "exact rational rank of the integer Gram matrix; no modular acceptance",
+                "exact rational rank of the integer Gram matrix; no modular acceptance".to_string(),
             product_weight_domain_dimension: domain_basis.len(),
             source_weight_spaces_used: bases.len(),
             source_weight_multiplicities,
@@ -945,7 +950,7 @@ fn build_abstract_from_fixture(
             maximum_absolute_checked_accumulator: model
                 .maximum_absolute_accumulator
                 .max(residual_maximum),
-            storage_type: "i64 coefficients with checked i128 accumulation",
+            storage_type: "i64 coefficients with checked i128 accumulation".to_string(),
             multiplicity_one,
             passed,
         },
@@ -1035,12 +1040,13 @@ fn verify_embedded_with_abstract(
         && domain.len() == abstract_certificate.product_weight_domain_dimension
         && residuals == [0; 5];
     EmbeddedCouplingCertificate {
-        schema_version: "adynkra-11d-level16-embedded-coupling-v1",
-        role: "exact application of the shared abstract coupling to one exterior embedding",
+        schema_version: "adynkra-11d-level16-embedded-coupling-v1".to_string(),
+        role: "exact application of the shared abstract coupling to one exterior embedding"
+            .to_string(),
         source_dynkin_label: abstract_certificate.source_dynkin_label.clone(),
         source_copy: fixture_copy,
         source_fixture: fixture_artifact.to_string(),
-        target_dynkin_label: TARGET_DYNKIN_LABEL,
+        target_dynkin_label: TARGET_DYNKIN_LABEL.to_string(),
         abstract_coupling_source_copy: abstract_certificate.source_fixture_copy,
         product_weight_domain_dimension: domain.len(),
         primitive_domain_coefficients: abstract_certificate.primitive_domain_coefficients.clone(),
@@ -1082,6 +1088,72 @@ pub fn verify_copy(dynkin_label: &str, copy: usize) -> EmbeddedCouplingCertifica
     )
 }
 
+pub fn verify_copy_with_abstract(
+    abstract_certificate: &AbstractCouplingCertificate,
+    copy: usize,
+) -> EmbeddedCouplingCertificate {
+    let fixture = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures()
+        .into_iter()
+        .find(|fixture| {
+            fixture.dynkin_label == abstract_certificate.source_dynkin_label && fixture.copy == copy
+        })
+        .unwrap_or_else(|| {
+            panic!(
+                "unknown copy {copy} for level-16 source irrep {}",
+                abstract_certificate.source_dynkin_label
+            )
+        });
+    verify_embedded_with_abstract(
+        abstract_certificate,
+        fixture.copy,
+        fixture.artifact,
+        fixture.bytes,
+    )
+}
+
+pub fn summarize_all(
+    abstract_couplings: Vec<AbstractCouplingCertificate>,
+    embedded_copies: Vec<EmbeddedCouplingCertificate>,
+    execution_workers: usize,
+    memory_budget_gib: usize,
+    estimated_memory_gib_per_worker: usize,
+    resumed_from_atomic_checkpoints: bool,
+) -> AllCouplingCertificateReport {
+    let distinct_source_irreps_certified = abstract_couplings
+        .iter()
+        .filter(|report| report.passed)
+        .count();
+    let embedded_source_copies_certified = embedded_copies
+        .iter()
+        .filter(|report| report.passed)
+        .count();
+    let every_residual_is_exactly_zero = embedded_copies
+        .iter()
+        .all(|report| report.exact_raising_residual_terms_by_simple_root == [0; 5]);
+    let passed = distinct_source_irreps_certified == 8
+        && embedded_source_copies_certified == 12
+        && every_residual_is_exactly_zero;
+    AllCouplingCertificateReport {
+        schema_version: "adynkra-11d-level16-all-couplings-v1".to_string(),
+        role: "exact dense certification of all level-16 source couplings into (10001)"
+            .to_string(),
+        abstract_couplings,
+        embedded_copies,
+        distinct_source_irreps_certified,
+        embedded_source_copies_certified,
+        expected_distinct_source_irreps: 8,
+        expected_embedded_source_copies: 12,
+        every_residual_is_exactly_zero,
+        execution_workers,
+        memory_budget_gib,
+        estimated_memory_gib_per_worker,
+        resumed_from_atomic_checkpoints,
+        boundary: "this certifies the twelve source embeddings and their couplings into the (10001) channel under the stated exterior-algebra conventions; it does not solve the full Gates-Hu prepotential problem".to_string(),
+        passed,
+    }
+}
+
+#[allow(dead_code)]
 pub fn verify_all() -> AllCouplingCertificateReport {
     let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
     let mut grouped = BTreeMap::<&str, Vec<_>>::new();
@@ -1109,33 +1181,7 @@ pub fn verify_all() -> AllCouplingCertificateReport {
         }
         abstract_couplings.push(abstract_certificate);
     }
-    let distinct_source_irreps_certified = abstract_couplings
-        .iter()
-        .filter(|report| report.passed)
-        .count();
-    let embedded_source_copies_certified = embedded_copies
-        .iter()
-        .filter(|report| report.passed)
-        .count();
-    let every_residual_is_exactly_zero = embedded_copies
-        .iter()
-        .all(|report| report.exact_raising_residual_terms_by_simple_root == [0; 5]);
-    let passed = distinct_source_irreps_certified == 8
-        && embedded_source_copies_certified == 12
-        && every_residual_is_exactly_zero;
-    AllCouplingCertificateReport {
-        schema_version: "adynkra-11d-level16-all-couplings-v1",
-        role: "exact dense certification of all level-16 source couplings into (10001)",
-        abstract_couplings,
-        embedded_copies,
-        distinct_source_irreps_certified,
-        embedded_source_copies_certified,
-        expected_distinct_source_irreps: 8,
-        expected_embedded_source_copies: 12,
-        every_residual_is_exactly_zero,
-        boundary: "this certifies the twelve source embeddings and their couplings into the (10001) channel under the stated exterior-algebra conventions; it does not solve the full Gates-Hu prepotential problem",
-        passed,
-    }
+    summarize_all(abstract_couplings, embedded_copies, 1, 0, 0, false)
 }
 
 pub fn write_atomic_json<T: Serialize>(output: &Path, report: &T, passed: bool) -> io::Result<()> {
@@ -1204,14 +1250,8 @@ mod tests {
         assert!(report.passed);
         assert_eq!(report.product_weight_domain_dimension, 6);
         assert_eq!(report.kernel_dimension, 1);
-        assert_eq!(
-            report.primitive_domain_coefficients,
-            [1, -2, 2, -2, 2, -4]
-        );
-        assert_eq!(
-            report.exact_raising_residual_terms_by_simple_root,
-            [0; 5]
-        );
+        assert_eq!(report.primitive_domain_coefficients, [1, -2, 2, -2, 2, -4]);
+        assert_eq!(report.exact_raising_residual_terms_by_simple_root, [0; 5]);
         assert_eq!(
             report
                 .domain_basis
@@ -1244,11 +1284,9 @@ mod tests {
             fixture.bytes,
         );
         assert!(!report.passed);
-        assert!(
-            report
-                .exact_raising_residual_terms_by_simple_root
-                .iter()
-                .any(|terms| *terms != 0)
-        );
+        assert!(report
+            .exact_raising_residual_terms_by_simple_root
+            .iter()
+            .any(|terms| *terms != 0));
     }
 }
