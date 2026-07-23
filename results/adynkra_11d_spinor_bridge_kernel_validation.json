@@ -2979,9 +2979,156 @@
     "exact_coupling_constructed": true,
     "passed": true
   },
-  "leading_source_target_couplings_constructed": 2,
+  "additional_leading_source_target_couplings": [
+    {
+      "source_dynkin_label": "00100",
+      "source_copy": 1,
+      "target_dynkin_label": "10001",
+      "product_weight_domain_dimension": 14,
+      "source_weight_spaces_used": 11,
+      "source_weight_multiplicities": [
+        [
+          [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          4
+        ],
+        [
+          [
+            2,
+            0,
+            0,
+            0,
+            2
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            0,
+            0,
+            2,
+            0
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            0,
+            0,
+            2,
+            2
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            0,
+            2,
+            0,
+            0
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            0,
+            2,
+            0,
+            2
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            0,
+            2,
+            2,
+            0
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            2,
+            0,
+            0,
+            0
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            2,
+            0,
+            0,
+            2
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            2,
+            0,
+            2,
+            0
+          ],
+          1
+        ],
+        [
+          [
+            2,
+            2,
+            2,
+            0,
+            0
+          ],
+          1
+        ]
+      ],
+      "primitive_domain_coefficients": [
+        1,
+        3,
+        -4,
+        -2,
+        2,
+        -2,
+        4,
+        2,
+        -4,
+        4,
+        -2,
+        4,
+        -4,
+        4
+      ],
+      "coupled_nonzero_terms": 4812342,
+      "raising_residual_terms_by_simple_root": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "exact_coupling_constructed": true,
+      "passed": true
+    }
+  ],
+  "leading_source_target_couplings_constructed": 3,
   "expected_leading_source_target_couplings": 12,
   "derivative_matrix_constructed": false,
-  "boundary": "this verifies the nineteen source embeddings, the unique hook target coupling, and two of twelve leading source-to-vector-spinor couplings; the other ten source couplings and the 7-by-12 exterior-derivative matrix remain separate",
+  "boundary": "this verifies the nineteen source embeddings, the unique hook target coupling, and three of twelve leading source-to-vector-spinor couplings; the other nine leading couplings, seven hook source couplings, and the 7-by-12 exterior-derivative matrix remain separate",
   "passed": true
 }

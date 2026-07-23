@@ -38,6 +38,91 @@ kernel!(L17_11001_1, "level17_11001_highest_weight_kernel_1.i16le");
 kernel!(L17_11001_2, "level17_11001_highest_weight_kernel_2.i16le");
 kernel!(L17_11001_3, "level17_11001_highest_weight_kernel_3.i16le");
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct Level16FixtureRef {
+    pub dynkin_label: &'static str,
+    pub copy: usize,
+    pub artifact: &'static str,
+    pub bytes: &'static [u8],
+}
+
+pub(crate) fn level16_fixtures() -> Vec<Level16FixtureRef> {
+    vec![
+        Level16FixtureRef {
+            dynkin_label: "10000",
+            copy: 1,
+            artifact: "level16_10000_highest_weight_kernel.i16le",
+            bytes: L16_10000,
+        },
+        Level16FixtureRef {
+            dynkin_label: "20000",
+            copy: 1,
+            artifact: "level16_20000_highest_weight_kernel.i16le",
+            bytes: L16_20000,
+        },
+        Level16FixtureRef {
+            dynkin_label: "00100",
+            copy: 1,
+            artifact: "level16_00100_highest_weight_kernel_1.i16le",
+            bytes: L16_00100_1,
+        },
+        Level16FixtureRef {
+            dynkin_label: "00100",
+            copy: 2,
+            artifact: "level16_00100_highest_weight_kernel_2.i16le",
+            bytes: L16_00100_2,
+        },
+        Level16FixtureRef {
+            dynkin_label: "00010",
+            copy: 1,
+            artifact: "level16_00010_highest_weight_kernel_1.i16le",
+            bytes: L16_00010_1,
+        },
+        Level16FixtureRef {
+            dynkin_label: "00010",
+            copy: 2,
+            artifact: "level16_00010_highest_weight_kernel_2.i16le",
+            bytes: L16_00010_2,
+        },
+        Level16FixtureRef {
+            dynkin_label: "00002",
+            copy: 1,
+            artifact: "level16_00002_highest_weight_kernel.i16le",
+            bytes: L16_00002,
+        },
+        Level16FixtureRef {
+            dynkin_label: "10100",
+            copy: 1,
+            artifact: "level16_10100_highest_weight_kernel.i16le",
+            bytes: L16_10100,
+        },
+        Level16FixtureRef {
+            dynkin_label: "10010",
+            copy: 1,
+            artifact: "level16_10010_highest_weight_kernel.i16le",
+            bytes: L16_10010,
+        },
+        Level16FixtureRef {
+            dynkin_label: "10002",
+            copy: 1,
+            artifact: "level16_10002_highest_weight_kernel_1.i16le",
+            bytes: L16_10002_1,
+        },
+        Level16FixtureRef {
+            dynkin_label: "10002",
+            copy: 2,
+            artifact: "level16_10002_highest_weight_kernel_2.i16le",
+            bytes: L16_10002_2,
+        },
+        Level16FixtureRef {
+            dynkin_label: "10002",
+            copy: 3,
+            artifact: "level16_10002_highest_weight_kernel_3.i16le",
+            bytes: L16_10002_3,
+        },
+    ]
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct SourceTargetCouplingAudit {
     pub source_dynkin_label: &'static str,
@@ -70,6 +155,8 @@ pub struct DirectSpinorKernelReport {
     pub leading_source_target_couplings: Vec<SourceTargetCouplingAudit>,
     pub second_leading_source_target_coupling:
         crate::eleven_dimensional_bridge::SecondLeadingSourceCouplingAudit,
+    pub additional_leading_source_target_couplings:
+        Vec<crate::eleven_dimensional_bridge::GenericLeadingSourceCouplingAudit>,
     pub leading_source_target_couplings_constructed: usize,
     pub expected_leading_source_target_couplings: usize,
     pub derivative_matrix_constructed: bool,
@@ -245,8 +332,19 @@ pub fn verify() -> DirectSpinorKernelReport {
     let leading_source_target_couplings = vec![first_leading_coupling];
     let second_leading_source_target_coupling =
         crate::eleven_dimensional_bridge::audit_20000_to_10001_source_coupling(L16_20000);
+    let additional_leading_source_target_couplings = vec![
+        crate::eleven_dimensional_bridge::audit_generic_leading_source_coupling(
+            "00100",
+            1,
+            L16_00100_1,
+        ),
+    ];
     let leading_source_target_couplings_constructed = leading_source_target_couplings.len()
-        + usize::from(second_leading_source_target_coupling.passed);
+        + usize::from(second_leading_source_target_coupling.passed)
+        + additional_leading_source_target_couplings
+            .iter()
+            .filter(|coupling| coupling.passed)
+            .count();
     let expected_leading_source_target_couplings = 12;
     let expected_systems = 12;
     let expected_integer_kernel_vectors = 19;
@@ -258,7 +356,10 @@ pub fn verify() -> DirectSpinorKernelReport {
         && leading_source_target_couplings
             .iter()
             .all(|coupling| coupling.passed)
-        && second_leading_source_target_coupling.passed;
+        && second_leading_source_target_coupling.passed
+        && additional_leading_source_target_couplings
+            .iter()
+            .all(|coupling| coupling.passed);
     DirectSpinorKernelReport {
         schema_version: "adynkra-11d-spinor-bridge-kernels-v1",
         role: "exact Rust verification of the decomposed direct-spinor source embeddings",
@@ -274,11 +375,12 @@ pub fn verify() -> DirectSpinorKernelReport {
         hook_target_coupling,
         leading_source_target_couplings,
         second_leading_source_target_coupling,
+        additional_leading_source_target_couplings,
         leading_source_target_couplings_constructed,
         expected_leading_source_target_couplings,
         derivative_matrix_constructed: false,
         boundary:
-            "this verifies the nineteen source embeddings, the unique hook target coupling, and two of twelve leading source-to-vector-spinor couplings; the other ten source couplings and the 7-by-12 exterior-derivative matrix remain separate",
+            "this verifies the nineteen source embeddings, the unique hook target coupling, and three of twelve leading source-to-vector-spinor couplings; the other nine leading couplings, seven hook source couplings, and the 7-by-12 exterior-derivative matrix remain separate",
         passed,
     }
 }
@@ -296,6 +398,10 @@ mod tests {
         assert_eq!(report.integer_kernel_vectors_verified, 19);
         assert_eq!(report.nonzero_raising_residual_rows, 0);
         assert!(report.second_leading_source_target_coupling.passed);
-        assert_eq!(report.leading_source_target_couplings_constructed, 2);
+        assert!(report
+            .additional_leading_source_target_couplings
+            .iter()
+            .all(|coupling| coupling.passed));
+        assert_eq!(report.leading_source_target_couplings_constructed, 3);
     }
 }

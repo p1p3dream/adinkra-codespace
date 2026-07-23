@@ -71,7 +71,7 @@ on the target side is also constructed:
 Its highest-weight domain has dimension 8, its kernel has dimension 1, all
 eight primitive coefficients are nonzero, and every raising residual is zero.
 
-The first two leading source couplings are complete. The level-16 `(10000)`
+The first three leading source couplings are complete. The level-16 `(10000)`
 source highest vector, tensored with the highest spinor weight, gives the
 `(10001)` vector-spinor highest vector. Its stored source has 594,896 nonzero
 integer coefficients and zero raising residuals.
@@ -80,9 +80,12 @@ For the level-16 `(20000)` source, the coupling is the primitive six-term
 weight chain from source weight `(4,0,0,0,0)` to `(2,0,0,0,0)`. Its
 coefficients are `(4,-2,2,-2,2,-1)`. The coupled vector has 2,735,880 nonzero
 terms. Each of the five simple-root raising operators annihilates it exactly.
-This completes two of the 12 leading couplings.
+The first `(00100)` copy gives a 14-dimensional product-weight domain. Its
+primitive coupling has 14 coefficients, the coupled vector has 4,812,342
+nonzero terms, and all five simple-root raising residuals are zero.
 
-The remaining work is to construct the other 10 leading source couplings, the
+This completes three of the 12 leading couplings. The remaining work is to
+construct the other nine leading source couplings, the
 seven hook source couplings, and the derivative matrix.
 
 ## The proposed hook cancellation is not the direct-spinor test
@@ -180,6 +183,8 @@ Repository: <https://github.com/p1p3dream/adinkra-codespace>
 ```bash
 cargo run --release -- adynkra-11d-spinor-bridge-verify \
   > results/adynkra_11d_spinor_bridge_validation.json
+cargo run --release -- adynkra-11d-level16-coupling-precheck \
+  > results/adynkra_11d_level16_coupling_precheck.json
 cargo run --release -- adynkra-11d-spinor-kernel-verify \
   > results/adynkra_11d_spinor_bridge_kernel_validation.json
 cargo test eleven_dimensional_spinor_bridge

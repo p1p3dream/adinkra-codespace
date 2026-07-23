@@ -3327,6 +3327,373 @@ pub fn audit_20000_to_10001_source_coupling(
     }
 }
 
+fn lowering_coordinates(upper: Weight, lower: Weight) -> Option<[i16; 5]> {
+    let mut difference = [0_i16; 5];
+    for index in 0..5 {
+        let value = i16::from(upper[index]) - i16::from(lower[index]);
+        if value % 2 != 0 {
+            return None;
+        }
+        difference[index] = value / 2;
+    }
+    let coordinates = [
+        difference[0],
+        difference[0] + difference[1],
+        difference[0] + difference[1] + difference[2],
+        difference[0] + difference[1] + difference[2] + difference[3],
+        difference.iter().sum(),
+    ];
+    coordinates
+        .iter()
+        .all(|coordinate| *coordinate >= 0)
+        .then_some(coordinates)
+}
+
+// This prime is used only to select a computationally independent candidate
+// basis. A coupling is accepted only after its rational kernel is reconstructed
+// and every ambient integer raising residual is checked to be zero.
+const SPARSE_RANK_PRIME: u64 = 2_305_843_009_213_693_951;
+
+fn modular_value(value: i64) -> u64 {
+    if value >= 0 {
+        value as u64 % SPARSE_RANK_PRIME
+    } else {
+        let magnitude = value.unsigned_abs() % SPARSE_RANK_PRIME;
+        if magnitude == 0 {
+            0
+        } else {
+            SPARSE_RANK_PRIME - magnitude
+        }
+    }
+}
+
+fn modular_product(left: u64, right: u64) -> u64 {
+    ((u128::from(left) * u128::from(right)) % u128::from(SPARSE_RANK_PRIME)) as u64
+}
+
+fn modular_power(mut base: u64, mut exponent: u64) -> u64 {
+    let mut result = 1_u64;
+    while exponent != 0 {
+        if exponent & 1 == 1 {
+            result = modular_product(result, base);
+        }
+        base = modular_product(base, base);
+        exponent >>= 1;
+    }
+    result
+}
+
+fn select_independent_sparse_vectors(candidates: Vec<HashMap<u32, i64>>) -> Vec<HashMap<u32, i64>> {
+    let mut basis = Vec::<HashMap<u32, i64>>::new();
+    let mut echelon = Vec::<(u32, HashMap<u32, u64>)>::new();
+    for candidate in candidates {
+        if candidate.is_empty() {
+            continue;
+        }
+        let mut reduced = candidate
+            .iter()
+            .filter_map(|(&mask, &coefficient)| {
+                let coefficient = modular_value(coefficient);
+                (coefficient != 0).then_some((mask, coefficient))
+            })
+            .collect::<HashMap<_, _>>();
+        for (pivot, pivot_vector) in &echelon {
+            let factor = reduced.get(pivot).copied().unwrap_or(0);
+            if factor == 0 {
+                continue;
+            }
+            for (&mask, &pivot_coefficient) in pivot_vector {
+                let subtraction = modular_product(factor, pivot_coefficient);
+                let current = reduced.get(&mask).copied().unwrap_or(0);
+                let next = if current >= subtraction {
+                    current - subtraction
+                } else {
+                    SPARSE_RANK_PRIME - (subtraction - current)
+                };
+                if next == 0 {
+                    reduced.remove(&mask);
+                } else {
+                    reduced.insert(mask, next);
+                }
+            }
+        }
+        if let Some(pivot) = reduced.keys().copied().min() {
+            let inverse = modular_power(reduced[&pivot], SPARSE_RANK_PRIME - 2);
+            for coefficient in reduced.values_mut() {
+                *coefficient = modular_product(*coefficient, inverse);
+            }
+            echelon.push((pivot, reduced));
+            basis.push(candidate);
+        }
+    }
+    basis
+}
+
+fn relevant_source_weight_bases(
+    highest: HashMap<u32, i64>,
+    source_highest_weight: Weight,
+    target_weight: Weight,
+    spinors: &[Weight; 32],
+) -> HashMap<Weight, Vec<HashMap<u32, i64>>> {
+    let needed_weights = spinors
+        .iter()
+        .map(|spinor| subtract(target_weight, *spinor))
+        .filter_map(|weight| {
+            lowering_coordinates(source_highest_weight, weight).map(|coordinates| {
+                let depth = coordinates
+                    .iter()
+                    .map(|value| usize::try_from(*value).unwrap())
+                    .sum();
+                (weight, depth)
+            })
+        })
+        .collect::<HashMap<_, _>>();
+    let maximum_depth = needed_weights.values().copied().max().unwrap_or(0);
+    let mut current = HashMap::from([(source_highest_weight, vec![highest])]);
+    let mut required = HashMap::new();
+    for depth in 0..=maximum_depth {
+        let mut next_candidates = HashMap::<Weight, Vec<HashMap<u32, i64>>>::new();
+        for (weight, basis) in current {
+            if needed_weights
+                .get(&weight)
+                .is_some_and(|needed_depth| *needed_depth == depth)
+            {
+                required.insert(weight, basis.clone());
+            }
+            if depth == maximum_depth {
+                continue;
+            }
+            for root in 0..5 {
+                let next_weight = subtract(weight, SIMPLE_ROOTS[root]);
+                let remains_relevant = needed_weights.keys().any(|needed| {
+                    lowering_coordinates(next_weight, *needed).is_some()
+                        && lowering_coordinates(source_highest_weight, next_weight).is_some_and(
+                            |coordinates| {
+                                coordinates
+                                    .iter()
+                                    .map(|value| usize::try_from(*value).unwrap())
+                                    .sum::<usize>()
+                                    == depth + 1
+                            },
+                        )
+                });
+                if !remains_relevant {
+                    continue;
+                }
+                for vector in &basis {
+                    let lowered = lower_sparse(vector, root, spinors);
+                    if !lowered.is_empty() {
+                        next_candidates
+                            .entry(next_weight)
+                            .or_default()
+                            .push(lowered);
+                    }
+                }
+            }
+        }
+        current = next_candidates
+            .into_iter()
+            .map(|(weight, candidates)| (weight, select_independent_sparse_vectors(candidates)))
+            .filter(|(_, basis)| !basis.is_empty())
+            .collect();
+    }
+    required
+}
+
+fn raised_tensor_column(
+    source: &HashMap<u32, i64>,
+    spinor_index: usize,
+    root: usize,
+    spinors: &[Weight; 32],
+) -> HashMap<(u32, usize), i64> {
+    let mut output = HashMap::new();
+    for (mask, coefficient) in raise_sparse(source, root, spinors) {
+        *output.entry((mask, spinor_index)).or_insert(0) += coefficient;
+    }
+    if let Some(next_spinor) = raised_spinor_index(spinor_index, root, spinors) {
+        for (&mask, &coefficient) in source {
+            *output.entry((mask, next_spinor)).or_insert(0) += coefficient;
+        }
+    }
+    output.retain(|_, coefficient| *coefficient != 0);
+    output
+}
+
+fn one_dimensional_tensor_kernel(outputs: &[Vec<HashMap<(u32, usize), i64>>]) -> Option<Vec<i64>> {
+    let columns = outputs.len();
+    let mut rows = Vec::<Vec<Ratio<i64>>>::new();
+    let mut modular_echelon = Vec::<(usize, Vec<u64>)>::new();
+    let mut seen = std::collections::HashSet::new();
+    'scan: for root in 0..5 {
+        for column in outputs {
+            for key in column[root].keys().copied() {
+                if !seen.insert((root, key)) {
+                    continue;
+                }
+                let integer_row = outputs
+                    .iter()
+                    .map(|candidate| candidate[root].get(&key).copied().unwrap_or(0))
+                    .collect::<Vec<_>>();
+                let mut reduced = integer_row
+                    .iter()
+                    .map(|value| modular_value(*value))
+                    .collect::<Vec<_>>();
+                for (pivot, pivot_row) in &modular_echelon {
+                    let factor = reduced[*pivot];
+                    if factor == 0 {
+                        continue;
+                    }
+                    for index in *pivot..columns {
+                        let subtraction = modular_product(factor, pivot_row[index]);
+                        reduced[index] = if reduced[index] >= subtraction {
+                            reduced[index] - subtraction
+                        } else {
+                            SPARSE_RANK_PRIME - (subtraction - reduced[index])
+                        };
+                    }
+                }
+                if let Some(pivot) = reduced.iter().position(|value| *value != 0) {
+                    let inverse = modular_power(reduced[pivot], SPARSE_RANK_PRIME - 2);
+                    for value in &mut reduced[pivot..] {
+                        *value = modular_product(*value, inverse);
+                    }
+                    modular_echelon.push((pivot, reduced));
+                    rows.push(integer_row.into_iter().map(Ratio::from_integer).collect());
+                    if modular_echelon.len() >= columns.saturating_sub(1) {
+                        break 'scan;
+                    }
+                }
+            }
+        }
+    }
+    let mut nullspace = ratio_nullspace(&rows, columns);
+    loop {
+        if nullspace.len() != 1 {
+            return None;
+        }
+        let primitive = primitive_integer_vector(&nullspace[0]);
+        let residual = (0..5).find_map(|root| {
+            let mut combined = HashMap::<(u32, usize), i64>::new();
+            for (column, coefficient) in outputs.iter().zip(&primitive) {
+                for (&key, &value) in &column[root] {
+                    *combined.entry(key).or_insert(0) += coefficient * value;
+                }
+            }
+            combined
+                .into_iter()
+                .find(|(_, coefficient)| *coefficient != 0)
+                .map(|(key, _)| (root, key))
+        });
+        let Some((root, key)) = residual else {
+            return Some(primitive);
+        };
+        rows.push(
+            outputs
+                .iter()
+                .map(|candidate| {
+                    Ratio::from_integer(candidate[root].get(&key).copied().unwrap_or(0))
+                })
+                .collect(),
+        );
+        nullspace = ratio_nullspace(&rows, columns);
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GenericLeadingSourceCouplingAudit {
+    pub source_dynkin_label: String,
+    pub source_copy: usize,
+    pub target_dynkin_label: &'static str,
+    pub product_weight_domain_dimension: usize,
+    pub source_weight_spaces_used: usize,
+    pub source_weight_multiplicities: Vec<(Weight, usize)>,
+    pub primitive_domain_coefficients: Vec<i64>,
+    pub coupled_nonzero_terms: usize,
+    pub raising_residual_terms_by_simple_root: [usize; 5],
+    pub exact_coupling_constructed: bool,
+    pub passed: bool,
+}
+
+pub fn audit_generic_leading_source_coupling(
+    dynkin_label: &str,
+    source_copy: usize,
+    kernel_bytes: &[u8],
+) -> GenericLeadingSourceCouplingAudit {
+    let spinors = spinor_weights();
+    let left = half_groups(0, &spinors);
+    let right = half_groups(16, &spinors);
+    let source_highest_weight = dynkin_highest_weight(dynkin_label);
+    let source_basis = weight_basis(16, source_highest_weight, &left, &right);
+    let coefficients = decode_kernel(kernel_bytes);
+    assert_eq!(coefficients.len(), source_basis.len());
+    let highest = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients)
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<HashMap<_, _>>();
+    let target_weight = [3, 1, 1, 1, 1];
+    let source_weight_bases =
+        relevant_source_weight_bases(highest, source_highest_weight, target_weight, &spinors);
+    let mut domain = Vec::<(usize, HashMap<u32, i64>)>::new();
+    for (spinor_index, spinor_weight) in spinors.iter().copied().enumerate() {
+        let source_weight = subtract(target_weight, spinor_weight);
+        if let Some(basis) = source_weight_bases.get(&source_weight) {
+            domain.extend(basis.iter().cloned().map(|source| (spinor_index, source)));
+        }
+    }
+    let outputs = domain
+        .iter()
+        .map(|(spinor_index, source)| {
+            (0..5)
+                .map(|root| raised_tensor_column(source, *spinor_index, root, &spinors))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let primitive_domain_coefficients = one_dimensional_tensor_kernel(&outputs).unwrap_or_default();
+    let mut coupled = HashMap::<(u32, usize), i64>::new();
+    for ((spinor_index, source), coefficient) in domain.iter().zip(&primitive_domain_coefficients) {
+        for (&mask, &value) in source {
+            *coupled.entry((mask, *spinor_index)).or_insert(0) += coefficient * value;
+        }
+    }
+    coupled.retain(|_, coefficient| *coefficient != 0);
+    let raising_residual_terms_by_simple_root = std::array::from_fn(|root| {
+        let mut residual = HashMap::<(u32, usize), i64>::new();
+        for (column, coefficient) in outputs.iter().zip(&primitive_domain_coefficients) {
+            for (&key, &value) in &column[root] {
+                *residual.entry(key).or_insert(0) += coefficient * value;
+            }
+        }
+        residual
+            .values()
+            .filter(|coefficient| **coefficient != 0)
+            .count()
+    });
+    let exact_coupling_constructed = primitive_domain_coefficients.len() == domain.len()
+        && !primitive_domain_coefficients.is_empty()
+        && raising_residual_terms_by_simple_root == [0; 5];
+    let mut source_weight_multiplicities = source_weight_bases
+        .iter()
+        .map(|(weight, basis)| (*weight, basis.len()))
+        .collect::<Vec<_>>();
+    source_weight_multiplicities.sort_unstable_by_key(|(weight, _)| *weight);
+    GenericLeadingSourceCouplingAudit {
+        source_dynkin_label: dynkin_label.to_string(),
+        source_copy,
+        target_dynkin_label: "10001",
+        product_weight_domain_dimension: domain.len(),
+        source_weight_spaces_used: source_weight_bases.len(),
+        source_weight_multiplicities,
+        primitive_domain_coefficients,
+        coupled_nonzero_terms: coupled.len(),
+        raising_residual_terms_by_simple_root,
+        exact_coupling_constructed,
+        passed: exact_coupling_constructed,
+    }
+}
+
 fn integer_gcd(left: i16, right: i16) -> i16 {
     if right == 0 {
         left
