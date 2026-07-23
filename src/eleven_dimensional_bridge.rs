@@ -108,8 +108,8 @@ pub struct ElevenDimensionalBridgeReport {
     pub level_sixteen_derivative_channel_audit: LevelSixteenDerivativeChannelAudit,
     pub level_sixteen_exterior_derivative_audit: LevelSixteenExteriorDerivativeAudit,
     pub dimension_zero_torsion_sector_audit: DimensionZeroTorsionSectorAudit,
-    pub spacetime_completion_audit: SpacetimeCompletionAudit,
-    pub final_equation_2_7_projection: FinalEquationProjectionAudit,
+    pub first_derivative_momentum_audit: FirstDerivativeMomentumAudit,
+    pub zero_momentum_equation_2_7_projection: ZeroMomentumEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
     pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
     pub linearized_scale_freedom_audit: LinearizedScaleFreedomAudit,
@@ -290,6 +290,36 @@ pub struct LevelSixteenExteriorDerivativeAudit {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct MomentumHookChannelAudit {
+    pub dynkin_label: String,
+    pub torsion_sector: &'static str,
+    pub exterior_level: usize,
+    pub exterior_image_nonzero: bool,
+    pub momentum_contraction_level: usize,
+    pub momentum_real_fingerprint_residues: [u64; 3],
+    pub momentum_imaginary_fingerprint_residues: [u64; 3],
+    pub momentum_contraction_nonzero_certified: bool,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstDerivativeMomentumAudit {
+    pub derivative_identity: &'static str,
+    pub exact_sample_momentum: [i64; 11],
+    pub cartan_weight_entries_checked: usize,
+    pub cartan_weight_mismatches: usize,
+    pub chevalley_lowering_actions_checked: usize,
+    pub chevalley_lowering_residual_actions: usize,
+    pub clifford_and_weight_bases_aligned: bool,
+    pub channels: Vec<MomentumHookChannelAudit>,
+    pub two_form_hook_momentum_contraction_nonzero: bool,
+    pub five_form_hook_momentum_contraction_nonzero: bool,
+    pub implication: &'static str,
+    pub scope: &'static str,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct TorsionSectorChannelAudit {
     pub dynkin_label: &'static str,
     pub dimension: u64,
@@ -446,64 +476,6 @@ fn audit_dimension_zero_torsion_sectors(
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SpacetimeCompletionTerm {
-    pub spacetime_momentum_power: usize,
-    pub spinor_derivative_order: usize,
-    pub total_half_derivative_units: usize,
-    pub scalar_source_level: usize,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct SpacetimeCompletionAudit {
-    pub derivative_algebra: &'static str,
-    pub fixed_total_half_derivative_units: usize,
-    pub allowed_local_terms: Vec<SpacetimeCompletionTerm>,
-    pub leading_exterior_term_verified: bool,
-    pub lower_spinor_level_terms_required_for_generic_momentum: bool,
-    pub cited_sources_print_completion_coefficients: bool,
-    pub full_generic_momentum_completion_determined: bool,
-    pub interpretation: &'static str,
-    pub passed: bool,
-}
-
-fn audit_spacetime_completion() -> SpacetimeCompletionAudit {
-    let allowed_local_terms = (0..=7)
-        .map(|spacetime_momentum_power| {
-            let spinor_derivative_order = 15 - 2 * spacetime_momentum_power;
-            SpacetimeCompletionTerm {
-                spacetime_momentum_power,
-                spinor_derivative_order,
-                total_half_derivative_units: spinor_derivative_order + 2 * spacetime_momentum_power,
-                scalar_source_level: spinor_derivative_order,
-            }
-        })
-        .collect::<Vec<_>>();
-    let leading_exterior_term_verified = true;
-    let lower_spinor_level_terms_required_for_generic_momentum = true;
-    let cited_sources_print_completion_coefficients = false;
-    let full_generic_momentum_completion_determined = false;
-    let passed = allowed_local_terms.len() == 8
-        && allowed_local_terms
-            .iter()
-            .all(|term| term.total_half_derivative_units == 15)
-        && leading_exterior_term_verified
-        && lower_spinor_level_terms_required_for_generic_momentum
-        && !cited_sources_print_completion_coefficients
-        && !full_generic_momentum_completion_determined;
-    SpacetimeCompletionAudit {
-        derivative_algebra: "{D_alpha,D_beta}=i Gamma^a_{alpha beta} p_a",
-        fixed_total_half_derivative_units: 15,
-        allowed_local_terms,
-        leading_exterior_term_verified,
-        lower_spinor_level_terms_required_for_generic_momentum,
-        cited_sources_print_completion_coefficients,
-        full_generic_momentum_completion_determined,
-        interpretation: "a Lorentz-covariant local completion may mix p^r D^(15-2r) V for r=0 through 7; the completed exterior symbol fixes only the r=0 term, while the cited papers do not print the seven lower-level coefficient systems",
-        passed,
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
 pub struct CanonicalSourceLineNormalizationAudit {
     pub source_artifact: &'static str,
     pub source_dynkin_label: &'static str,
@@ -644,7 +616,7 @@ fn audit_local_gamma_trace_quotient(
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct FinalEquationProjectionAudit {
+pub struct ZeroMomentumEquationProjectionAudit {
     pub source_equation: &'static str,
     pub linearized_formula_source: &'static str,
     pub raw_two_form_vector_dimension: usize,
@@ -655,13 +627,13 @@ pub struct FinalEquationProjectionAudit {
     pub dimension_decomposition_closes: bool,
     pub scalar_level_checked: usize,
     pub hook_multiplicity_in_scalar_level: usize,
-    pub projected_constraint_rank_on_bridge_coefficients: usize,
-    pub surviving_bridge_coefficient_dimension: usize,
+    pub exterior_symbol_rank_on_bridge_coefficients: usize,
+    pub exterior_symbol_kernel_dimension: usize,
     pub interpretation: &'static str,
     pub passed: bool,
 }
 
-fn audit_final_equation_2_7_projection() -> FinalEquationProjectionAudit {
+fn audit_zero_momentum_equation_2_7_projection() -> ZeroMomentumEquationProjectionAudit {
     let raw_two_form_vector_dimension = 55 * 11;
     let conventional_vector_dimension = 11;
     let conventional_three_form_dimension = 165;
@@ -672,11 +644,10 @@ fn audit_final_equation_2_7_projection() -> FinalEquationProjectionAudit {
         + conventional_three_form_dimension
         + remaining_hook_dimension
         == raw_two_form_vector_dimension;
-    let projected_constraint_rank_on_bridge_coefficients =
+    let exterior_symbol_rank_on_bridge_coefficients =
         usize::from(hook_multiplicity_in_scalar_level != 0);
-    let surviving_bridge_coefficient_dimension =
-        3 - projected_constraint_rank_on_bridge_coefficients;
-    FinalEquationProjectionAudit {
+    let exterior_symbol_kernel_dimension = 3 - exterior_symbol_rank_on_bridge_coefficients;
+    ZeroMomentumEquationProjectionAudit {
         source_equation: "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
         linearized_formula_source: "Eqs. (39)-(40) of hep-th/0101037",
         raw_two_form_vector_dimension,
@@ -687,12 +658,12 @@ fn audit_final_equation_2_7_projection() -> FinalEquationProjectionAudit {
         dimension_decomposition_closes,
         scalar_level_checked: 16,
         hook_multiplicity_in_scalar_level,
-        projected_constraint_rank_on_bridge_coefficients,
-        surviving_bridge_coefficient_dimension,
-        interpretation: "the vector and three-form pieces are removed by conventional constraints; the remaining 429-dimensional hook is absent from level 16 of the scalar superfield, so the final Eq. (2.7) projection vanishes representation-theoretically and does not select among a, b, and c",
+        exterior_symbol_rank_on_bridge_coefficients,
+        exterior_symbol_kernel_dimension,
+        interpretation: "the vector and three-form pieces are removed by conventional constraints; the remaining 429-dimensional hook is absent from the level-16 exterior symbol, so that symbol has rank zero on a, b, and c; the nonzero level-14 momentum contraction shows that this statement does not extend to the full generic-momentum Eq. (2.7) operator",
         passed: dimension_decomposition_closes
             && hook_multiplicity_in_scalar_level == 0
-            && surviving_bridge_coefficient_dimension == 3,
+            && exterior_symbol_kernel_dimension == 3,
     }
 }
 
@@ -1249,6 +1220,8 @@ struct ExteriorChannelPlan {
     highest_weight_kernel_dimension: usize,
     raising_residual_terms: usize,
     fingerprint_residues: [u64; 3],
+    momentum_contraction_real_residues: [u64; 3],
+    momentum_contraction_imaginary_residues: [u64; 3],
 }
 
 fn ratio_nullspace(rows: &[Vec<Ratio<i64>>], columns: usize) -> Vec<Vec<Ratio<i64>>> {
@@ -1399,6 +1372,8 @@ fn build_exterior_channel_plans(spinors: &[Weight; 32]) -> Vec<ExteriorChannelPl
                 highest_weight_kernel_dimension: kernel.len(),
                 raising_residual_terms,
                 fingerprint_residues: [0; 3],
+                momentum_contraction_real_residues: [0; 3],
+                momentum_contraction_imaginary_residues: [0; 3],
             }
         })
         .collect()
@@ -1446,6 +1421,64 @@ fn accumulate_exterior_fingerprint(
             residues[index] = ((u128::from(residues[index])
                 + u128::from(coefficient) * u128::from(hash))
                 % u128::from(prime)) as u64;
+        }
+    }
+}
+
+fn contracted_translation_bilinear(momentum: &[i64; 11]) -> Vec<Vec<(i64, i64)>> {
+    let bilinears = crate::eleven_dimensional_clifford::translation_bilinears();
+    let mut contracted = vec![vec![(0_i64, 0_i64); 32]; 32];
+    for outer in 0..32 {
+        for inner in 0..32 {
+            for vector in 0..11 {
+                let value = &bilinears[vector][outer][inner];
+                assert_eq!(*value.re.denom(), 1);
+                assert_eq!(*value.im.denom(), 1);
+                contracted[outer][inner].0 += momentum[vector] * *value.re.numer();
+                contracted[outer][inner].1 += momentum[vector] * *value.im.numer();
+            }
+        }
+    }
+    contracted
+}
+
+fn accumulate_momentum_contraction_fingerprint(
+    real_residues: &mut [u64; 3],
+    imaginary_residues: &mut [u64; 3],
+    outer_spinor_index: usize,
+    domain_coefficient: i64,
+    source: &[(u32, i64)],
+    contracted_bilinear: &[Vec<(i64, i64)>],
+) {
+    for &(mask, source_coefficient) in source {
+        let mut remaining = mask;
+        let mut position = 0_u32;
+        while remaining != 0 {
+            let contracted_spinor_index = remaining.trailing_zeros() as usize;
+            remaining &= remaining - 1;
+            let contraction_sign = if position % 2 == 0 { 1_i128 } else { -1_i128 };
+            position += 1;
+            let output_mask = mask ^ (1_u32 << contracted_spinor_index);
+            let (gamma_real, gamma_imaginary) =
+                contracted_bilinear[outer_spinor_index][contracted_spinor_index];
+            let common =
+                i128::from(domain_coefficient) * i128::from(source_coefficient) * contraction_sign;
+            let signed_real = common * i128::from(gamma_real);
+            let signed_imaginary = common * i128::from(gamma_imaginary);
+            for index in 0..3 {
+                let prime = EXTERIOR_FINGERPRINT_PRIMES[index];
+                let hash = splitmix64(
+                    u64::from(output_mask) ^ EXTERIOR_FINGERPRINT_SEEDS[index] ^ 0xfeed_face,
+                ) % prime;
+                let real = signed_real.rem_euclid(i128::from(prime)) as u64;
+                let imaginary = signed_imaginary.rem_euclid(i128::from(prime)) as u64;
+                real_residues[index] = ((u128::from(real_residues[index])
+                    + u128::from(real) * u128::from(hash))
+                    % u128::from(prime)) as u64;
+                imaginary_residues[index] = ((u128::from(imaginary_residues[index])
+                    + u128::from(imaginary) * u128::from(hash))
+                    % u128::from(prime)) as u64;
+            }
         }
     }
 }
@@ -1502,6 +1535,7 @@ fn audit_full_vector_spinor_source_descendants(
 ) -> (
     VectorSpinorSourceDescendantAudit,
     LevelSixteenExteriorDerivativeAudit,
+    FirstDerivativeMomentumAudit,
 ) {
     let vectors = vector_weights();
     let vector_highest = vectors
@@ -1541,6 +1575,17 @@ fn audit_full_vector_spinor_source_descendants(
     let mut maximum_absolute_source_coefficient = 0_i64;
     let mut exterior_channel_plans = build_exterior_channel_plans(spinors);
     let reference_target_states = generate_layer_adapted_vector_spinor_target_states(spinors);
+    let exact_sample_momentum = [1_i64, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    let contracted_bilinear = contracted_translation_bilinear(&exact_sample_momentum);
+    let (
+        cartan_weight_entries_checked,
+        cartan_weight_mismatches,
+        chevalley_lowering_actions_checked,
+        chevalley_lowering_residual_actions,
+    ) = crate::eleven_dimensional_clifford::translation_bilinear_basis_alignment();
+    let clifford_and_weight_bases_aligned = cartan_weight_mismatches == 0
+        && chevalley_lowering_actions_checked == 48
+        && chevalley_lowering_residual_actions == 0;
 
     while !current.is_empty() {
         let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
@@ -1567,6 +1612,16 @@ fn audit_full_vector_spinor_source_descendants(
                             *coefficient,
                             &state.source,
                         );
+                        if plan.dynkin_label == "11000" || plan.dynkin_label == "10002" {
+                            accumulate_momentum_contraction_fingerprint(
+                                &mut plan.momentum_contraction_real_residues,
+                                &mut plan.momentum_contraction_imaginary_residues,
+                                entry.outer_spinor_index,
+                                *coefficient,
+                                &state.source,
+                                &contracted_bilinear,
+                            );
+                        }
                     }
                 }
                 minimum_source_state_support = minimum_source_state_support.min(state.source.len());
@@ -1650,6 +1705,62 @@ fn audit_full_vector_spinor_source_descendants(
         maximum_absolute_source_coefficient,
         exact_full_vector_spinor_intertwiner_verified,
     };
+    let momentum_channels = exterior_channel_plans
+        .iter()
+        .filter(|plan| plan.dynkin_label == "11000" || plan.dynkin_label == "10002")
+        .map(|plan| {
+            let momentum_contraction_nonzero_certified = plan
+                .momentum_contraction_real_residues
+                .iter()
+                .chain(&plan.momentum_contraction_imaginary_residues)
+                .any(|residue| *residue != 0);
+            MomentumHookChannelAudit {
+                dynkin_label: plan.dynkin_label.clone(),
+                torsion_sector: if plan.dynkin_label == "11000" {
+                    "X_[2] traceless hook"
+                } else {
+                    "X_[5] traceless hook"
+                },
+                exterior_level: 16,
+                exterior_image_nonzero: plan.fingerprint_residues.iter().any(|value| *value != 0),
+                momentum_contraction_level: 14,
+                momentum_real_fingerprint_residues: plan.momentum_contraction_real_residues,
+                momentum_imaginary_fingerprint_residues: plan
+                    .momentum_contraction_imaginary_residues,
+                momentum_contraction_nonzero_certified,
+                passed: momentum_contraction_nonzero_certified,
+            }
+        })
+        .collect::<Vec<_>>();
+    let two_form_hook_momentum_contraction_nonzero = momentum_channels
+        .iter()
+        .find(|channel| channel.dynkin_label == "11000")
+        .unwrap()
+        .momentum_contraction_nonzero_certified;
+    let five_form_hook_momentum_contraction_nonzero = momentum_channels
+        .iter()
+        .find(|channel| channel.dynkin_label == "10002")
+        .unwrap()
+        .momentum_contraction_nonzero_certified;
+    let momentum_channels_pass = momentum_channels.iter().all(|channel| channel.passed);
+    let first_derivative_momentum_audit = FirstDerivativeMomentumAudit {
+        derivative_identity: "D_beta D_[alpha1...alpha15] = D_[beta alpha1...alpha15] + sum_i (-1)^(i-1) {D_beta,D_alphai} D_[alpha1...omit alphai...alpha15]",
+        exact_sample_momentum,
+        cartan_weight_entries_checked,
+        cartan_weight_mismatches,
+        chevalley_lowering_actions_checked,
+        chevalley_lowering_residual_actions,
+        clifford_and_weight_bases_aligned,
+        channels: momentum_channels,
+        two_form_hook_momentum_contraction_nonzero,
+        five_form_hook_momentum_contraction_nonzero,
+        implication: "the level-16 exterior inventory alone does not settle the final X_[2] hook at nonzero momentum because the superderivative anticommutator supplies a level-14 momentum term",
+        scope: "a nonzero residue at one exact momentum proves that the polynomial momentum contraction is not identically zero; this does not solve the torsion constraint or the Bianchi identities",
+        passed: two_form_hook_momentum_contraction_nonzero
+            && five_form_hook_momentum_contraction_nonzero
+            && momentum_channels_pass
+            && clifford_and_weight_bases_aligned,
+    };
     let exterior_channels = exterior_channel_plans
         .into_iter()
         .map(|plan| {
@@ -1726,7 +1837,11 @@ fn audit_full_vector_spinor_source_descendants(
         channels: exterior_channels,
         interpretation: "the exterior symbol is nonzero on each of the eight level-16 channels allowed by the scalar inventory; the 01000 and 11000 images vanish, as required by the scalar inventory; nonzero modular residues certify that the corresponding integer exterior images are nonzero; spacetime-derivative terms and curvature identifications are not included",
     };
-    (source_descendant_audit, exterior_derivative_audit)
+    (
+        source_descendant_audit,
+        exterior_derivative_audit,
+        first_derivative_momentum_audit,
+    )
 }
 
 fn audit_full_spinor_descendants(
@@ -2011,17 +2126,19 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         .collect::<Vec<_>>();
     let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
     let vector_spinor_source_basis = weight_basis([3, 1, 1, 1, 1], &left, &right);
-    let (vector_spinor_source_descendant_audit, level_sixteen_exterior_derivative_audit) =
-        audit_full_vector_spinor_source_descendants(
-            &vector_spinor_source_basis,
-            &decode_kernel(VECTOR_SPINOR_KERNEL),
-            &weights,
-        );
+    let (
+        vector_spinor_source_descendant_audit,
+        level_sixteen_exterior_derivative_audit,
+        first_derivative_momentum_audit,
+    ) = audit_full_vector_spinor_source_descendants(
+        &vector_spinor_source_basis,
+        &decode_kernel(VECTOR_SPINOR_KERNEL),
+        &weights,
+    );
     let level_sixteen_derivative_channel_audit = audit_level_sixteen_derivative_channels();
     let dimension_zero_torsion_sector_audit =
         audit_dimension_zero_torsion_sectors(&level_sixteen_exterior_derivative_audit);
-    let spacetime_completion_audit = audit_spacetime_completion();
-    let final_equation_2_7_projection = audit_final_equation_2_7_projection();
+    let zero_momentum_equation_2_7_projection = audit_zero_momentum_equation_2_7_projection();
     let clifford = crate::eleven_dimensional_clifford::verify();
     let local_gamma_trace_quotient = audit_local_gamma_trace_quotient(&clifford);
     let canonical_source_line_normalization = audit_canonical_source_line_normalization();
@@ -2040,15 +2157,15 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && level_sixteen_derivative_channel_audit.passed
         && level_sixteen_exterior_derivative_audit.passed
         && dimension_zero_torsion_sector_audit.passed
-        && spacetime_completion_audit.passed
-        && final_equation_2_7_projection.passed
+        && first_derivative_momentum_audit.passed
+        && zero_momentum_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
         && canonical_source_line_normalization.passed
         && linearized_scale_freedom_audit.passed
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v6",
+        schema_version: "adynkra.11d.level15-bridge.v7",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -2074,8 +2191,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
                 target_sector: "gamma-traceless vector-spinor",
             },
         ],
-        equation_2_7_status: "the final gamma^[2] projection has rank zero on the three bridge channels; all 384 source descendant states are generated and their complete simple-root action is verified",
-        coefficient_solution_status: "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the surviving source line has a canonical computational normalization, while the overall nonzero c is a scalar-prepotential normalization convention until V is matched to a normalized component field",
+        equation_2_7_status: "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels, but the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook; the full generic-momentum Eq. (2.7) operator remains to be solved",
+        coefficient_solution_status: "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; whether the generic-momentum torsion constraint permits the surviving c channel is unresolved",
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
@@ -2085,13 +2202,13 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         level_sixteen_derivative_channel_audit,
         level_sixteen_exterior_derivative_audit,
         dimension_zero_torsion_sector_audit,
-        spacetime_completion_audit,
-        final_equation_2_7_projection,
+        first_derivative_momentum_audit,
+        zero_momentum_equation_2_7_projection,
         local_gamma_trace_quotient,
         canonical_source_line_normalization,
         linearized_scale_freedom_audit,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, resolves the zero-spacetime-momentum exterior symbol, and identifies its dimension-zero X_[2] and X_[5] representation sectors. A component normalization of V, the seven lower-level momentum-completion systems, and the full superspace Bianchi complex remain.",
+        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both surviving torsion-hook tests. The nonzero X_[2] momentum term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. Solving that differential constraint and the superspace Bianchi complex remain.",
         passed,
     }
 }
@@ -2212,34 +2329,6 @@ mod tests {
     }
 
     #[test]
-    fn spacetime_completion_has_eight_local_derivative_orders() {
-        let audit = audit_spacetime_completion();
-        assert_eq!(audit.allowed_local_terms.len(), 8);
-        assert_eq!(
-            audit
-                .allowed_local_terms
-                .iter()
-                .map(|term| (term.spacetime_momentum_power, term.spinor_derivative_order))
-                .collect::<Vec<_>>(),
-            vec![
-                (0, 15),
-                (1, 13),
-                (2, 11),
-                (3, 9),
-                (4, 7),
-                (5, 5),
-                (6, 3),
-                (7, 1)
-            ]
-        );
-        assert!(audit.leading_exterior_term_verified);
-        assert!(audit.lower_spinor_level_terms_required_for_generic_momentum);
-        assert!(!audit.cited_sources_print_completion_coefficients);
-        assert!(!audit.full_generic_momentum_completion_determined);
-        assert!(audit.passed);
-    }
-
-    #[test]
     #[ignore = "constructs 3.1 million rows and 12 million exact sparse entries"]
     fn full_level_15_system_matches_independent_counts() {
         let report = verify();
@@ -2312,20 +2401,24 @@ mod tests {
         assert!(torsion.five_form_remaining_hook_nonzero);
         assert!(torsion.complete_dimension_partition);
         assert!(torsion.passed);
-        let completion = &report.spacetime_completion_audit;
-        assert_eq!(completion.allowed_local_terms.len(), 8);
-        assert!(!completion.full_generic_momentum_completion_determined);
-        assert!(completion.passed);
-        let projection = &report.final_equation_2_7_projection;
+        let momentum = &report.first_derivative_momentum_audit;
+        assert_eq!(momentum.channels.len(), 2);
+        assert_eq!(momentum.cartan_weight_entries_checked, 5 * 32 * 32);
+        assert_eq!(momentum.cartan_weight_mismatches, 0);
+        assert_eq!(momentum.chevalley_lowering_actions_checked, 48);
+        assert_eq!(momentum.chevalley_lowering_residual_actions, 0);
+        assert!(momentum.clifford_and_weight_bases_aligned);
+        assert!(momentum.two_form_hook_momentum_contraction_nonzero);
+        assert!(momentum.five_form_hook_momentum_contraction_nonzero);
+        assert!(momentum.channels.iter().all(|channel| channel.passed));
+        assert!(momentum.passed);
+        let projection = &report.zero_momentum_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);
         assert_eq!(projection.remaining_hook_dynkin_label, "11000");
         assert_eq!(projection.remaining_hook_dimension, 429);
         assert_eq!(projection.hook_multiplicity_in_scalar_level, 0);
-        assert_eq!(
-            projection.projected_constraint_rank_on_bridge_coefficients,
-            0
-        );
-        assert_eq!(projection.surviving_bridge_coefficient_dimension, 3);
+        assert_eq!(projection.exterior_symbol_rank_on_bridge_coefficients, 0);
+        assert_eq!(projection.exterior_symbol_kernel_dimension, 3);
         assert!(projection.passed);
         let quotient = &report.local_gamma_trace_quotient;
         assert_eq!(quotient.local_symmetry_image_rank, 32);

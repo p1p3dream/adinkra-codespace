@@ -166,8 +166,9 @@ nonzero residue is a certificate that the underlying integer exterior image is
 nonzero. All three residues vanish for each inventory-forbidden channel; their
 vanishing is a cross-check, while the representation inventory supplies the
 zero proof. The `(11000)` is the 429-dimensional hook left by the conventional
-decomposition of the two-form-vector torsion, so its absence gives the
-vanishing of the final Eq. (2.7) projection.
+decomposition of the two-form-vector torsion. Its exterior image vanishes. This
+settles the level-16 exterior symbol, not the generic-momentum torsion
+projection.
 
 ## Dimension-zero torsion sectors
 
@@ -185,7 +186,9 @@ For the two-form-vector,
 The 11-dimensional trace vector and 165-dimensional three-form have nonzero
 exterior images and are removed by the conventional constraints in Eq. (40).
 The remaining 429-dimensional hook has zero image. Thus the scalar bridge has
-no surviving $X_{[2]}$ hook at the exterior symbol.
+no surviving $X_{[2]}$ hook in the level-16 exterior symbol. The first
+superderivative also contains a momentum contraction with the level-14 source,
+which is treated below.
 
 For the five-form-vector,
 
@@ -209,7 +212,7 @@ Together, $605+5{,}082+4{,}553=10{,}240$. This identifies the representation
 sectors in the dimension-zero torsion formulas. It does not impose the full
 superspace Bianchi identities.
 
-## Spacetime completion boundary
+## First-superderivative momentum term
 
 The flat superspace derivative algebra is
 
@@ -217,19 +220,40 @@ The flat superspace derivative algebra is
 \{D_\alpha,D_\beta\}=i(\Gamma^a)_{\alpha\beta}p_a.
 \]
 
-Consequently, a local Lorentz-covariant completion with the same engineering
-order can mix eight derivative orders:
+For the antisymmetrized level-15 source, one further superderivative gives
 
 \[
-D^{15}V,\ pD^{13}V,\ p^2D^{11}V,\ p^3D^9V,\
-p^4D^7V,\ p^5D^5V,\ p^6D^3V,\ p^7DV.
+D_\beta D_{[\alpha_1\ldots\alpha_{15}]}=
+D_{[\beta\alpha_1\ldots\alpha_{15}]}+
+\sum_{i=1}^{15}(-1)^{i-1}
+\{D_\beta,D_{\alpha_i}\}
+D_{[\alpha_1\ldots\widehat{\alpha_i}\ldots\alpha_{15}]}.
 \]
 
-The present calculation fixes the first term. The cited papers state that the
-bridge contains fifteen spinor derivatives but do not print coefficient
-systems for the seven lower-spinor-level momentum terms. Those systems must be
-constructed before claiming a generic-momentum bridge or a complete curvature
-complex.
+The first term is the level-16 exterior symbol. The anticommutator gives a
+single momentum factor multiplying a level-14 source. The Rust verifier
+evaluates both terms for the two torsion-hook channels at the exact momentum
+$p=(1,2,3,4,5,6,7,8,9,10,11)$.
+
+The Clifford spinor basis is aligned with the weight basis before the
+contraction. The verifier checks 5,120 Cartan-matrix entries with zero mismatch
+and all 48 nonzero Chevalley lowering actions with zero residual. It then finds:
+
+| torsion hook | level-16 exterior image | level-14 momentum contraction |
+|---|---|---|
+| $X_{[2]}$, `(11000)` | zero | nonzero |
+| $X_{[5]}$, `(10002)` | nonzero | nonzero |
+
+Each nonzero statement is certified by nonzero residues of deterministic
+modular linear functionals. A nonzero value at one exact momentum proves that
+the corresponding momentum polynomial is not identically zero.
+
+The `(11000)` result changes the boundary of the calculation. Absence of that
+representation from the scalar level-16 inventory proves only that the
+exterior symbol vanishes. It does not prove that the generic-momentum
+projection in Eq. (2.7) vanishes. The full linearized torsion operator may
+contain additional terms that cancel or constrain this contribution. Those
+terms and the Bianchi identities have not been solved here.
 
 ## Canonical computational normalization
 
@@ -273,17 +297,17 @@ spinor intertwiners. It also materializes the complete 320-dimensional target
 module, verifies its full source intertwiner, and fixes a canonical
 computational normalization of the surviving source highest-weight line. It
 also resolves the zero-spacetime-momentum exterior symbol on all ten level-16
-candidate channels.
+candidate channels and the first level-14 momentum contraction in both torsion
+hooks.
 Consequently:
 
-- the final two-form torsion projection has now been evaluated at the
-  representation level and has rank zero on the three coefficients;
-- Eq. (2.7) therefore does not select a unique combination of the three bridge
-  channels; and
-- component normalization of $V$, the seven lower-level momentum-completion
-  systems, generic-momentum gauge reducibility, and the full superspace Bianchi
-  complex remain open. The exterior symbol identifies the dimension-zero
-  $X_{[2]}$ and $X_{[5]}$ representation sectors.
+- the level-16 exterior two-form-hook symbol has rank zero on the three bridge
+  coefficients;
+- the level-14 momentum contraction into the same hook is nonzero, so the
+  level-16 inventory does not settle Eq. (2.7) at generic momentum; and
+- the complete linearized torsion operator, component normalization of $V$,
+  generic-momentum gauge reducibility, and the superspace Bianchi complex
+  remain open.
 
 ## Primary-source dependency for Eq. (2.7)
 
@@ -298,12 +322,12 @@ starting formulas:
 - the subsequent conventional-constraint analysis relating the holonomy
   superfields and spin connections to $H_\alpha{}^a$.
 
-Equations (39)-(40) already state the representation-level elimination needed
-for the final projection. A component-level reproduction of the complete
-linearized frame remains useful as an independent check, but is not required
-to determine the rank of this final constraint on the three bridge channels.
+Equations (39)-(40) state the conventional representation-level elimination.
+The nonzero level-14 momentum term shows that a component-level reconstruction
+of the complete linearized torsion operator is required to determine the rank
+of Eq. (2.7) on the bridge.
 
-## Result of the final Eq. (2.7) projection
+## Zero-momentum exterior projection
 
 Equations (39)-(40) of hep-th/0101037 decompose the two-form-vector tensor
 $X_{ab}{}^c$. Its 605 components split as
@@ -315,21 +339,21 @@ $X_{ab}{}^c$. Its 605 components split as
 The vector and three-form pieces are removed by conventional constraints. The
 remaining traceless hook is the `(11000)` representation of dimension 429.
 The exact level-16 scalar-superfield inventory contains zero copies of
-`(11000)`. Therefore the final gamma-two torsion projection in Eq. (2.7)
-vanishes on every Lorentz-equivariant map from the scalar superfield.
+`(11000)`. Therefore the level-16 exterior part of the gamma-two torsion
+projection vanishes on every Lorentz-equivariant map from the scalar
+superfield.
 
-For the three-parameter bridge this gives a constraint matrix of rank zero:
+For the three-parameter bridge, this exterior symbol has rank zero:
 
 \[
-\dim\ker C_{\mathrm{Eq.\,(2.7)}}=3.
+\dim\ker C_{\mathrm{ext}}=3.
 \]
 
-All three coefficients $a$, $b$, and $c$ survive this projection. This confirms
-the representation-content argument made after Eq. (2.7), but it also shows
-that Eq. (2.7) does not determine the bridge coefficients. A unique bridge, if
-one exists, requires an additional condition such as a gauge transformation,
-a curvature normalization, a Bianchi identity, or matching to component
-supergravity.
+All three coefficients $a$, $b$, and $c$ survive the exterior-symbol test. The
+nonzero `(11000)` momentum contraction prevents extending that conclusion to
+the complete Eq. (2.7) operator. Determining the allowed coefficient space now
+requires the full linearized torsion formula, including its momentum terms,
+followed by the Bianchi identities.
 
 ## Local gamma-trace quotient
 
@@ -355,11 +379,12 @@ map lands in `(10001)` and survives. Thus
 =c\,P_{320}I_{320}(D^{15}V),
 \]
 
-up to normalization. Eq. (2.7) alone leaves a three-dimensional coefficient
-space, but the local gamma-trace quotient leaves one non-gamma-trace bridge
-class. The remaining nonzero scale is equivalent to rescaling $V$ until a
-component convention is supplied. The gauge complex of the underlying scalar
-or spinor prepotential is not yet established.
+up to normalization. The zero-momentum exterior test leaves a three-dimensional
+coefficient space, while the local gamma-trace quotient leaves one
+non-gamma-trace bridge class. The generic-momentum torsion constraint on that
+class is unresolved. The remaining nonzero scale is equivalent to rescaling
+$V$ until a component convention is supplied. The gauge complex of the
+underlying scalar or spinor prepotential is not yet established.
 
 ## Inherited direct gauge channels
 

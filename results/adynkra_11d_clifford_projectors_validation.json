@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra-11d-clifford-projectors-v1",
+  "schema_version": "adynkra-11d-clifford-projectors-v2",
   "representation": "32-dimensional complex Euclidean B5 Clifford basis with Gaussian rational entries",
   "vector_dimension": 11,
   "spinor_dimension": 32,
@@ -10,6 +10,10 @@
   "charge_conjugation_is_antisymmetric": true,
   "charge_conjugation_intertwining_sign": -1,
   "charge_conjugation_residual_entries": 0,
+  "cartan_weight_entries_checked": 5120,
+  "cartan_weight_mismatches": 0,
+  "chevalley_lowering_actions_checked": 48,
+  "chevalley_lowering_residual_actions": 0,
   "bilinear_symmetry_checks": [
     {
       "form_degree": 0,
@@ -102,6 +106,6 @@
   "gamma_tracelessness_entries_checked": 11264,
   "gamma_tracelessness_residual_entries": 0,
   "projector_completeness_residual_entries": 0,
-  "boundary": "this artifact verifies the target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; the separate level-15 bridge artifact now completes all source descendants, the Eq. (2.7) representation projection, and the gamma-trace quotient; generic-momentum reducibility and a complete gauge curvature complex remain open",
+  "boundary": "this artifact verifies the target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; the separate level-15 bridge artifact completes all source descendants, the level-16 exterior projection, the first level-14 momentum contraction, and the gamma-trace quotient; the complete generic-momentum torsion operator and gauge curvature complex remain open",
   "passed": true
 }

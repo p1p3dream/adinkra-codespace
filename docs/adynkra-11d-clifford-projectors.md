@@ -153,20 +153,24 @@ candidate scalar divergence, not a complete supergravity gauge complex.
 
 1. **Bridge intertwiners:** complete. The separate bridge verifier constructs
    all three highest-weight kernels and all 384 descendant states.
-2. **Torsion constraints:** the final Eq. (2.7) projection has rank zero on the
-   three original bridge coefficients because the required `(11000)` hook is
-   absent at scalar level 16.
+2. **Torsion constraints:** the level-16 exterior part of the Eq. (2.7)
+   projection has rank zero because `(11000)` is absent at scalar level 16.
+   The first-superderivative calculation gives a nonzero level-14 momentum
+   contraction into `(11000)`, so the full generic-momentum constraint remains
+   open.
 3. **Surviving combination:** the local gamma-trace quotient removes the two
    `(00001)` channels and leaves one `(10001)` channel. Its source line has a
    fixed computational normalization. The remaining nonzero overall scale is
    equivalent to rescaling the scalar prepotential until a component
-   convention is supplied.
+   convention is supplied. Whether this channel satisfies the full torsion
+   constraint is unresolved.
 4. **Gauge complex:** the direct two-form and five-form channels lie in the
    generic-momentum kernel of the scalar divergence. Reducibility and a
    complete set of curvature operators remain open.
 
 See `docs/adynkra-11d-level15-bridge.md` for the completed source intertwiner,
-resolved exterior symbol on all ten level-16 channels, and current boundary.
+the exterior symbols, the first level-14 momentum contraction, and the current
+boundary.
 
 ## Reproduction
 

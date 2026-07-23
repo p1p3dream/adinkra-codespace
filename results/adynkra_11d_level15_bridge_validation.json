@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v6",
+  "schema_version": "adynkra.11d.level15-bridge.v7",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -432,8 +432,8 @@
       "target_sector": "gamma-traceless vector-spinor"
     }
   ],
-  "equation_2_7_status": "the final gamma^[2] projection has rank zero on the three bridge channels; all 384 source descendant states are generated and their complete simple-root action is verified",
-  "coefficient_solution_status": "the final gamma^[2] projection leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the surviving source line has a canonical computational normalization, while the overall nonzero c is a scalar-prepotential normalization convention until V is matched to a normalized component field",
+  "equation_2_7_status": "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels, but the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook; the full generic-momentum Eq. (2.7) operator remains to be solved",
+  "coefficient_solution_status": "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; whether the generic-momentum torsion constraint permits the surviving c channel is unresolved",
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
   "all_expected_kernel_vectors_verified": true,
@@ -908,67 +908,73 @@
     "interpretation": "at the exterior symbol, the conventional trace and antisymmetric pieces of X_[2] are nonzero but its 429-dimensional hook vanishes; the conventional four-form and six-form pieces of X_[5] and its 4290-dimensional hook are nonzero; this identifies the representation sectors but does not impose the full superspace Bianchi identities",
     "passed": true
   },
-  "spacetime_completion_audit": {
-    "derivative_algebra": "{D_alpha,D_beta}=i Gamma^a_{alpha beta} p_a",
-    "fixed_total_half_derivative_units": 15,
-    "allowed_local_terms": [
+  "first_derivative_momentum_audit": {
+    "derivative_identity": "D_beta D_[alpha1...alpha15] = D_[beta alpha1...alpha15] + sum_i (-1)^(i-1) {D_beta,D_alphai} D_[alpha1...omit alphai...alpha15]",
+    "exact_sample_momentum": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "cartan_weight_entries_checked": 5120,
+    "cartan_weight_mismatches": 0,
+    "chevalley_lowering_actions_checked": 48,
+    "chevalley_lowering_residual_actions": 0,
+    "clifford_and_weight_bases_aligned": true,
+    "channels": [
       {
-        "spacetime_momentum_power": 0,
-        "spinor_derivative_order": 15,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 15
+        "dynkin_label": "10002",
+        "torsion_sector": "X_[5] traceless hook",
+        "exterior_level": 16,
+        "exterior_image_nonzero": true,
+        "momentum_contraction_level": 14,
+        "momentum_real_fingerprint_residues": [
+          576033880,
+          804298288,
+          77618035
+        ],
+        "momentum_imaginary_fingerprint_residues": [
+          682507892,
+          490483175,
+          646860307
+        ],
+        "momentum_contraction_nonzero_certified": true,
+        "passed": true
       },
       {
-        "spacetime_momentum_power": 1,
-        "spinor_derivative_order": 13,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 13
-      },
-      {
-        "spacetime_momentum_power": 2,
-        "spinor_derivative_order": 11,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 11
-      },
-      {
-        "spacetime_momentum_power": 3,
-        "spinor_derivative_order": 9,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 9
-      },
-      {
-        "spacetime_momentum_power": 4,
-        "spinor_derivative_order": 7,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 7
-      },
-      {
-        "spacetime_momentum_power": 5,
-        "spinor_derivative_order": 5,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 5
-      },
-      {
-        "spacetime_momentum_power": 6,
-        "spinor_derivative_order": 3,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 3
-      },
-      {
-        "spacetime_momentum_power": 7,
-        "spinor_derivative_order": 1,
-        "total_half_derivative_units": 15,
-        "scalar_source_level": 1
+        "dynkin_label": "11000",
+        "torsion_sector": "X_[2] traceless hook",
+        "exterior_level": 16,
+        "exterior_image_nonzero": false,
+        "momentum_contraction_level": 14,
+        "momentum_real_fingerprint_residues": [
+          540365481,
+          923637203,
+          851104469
+        ],
+        "momentum_imaginary_fingerprint_residues": [
+          561396408,
+          86846452,
+          128084200
+        ],
+        "momentum_contraction_nonzero_certified": true,
+        "passed": true
       }
     ],
-    "leading_exterior_term_verified": true,
-    "lower_spinor_level_terms_required_for_generic_momentum": true,
-    "cited_sources_print_completion_coefficients": false,
-    "full_generic_momentum_completion_determined": false,
-    "interpretation": "a Lorentz-covariant local completion may mix p^r D^(15-2r) V for r=0 through 7; the completed exterior symbol fixes only the r=0 term, while the cited papers do not print the seven lower-level coefficient systems",
+    "two_form_hook_momentum_contraction_nonzero": true,
+    "five_form_hook_momentum_contraction_nonzero": true,
+    "implication": "the level-16 exterior inventory alone does not settle the final X_[2] hook at nonzero momentum because the superderivative anticommutator supplies a level-14 momentum term",
+    "scope": "a nonzero residue at one exact momentum proves that the polynomial momentum contraction is not identically zero; this does not solve the torsion constraint or the Bianchi identities",
     "passed": true
   },
-  "final_equation_2_7_projection": {
+  "zero_momentum_equation_2_7_projection": {
     "source_equation": "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
     "linearized_formula_source": "Eqs. (39)-(40) of hep-th/0101037",
     "raw_two_form_vector_dimension": 605,
@@ -979,9 +985,9 @@
     "dimension_decomposition_closes": true,
     "scalar_level_checked": 16,
     "hook_multiplicity_in_scalar_level": 0,
-    "projected_constraint_rank_on_bridge_coefficients": 0,
-    "surviving_bridge_coefficient_dimension": 3,
-    "interpretation": "the vector and three-form pieces are removed by conventional constraints; the remaining 429-dimensional hook is absent from level 16 of the scalar superfield, so the final Eq. (2.7) projection vanishes representation-theoretically and does not select among a, b, and c",
+    "exterior_symbol_rank_on_bridge_coefficients": 0,
+    "exterior_symbol_kernel_dimension": 3,
+    "interpretation": "the vector and three-form pieces are removed by conventional constraints; the remaining 429-dimensional hook is absent from the level-16 exterior symbol, so that symbol has rank zero on a, b, and c; the nonzero level-14 momentum contraction shows that this statement does not extend to the full generic-momentum Eq. (2.7) operator",
     "passed": true
   },
   "local_gamma_trace_quotient": {
@@ -1052,6 +1058,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the two 32-component and one 320-component source descendant systems, fixes the computational source-line normalization, resolves the zero-spacetime-momentum exterior symbol, and identifies its dimension-zero X_[2] and X_[5] representation sectors. A component normalization of V, the seven lower-level momentum-completion systems, and the full superspace Bianchi complex remain.",
+  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both surviving torsion-hook tests. The nonzero X_[2] momentum term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. Solving that differential constraint and the superspace Bianchi complex remain.",
   "passed": true
 }

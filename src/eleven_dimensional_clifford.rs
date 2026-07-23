@@ -8,7 +8,7 @@ use num_rational::Ratio;
 use serde::Serialize;
 
 pub(crate) type GaussianRational = Complex<Ratio<i64>>;
-type Matrix = Vec<Vec<GaussianRational>>;
+pub(crate) type Matrix = Vec<Vec<GaussianRational>>;
 
 const SPINOR_DIMENSION: usize = 32;
 const VECTOR_DIMENSION: usize = 11;
@@ -40,6 +40,10 @@ pub struct ElevenDimensionalCliffordReport {
     pub charge_conjugation_is_antisymmetric: bool,
     pub charge_conjugation_intertwining_sign: i64,
     pub charge_conjugation_residual_entries: usize,
+    pub cartan_weight_entries_checked: usize,
+    pub cartan_weight_mismatches: usize,
+    pub chevalley_lowering_actions_checked: usize,
+    pub chevalley_lowering_residual_actions: usize,
     pub bilinear_symmetry_checks: Vec<BilinearSymmetryCheck>,
     pub symmetric_bilinear_dimension: usize,
     pub antisymmetric_bilinear_dimension: usize,
@@ -149,6 +153,161 @@ pub(crate) fn gamma_matrices() -> Vec<Matrix> {
         &sigma_three,
     ]));
     gammas
+}
+
+fn spinor_weights() -> [[i8; 5]; 32] {
+    std::array::from_fn(|index| {
+        std::array::from_fn(|axis| {
+            if (index >> (4 - axis)) & 1 == 0 {
+                1
+            } else {
+                -1
+            }
+        })
+    })
+}
+
+fn scaled_gaussian(matrix: &Matrix, scalar: GaussianRational) -> Matrix {
+    matrix
+        .iter()
+        .map(|row| {
+            row.iter()
+                .map(|value| value.clone() * scalar.clone())
+                .collect()
+        })
+        .collect()
+}
+
+fn chevalley_basis_phases(gammas: &[Matrix]) -> ([i64; 32], usize, usize, usize, usize) {
+    let weights = spinor_weights();
+    let mut cartan_weight_mismatches = 0;
+    for axis in 0..5 {
+        let cartan = scaled_gaussian(
+            &multiply(&gammas[2 * axis], &gammas[2 * axis + 1]),
+            g(0, -1),
+        );
+        for index in 0..32 {
+            for column in 0..32 {
+                let expected = if index == column {
+                    g(i64::from(weights[index][axis]), 0)
+                } else {
+                    g(0, 0)
+                };
+                cartan_weight_mismatches += usize::from(cartan[index][column] != expected);
+            }
+        }
+    }
+
+    let annihilators = (0..5)
+        .map(|axis| {
+            scaled_gaussian(
+                &add(
+                    &gammas[2 * axis],
+                    &scaled_gaussian(&gammas[2 * axis + 1], g(0, 1)),
+                ),
+                g(1, 0) / g(2, 0),
+            )
+        })
+        .collect::<Vec<_>>();
+    let creators = (0..5)
+        .map(|axis| {
+            scaled_gaussian(
+                &add(
+                    &gammas[2 * axis],
+                    &scaled_gaussian(&gammas[2 * axis + 1], g(0, -1)),
+                ),
+                g(1, 0) / g(2, 0),
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut lowering = (0..4)
+        .map(|axis| multiply(&creators[axis], &annihilators[axis + 1]))
+        .collect::<Vec<_>>();
+    lowering.push(creators[4].clone());
+
+    let mut phases = [0_i64; 32];
+    phases[0] = 1;
+    let mut changed = true;
+    while changed {
+        changed = false;
+        for operator in &lowering {
+            for target in 0..32 {
+                for source in 0..32 {
+                    let coefficient = &operator[target][source];
+                    if *coefficient == g(0, 0) {
+                        continue;
+                    }
+                    assert_eq!(coefficient.im, Ratio::from_integer(0));
+                    assert_eq!(*coefficient.re.denom(), 1);
+                    let coefficient = *coefficient.re.numer();
+                    if phases[source] != 0 && phases[target] == 0 {
+                        phases[target] = phases[source] * coefficient;
+                        changed = true;
+                    } else if phases[target] != 0 && phases[source] == 0 {
+                        phases[source] = phases[target] * coefficient;
+                        changed = true;
+                    }
+                }
+            }
+        }
+    }
+
+    let mut lowering_actions_checked = 0;
+    let mut lowering_residual_actions = 0;
+    for operator in &lowering {
+        for target in 0..32 {
+            for source in 0..32 {
+                let coefficient = &operator[target][source];
+                if *coefficient == g(0, 0) {
+                    continue;
+                }
+                lowering_actions_checked += 1;
+                let transformed = coefficient.clone() * g(phases[source], 0) / g(phases[target], 0);
+                lowering_residual_actions += usize::from(transformed != g(1, 0));
+            }
+        }
+    }
+    (
+        phases,
+        32 * 32 * 5,
+        cartan_weight_mismatches,
+        lowering_actions_checked,
+        lowering_residual_actions,
+    )
+}
+
+pub(crate) fn translation_bilinears() -> Vec<Matrix> {
+    let gammas = gamma_matrices();
+    let charge = charge_conjugation(&gammas);
+    let (phases, _, cartan_mismatches, lowering_actions, lowering_residuals) =
+        chevalley_basis_phases(&gammas);
+    assert_eq!(cartan_mismatches, 0);
+    assert_eq!(lowering_actions, 48);
+    assert_eq!(lowering_residuals, 0);
+    gammas
+        .iter()
+        .map(|gamma| {
+            let mut bilinear = multiply(&charge, gamma);
+            for row in 0..32 {
+                for column in 0..32 {
+                    bilinear[row][column] *= g(phases[row] * phases[column], 0);
+                }
+            }
+            bilinear
+        })
+        .collect()
+}
+
+pub(crate) fn translation_bilinear_basis_alignment() -> (usize, usize, usize, usize) {
+    let gammas = gamma_matrices();
+    let (_, cartan_entries, cartan_mismatches, lowering_actions, lowering_residuals) =
+        chevalley_basis_phases(&gammas);
+    (
+        cartan_entries,
+        cartan_mismatches,
+        lowering_actions,
+        lowering_residuals,
+    )
 }
 
 fn charge_conjugation(gammas: &[Matrix]) -> Matrix {
@@ -263,6 +422,13 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         charge_conjugation_residual_entries +=
             matrix_residuals(&transformed, &scaled(&transpose(gamma), -1));
     }
+    let (
+        _,
+        cartan_weight_entries_checked,
+        cartan_weight_mismatches,
+        chevalley_lowering_actions_checked,
+        chevalley_lowering_residual_actions,
+    ) = chevalley_basis_phases(&gammas);
 
     let labels = ["00000", "10000", "01000", "00100", "00010", "00002"];
     let expected_symmetries = [
@@ -378,6 +544,9 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
     let passed = clifford_residual_entries == 0
         && charge_conjugation_is_antisymmetric
         && charge_conjugation_residual_entries == 0
+        && cartan_weight_mismatches == 0
+        && chevalley_lowering_actions_checked == 48
+        && chevalley_lowering_residual_actions == 0
         && bilinear_symmetry_checks
             .iter()
             .all(|check| check.residual_products == 0)
@@ -392,7 +561,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         && gamma_traceless_projector_rank == 320;
 
     ElevenDimensionalCliffordReport {
-        schema_version: "adynkra-11d-clifford-projectors-v1",
+        schema_version: "adynkra-11d-clifford-projectors-v2",
         representation: "32-dimensional complex Euclidean B5 Clifford basis with Gaussian rational entries",
         vector_dimension: VECTOR_DIMENSION,
         spinor_dimension: SPINOR_DIMENSION,
@@ -406,6 +575,10 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         charge_conjugation_is_antisymmetric,
         charge_conjugation_intertwining_sign: -1,
         charge_conjugation_residual_entries,
+        cartan_weight_entries_checked,
+        cartan_weight_mismatches,
+        chevalley_lowering_actions_checked,
+        chevalley_lowering_residual_actions,
         bilinear_symmetry_checks,
         symmetric_bilinear_dimension,
         antisymmetric_bilinear_dimension,
@@ -422,7 +595,7 @@ pub fn verify() -> ElevenDimensionalCliffordReport {
         gamma_tracelessness_entries_checked,
         gamma_tracelessness_residual_entries,
         projector_completeness_residual_entries,
-        boundary: "this artifact verifies the target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; the separate level-15 bridge artifact now completes all source descendants, the Eq. (2.7) representation projection, and the gamma-trace quotient; generic-momentum reducibility and a complete gauge curvature complex remain open",
+        boundary: "this artifact verifies the target-side Clifford intertwiners, vector-spinor projectors, and scalar-divergence tests for the direct six-channel gauge ansatz; the separate level-15 bridge artifact completes all source descendants, the level-16 exterior projection, the first level-14 momentum contraction, and the gamma-trace quotient; the complete generic-momentum torsion operator and gauge curvature complex remain open",
         passed,
     }
 }
@@ -438,6 +611,10 @@ mod tests {
         assert_eq!(report.clifford_residual_entries, 0);
         assert!(report.charge_conjugation_is_antisymmetric);
         assert_eq!(report.charge_conjugation_residual_entries, 0);
+        assert_eq!(report.cartan_weight_entries_checked, 5 * 32 * 32);
+        assert_eq!(report.cartan_weight_mismatches, 0);
+        assert_eq!(report.chevalley_lowering_actions_checked, 48);
+        assert_eq!(report.chevalley_lowering_residual_actions, 0);
     }
 
     #[test]
@@ -449,12 +626,10 @@ mod tests {
             report.symmetric_bilinear_dimension + report.antisymmetric_bilinear_dimension,
             32 * 32
         );
-        assert!(
-            report
-                .bilinear_symmetry_checks
-                .iter()
-                .all(|check| check.residual_products == 0)
-        );
+        assert!(report
+            .bilinear_symmetry_checks
+            .iter()
+            .all(|check| check.residual_products == 0));
         assert_eq!(report.zero_momentum_channels_annihilated_by_dd, 3);
         assert_eq!(report.zero_momentum_channels_not_annihilated_by_dd, 3);
         let annihilated_degrees: Vec<_> = report
