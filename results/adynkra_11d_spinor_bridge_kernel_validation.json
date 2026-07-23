@@ -2909,6 +2909,17 @@
   "raising_rows_checked": 15429636,
   "nonzero_raising_residual_rows": 0,
   "every_first_lowering_string_verified": true,
+  "hook_target_coupling": {
+    "source_dynkin_label": "11000",
+    "tensor_product": "(00001) tensor (10001)",
+    "target_dynkin_label": "10001",
+    "highest_weight_domain_dimension": 8,
+    "highest_weight_kernel_dimension": 1,
+    "primitive_nonzero_coefficients": 8,
+    "raising_residual_terms": 0,
+    "multiplicity_one_coupling_constructed": true,
+    "passed": true
+  },
   "derivative_matrix_constructed": false,
   "boundary": "this verifies the nineteen source embeddings; the Clebsch-Gordan coupling to the target vector-spinor and the 12-by-7 exterior-derivative matrix remain separate",
   "passed": true

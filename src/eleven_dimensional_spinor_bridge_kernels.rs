@@ -51,6 +51,7 @@ pub struct DirectSpinorKernelReport {
     pub raising_rows_checked: usize,
     pub nonzero_raising_residual_rows: usize,
     pub every_first_lowering_string_verified: bool,
+    pub hook_target_coupling: crate::eleven_dimensional_bridge::DirectHookTargetCouplingAudit,
     pub derivative_matrix_constructed: bool,
     pub boundary: &'static str,
     pub passed: bool,
@@ -201,12 +202,15 @@ pub fn verify() -> DirectSpinorKernelReport {
         .flat_map(|system| &system.exact_kernel_vectors)
         .flat_map(|kernel| &kernel.first_lowering_descendants)
         .all(|check| check.matches_highest_weight_string);
+    let hook_target_coupling =
+        crate::eleven_dimensional_bridge::audit_direct_hook_target_coupling();
     let expected_systems = 12;
     let expected_integer_kernel_vectors = 19;
     let passed = systems_verified == expected_systems
         && integer_kernel_vectors_verified == expected_integer_kernel_vectors
         && nonzero_raising_residual_rows == 0
-        && every_first_lowering_string_verified;
+        && every_first_lowering_string_verified
+        && hook_target_coupling.passed;
     DirectSpinorKernelReport {
         schema_version: "adynkra-11d-spinor-bridge-kernels-v1",
         role: "exact Rust verification of the decomposed direct-spinor source embeddings",
@@ -219,6 +223,7 @@ pub fn verify() -> DirectSpinorKernelReport {
         raising_rows_checked,
         nonzero_raising_residual_rows,
         every_first_lowering_string_verified,
+        hook_target_coupling,
         derivative_matrix_constructed: false,
         boundary:
             "this verifies the nineteen source embeddings; the Clebsch-Gordan coupling to the target vector-spinor and the 12-by-7 exterior-derivative matrix remain separate",

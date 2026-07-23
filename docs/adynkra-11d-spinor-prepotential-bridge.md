@@ -62,8 +62,16 @@ checks the complete highest-weight lowering string for every simple root.
 The numerical sparse calculation is retained only as an independent method
 for proposing the integer vectors. The stored vectors are accepted only after
 the Rust verifier checks them exactly. The component Clebsch-Gordan coupling
-to the target vector-spinor and the derivative matrix have not yet been
-constructed.
+on the target side is also constructed:
+
+\[
+ (11000)\longrightarrow(00001)\otimes(10001).
+\]
+
+Its highest-weight domain has dimension 8, its kernel has dimension 1, all
+eight primitive coefficients are nonzero, and every raising residual is zero.
+The remaining work is to couple each of the 19 source embeddings to its target
+irrep and assemble the derivative matrix.
 
 ## The proposed hook cancellation is not the direct-spinor test
 

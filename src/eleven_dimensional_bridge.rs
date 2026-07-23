@@ -1788,6 +1788,19 @@ struct ExteriorChannelPlan {
     momentum_contraction_imaginary_residues: [u64; 3],
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct DirectHookTargetCouplingAudit {
+    pub source_dynkin_label: &'static str,
+    pub tensor_product: &'static str,
+    pub target_dynkin_label: &'static str,
+    pub highest_weight_domain_dimension: usize,
+    pub highest_weight_kernel_dimension: usize,
+    pub primitive_nonzero_coefficients: usize,
+    pub raising_residual_terms: usize,
+    pub multiplicity_one_coupling_constructed: bool,
+    pub passed: bool,
+}
+
 fn ratio_nullspace(rows: &[Vec<Ratio<i64>>], columns: usize) -> Vec<Vec<Ratio<i64>>> {
     let zero = Ratio::from_integer(0);
     let mut reduced = rows
@@ -1941,6 +1954,34 @@ fn build_exterior_channel_plans(spinors: &[Weight; 32]) -> Vec<ExteriorChannelPl
             }
         })
         .collect()
+}
+
+pub fn audit_direct_hook_target_coupling() -> DirectHookTargetCouplingAudit {
+    let spinors = spinor_weights();
+    let plans = build_exterior_channel_plans(&spinors);
+    let hook = plans
+        .iter()
+        .find(|plan| plan.dynkin_label == "11000")
+        .unwrap();
+    let primitive_nonzero_coefficients = hook
+        .primitive_highest_weight_coefficients
+        .iter()
+        .filter(|coefficient| **coefficient != 0)
+        .count();
+    let multiplicity_one_coupling_constructed = hook.highest_weight_kernel_dimension == 1
+        && !hook.primitive_highest_weight_coefficients.is_empty()
+        && hook.raising_residual_terms == 0;
+    DirectHookTargetCouplingAudit {
+        source_dynkin_label: "11000",
+        tensor_product: "(00001) tensor (10001)",
+        target_dynkin_label: "10001",
+        highest_weight_domain_dimension: hook.domain.len(),
+        highest_weight_kernel_dimension: hook.highest_weight_kernel_dimension,
+        primitive_nonzero_coefficients,
+        raising_residual_terms: hook.raising_residual_terms,
+        multiplicity_one_coupling_constructed,
+        passed: multiplicity_one_coupling_constructed,
+    }
 }
 
 const EXTERIOR_FINGERPRINT_PRIMES: [u64; 3] = [1_000_000_007, 1_000_000_009, 998_244_353];
