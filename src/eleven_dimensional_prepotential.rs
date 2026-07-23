@@ -278,6 +278,37 @@ pub fn spinor_tensor_channels(label: &str) -> Vec<(String, u64)> {
         .collect()
 }
 
+/// Decompose `10000 x 10001` by the representation-ring identity
+///
+/// `V x (V x S - S) = (20000 + 01000 + 00000) x S - V x S`.
+///
+/// Here `S=00001`, `V=10000`, and `10001` is the gamma-traceless
+/// vector-spinor. Each tensor product with `S` is resolved by the exact
+/// minuscule-spinor rule above.
+pub fn vector_tensor_gamma_traceless_vector_spinor_channels() -> Vec<(String, u64, usize)> {
+    let mut multiplicities = BTreeMap::<B5Dynkin, i64>::new();
+    for label in ["20000", "01000", "00000"] {
+        for dynkin in tensor_with_spinor(parse_dynkin(label)) {
+            *multiplicities.entry(dynkin).or_default() += 1;
+        }
+    }
+    for dynkin in tensor_with_spinor(parse_dynkin("10000")) {
+        *multiplicities.entry(dynkin).or_default() -= 1;
+    }
+    multiplicities
+        .into_iter()
+        .filter(|(_, multiplicity)| *multiplicity > 0)
+        .map(|(dynkin, multiplicity)| {
+            let label = dynkin.labels.iter().map(u8::to_string).collect::<String>();
+            (
+                label,
+                b5_weyl_dimension(dynkin),
+                usize::try_from(multiplicity).unwrap(),
+            )
+        })
+        .collect()
+}
+
 fn spinor_inventory(level: usize) -> Vec<InventoryTerm> {
     let mut multiplicities = BTreeMap::<B5Dynkin, usize>::new();
     for term in inventory(level) {
@@ -728,6 +759,25 @@ mod tests {
                 "00002", "00010", "00100", "01000", "10000", "10002", "10010", "10100", "11000",
                 "20000"
             ]
+        );
+    }
+
+    #[test]
+    fn vector_times_gamma_traceless_vector_spinor_is_resolved_exactly() {
+        let channels = vector_tensor_gamma_traceless_vector_spinor_channels();
+        assert_eq!(
+            channels
+                .iter()
+                .map(|(label, _, multiplicity)| (label.as_str(), *multiplicity))
+                .collect::<Vec<_>>(),
+            vec![("00001", 1), ("01001", 1), ("10001", 1), ("20001", 1)]
+        );
+        assert_eq!(
+            channels
+                .iter()
+                .map(|(_, dimension, multiplicity)| dimension * *multiplicity as u64)
+                .sum::<u64>(),
+            11 * 320
         );
     }
 

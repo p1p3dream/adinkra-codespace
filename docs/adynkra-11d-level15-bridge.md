@@ -251,9 +251,39 @@ the corresponding momentum polynomial is not identically zero.
 The `(11000)` result changes the boundary of the calculation. Absence of that
 representation from the scalar level-16 inventory proves only that the
 exterior symbol vanishes. It does not prove that the generic-momentum
-projection in Eq. (2.7) vanishes. The full linearized torsion operator may
-contain additional terms that cancel or constrain this contribution. Those
-terms and the Bianchi identities have not been solved here.
+projection in Eq. (2.7) vanishes. The local bridge operator $H(V)$ may contain
+lower-symbol terms that cancel this contribution. Those terms and the Bianchi
+identities have not been solved here.
+
+## First lower-symbol completion space
+
+A general local operator of the same engineering order as the level-15 bridge
+can contain a first lower symbol of the form $pD_{[13]}V$. Its exterior
+derivative contributes at the same $pD_{[14]}V$ order as the nonzero
+anticommutator term above. The relevant correction space is
+
+\[
+\operatorname{Hom}_{\mathrm{Spin}(11)}
+\left((10000)\mathbin{\otimes}\bigwedge^{13}S,(10001)\right).
+\]
+
+The Rust verifier resolves the target-side tensor product by the representation
+ring identity
+
+\[
+(10000)\mathbin{\otimes}(10001)=
+(00001)\oplus(01001)\oplus(10001)\oplus(20001),
+\]
+
+whose dimensions sum to $11\times320=3{,}520$. At scalar level 13, `(00001)`
+occurs once and `(01001)` occurs twice; `(10001)` and `(20001)` are absent.
+Therefore the first lower symbol has three Lorentz-equivariant correction
+coefficients.
+
+This keeps the cancellation question open. The next calculation must construct
+the three level-13 source intertwiners and determine whether their exterior
+images span the nonzero `(11000)` $pD_{[14]}V$ term. The current result neither
+assumes nor establishes that such a cancellation exists.
 
 ## Canonical computational normalization
 
@@ -298,16 +328,18 @@ module, verifies its full source intertwiner, and fixes a canonical
 computational normalization of the surviving source highest-weight line. It
 also resolves the zero-spacetime-momentum exterior symbol on all ten level-16
 candidate channels and the first level-14 momentum contraction in both torsion
-hooks.
+hooks. It also identifies the three coefficients available in the first
+$pD_{[13]}V$ completion space.
 Consequently:
 
 - the level-16 exterior two-form-hook symbol has rank zero on the three bridge
   coefficients;
 - the level-14 momentum contraction into the same hook is nonzero, so the
   level-16 inventory does not settle Eq. (2.7) at generic momentum; and
-- the complete linearized torsion operator, component normalization of $V$,
-  generic-momentum gauge reducibility, and the superspace Bianchi complex
-  remain open.
+- three first-completion coefficients are available, but their cancellation
+  map has not yet been constructed. The lower-symbol recursion, component
+  normalization of $V$, generic-momentum gauge reducibility, and the
+  superspace Bianchi complex remain open.
 
 ## Primary-source dependency for Eq. (2.7)
 
@@ -323,9 +355,13 @@ starting formulas:
   superfields and spin connections to $H_\alpha{}^a$.
 
 Equations (39)-(40) state the conventional representation-level elimination.
-The nonzero level-14 momentum term shows that a component-level reconstruction
-of the complete linearized torsion operator is required to determine the rank
-of Eq. (2.7) on the bridge.
+In Eq. (39), the `(11000)` hook is the hook projection of
+$(\gamma_{ab})^{\gamma\delta}D_\gamma H_\delta{}^c$; the displayed holonomy
+terms occupy the trace-vector and three-form sectors removed by the
+conventional constraints.
+The nonzero level-14 momentum term shows that the lower-symbol completion of
+$H(V)$ must be constructed before determining the rank of Eq. (2.7) on the
+bridge.
 
 ## Zero-momentum exterior projection
 

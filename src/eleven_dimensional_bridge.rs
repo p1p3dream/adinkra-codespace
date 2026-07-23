@@ -109,6 +109,7 @@ pub struct ElevenDimensionalBridgeReport {
     pub level_sixteen_exterior_derivative_audit: LevelSixteenExteriorDerivativeAudit,
     pub dimension_zero_torsion_sector_audit: DimensionZeroTorsionSectorAudit,
     pub first_derivative_momentum_audit: FirstDerivativeMomentumAudit,
+    pub first_momentum_completion_audit: FirstMomentumCompletionAudit,
     pub zero_momentum_equation_2_7_projection: ZeroMomentumEquationProjectionAudit,
     pub local_gamma_trace_quotient: LocalGammaTraceQuotientAudit,
     pub canonical_source_line_normalization: CanonicalSourceLineNormalizationAudit,
@@ -316,6 +317,31 @@ pub struct FirstDerivativeMomentumAudit {
     pub five_form_hook_momentum_contraction_nonzero: bool,
     pub implication: &'static str,
     pub scope: &'static str,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct MomentumCompletionChannelAudit {
+    pub source_dynkin_label: String,
+    pub source_dimension: u64,
+    pub multiplicity_in_vector_times_target: usize,
+    pub multiplicity_at_scalar_level_thirteen: usize,
+    pub correction_coefficients: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumCompletionAudit {
+    pub normal_form_term: &'static str,
+    pub target_dynkin_label: &'static str,
+    pub target_dimension: usize,
+    pub vector_times_target_dimension: usize,
+    pub vector_times_target_channels: Vec<MomentumCompletionChannelAudit>,
+    pub available_level_thirteen_source_channels: Vec<String>,
+    pub first_completion_coefficient_dimension: usize,
+    pub leading_two_form_hook_momentum_term_nonzero: bool,
+    pub cancellation_system_constructed: bool,
+    pub cancellation_exists: Option<bool>,
+    pub implication: &'static str,
     pub passed: bool,
 }
 
@@ -664,6 +690,70 @@ fn audit_zero_momentum_equation_2_7_projection() -> ZeroMomentumEquationProjecti
         passed: dimension_decomposition_closes
             && hook_multiplicity_in_scalar_level == 0
             && exterior_symbol_kernel_dimension == 3,
+    }
+}
+
+fn audit_first_momentum_completion(
+    momentum: &FirstDerivativeMomentumAudit,
+) -> FirstMomentumCompletionAudit {
+    let vector_times_target =
+        crate::eleven_dimensional_prepotential::vector_tensor_gamma_traceless_vector_spinor_channels();
+    let vector_times_target_dimension = vector_times_target
+        .iter()
+        .map(|(_, dimension, multiplicity)| *dimension as usize * *multiplicity)
+        .sum::<usize>();
+    let vector_times_target_channels = vector_times_target
+        .into_iter()
+        .map(
+            |(source_dynkin_label, source_dimension, multiplicity_in_vector_times_target)| {
+                let multiplicity_at_scalar_level_thirteen =
+                    crate::eleven_dimensional_prepotential::level_multiplicity(
+                        13,
+                        &source_dynkin_label,
+                    );
+                MomentumCompletionChannelAudit {
+                    source_dynkin_label,
+                    source_dimension,
+                    multiplicity_in_vector_times_target,
+                    multiplicity_at_scalar_level_thirteen,
+                    correction_coefficients: multiplicity_in_vector_times_target
+                        * multiplicity_at_scalar_level_thirteen,
+                }
+            },
+        )
+        .collect::<Vec<_>>();
+    let available_level_thirteen_source_channels = vector_times_target_channels
+        .iter()
+        .filter(|channel| channel.correction_coefficients != 0)
+        .map(|channel| channel.source_dynkin_label.clone())
+        .collect::<Vec<_>>();
+    let first_completion_coefficient_dimension = vector_times_target_channels
+        .iter()
+        .map(|channel| channel.correction_coefficients)
+        .sum::<usize>();
+    let leading_two_form_hook_momentum_term_nonzero =
+        momentum.two_form_hook_momentum_contraction_nonzero;
+    let cancellation_system_constructed = false;
+    let cancellation_exists = None;
+    let passed = vector_times_target_dimension == 11 * 320
+        && available_level_thirteen_source_channels == vec!["00001", "01001"]
+        && first_completion_coefficient_dimension == 3
+        && leading_two_form_hook_momentum_term_nonzero
+        && !cancellation_system_constructed
+        && cancellation_exists.is_none();
+    FirstMomentumCompletionAudit {
+        normal_form_term: "p D_[13] V in H_alpha^a(V), whose exterior derivative contributes at p D_[14] V",
+        target_dynkin_label: "10001",
+        target_dimension: 320,
+        vector_times_target_dimension,
+        vector_times_target_channels,
+        available_level_thirteen_source_channels,
+        first_completion_coefficient_dimension,
+        leading_two_form_hook_momentum_term_nonzero,
+        cancellation_system_constructed,
+        cancellation_exists,
+        implication: "three Lorentz-equivariant p D_[13] correction coefficients are available at the first lower symbol; the current nonzero p D_[14] hook is an obstruction term to cancel, not yet a proof that the scalar bridge fails",
+        passed,
     }
 }
 
@@ -2135,6 +2225,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         &decode_kernel(VECTOR_SPINOR_KERNEL),
         &weights,
     );
+    let first_momentum_completion_audit =
+        audit_first_momentum_completion(&first_derivative_momentum_audit);
     let level_sixteen_derivative_channel_audit = audit_level_sixteen_derivative_channels();
     let dimension_zero_torsion_sector_audit =
         audit_dimension_zero_torsion_sectors(&level_sixteen_exterior_derivative_audit);
@@ -2158,6 +2250,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && level_sixteen_exterior_derivative_audit.passed
         && dimension_zero_torsion_sector_audit.passed
         && first_derivative_momentum_audit.passed
+        && first_momentum_completion_audit.passed
         && zero_momentum_equation_2_7_projection.passed
         && local_gamma_trace_quotient.passed
         && canonical_source_line_normalization.passed
@@ -2165,7 +2258,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v7",
+        schema_version: "adynkra.11d.level15-bridge.v8",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
@@ -2203,12 +2296,13 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         level_sixteen_exterior_derivative_audit,
         dimension_zero_torsion_sector_audit,
         first_derivative_momentum_audit,
+        first_momentum_completion_audit,
         zero_momentum_equation_2_7_projection,
         local_gamma_trace_quotient,
         canonical_source_line_normalization,
         linearized_scale_freedom_audit,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both surviving torsion-hook tests. The nonzero X_[2] momentum term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. Solving that differential constraint and the superspace Bianchi complex remain.",
+        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both torsion-hook tests. The nonzero X_[2] term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. The first lower-symbol inventory supplies three p D_[13] correction coefficients. Constructing their exact cancellation map, then continuing the lower-symbol recursion and the superspace Bianchi complex, remains.",
         passed,
     }
 }
@@ -2412,6 +2506,17 @@ mod tests {
         assert!(momentum.five_form_hook_momentum_contraction_nonzero);
         assert!(momentum.channels.iter().all(|channel| channel.passed));
         assert!(momentum.passed);
+        let completion = &report.first_momentum_completion_audit;
+        assert_eq!(completion.vector_times_target_dimension, 11 * 320);
+        assert_eq!(
+            completion.available_level_thirteen_source_channels,
+            vec!["00001", "01001"]
+        );
+        assert_eq!(completion.first_completion_coefficient_dimension, 3);
+        assert!(completion.leading_two_form_hook_momentum_term_nonzero);
+        assert!(!completion.cancellation_system_constructed);
+        assert_eq!(completion.cancellation_exists, None);
+        assert!(completion.passed);
         let projection = &report.zero_momentum_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);
         assert_eq!(projection.remaining_hook_dynkin_label, "11000");

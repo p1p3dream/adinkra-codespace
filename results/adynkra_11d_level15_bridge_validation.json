@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v7",
+  "schema_version": "adynkra.11d.level15-bridge.v8",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -974,6 +974,52 @@
     "scope": "a nonzero residue at one exact momentum proves that the polynomial momentum contraction is not identically zero; this does not solve the torsion constraint or the Bianchi identities",
     "passed": true
   },
+  "first_momentum_completion_audit": {
+    "normal_form_term": "p D_[13] V in H_alpha^a(V), whose exterior derivative contributes at p D_[14] V",
+    "target_dynkin_label": "10001",
+    "target_dimension": 320,
+    "vector_times_target_dimension": 3520,
+    "vector_times_target_channels": [
+      {
+        "source_dynkin_label": "00001",
+        "source_dimension": 32,
+        "multiplicity_in_vector_times_target": 1,
+        "multiplicity_at_scalar_level_thirteen": 1,
+        "correction_coefficients": 1
+      },
+      {
+        "source_dynkin_label": "01001",
+        "source_dimension": 1408,
+        "multiplicity_in_vector_times_target": 1,
+        "multiplicity_at_scalar_level_thirteen": 2,
+        "correction_coefficients": 2
+      },
+      {
+        "source_dynkin_label": "10001",
+        "source_dimension": 320,
+        "multiplicity_in_vector_times_target": 1,
+        "multiplicity_at_scalar_level_thirteen": 0,
+        "correction_coefficients": 0
+      },
+      {
+        "source_dynkin_label": "20001",
+        "source_dimension": 1760,
+        "multiplicity_in_vector_times_target": 1,
+        "multiplicity_at_scalar_level_thirteen": 0,
+        "correction_coefficients": 0
+      }
+    ],
+    "available_level_thirteen_source_channels": [
+      "00001",
+      "01001"
+    ],
+    "first_completion_coefficient_dimension": 3,
+    "leading_two_form_hook_momentum_term_nonzero": true,
+    "cancellation_system_constructed": false,
+    "cancellation_exists": null,
+    "implication": "three Lorentz-equivariant p D_[13] correction coefficients are available at the first lower symbol; the current nonzero p D_[14] hook is an obstruction term to cancel, not yet a proof that the scalar bridge fails",
+    "passed": true
+  },
   "zero_momentum_equation_2_7_projection": {
     "source_equation": "the final gamma^[2] torsion constraint in Eq. (2.7) of arXiv:2007.05097",
     "linearized_formula_source": "Eqs. (39)-(40) of hep-th/0101037",
@@ -1058,6 +1104,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both surviving torsion-hook tests. The nonzero X_[2] momentum term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. Solving that differential constraint and the superspace Bianchi complex remain.",
+  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both torsion-hook tests. The nonzero X_[2] term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. The first lower-symbol inventory supplies three p D_[13] correction coefficients. Constructing their exact cancellation map, then continuing the lower-symbol recursion and the superspace Bianchi complex, remains.",
   "passed": true
 }

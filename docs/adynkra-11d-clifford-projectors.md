@@ -156,8 +156,9 @@ candidate scalar divergence, not a complete supergravity gauge complex.
 2. **Torsion constraints:** the level-16 exterior part of the Eq. (2.7)
    projection has rank zero because `(11000)` is absent at scalar level 16.
    The first-superderivative calculation gives a nonzero level-14 momentum
-   contraction into `(11000)`, so the full generic-momentum constraint remains
-   open.
+   contraction into `(11000)`. Three Lorentz-equivariant $pD_{[13]}V$
+   correction coefficients are available to test against it, so the full
+   generic-momentum constraint remains open.
 3. **Surviving combination:** the local gamma-trace quotient removes the two
    `(00001)` channels and leaves one `(10001)` channel. Its source line has a
    fixed computational normalization. The remaining nonzero overall scale is
