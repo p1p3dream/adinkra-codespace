@@ -298,7 +298,12 @@ The direct map from `Psi_alpha` to the gamma-traceless vector-spinor has now
 been counted independently of the scalar factorization. Its leading map space
 has dimension 12. One gamma-traceless direction factors through `V`, leaving
 11 direct nonfactorizing directions. The direct level-17 `(11000)` hook space
-has dimension 7, and the first momentum-correction map space has dimension 44.
+has dimension 7. All twelve leading couplings, all seven hook couplings, and
+the exact `7 x 12` exterior-derivative matrix are constructed. The matrix has
+rank 7 and nullity 5. The scalar-factorizing direction reconstructs exactly in
+the twelve-dimensional leading space and has zero hook image. The remaining
+quotient of the hook kernel has dimension four at this exterior-symbol stage.
+The first momentum-correction map space has dimension 44.
 Equation (2.7) was proposed in connection with the scalar-prepotential route.
 The conventional constraints in Eq. (2.6) permit the `(11000)` hook, so an
 Eq. (2.7) cancellation is not the appropriate test of the direct spinor
@@ -313,8 +318,9 @@ checks. For the direct first-derivative gauge ansatz, the zero-momentum
 two-derivative contraction vanishes in the one-, two-, and five-form channels
 and is not identically zero in the scalar, three-form, and four-form channels.
 The three scalar source embeddings inside `exterior^15(32)` are constructed.
-The direct spinor map spaces are counted at the representation level;
-component Clebsch-Gordan maps and their coefficients remain open.
+The direct leading and hook Clebsch-Gordan maps are complete. The gauge
+coefficients, 44 first-momentum intertwiners, gauge quotient, and curvature
+complex remain open.
 
 ## Role of the permutahedron program
 
@@ -499,14 +505,17 @@ a new field equation or a polynomial-module proof.
    5 multiplicities are reproduced. The scalar-factorizing
    fifteen-derivative bridge has three leading-symbol channels, and the direct
    spinor bridge has 12 gamma-traceless leading directions, 11 of which do not
-   factor through the scalar. The direct hook space has multiplicity 7 and the
-   first momentum-correction space has dimension 44. The Eq. (2.7) hook
+   factor through the scalar. All twelve leading couplings and all seven hook
+   couplings are exact. Their `7 x 12` exterior-derivative matrix has rank 7
+   and nullity 5. The scalar-factorizing direction lies in the kernel, leaving
+   a four-dimensional quotient at this stage. The first momentum-correction
+   space has dimension 44. The Eq. (2.7) hook
    cancellation is not applied to the direct route because Eq. (2.6) permits
    that hook. The possible first-derivative gauge domain has six Lorentz
    channels, but the source does not select their combination or print the
-   induced target transformation. Component direct-map tensors, coefficients,
-   the gauge quotient, curvature complex, and differential operator remain
-   open.**
+   induced target transformation. Gauge coefficients, the 44 explicit
+   first-momentum intertwiners, the gauge quotient, curvature complex, and
+   differential operator remain open.**
 7. Determine which representation products and intertwiners are required for a
    nonlinear extension.
 

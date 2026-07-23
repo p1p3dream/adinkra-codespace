@@ -159,6 +159,10 @@ leading map space has dimension 12, only one direction factors through the
 scalar \(V\), and its level-17 `(11000)` hook content is permitted by the
 conventional constraints in Eq. (2.6). The direct route is documented in
 [`adynkra-11d-spinor-prepotential-bridge.md`](adynkra-11d-spinor-prepotential-bridge.md).
+All twelve direct leading couplings and all seven hook couplings are now
+explicit. Their exterior-derivative matrix has rank 7 and nullity 5. The
+scalar-factorizing direction lies in that kernel. See
+[`adynkra-11d-level17-hook-derivative-matrix.md`](adynkra-11d-level17-hook-derivative-matrix.md).
 
 ## Gauge-parameter channel census
 
@@ -203,7 +207,9 @@ validated four-dimensional Adynkrafield machinery in eleven dimensions:
 7. explicit gamma-trace and gamma-traceless vector-spinor projectors are
    constructed;
 8. the direct gauge ansatz is separated into three channels that vanish in
-   the induced scalar variation at zero momentum and three that do not.
+   the induced scalar variation at zero momentum and three that do not;
+9. the exact direct-spinor exterior symbol is represented by a rank-7
+   `7 x 12` matrix with a five-dimensional kernel.
 
 It does not solve the proposed eleven-dimensional torsion constraints for the
 scalar-factorizing bridge, select the spinor prepotential's gauge

@@ -150,6 +150,9 @@ ignored slow tests.
 ## Boundary
 
 These artifacts certify the twelve source embeddings and their couplings into
-the `(10001)` channel. They do not determine the remaining hook-source
-couplings, the full exterior-derivative matrix, or a nonlinear 11D
-supergravity equation.
+the `(10001)` channel. The seven hook-source couplings and the exact
+exterior-derivative matrix were completed in the subsequent calculation
+documented in
+[`adynkra-11d-level17-hook-derivative-matrix.md`](adynkra-11d-level17-hook-derivative-matrix.md).
+Neither calculation determines the gauge quotient, momentum corrections, or
+a nonlinear 11D supergravity equation.

@@ -391,6 +391,167 @@
       }
     ]
   ],
+  "primitive_integer_kernel_basis": [
+    [
+      "0",
+      "0",
+      "1",
+      "-62",
+      "-1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "6",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "11520",
+      "0",
+      "540",
+      "2160",
+      "0",
+      "0",
+      "0",
+      "-5",
+      "9",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "168",
+      "84",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "-1",
+      "0"
+    ]
+  ],
+  "kernel_residuals_exactly_zero": true,
+  "kernel_coefficient_mutation_detected": true,
+  "leading_gram_rank": 12,
+  "scalar_factorizing_coordinates": [
+    {
+      "numerator": "-7",
+      "denominator": "16"
+    },
+    {
+      "numerator": "-1",
+      "denominator": "16"
+    },
+    {
+      "numerator": "3",
+      "denominator": "128"
+    },
+    {
+      "numerator": "3",
+      "denominator": "32"
+    },
+    {
+      "numerator": "-3",
+      "denominator": "64"
+    },
+    {
+      "numerator": "99",
+      "denominator": "32"
+    },
+    {
+      "numerator": "1",
+      "denominator": "32"
+    },
+    {
+      "numerator": "1",
+      "denominator": "4608"
+    },
+    {
+      "numerator": "-1",
+      "denominator": "2560"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "1",
+      "denominator": "1344"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    }
+  ],
+  "scalar_factorizing_reconstruction_residual_norm": {
+    "numerator": "0",
+    "denominator": "1"
+  },
+  "scalar_factorizing_direction_is_in_leading_span": true,
+  "scalar_factorizing_hook_image": [
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    }
+  ],
+  "scalar_factorizing_hook_image_is_zero": true,
   "exact_reconstruction_residual_norms": [
     {
       "numerator": "0",

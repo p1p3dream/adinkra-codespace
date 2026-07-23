@@ -426,7 +426,7 @@ pub fn verify() -> DirectSpinorKernelReport {
         leading_source_target_couplings_constructed,
         expected_leading_source_target_couplings,
         derivative_matrix_constructed: false,
-        boundary: "this verifies the nineteen source embeddings, the unique hook target coupling, and three of twelve leading source-to-vector-spinor couplings; the other nine leading couplings, seven hook source couplings, and the 7-by-12 exterior-derivative matrix remain separate",
+        boundary: "this verifier covers the nineteen source embeddings, the unique hook target coupling, and three leading source-to-vector-spinor couplings; the dense coupling verifier separately certifies all twelve leading couplings, all seven hook couplings, and the exact 7-by-12 exterior-derivative matrix",
         passed,
     }
 }

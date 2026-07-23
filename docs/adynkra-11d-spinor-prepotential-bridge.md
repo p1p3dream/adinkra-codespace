@@ -71,7 +71,7 @@ on the target side is also constructed:
 Its highest-weight domain has dimension 8, its kernel has dimension 1, all
 eight primitive coefficients are nonzero, and every raising residual is zero.
 
-The first three leading source couplings are complete. The level-16 `(10000)`
+All twelve leading source couplings are complete. The level-16 `(10000)`
 source highest vector, tensored with the highest spinor weight, gives the
 `(10001)` vector-spinor highest vector. Its stored source has 594,896 nonzero
 integer coefficients and zero raising residuals.
@@ -84,9 +84,24 @@ The first `(00100)` copy gives a 14-dimensional product-weight domain. Its
 primitive coupling has 14 coefficients, the coupled vector has 4,812,342
 nonzero terms, and all five simple-root raising residuals are zero.
 
-This completes three of the 12 leading couplings. The remaining work is to
-construct the other nine leading source couplings, the
-seven hook source couplings, and the derivative matrix.
+The remaining nine leading copies pass the same exact five-root test. All
+seven level-17 source couplings into `(11000)` are also constructed and have
+zero raising residuals.
+
+The complete exterior-derivative matrix from the twelve leading maps to the
+seven hook maps is now exact. It has rank 7 and nullity 5. All twelve columns
+reconstruct in the hook basis with zero residual. An explicit primitive
+integer basis for the five-dimensional kernel is stored in
+`results/adynkra_11d_level17_derivative_matrix.json`.
+
+The scalar-factorizing direction inherited from
+\(V=D^\alpha\Psi_\alpha\) was independently constructed from the level-15
+scalar bridge. It reconstructs exactly in the twelve-dimensional leading
+space and has zero image in all seven hook coordinates. It occupies one
+dimension of the five-dimensional kernel.
+
+The calculation and its boundary are documented in
+[`adynkra-11d-level17-hook-derivative-matrix.md`](adynkra-11d-level17-hook-derivative-matrix.md).
 
 ## The proposed hook cancellation is not the direct-spinor test
 
@@ -114,8 +129,10 @@ The direct spinor inventory contains seven hook directions at level 17:
 | `(11001)` | 3 |
 | **Total** | **7** |
 
-A hook component is therefore allowed under Eq. (2.6). Its value for any
-selected linear combination of the 12 leading maps has not been computed.
+A hook component is therefore allowed under Eq. (2.6). Its value for a
+general linear combination of the 12 leading maps is now given by the exact
+rank-7 derivative matrix. Five independent combinations have zero hook image
+at the exterior-symbol level.
 The planned projection into `(11000)` using Eq. (2.7) closes here because it
 was the wrong constraint for this candidate, not because the seven directions
 were shown to vanish or survive.
@@ -172,7 +189,10 @@ of \(H_\alpha{}^a\).
 5. The first momentum-correction map space has dimension 44.
 6. The Eq. (2.7) hook cancellation is not applicable to the direct spinor
    route on the stated published premises.
-7. The gauge quotient is underdetermined by the cited sources.
+7. The exact \(7\times12\) exterior-derivative matrix has rank 7 and nullity
+   5.
+8. The scalar-factorizing direction lies in that kernel.
+9. The gauge quotient is underdetermined by the cited sources.
 
 No torsion solution, gauge quotient, action, or field equation is claimed.
 
@@ -187,6 +207,8 @@ cargo run --release -- adynkra-11d-level16-coupling-precheck \
   > results/adynkra_11d_level16_coupling_precheck.json
 cargo run --release -- adynkra-11d-spinor-kernel-verify \
   > results/adynkra_11d_spinor_bridge_kernel_validation.json
+cargo run --release -- adynkra-11d-level17-hook-verify --all
+cargo run --release -- adynkra-11d-level17-derivative-matrix
 cargo test eleven_dimensional_spinor_bridge
 ```
 
