@@ -122,6 +122,8 @@ fn main() {
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
         "adynkra-11d-bridge-verify" => cmd_adynkra_11d_bridge_verify(),
         "adynkra-11d-level16-coupling-precheck" => cmd_adynkra_11d_level16_coupling_precheck(),
+        "adynkra-11d-level16-coupling-build" => cmd_adynkra_11d_level16_coupling_build(&args),
+        "adynkra-11d-level16-coupling-verify" => cmd_adynkra_11d_level16_coupling_verify(&args),
         "adynkra-11d-spinor-bridge-verify" => cmd_adynkra_11d_spinor_bridge_verify(),
         "adynkra-11d-spinor-kernel-verify" => cmd_adynkra_11d_spinor_kernel_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
@@ -203,6 +205,9 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!("  adynkra-11d-bridge-verify Verify the 11D bridge and first lower symbol");
     eprintln!("  adynkra-11d-level16-coupling-precheck Verify the fixed level-16 work list and multiplicities");
+    eprintln!("  adynkra-11d-level16-coupling-build --label LABEL Build one exact abstract coupling");
+    eprintln!("  adynkra-11d-level16-coupling-verify --label LABEL --copy N Verify one embedded coupling");
+    eprintln!("  adynkra-11d-level16-coupling-verify --all [--resume] Verify all 12 embedded couplings");
     eprintln!("  adynkra-11d-spinor-bridge-verify Audit the direct 11D spinor bridge");
     eprintln!("  adynkra-11d-spinor-kernel-verify Verify its 19 source kernels exactly");
     eprintln!("  export-3d-assets [json] [output-dir]");
@@ -430,6 +435,99 @@ fn cmd_adynkra_11d_bridge_verify() {
 
 fn cmd_adynkra_11d_level16_coupling_precheck() {
     let report = eleven_dimensional_level16_couplings::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn option_value<'a>(args: &'a [String], option: &str) -> Option<&'a str> {
+    args.iter()
+        .position(|argument| argument == option)
+        .and_then(|index| args.get(index + 1))
+        .map(String::as_str)
+}
+
+fn cmd_adynkra_11d_level16_coupling_build(args: &[String]) {
+    let label = option_value(args, "--label").unwrap_or_else(|| {
+        eprintln!("Missing --label");
+        std::process::exit(64);
+    });
+    let report = eleven_dimensional_level16_couplings::build_abstract(label);
+    let output = std::path::PathBuf::from(format!(
+        "results/adynkra_11d_level16_coupling_{label}_abstract.json"
+    ));
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_level16_coupling_verify(args: &[String]) {
+    if args.iter().any(|argument| argument == "--all") {
+        let output = std::path::PathBuf::from("results/adynkra_11d_level16_couplings_all.json");
+        if args.iter().any(|argument| argument == "--resume") && output.exists() {
+            let payload = std::fs::read_to_string(&output).unwrap_or_else(|error| {
+                eprintln!("Failed to read {}: {error}", output.display());
+                std::process::exit(2);
+            });
+            let parsed: serde_json::Value =
+                serde_json::from_str(&payload).unwrap_or_else(|error| {
+                    eprintln!("Failed to validate {}: {error}", output.display());
+                    std::process::exit(2);
+                });
+            if parsed.get("passed").and_then(|value| value.as_bool()) == Some(true) {
+                print!("{payload}");
+                return;
+            }
+        }
+        let report = eleven_dimensional_level16_couplings::verify_all();
+        eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to checkpoint {}: {error}", output.display());
+                std::process::exit(2);
+            });
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+        if !report.passed {
+            std::process::exit(2);
+        }
+        return;
+    }
+    let label = option_value(args, "--label").unwrap_or_else(|| {
+        eprintln!("Missing --label or --all");
+        std::process::exit(64);
+    });
+    let copy = option_value(args, "--copy")
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or_else(|| {
+            eprintln!("Missing or invalid --copy");
+            std::process::exit(64);
+        });
+    let output = std::path::PathBuf::from(format!(
+        "results/adynkra_11d_level16_coupling_{label}_copy{copy}.json"
+    ));
+    if args.iter().any(|argument| argument == "--resume") && output.exists() {
+        let payload = std::fs::read_to_string(&output).unwrap();
+        if serde_json::from_str::<serde_json::Value>(&payload)
+            .ok()
+            .and_then(|value| value.get("passed").and_then(|passed| passed.as_bool()))
+            == Some(true)
+        {
+            print!("{payload}");
+            return;
+        }
+    }
+    let report = eleven_dimensional_level16_couplings::verify_copy(label, copy);
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
