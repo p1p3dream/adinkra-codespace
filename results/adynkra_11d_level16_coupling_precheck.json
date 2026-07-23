@@ -172,6 +172,6 @@
   "golden_commit": "89f20fc",
   "experimentally_validated_source_dynkin_label": "00100",
   "experimentally_validated_source_copy": 1,
-  "experimentally_validated_checkpoint_required": true,
+  "experimentally_validated_checkpoint_present": true,
   "passed": true
 }

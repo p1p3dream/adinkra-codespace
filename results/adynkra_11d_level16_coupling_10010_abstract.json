@@ -1,0 +1,6032 @@
+{
+  "schema_version": "adynkra-11d-level16-abstract-coupling-v1",
+  "role": "exact canonical abstract coupling into (10001)",
+  "source_dynkin_label": "10010",
+  "source_fixture_copy": 1,
+  "target_dynkin_label": "10001",
+  "basis_method": "lexicographic PBW lowering words with exact exterior-realization Gram rank",
+  "dependency_test": "exact rational rank of the integer Gram matrix; no modular acceptance",
+  "product_weight_domain_dimension": 192,
+  "source_weight_spaces_used": 31,
+  "source_weight_multiplicities": [
+    [
+      [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      28
+    ],
+    [
+      [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      13
+    ],
+    [
+      [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      13
+    ],
+    [
+      [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      11
+    ],
+    [
+      [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      13
+    ],
+    [
+      [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      11
+    ],
+    [
+      [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      11
+    ],
+    [
+      [
+        2,
+        0,
+        2,
+        2,
+        2
+      ],
+      4
+    ],
+    [
+      [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      13
+    ],
+    [
+      [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      11
+    ],
+    [
+      [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      11
+    ],
+    [
+      [
+        2,
+        2,
+        0,
+        2,
+        2
+      ],
+      4
+    ],
+    [
+      [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      11
+    ],
+    [
+      [
+        2,
+        2,
+        2,
+        0,
+        2
+      ],
+      4
+    ],
+    [
+      [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      4
+    ],
+    [
+      [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      4
+    ],
+    [
+      [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      4
+    ],
+    [
+      [
+        4,
+        0,
+        0,
+        0,
+        2
+      ],
+      3
+    ],
+    [
+      [
+        4,
+        0,
+        0,
+        2,
+        0
+      ],
+      3
+    ],
+    [
+      [
+        4,
+        0,
+        0,
+        2,
+        2
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        0,
+        2,
+        0,
+        0
+      ],
+      3
+    ],
+    [
+      [
+        4,
+        0,
+        2,
+        0,
+        2
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        0,
+        2,
+        2,
+        0
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        0,
+        2,
+        2,
+        2
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        2,
+        0,
+        0,
+        0
+      ],
+      3
+    ],
+    [
+      [
+        4,
+        2,
+        0,
+        0,
+        2
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        2,
+        0,
+        2,
+        0
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        2,
+        0,
+        2,
+        2
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        2,
+        2,
+        0,
+        0
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        2,
+        2,
+        0,
+        2
+      ],
+      1
+    ],
+    [
+      [
+        4,
+        2,
+        2,
+        2,
+        0
+      ],
+      1
+    ]
+  ],
+  "domain_basis": [
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        5,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 2,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 3,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 4,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 5,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 6,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 7,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 7,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        2,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 7,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 7,
+      "free_spinor_weight": [
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        0,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 8,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        1,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 9,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 10,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 11,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 11,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 11,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 11,
+      "free_spinor_weight": [
+        1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 12,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        5,
+        5,
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 13,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 13,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 13,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 13,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 14,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 14,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 14,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 14,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 15,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 15,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        2,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 15,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        1,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 15,
+      "free_spinor_weight": [
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        1
+      ]
+    },
+    {
+      "free_spinor_index": 16,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 16,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 16,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 16,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 17,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 17,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 17,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 18,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 18,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 18,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 19,
+      "free_spinor_weight": [
+        -1,
+        1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        0,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 20,
+      "free_spinor_weight": [
+        -1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 20,
+      "free_spinor_weight": [
+        -1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 20,
+      "free_spinor_weight": [
+        -1,
+        1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        5,
+        5,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 21,
+      "free_spinor_weight": [
+        -1,
+        1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        0,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 22,
+      "free_spinor_weight": [
+        -1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        4,
+        0,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 23,
+      "free_spinor_weight": [
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        0,
+        2,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "free_spinor_index": 24,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 24,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 24,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        5,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 25,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        2,
+        0,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5,
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 26,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        4,
+        2,
+        0,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 27,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        2,
+        0,
+        2,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        3
+      ]
+    },
+    {
+      "free_spinor_index": 28,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        -1,
+        1,
+        1
+      ],
+      "source_weight": [
+        4,
+        2,
+        2,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": [
+        4,
+        5
+      ]
+    },
+    {
+      "free_spinor_index": 29,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1
+      ],
+      "source_weight": [
+        4,
+        2,
+        2,
+        0,
+        2
+      ],
+      "pbw_word_simple_roots": [
+        4
+      ]
+    },
+    {
+      "free_spinor_index": 30,
+      "free_spinor_weight": [
+        -1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "source_weight": [
+        4,
+        2,
+        2,
+        2,
+        0
+      ],
+      "pbw_word_simple_roots": []
+    }
+  ],
+  "gram_matrix_rank": 191,
+  "kernel_dimension": 1,
+  "primitive_domain_coefficients": [
+    282,
+    -146,
+    -468,
+    156,
+    -78,
+    -312,
+    156,
+    234,
+    -78,
+    52,
+    -104,
+    -13,
+    488,
+    -244,
+    52,
+    -244,
+    186,
+    -128,
+    -664,
+    402,
+    -140,
+    542,
+    -408,
+    204,
+    -280,
+    210,
+    -140,
+    70,
+    -232,
+    156,
+    272,
+    -104,
+    56,
+    -136,
+    52,
+    -232,
+    116,
+    524,
+    -128,
+    -268,
+    140,
+    -92,
+    104,
+    176,
+    -96,
+    -168,
+    -52,
+    84,
+    232,
+    -116,
+    -524,
+    128,
+    268,
+    -140,
+    120,
+    -208,
+    -160,
+    336,
+    104,
+    -168,
+    -464,
+    232,
+    792,
+    -536,
+    280,
+    92,
+    -104,
+    168,
+    26,
+    -408,
+    96,
+    100,
+    -84,
+    116,
+    524,
+    -128,
+    -268,
+    140,
+    -120,
+    208,
+    -336,
+    -52,
+    624,
+    -200,
+    168,
+    -232,
+    -792,
+    536,
+    -280,
+    -208,
+    456,
+    -160,
+    104,
+    -624,
+    200,
+    -168,
+    232,
+    792,
+    -536,
+    280,
+    128,
+    -256,
+    384,
+    -512,
+    -92,
+    104,
+    -168,
+    -26,
+    84,
+    408,
+    -96,
+    -216,
+    120,
+    -524,
+    128,
+    268,
+    -140,
+    120,
+    -208,
+    336,
+    52,
+    -168,
+    -624,
+    432,
+    -240,
+    792,
+    -536,
+    280,
+    208,
+    -456,
+    160,
+    -104,
+    168,
+    624,
+    -432,
+    240,
+    -792,
+    536,
+    -280,
+    -128,
+    256,
+    -384,
+    512,
+    -104,
+    104,
+    456,
+    -328,
+    200,
+    -624,
+    432,
+    -240,
+    792,
+    -536,
+    280,
+    64,
+    -256,
+    384,
+    -512,
+    -128,
+    256,
+    -384,
+    512,
+    256,
+    -512,
+    768,
+    -1024,
+    640,
+    -160,
+    -320,
+    160,
+    -960,
+    640,
+    -320,
+    960,
+    -640,
+    320,
+    -640,
+    -960,
+    640,
+    -320,
+    640,
+    -640,
+    1280,
+    960,
+    -640,
+    320,
+    -640,
+    640,
+    -1280,
+    -640,
+    1280,
+    -1280
+  ],
+  "primitive_coefficient_gcd": 1,
+  "maximum_absolute_primitive_coefficient": 1280,
+  "exact_raising_residual_terms_by_simple_root": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "maximum_absolute_checked_accumulator": 31152000,
+  "storage_type": "i64 coefficients with checked i128 accumulation",
+  "exterior_action_storage": "precomputed CSR over sorted exterior-mask weight spaces",
+  "csr_actions_built": 660,
+  "csr_nonzero_entries": 489656832,
+  "multiplicity_one": true,
+  "passed": true
+}

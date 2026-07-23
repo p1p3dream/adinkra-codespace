@@ -221,6 +221,9 @@
   ],
   "maximum_absolute_checked_accumulator": 9240,
   "storage_type": "i64 coefficients with checked i128 accumulation",
+  "exterior_action_storage": "precomputed CSR over sorted exterior-mask weight spaces",
+  "csr_actions_built": 45,
+  "csr_nonzero_entries": 61359872,
   "multiplicity_one": true,
   "passed": true
 }

@@ -112,6 +112,32 @@ coupling completed. It remained at approximately one full CPU core and reached
 an observed resident-memory peak of approximately 3.1 GB. Process samples
 placed the active work in HashMap hashing, allocation, growth, and merge paths.
 
+## Execution result, 2026-07-23
+
+Phases 0 through 5 are complete.
+
+- The manifest contains 8 source representations and 12 embedded copies.
+- Every `(10001)` tensor-product multiplicity is one.
+- The canonical PBW and rational-Gram solver constructs one primitive coupling
+  for each source representation.
+- The dense/CSR engine reproduces the committed `(20000)` golden coupling. A
+  coefficient-mutation test produces a nonzero residual.
+- All 12 exterior embeddings have zero residual under all five simple-root
+  raising operators.
+- The CLI writes per-coupling atomic checkpoints and resumes only from
+  parseable reports with `passed: true`.
+- The four-worker local run completed in 202.92 seconds. The independent
+  stonkbot run completed in 217.66 seconds and stayed below the 48 GiB memory
+  budget.
+- SHA-256 matched for all 22 level-16 result files across the local machine and
+  stonkbot.
+- The full Rust test suite passed with 398 tests passed, zero failed, and nine
+  ignored slow tests.
+
+The optional multi-prime and GPU work in Phase 6 is not required for these
+certificates because the accepted path already uses rational kernels and
+checked integer residuals.
+
 ## Phase 1: abstract per-irrep coupling solver (small, exact)
 
 Solve the representation theory in the small weight space (tens of

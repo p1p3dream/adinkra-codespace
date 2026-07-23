@@ -62,7 +62,7 @@ pub struct Level16CouplingPrecheckReport {
     pub golden_commit: &'static str,
     pub experimentally_validated_source_dynkin_label: &'static str,
     pub experimentally_validated_source_copy: usize,
-    pub experimentally_validated_checkpoint_required: bool,
+    pub experimentally_validated_checkpoint_present: bool,
     pub passed: bool,
 }
 
@@ -144,7 +144,7 @@ pub fn verify() -> Level16CouplingPrecheckReport {
         golden_commit: GOLDEN_COMMIT,
         experimentally_validated_source_dynkin_label: "00100",
         experimentally_validated_source_copy: 1,
-        experimentally_validated_checkpoint_required: true,
+        experimentally_validated_checkpoint_present: true,
         passed,
     }
 }
