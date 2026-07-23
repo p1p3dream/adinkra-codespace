@@ -2920,7 +2920,36 @@
     "multiplicity_one_coupling_constructed": true,
     "passed": true
   },
+  "leading_source_target_couplings": [
+    {
+      "source_dynkin_label": "10000",
+      "source_copy": 1,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "product_highest_weight": [
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "target_dynkin_label": "10001",
+      "source_nonzero_coefficients": 594896,
+      "source_raising_residual_rows": 0,
+      "free_spinor_is_highest_weight": true,
+      "tensor_product_highest_weight_verified": true,
+      "exact_coupling_constructed": true,
+      "passed": true
+    }
+  ],
+  "leading_source_target_couplings_constructed": 1,
+  "expected_leading_source_target_couplings": 12,
   "derivative_matrix_constructed": false,
-  "boundary": "this verifies the nineteen source embeddings; the Clebsch-Gordan coupling to the target vector-spinor and the 12-by-7 exterior-derivative matrix remain separate",
+  "boundary": "this verifies the nineteen source embeddings, the unique hook target coupling, and the first of twelve leading source-to-vector-spinor couplings; the other eleven source couplings and the 7-by-12 exterior-derivative matrix remain separate",
   "passed": true
 }

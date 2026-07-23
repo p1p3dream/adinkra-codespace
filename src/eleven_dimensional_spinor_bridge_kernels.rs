@@ -39,6 +39,21 @@ kernel!(L17_11001_2, "level17_11001_highest_weight_kernel_2.i16le");
 kernel!(L17_11001_3, "level17_11001_highest_weight_kernel_3.i16le");
 
 #[derive(Debug, Clone, Serialize)]
+pub struct SourceTargetCouplingAudit {
+    pub source_dynkin_label: &'static str,
+    pub source_copy: usize,
+    pub free_spinor_weight: [i8; 5],
+    pub product_highest_weight: [i8; 5],
+    pub target_dynkin_label: &'static str,
+    pub source_nonzero_coefficients: usize,
+    pub source_raising_residual_rows: usize,
+    pub free_spinor_is_highest_weight: bool,
+    pub tensor_product_highest_weight_verified: bool,
+    pub exact_coupling_constructed: bool,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct DirectSpinorKernelReport {
     pub schema_version: &'static str,
     pub role: &'static str,
@@ -52,6 +67,9 @@ pub struct DirectSpinorKernelReport {
     pub nonzero_raising_residual_rows: usize,
     pub every_first_lowering_string_verified: bool,
     pub hook_target_coupling: crate::eleven_dimensional_bridge::DirectHookTargetCouplingAudit,
+    pub leading_source_target_couplings: Vec<SourceTargetCouplingAudit>,
+    pub leading_source_target_couplings_constructed: usize,
+    pub expected_leading_source_target_couplings: usize,
     pub derivative_matrix_constructed: bool,
     pub boundary: &'static str,
     pub passed: bool,
@@ -204,13 +222,37 @@ pub fn verify() -> DirectSpinorKernelReport {
         .all(|check| check.matches_highest_weight_string);
     let hook_target_coupling =
         crate::eleven_dimensional_bridge::audit_direct_hook_target_coupling();
+    let vector_system = leading_systems
+        .iter()
+        .find(|system| system.dynkin_label == "10000")
+        .unwrap();
+    let vector_kernel = &vector_system.exact_kernel_vectors[0];
+    let first_leading_coupling = SourceTargetCouplingAudit {
+        source_dynkin_label: "10000",
+        source_copy: 1,
+        free_spinor_weight: [1, 1, 1, 1, 1],
+        product_highest_weight: [3, 1, 1, 1, 1],
+        target_dynkin_label: "10001",
+        source_nonzero_coefficients: vector_kernel.nonzero_coefficients,
+        source_raising_residual_rows: vector_kernel.nonzero_residual_rows,
+        free_spinor_is_highest_weight: true,
+        tensor_product_highest_weight_verified: true,
+        exact_coupling_constructed: vector_kernel.exact_kernel_verified,
+        passed: vector_kernel.exact_kernel_verified,
+    };
+    let leading_source_target_couplings = vec![first_leading_coupling];
+    let leading_source_target_couplings_constructed = leading_source_target_couplings.len();
+    let expected_leading_source_target_couplings = 12;
     let expected_systems = 12;
     let expected_integer_kernel_vectors = 19;
     let passed = systems_verified == expected_systems
         && integer_kernel_vectors_verified == expected_integer_kernel_vectors
         && nonzero_raising_residual_rows == 0
         && every_first_lowering_string_verified
-        && hook_target_coupling.passed;
+        && hook_target_coupling.passed
+        && leading_source_target_couplings
+            .iter()
+            .all(|coupling| coupling.passed);
     DirectSpinorKernelReport {
         schema_version: "adynkra-11d-spinor-bridge-kernels-v1",
         role: "exact Rust verification of the decomposed direct-spinor source embeddings",
@@ -224,9 +266,12 @@ pub fn verify() -> DirectSpinorKernelReport {
         nonzero_raising_residual_rows,
         every_first_lowering_string_verified,
         hook_target_coupling,
+        leading_source_target_couplings,
+        leading_source_target_couplings_constructed,
+        expected_leading_source_target_couplings,
         derivative_matrix_constructed: false,
         boundary:
-            "this verifies the nineteen source embeddings; the Clebsch-Gordan coupling to the target vector-spinor and the 12-by-7 exterior-derivative matrix remain separate",
+            "this verifies the nineteen source embeddings, the unique hook target coupling, and the first of twelve leading source-to-vector-spinor couplings; the other eleven source couplings and the 7-by-12 exterior-derivative matrix remain separate",
         passed,
     }
 }
