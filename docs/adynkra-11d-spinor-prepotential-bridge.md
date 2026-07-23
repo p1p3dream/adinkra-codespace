@@ -157,9 +157,11 @@ The complete representation-level map space has dimension 44:
 | `(20001)` | 13 | 13 |
 | **Total** |  | **44** |
 
-These corrections remain available in a future direct-spinor construction.
-They are not required to cancel the seven hook directions solely on the
-basis of Eq. (2.7).
+All 23 abstract source-target couplings and all 44 embedded source maps are
+now constructed and pass the exact raising equations. The four target
+couplings in `(10000) tensor (10001)` are also constructed. The remaining
+step is to compose these factors with the superspace anticommutator term and
+solve the joint leading plus first-momentum compatibility system.
 
 ## Gauge boundary
 
@@ -186,13 +188,16 @@ of \(H_\alpha{}^a\).
 2. The scalar-factorizing gamma-traceless subspace has dimension 1.
 3. The direct nonfactorizing complement has dimension 11.
 4. The level-17 `(11000)` hook space has dimension 7.
-5. The first momentum-correction map space has dimension 44.
+5. The 23 abstract and 44 embedded first momentum-correction source maps are
+   certified.
 6. The Eq. (2.7) hook cancellation is not applicable to the direct spinor
    route on the stated published premises.
 7. The exact \(7\times12\) exterior-derivative matrix has rank 7 and nullity
    5.
 8. The scalar-factorizing direction lies in that kernel.
-9. The gauge quotient is underdetermined by the cited sources.
+9. All four momentum target couplings have one-dimensional highest-weight
+   kernels.
+10. The gauge quotient is underdetermined by the cited sources.
 
 No torsion solution, gauge quotient, action, or field equation is claimed.
 
@@ -203,6 +208,10 @@ Repository: <https://github.com/p1p3dream/adinkra-codespace>
 ```bash
 cargo run --release -- adynkra-11d-spinor-bridge-verify \
   > results/adynkra_11d_spinor_bridge_validation.json
+
+cargo run --release -- adynkra-11d-first-momentum-kernel-verify
+cargo run --release -- adynkra-11d-first-momentum-coupling-verify --all --resume
+cargo run --release -- adynkra-11d-first-momentum-target-verify
 cargo run --release -- adynkra-11d-level16-coupling-precheck \
   > results/adynkra_11d_level16_coupling_precheck.json
 cargo run --release -- adynkra-11d-spinor-kernel-verify \

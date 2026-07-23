@@ -1,0 +1,61 @@
+{
+  "schema_version": "adynkra.11d.bridge-crosscheck.v2",
+  "role": "independent floating-point cross-check of the Rust exact sparse system",
+  "dynkin_label": "20100",
+  "exterior_degree": 14,
+  "matrix_rows": 159126,
+  "matrix_columns": 60298,
+  "nonzero_entries": 593056,
+  "raising_block_rows": [
+    16176,
+    37096,
+    22150,
+    36608,
+    47096
+  ],
+  "expected_kernel_dimension": 3,
+  "smallest_eigenvalues_of_transpose_product": [
+    -6.120067347755155e-16,
+    -1.3706423285183217e-17,
+    2.2191505708999844e-17,
+    0.061864196413966156,
+    0.061864196413966205,
+    2.7488872000467404
+  ],
+  "numerical_zero_threshold": 1e-06,
+  "observed_numerical_kernel_dimension": 3,
+  "passed": true,
+  "boundary": "The eigenvalue calculation and integer reconstruction are numerical. The Rust verifier independently checks every stored integer coefficient against every exact raising equation.",
+  "integer_kernel_candidates": [
+    {
+      "path": "work/level14-proposals/artifacts/level14_20100_highest_weight_kernel_1.i16le",
+      "scalar_type": "signed 16-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 13020,
+      "minimum_coefficient": -9,
+      "maximum_coefficient": 9
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_20100_highest_weight_kernel_2.i16le",
+      "scalar_type": "signed 16-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 51528,
+      "minimum_coefficient": -1540,
+      "maximum_coefficient": 1540
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_20100_highest_weight_kernel_3.i16le",
+      "scalar_type": "signed 16-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 54894,
+      "minimum_coefficient": -6480,
+      "maximum_coefficient": 6480
+    }
+  ]
+}

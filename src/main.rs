@@ -63,7 +63,7 @@ mod viz_export;
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{DoublyEvenCode, enumerate_codes};
+use code::{enumerate_codes, DoublyEvenCode};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -128,6 +128,19 @@ fn main() {
         "adynkra-11d-level17-hook-build" => cmd_adynkra_11d_level17_hook_build(&args),
         "adynkra-11d-level17-hook-verify" => cmd_adynkra_11d_level17_hook_verify(&args),
         "adynkra-11d-level17-derivative-matrix" => cmd_adynkra_11d_level17_derivative_matrix(),
+        "adynkra-11d-first-momentum-precheck" => cmd_adynkra_11d_first_momentum_precheck(),
+        "adynkra-11d-first-momentum-kernel-verify" => {
+            cmd_adynkra_11d_first_momentum_kernel_verify()
+        }
+        "adynkra-11d-first-momentum-coupling-build" => {
+            cmd_adynkra_11d_first_momentum_coupling_build(&args)
+        }
+        "adynkra-11d-first-momentum-coupling-verify" => {
+            cmd_adynkra_11d_first_momentum_coupling_verify(&args)
+        }
+        "adynkra-11d-first-momentum-target-verify" => {
+            cmd_adynkra_11d_first_momentum_target_verify()
+        }
         "adynkra-11d-spinor-bridge-verify" => cmd_adynkra_11d_spinor_bridge_verify(),
         "adynkra-11d-spinor-kernel-verify" => cmd_adynkra_11d_spinor_kernel_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
@@ -236,6 +249,13 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-11d-level17-hook-build --label LABEL Build one hook coupling");
     eprintln!("  adynkra-11d-level17-hook-verify --all [--resume] Verify all seven hook couplings");
     eprintln!("  adynkra-11d-level17-derivative-matrix Build the exact 7-by-12 derivative matrix");
+    eprintln!("  adynkra-11d-first-momentum-precheck Emit the 44-map level-14 work list");
+    eprintln!("  adynkra-11d-first-momentum-kernel-verify Verify all 28 level-14 source kernels");
+    eprintln!("  adynkra-11d-first-momentum-coupling-build --source LABEL --target LABEL");
+    eprintln!("  adynkra-11d-first-momentum-coupling-verify --all [--resume] Verify all 44 maps");
+    eprintln!(
+        "  adynkra-11d-first-momentum-target-verify Verify the four momentum target couplings"
+    );
     eprintln!("  adynkra-11d-spinor-bridge-verify Audit the direct 11D spinor bridge");
     eprintln!("  adynkra-11d-spinor-kernel-verify Verify its 19 source kernels exactly");
     eprintln!("  export-3d-assets [json] [output-dir]");
@@ -831,6 +851,215 @@ fn cmd_adynkra_11d_level17_derivative_matrix() {
             std::process::exit(2);
         });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_first_momentum_precheck() {
+    let report = eleven_dimensional_spinor_bridge::verify_first_momentum_source_precheck();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_first_momentum_kernel_verify() {
+    let report = eleven_dimensional_spinor_bridge_kernels::verify_first_momentum_kernels();
+    let output = std::path::PathBuf::from("results/adynkra_11d_first_momentum_kernels.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_first_momentum_coupling_build(args: &[String]) {
+    let source = option_value(args, "--source").unwrap_or_else(|| {
+        eprintln!("Missing --source");
+        std::process::exit(64);
+    });
+    let target = option_value(args, "--target").unwrap_or_else(|| {
+        eprintln!("Missing --target");
+        std::process::exit(64);
+    });
+    let report =
+        eleven_dimensional_level16_couplings::build_first_momentum_abstract(source, target);
+    let output = std::path::PathBuf::from(format!(
+        "results/adynkra_11d_first_momentum_{target}_from_{source}_abstract.json"
+    ));
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_first_momentum_coupling_verify(args: &[String]) {
+    let resume = args.iter().any(|argument| argument == "--resume");
+    if !args.iter().any(|argument| argument == "--all") {
+        let source = option_value(args, "--source").unwrap_or_else(|| {
+            eprintln!("Missing --source or --all");
+            std::process::exit(64);
+        });
+        let target = option_value(args, "--target").unwrap_or_else(|| {
+            eprintln!("Missing --target");
+            std::process::exit(64);
+        });
+        let copy = option_value(args, "--copy")
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or_else(|| {
+                eprintln!("Missing or invalid --copy");
+                std::process::exit(64);
+            });
+        let abstract_report =
+            eleven_dimensional_level16_couplings::build_first_momentum_abstract(source, target);
+        let report = eleven_dimensional_level16_couplings::verify_first_momentum_copy_with_abstract(
+            &abstract_report,
+            copy,
+        );
+        let output = std::path::PathBuf::from(format!(
+            "results/adynkra_11d_first_momentum_{target}_from_{source}_copy{copy}.json"
+        ));
+        eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+            .unwrap();
+        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+        if !report.passed {
+            std::process::exit(2);
+        }
+        return;
+    }
+
+    let jobs = eleven_dimensional_level16_couplings::first_momentum_copy_manifest()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let memory_budget_gib = std::env::var("ADINKRA_FIRST_MOMENTUM_RAM_GIB")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(48);
+    let estimated_memory_gib_per_worker = std::env::var("ADINKRA_FIRST_MOMENTUM_WORKER_GIB")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(10)
+        .max(1);
+    let requested_workers = std::env::var("ADINKRA_FIRST_MOMENTUM_WORKERS")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(4)
+        .max(1);
+    let execution_workers = requested_workers
+        .min(memory_budget_gib / estimated_memory_gib_per_worker)
+        .min(jobs.len())
+        .max(1);
+    eprintln!(
+        "first-momentum workers={execution_workers}, memory budget={memory_budget_gib} GiB, estimate={estimated_memory_gib_per_worker} GiB/worker"
+    );
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(execution_workers)
+        .build()
+        .unwrap();
+    use rayon::prelude::*;
+    let completed = pool.install(|| {
+        jobs.par_iter()
+            .map(|((source, target), copies)| {
+                let abstract_output = std::path::PathBuf::from(format!(
+                    "results/adynkra_11d_first_momentum_{target}_from_{source}_abstract.json"
+                ));
+                let saved_abstract = resume
+                    .then(|| read_passed_checkpoint(&abstract_output))
+                    .flatten();
+                let abstract_was_reused = saved_abstract.is_some();
+                let abstract_report = saved_abstract.unwrap_or_else(|| {
+                    eleven_dimensional_level16_couplings::build_first_momentum_abstract(
+                        source, target,
+                    )
+                });
+                if !abstract_was_reused {
+                    eleven_dimensional_level16_couplings::write_atomic_json(
+                        &abstract_output,
+                        &abstract_report,
+                        abstract_report.passed,
+                    )
+                    .unwrap();
+                }
+                eprintln!("certified abstract first-momentum coupling {source} -> {target}");
+                let copy_reports = copies
+                    .iter()
+                    .map(|copy| {
+                        let copy_output = std::path::PathBuf::from(format!(
+                            "results/adynkra_11d_first_momentum_{target}_from_{source}_copy{copy}.json"
+                        ));
+                        let saved_copy = resume
+                            .then(|| read_passed_checkpoint(&copy_output))
+                            .flatten();
+                        let copy_was_reused = saved_copy.is_some();
+                        let copy_report = saved_copy.unwrap_or_else(|| {
+                            eleven_dimensional_level16_couplings::verify_first_momentum_copy_with_abstract(
+                                &abstract_report,
+                                *copy,
+                            )
+                        });
+                        if !copy_was_reused {
+                            eleven_dimensional_level16_couplings::write_atomic_json(
+                                &copy_output,
+                                &copy_report,
+                                copy_report.passed,
+                            )
+                            .unwrap();
+                        }
+                        eprintln!(
+                            "certified embedded first-momentum coupling {source} copy {copy} -> {target}"
+                        );
+                        copy_report
+                    })
+                    .collect::<Vec<_>>();
+                (abstract_report, copy_reports)
+            })
+            .collect::<Vec<_>>()
+    });
+    let abstract_couplings = completed.iter().map(|(report, _)| report.clone()).collect();
+    let embedded_maps = completed
+        .into_iter()
+        .flat_map(|(_, reports)| reports)
+        .collect();
+    let report = eleven_dimensional_level16_couplings::summarize_first_momentum(
+        abstract_couplings,
+        embedded_maps,
+        execution_workers,
+        memory_budget_gib,
+        estimated_memory_gib_per_worker,
+        resume,
+    );
+    let output = std::path::PathBuf::from("results/adynkra_11d_first_momentum_couplings_all.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_first_momentum_target_verify() {
+    let report = eleven_dimensional_bridge::verify_first_momentum_target_couplings();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    let output =
+        std::path::PathBuf::from("results/adynkra_11d_first_momentum_target_couplings.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
     if !report.passed {
         std::process::exit(2);
     }

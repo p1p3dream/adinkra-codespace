@@ -145,15 +145,16 @@ Implementation:
 
 ## Next gate
 
-The next calculation is the gauge-compatible extension:
+The 44 first-momentum source intertwiners and four momentum target couplings
+are complete. The next calculation is:
 
-1. construct the six first-derivative gauge-parameter intertwiners;
-2. leave their coefficients undetermined;
-3. compute their induced action on the twelve leading directions;
-4. intersect the exact gauge-compatible space with the five-dimensional hook
-   kernel;
-5. construct the 44 first-momentum correction intertwiners and repeat the
-   calculation with the full first-momentum symbol.
+1. compose them with the superspace anticommutator term;
+2. build the joint leading plus first-momentum compatibility matrix;
+3. determine whether the five-dimensional hook kernel extends;
+4. construct the six first-derivative gauge-parameter intertwiners;
+5. leave their coefficients undetermined;
+6. compute their induced action and intersect the gauge-compatible space with
+   the joint kernel.
 
 Only combinations that survive those steps can enter a linearized curvature
 or field-equation search.

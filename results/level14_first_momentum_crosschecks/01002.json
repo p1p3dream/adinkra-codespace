@@ -1,0 +1,78 @@
+{
+  "schema_version": "adynkra.11d.bridge-crosscheck.v2",
+  "role": "independent floating-point cross-check of the Rust exact sparse system",
+  "dynkin_label": "01002",
+  "exterior_degree": 14,
+  "matrix_rows": 155704,
+  "matrix_columns": 56758,
+  "nonzero_entries": 564452,
+  "raising_block_rows": [
+    36608,
+    22150,
+    34946,
+    34946,
+    27054
+  ],
+  "expected_kernel_dimension": 5,
+  "smallest_eigenvalues_of_transpose_product": [
+    -1.9718904020132333e-17,
+    -1.0511673216876626e-17,
+    -1.9623107593420465e-19,
+    7.667130369735362e-21,
+    5.0212479251070706e-18,
+    0.0488011855148201,
+    0.048801185514820114,
+    0.0683581301592345
+  ],
+  "numerical_zero_threshold": 1e-06,
+  "observed_numerical_kernel_dimension": 5,
+  "passed": true,
+  "boundary": "The eigenvalue calculation and integer reconstruction are numerical. The Rust verifier independently checks every stored integer coefficient against every exact raising equation.",
+  "integer_kernel_candidates": [
+    {
+      "path": "work/level14-proposals/artifacts/level14_01002_highest_weight_kernel_1.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 13792,
+      "minimum_coefficient": -60,
+      "maximum_coefficient": 60
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_01002_highest_weight_kernel_2.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 13812,
+      "minimum_coefficient": -2619,
+      "maximum_coefficient": 2619
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_01002_highest_weight_kernel_3.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 47997,
+      "minimum_coefficient": -660,
+      "maximum_coefficient": 660
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_01002_highest_weight_kernel_4.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 51344,
+      "minimum_coefficient": -1050,
+      "maximum_coefficient": 1050
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_01002_highest_weight_kernel_5.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 54407,
+      "minimum_coefficient": -3600,
+      "maximum_coefficient": 5400
+    }
+  ]
+}

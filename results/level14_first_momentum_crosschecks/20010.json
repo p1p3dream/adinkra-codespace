@@ -1,0 +1,72 @@
+{
+  "schema_version": "adynkra.11d.bridge-crosscheck.v2",
+  "role": "independent floating-point cross-check of the Rust exact sparse system",
+  "dynkin_label": "20010",
+  "exterior_degree": 14,
+  "matrix_rows": 123357,
+  "matrix_columns": 47096,
+  "nonzero_entries": 455389,
+  "raising_block_rows": [
+    12292,
+    28732,
+    28732,
+    16993,
+    36608
+  ],
+  "expected_kernel_dimension": 4,
+  "smallest_eigenvalues_of_transpose_product": [
+    -1.413413204913401e-17,
+    1.3656743059521537e-21,
+    6.937197307788833e-18,
+    8.188477055759935e-18,
+    0.06132004378805189,
+    0.061320043788051906,
+    0.061320043788051934
+  ],
+  "numerical_zero_threshold": 1e-06,
+  "observed_numerical_kernel_dimension": 4,
+  "passed": true,
+  "boundary": "The eigenvalue calculation and integer reconstruction are numerical. The Rust verifier independently checks every stored integer coefficient against every exact raising equation.",
+  "integer_kernel_candidates": [
+    {
+      "path": "work/level14-proposals/artifacts/level14_20010_highest_weight_kernel_1.i32le",
+      "scalar_type": "signed 32-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 7140,
+      "minimum_coefficient": -2,
+      "maximum_coefficient": 2
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_20010_highest_weight_kernel_2.i32le",
+      "scalar_type": "signed 32-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 30164,
+      "minimum_coefficient": -600,
+      "maximum_coefficient": 600
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_20010_highest_weight_kernel_3.i32le",
+      "scalar_type": "signed 32-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 46086,
+      "minimum_coefficient": -12672,
+      "maximum_coefficient": 20592
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_20010_highest_weight_kernel_4.i32le",
+      "scalar_type": "signed 32-bit little-endian integer",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 0.0,
+      "nonzero_coefficients": 46094,
+      "minimum_coefficient": -485880,
+      "maximum_coefficient": 253348
+    }
+  ]
+}

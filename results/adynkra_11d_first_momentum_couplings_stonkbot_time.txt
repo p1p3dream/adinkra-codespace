@@ -1,0 +1,91 @@
+first-momentum workers=4, memory budget=48 GiB, estimate=10 GiB/worker
+certified abstract first-momentum coupling 00000 -> 00001
+certified embedded first-momentum coupling 00000 copy 1 -> 00001
+certified abstract first-momentum coupling 00100 -> 01001
+certified embedded first-momentum coupling 00100 copy 1 -> 01001
+certified embedded first-momentum coupling 00100 copy 2 -> 01001
+certified abstract first-momentum coupling 10100 -> 01001
+certified abstract first-momentum coupling 00100 -> 10001
+certified embedded first-momentum coupling 10100 copy 1 -> 01001
+certified embedded first-momentum coupling 00100 copy 1 -> 10001
+certified abstract first-momentum coupling 10002 -> 01001
+certified embedded first-momentum coupling 00100 copy 2 -> 10001
+certified embedded first-momentum coupling 10002 copy 1 -> 01001
+certified embedded first-momentum coupling 10002 copy 2 -> 01001
+certified abstract first-momentum coupling 10100 -> 10001
+certified abstract first-momentum coupling 00010 -> 00001
+certified embedded first-momentum coupling 10100 copy 1 -> 10001
+certified abstract first-momentum coupling 10100 -> 20001
+certified embedded first-momentum coupling 10100 copy 1 -> 20001
+certified embedded first-momentum coupling 00010 copy 1 -> 00001
+certified embedded first-momentum coupling 00010 copy 2 -> 00001
+certified abstract first-momentum coupling 00010 -> 01001
+certified embedded first-momentum coupling 00010 copy 1 -> 01001
+certified embedded first-momentum coupling 00010 copy 2 -> 01001
+certified abstract first-momentum coupling 00010 -> 10001
+certified abstract first-momentum coupling 20002 -> 20001
+certified embedded first-momentum coupling 00010 copy 1 -> 10001
+certified embedded first-momentum coupling 20002 copy 1 -> 20001
+certified abstract first-momentum coupling 10002 -> 10001
+certified embedded first-momentum coupling 00010 copy 2 -> 10001
+certified embedded first-momentum coupling 20002 copy 2 -> 20001
+certified embedded first-momentum coupling 10002 copy 1 -> 10001
+certified abstract first-momentum coupling 00100 -> 00001
+certified abstract first-momentum coupling 20010 -> 20001
+certified embedded first-momentum coupling 10002 copy 2 -> 10001
+certified embedded first-momentum coupling 20010 copy 1 -> 20001
+certified abstract first-momentum coupling 10002 -> 20001
+certified embedded first-momentum coupling 10002 copy 1 -> 20001
+certified embedded first-momentum coupling 20010 copy 2 -> 20001
+certified embedded first-momentum coupling 00100 copy 1 -> 00001
+certified embedded first-momentum coupling 10002 copy 2 -> 20001
+certified embedded first-momentum coupling 20010 copy 3 -> 20001
+certified embedded first-momentum coupling 20010 copy 4 -> 20001
+certified abstract first-momentum coupling 10010 -> 01001
+certified embedded first-momentum coupling 00100 copy 2 -> 00001
+certified abstract first-momentum coupling 20100 -> 20001
+certified embedded first-momentum coupling 10010 copy 1 -> 01001
+certified embedded first-momentum coupling 20100 copy 1 -> 20001
+certified embedded first-momentum coupling 20100 copy 2 -> 20001
+certified embedded first-momentum coupling 20100 copy 3 -> 20001
+certified abstract first-momentum coupling 01100 -> 01001
+certified embedded first-momentum coupling 01100 copy 1 -> 01001
+certified abstract first-momentum coupling 10010 -> 10001
+certified embedded first-momentum coupling 01100 copy 2 -> 01001
+certified abstract first-momentum coupling 02000 -> 01001
+certified embedded first-momentum coupling 10010 copy 1 -> 10001
+certified embedded first-momentum coupling 02000 copy 1 -> 01001
+certified abstract first-momentum coupling 10010 -> 20001
+certified embedded first-momentum coupling 02000 copy 2 -> 01001
+certified embedded first-momentum coupling 10010 copy 1 -> 20001
+certified abstract first-momentum coupling 01010 -> 01001
+certified embedded first-momentum coupling 01010 copy 1 -> 01001
+certified abstract first-momentum coupling 01002 -> 01001
+certified embedded first-momentum coupling 01002 copy 1 -> 01001
+certified embedded first-momentum coupling 01002 copy 2 -> 01001
+certified embedded first-momentum coupling 01002 copy 3 -> 01001
+certified embedded first-momentum coupling 01002 copy 4 -> 01001
+certified embedded first-momentum coupling 01002 copy 5 -> 01001
+	Command being timed: "target/release/adinkra-codespace adynkra-11d-first-momentum-coupling-verify --all --resume"
+	User time (seconds): 1682.39
+	System time (seconds): 19.79
+	Percent of CPU this job got: 286%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 9:54.26
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 45530608
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 19
+	Minor (reclaiming a frame) page faults: 14444741
+	Voluntary context switches: 707
+	Involuntary context switches: 12091
+	Swaps: 0
+	File system inputs: 6128
+	File system outputs: 8096
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

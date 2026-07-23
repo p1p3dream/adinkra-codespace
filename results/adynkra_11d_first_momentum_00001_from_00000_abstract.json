@@ -1,0 +1,64 @@
+{
+  "schema_version": "adynkra-11d-first-momentum-00001-abstract-coupling-v1",
+  "role": "exact canonical abstract coupling into (00001)",
+  "source_dynkin_label": "00000",
+  "source_fixture_copy": 1,
+  "target_dynkin_label": "00001",
+  "basis_method": "lexicographic PBW lowering words with exact exterior-realization Gram rank",
+  "dependency_test": "exact rational rank of the integer Gram matrix; no modular acceptance",
+  "product_weight_domain_dimension": 1,
+  "source_weight_spaces_used": 1,
+  "source_weight_multiplicities": [
+    [
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      1
+    ]
+  ],
+  "domain_basis": [
+    {
+      "free_spinor_index": 0,
+      "free_spinor_weight": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "source_weight": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pbw_word_simple_roots": []
+    }
+  ],
+  "gram_matrix_rank": 0,
+  "kernel_dimension": 1,
+  "primitive_domain_coefficients": [
+    1
+  ],
+  "primitive_coefficient_gcd": 1,
+  "maximum_absolute_primitive_coefficient": 1,
+  "exact_raising_residual_terms_by_simple_root": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "maximum_absolute_checked_accumulator": 1,
+  "storage_type": "i64 coefficients with checked i128 accumulation",
+  "exterior_action_storage": "precomputed CSR over sorted exterior-mask weight spaces",
+  "csr_actions_built": 5,
+  "csr_nonzero_entries": 8561776,
+  "multiplicity_one": true,
+  "passed": true
+}

@@ -48,6 +48,44 @@ const LEVEL17_HOOK_PROBLEM: CouplingProblem = CouplingProblem {
     schema_prefix: "adynkra-11d-level17-hook",
 };
 
+const FIRST_MOMENTUM_00001_PROBLEM: CouplingProblem = CouplingProblem {
+    exterior_degree: 14,
+    target_dynkin_label: "00001",
+    target_weight: [1, 1, 1, 1, 1],
+    schema_prefix: "adynkra-11d-first-momentum-00001",
+};
+
+const FIRST_MOMENTUM_01001_PROBLEM: CouplingProblem = CouplingProblem {
+    exterior_degree: 14,
+    target_dynkin_label: "01001",
+    target_weight: [3, 3, 1, 1, 1],
+    schema_prefix: "adynkra-11d-first-momentum-01001",
+};
+
+const FIRST_MOMENTUM_10001_PROBLEM: CouplingProblem = CouplingProblem {
+    exterior_degree: 14,
+    target_dynkin_label: "10001",
+    target_weight: [3, 1, 1, 1, 1],
+    schema_prefix: "adynkra-11d-first-momentum-10001",
+};
+
+const FIRST_MOMENTUM_20001_PROBLEM: CouplingProblem = CouplingProblem {
+    exterior_degree: 14,
+    target_dynkin_label: "20001",
+    target_weight: [5, 1, 1, 1, 1],
+    schema_prefix: "adynkra-11d-first-momentum-20001",
+};
+
+fn first_momentum_problem(target_dynkin_label: &str) -> CouplingProblem {
+    match target_dynkin_label {
+        "00001" => FIRST_MOMENTUM_00001_PROBLEM,
+        "01001" => FIRST_MOMENTUM_01001_PROBLEM,
+        "10001" => FIRST_MOMENTUM_10001_PROBLEM,
+        "20001" => FIRST_MOMENTUM_20001_PROBLEM,
+        _ => panic!("unknown first-momentum target {target_dynkin_label}"),
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Level16FixtureManifestEntry {
     pub source_dynkin_label: &'static str,
@@ -340,6 +378,25 @@ pub struct AllCouplingCertificateReport {
     pub passed: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirstMomentumCouplingCertificateReport {
+    pub schema_version: String,
+    pub role: String,
+    pub abstract_couplings: Vec<AbstractCouplingCertificate>,
+    pub embedded_maps: Vec<EmbeddedCouplingCertificate>,
+    pub source_target_pairs_certified: usize,
+    pub embedded_maps_certified: usize,
+    pub expected_source_target_pairs: usize,
+    pub expected_embedded_maps: usize,
+    pub every_residual_is_exactly_zero: bool,
+    pub execution_workers: usize,
+    pub memory_budget_gib: usize,
+    pub estimated_memory_gib_per_worker: usize,
+    pub resumed_from_atomic_checkpoints: bool,
+    pub boundary: String,
+    pub passed: bool,
+}
+
 #[derive(Debug, Clone)]
 struct CoupledDenseState {
     total_weight: Weight,
@@ -516,10 +573,15 @@ impl ExteriorModel {
         }
     }
 
-    fn fixture_state(&mut self, dynkin_label: &str, fixture_bytes: &[u8]) -> DenseState {
+    fn fixture_state(
+        &mut self,
+        dynkin_label: &str,
+        fixture_bytes: &[u8],
+        coefficient_width_bytes: usize,
+    ) -> DenseState {
         let weight = dynkin_highest_weight(dynkin_label);
         let expected = self.space(weight).masks.len();
-        let coefficients = decode_kernel(fixture_bytes);
+        let coefficients = decode_kernel(fixture_bytes, coefficient_width_bytes);
         assert_eq!(
             coefficients.len(),
             expected,
@@ -627,11 +689,27 @@ fn weight_basis(
     basis
 }
 
-fn decode_kernel(bytes: &[u8]) -> Vec<i64> {
-    bytes
-        .chunks_exact(2)
-        .map(|pair| i64::from(i16::from_le_bytes([pair[0], pair[1]])))
-        .collect()
+fn decode_kernel(bytes: &[u8], coefficient_width_bytes: usize) -> Vec<i64> {
+    match coefficient_width_bytes {
+        2 => bytes
+            .chunks_exact(2)
+            .map(|pair| i64::from(i16::from_le_bytes([pair[0], pair[1]])))
+            .collect(),
+        4 => bytes
+            .chunks_exact(4)
+            .map(|word| i64::from(i32::from_le_bytes([word[0], word[1], word[2], word[3]])))
+            .collect(),
+        _ => panic!("unsupported kernel coefficient width"),
+    }
+}
+
+fn fixture_coefficient_width(artifact: &str) -> usize {
+    if artifact.ends_with(".i32le") {
+        4
+    } else {
+        assert!(artifact.ends_with(".i16le"));
+        2
+    }
 }
 
 fn raised_spinor_index(index: usize, root: usize, weights: &[Weight; 32]) -> Option<usize> {
@@ -1036,10 +1114,11 @@ fn build_abstract_from_fixture(
     problem: CouplingProblem,
     dynkin_label: &str,
     fixture_copy: usize,
+    coefficient_width_bytes: usize,
     fixture_bytes: &[u8],
 ) -> (AbstractCouplingCertificate, Vec<DenseState>) {
     let mut model = ExteriorModel::new(problem.exterior_degree);
-    let highest = model.fixture_state(dynkin_label, fixture_bytes);
+    let highest = model.fixture_state(dynkin_label, fixture_bytes, coefficient_width_bytes);
     let bases = relevant_source_bases(&mut model, highest, problem.target_weight);
     let mut domain = Vec::<(usize, DenseState)>::new();
     for (spinor_index, spinor_weight) in model.spinors.iter().copied().enumerate() {
@@ -1210,7 +1289,7 @@ fn materialize_coupled_highest(
     );
     assert!(abstract_certificate.passed);
     let mut model = ExteriorModel::new(problem.exterior_degree);
-    let highest = model.fixture_state(&abstract_certificate.source_dynkin_label, fixture_bytes);
+    let highest = model.fixture_state(&abstract_certificate.source_dynkin_label, fixture_bytes, 2);
     let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
     let mut components = BTreeMap::new();
     let mut maximum = 0_i128;
@@ -1383,7 +1462,8 @@ fn build_derivative_candidate(
 
 fn build_scalar_factorizing_candidate() -> (CoupledSparseState, i128) {
     let mut level15 = ExteriorModel::new(15);
-    let highest = level15.fixture_state(TARGET_DYNKIN_LABEL, SCALAR_BRIDGE_VECTOR_SPINOR_FIXTURE);
+    let highest =
+        level15.fixture_state(TARGET_DYNKIN_LABEL, SCALAR_BRIDGE_VECTOR_SPINOR_FIXTURE, 2);
     assert_eq!(highest.weight, TARGET_WEIGHT);
     let source_masks = level15.space(highest.weight).masks.clone();
     let charge = crate::eleven_dimensional_clifford::spinor_charge_bilinear();
@@ -1673,6 +1753,7 @@ pub fn build_level17_derivative_matrix() -> Level17DerivativeMatrixReport {
                     LEVEL17_HOOK_PROBLEM,
                     fixture.dynkin_label,
                     fixture.copy,
+                    2,
                     fixture.bytes,
                 )
                 .0,
@@ -1731,6 +1812,7 @@ pub fn build_level17_derivative_matrix() -> Level17DerivativeMatrixReport {
                     LEVEL16_PROBLEM,
                     fixture.dynkin_label,
                     fixture.copy,
+                    2,
                     fixture.bytes,
                 )
                 .0,
@@ -1925,7 +2007,11 @@ fn verify_embedded_with_abstract(
     fixture_bytes: &[u8],
 ) -> EmbeddedCouplingCertificate {
     let mut model = ExteriorModel::new(problem.exterior_degree);
-    let highest = model.fixture_state(&abstract_certificate.source_dynkin_label, fixture_bytes);
+    let highest = model.fixture_state(
+        &abstract_certificate.source_dynkin_label,
+        fixture_bytes,
+        fixture_coefficient_width(fixture_artifact),
+    );
     let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
     let mut domain = Vec::new();
     for entry in &abstract_certificate.domain_basis {
@@ -1997,7 +2083,14 @@ pub fn build_abstract(dynkin_label: &str) -> AbstractCouplingCertificate {
         .into_iter()
         .find(|fixture| fixture.dynkin_label == dynkin_label && fixture.copy == 1)
         .unwrap_or_else(|| panic!("unknown level-16 source irrep {dynkin_label}"));
-    build_abstract_from_fixture(LEVEL16_PROBLEM, dynkin_label, fixture.copy, fixture.bytes).0
+    build_abstract_from_fixture(
+        LEVEL16_PROBLEM,
+        dynkin_label,
+        fixture.copy,
+        2,
+        fixture.bytes,
+    )
+    .0
 }
 
 pub fn verify_copy(dynkin_label: &str, copy: usize) -> EmbeddedCouplingCertificate {
@@ -2014,6 +2107,7 @@ pub fn verify_copy(dynkin_label: &str, copy: usize) -> EmbeddedCouplingCertifica
         LEVEL16_PROBLEM,
         dynkin_label,
         abstract_fixture.copy,
+        2,
         abstract_fixture.bytes,
     );
     verify_embedded_with_abstract(
@@ -2058,6 +2152,7 @@ pub fn build_hook_abstract(dynkin_label: &str) -> AbstractCouplingCertificate {
         LEVEL17_HOOK_PROBLEM,
         dynkin_label,
         fixture.copy,
+        2,
         fixture.bytes,
     )
     .0
@@ -2096,6 +2191,129 @@ pub fn hook_copy_manifest() -> BTreeMap<&'static str, Vec<usize>> {
             .push(fixture.copy);
     }
     copies
+}
+
+pub fn first_momentum_copy_manifest() -> BTreeMap<(String, String), Vec<usize>> {
+    let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+    let copies_by_source = fixtures.into_iter().fold(
+        BTreeMap::<&str, Vec<usize>>::new(),
+        |mut copies, fixture| {
+            copies
+                .entry(fixture.dynkin_label)
+                .or_default()
+                .push(fixture.copy);
+            copies
+        },
+    );
+    crate::eleven_dimensional_spinor_bridge::verify_first_momentum_source_precheck()
+        .channels
+        .into_iter()
+        .map(|channel| {
+            let copies = copies_by_source
+                .get(channel.source_dynkin_label.as_str())
+                .unwrap()
+                .clone();
+            (
+                (
+                    channel.source_dynkin_label,
+                    channel.intermediate_dynkin_label,
+                ),
+                copies,
+            )
+        })
+        .collect()
+}
+
+pub fn build_first_momentum_abstract(
+    source_dynkin_label: &str,
+    target_dynkin_label: &str,
+) -> AbstractCouplingCertificate {
+    let problem = first_momentum_problem(target_dynkin_label);
+    let fixture = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures()
+        .into_iter()
+        .find(|fixture| fixture.dynkin_label == source_dynkin_label && fixture.copy == 1)
+        .unwrap_or_else(|| panic!("unknown level-14 source irrep {source_dynkin_label}"));
+    let target_multiplicity =
+        crate::eleven_dimensional_prepotential::spinor_tensor_channels(source_dynkin_label)
+            .iter()
+            .filter(|(target, _)| target == target_dynkin_label)
+            .count();
+    assert_eq!(
+        target_multiplicity, 1,
+        "the requested level-14 source-target coupling is not multiplicity one"
+    );
+    build_abstract_from_fixture(
+        problem,
+        source_dynkin_label,
+        fixture.copy,
+        fixture_coefficient_width(fixture.artifact),
+        fixture.bytes,
+    )
+    .0
+}
+
+pub fn verify_first_momentum_copy_with_abstract(
+    abstract_certificate: &AbstractCouplingCertificate,
+    copy: usize,
+) -> EmbeddedCouplingCertificate {
+    let problem = first_momentum_problem(&abstract_certificate.target_dynkin_label);
+    let fixture = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures()
+        .into_iter()
+        .find(|fixture| {
+            fixture.dynkin_label == abstract_certificate.source_dynkin_label && fixture.copy == copy
+        })
+        .unwrap_or_else(|| {
+            panic!(
+                "unknown copy {copy} for level-14 source irrep {}",
+                abstract_certificate.source_dynkin_label
+            )
+        });
+    verify_embedded_with_abstract(
+        problem,
+        abstract_certificate,
+        fixture.copy,
+        fixture.artifact,
+        fixture.bytes,
+    )
+}
+
+pub fn summarize_first_momentum(
+    abstract_couplings: Vec<AbstractCouplingCertificate>,
+    embedded_maps: Vec<EmbeddedCouplingCertificate>,
+    execution_workers: usize,
+    memory_budget_gib: usize,
+    estimated_memory_gib_per_worker: usize,
+    resumed_from_atomic_checkpoints: bool,
+) -> FirstMomentumCouplingCertificateReport {
+    let source_target_pairs_certified = abstract_couplings
+        .iter()
+        .filter(|report| report.passed)
+        .count();
+    let embedded_maps_certified = embedded_maps.iter().filter(|report| report.passed).count();
+    let every_residual_is_exactly_zero = embedded_maps
+        .iter()
+        .all(|report| report.exact_raising_residual_terms_by_simple_root == [0; 5]);
+    let passed = source_target_pairs_certified == 23
+        && embedded_maps_certified == 44
+        && every_residual_is_exactly_zero;
+    FirstMomentumCouplingCertificateReport {
+        schema_version: "adynkra-11d-first-momentum-all-couplings-v1".to_string(),
+        role: "exact certification of the 23 abstract and 44 embedded level-14 source intertwiners"
+            .to_string(),
+        abstract_couplings,
+        embedded_maps,
+        source_target_pairs_certified,
+        embedded_maps_certified,
+        expected_source_target_pairs: 23,
+        expected_embedded_maps: 44,
+        every_residual_is_exactly_zero,
+        execution_workers,
+        memory_budget_gib,
+        estimated_memory_gib_per_worker,
+        resumed_from_atomic_checkpoints,
+        boundary: "this certifies the level-14 source intertwiners into the four first-momentum intermediate irreducibles; it does not construct the momentum target couplings, the joint compatibility matrix, a gauge quotient, or a field equation".to_string(),
+        passed,
+    }
 }
 
 fn summarize_problem(
@@ -2208,7 +2426,7 @@ pub fn verify_all() -> AllCouplingCertificateReport {
             .find(|fixture| fixture.copy == 1)
             .expect("each irrep must have copy 1");
         let (abstract_certificate, _) =
-            build_abstract_from_fixture(LEVEL16_PROBLEM, label, first.copy, first.bytes);
+            build_abstract_from_fixture(LEVEL16_PROBLEM, label, first.copy, 2, first.bytes);
         for fixture in copies {
             embedded_copies.push(verify_embedded_with_abstract(
                 LEVEL16_PROBLEM,
@@ -2384,6 +2602,38 @@ mod tests {
         );
         assert!(!report.passed);
         assert!(report
+            .exact_raising_residual_terms_by_simple_root
+            .iter()
+            .any(|terms| *terms != 0));
+    }
+
+    #[test]
+    fn first_momentum_manifest_has_twenty_three_pairs_and_forty_four_maps() {
+        let manifest = first_momentum_copy_manifest();
+        assert_eq!(manifest.len(), 23);
+        assert_eq!(manifest.values().map(Vec::len).sum::<usize>(), 44);
+        assert!(manifest
+            .keys()
+            .all(|(_, target)| ["00001", "01001", "10001", "20001"].contains(&target.as_str())));
+    }
+
+    #[test]
+    fn first_momentum_scalar_to_spinor_golden_coupling_passes() {
+        let abstract_certificate = build_first_momentum_abstract("00000", "00001");
+        assert!(abstract_certificate.passed);
+        assert_eq!(abstract_certificate.kernel_dimension, 1);
+        let embedded = verify_first_momentum_copy_with_abstract(&abstract_certificate, 1);
+        assert!(embedded.passed);
+        assert_eq!(embedded.exact_raising_residual_terms_by_simple_root, [0; 5]);
+    }
+
+    #[test]
+    fn first_momentum_golden_gate_detects_a_coefficient_mutation() {
+        let mut abstract_certificate = build_first_momentum_abstract("00100", "01001");
+        abstract_certificate.primitive_domain_coefficients[0] += 1;
+        let embedded = verify_first_momentum_copy_with_abstract(&abstract_certificate, 1);
+        assert!(!embedded.passed);
+        assert!(embedded
             .exact_raising_residual_terms_by_simple_root
             .iter()
             .any(|terms| *terms != 0));

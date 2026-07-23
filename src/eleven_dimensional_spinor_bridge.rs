@@ -29,6 +29,31 @@ pub struct FirstMomentumChannel {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumSourceChannel {
+    pub intermediate_dynkin_label: String,
+    pub source_dynkin_label: String,
+    pub source_dimension: u64,
+    pub source_multiplicity_at_level_fourteen: usize,
+    pub target_multiplicity_in_source_tensor_spinor: usize,
+    pub map_coefficients: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumSourcePrecheck {
+    pub schema_version: &'static str,
+    pub role: &'static str,
+    pub exterior_degree: usize,
+    pub channels: Vec<FirstMomentumSourceChannel>,
+    pub source_kernel_systems:
+        Vec<crate::eleven_dimensional_bridge::ExteriorHighestWeightSystemShape>,
+    pub distinct_source_target_pairs: usize,
+    pub embedded_source_copies: usize,
+    pub expected_map_coefficients: usize,
+    pub every_target_multiplicity_is_one: bool,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct GaugeParameterChannel {
     pub form_degree: usize,
     pub dynkin_label: String,
@@ -99,6 +124,70 @@ fn direct_channels(level: usize, target: &str) -> Vec<DirectBridgeChannel> {
             },
         )
         .collect()
+}
+
+pub fn verify_first_momentum_source_precheck() -> FirstMomentumSourcePrecheck {
+    let mut channels = Vec::new();
+    for intermediate in ["00001", "01001", "10001", "20001"] {
+        for (source_dynkin_label, source_dimension, source_multiplicity) in
+            crate::eleven_dimensional_prepotential::spinor_level_channel_sources(14, intermediate)
+        {
+            let target_multiplicity_in_source_tensor_spinor =
+                crate::eleven_dimensional_prepotential::spinor_tensor_channels(
+                    &source_dynkin_label,
+                )
+                .iter()
+                .filter(|(target, _)| target == intermediate)
+                .count();
+            channels.push(FirstMomentumSourceChannel {
+                intermediate_dynkin_label: intermediate.to_string(),
+                source_dynkin_label,
+                source_dimension,
+                source_multiplicity_at_level_fourteen: source_multiplicity,
+                target_multiplicity_in_source_tensor_spinor,
+                map_coefficients: source_multiplicity * target_multiplicity_in_source_tensor_spinor,
+            });
+        }
+    }
+    let distinct_source_target_pairs = channels.len();
+    let embedded_source_copies = channels
+        .iter()
+        .map(|channel| channel.source_multiplicity_at_level_fourteen)
+        .sum();
+    let map_coefficients: usize = channels
+        .iter()
+        .map(|channel| channel.map_coefficients)
+        .sum();
+    let every_target_multiplicity_is_one = channels
+        .iter()
+        .all(|channel| channel.target_multiplicity_in_source_tensor_spinor == 1);
+    let mut source_counts = std::collections::BTreeMap::<String, usize>::new();
+    for channel in &channels {
+        source_counts
+            .entry(channel.source_dynkin_label.clone())
+            .and_modify(|count| assert_eq!(*count, channel.source_multiplicity_at_level_fourteen))
+            .or_insert(channel.source_multiplicity_at_level_fourteen);
+    }
+    let source_pairs = source_counts
+        .iter()
+        .map(|(label, copies)| (label.as_str(), *copies))
+        .collect::<Vec<_>>();
+    let source_kernel_systems =
+        crate::eleven_dimensional_bridge::exterior_highest_weight_system_shapes(14, &source_pairs);
+    let passed =
+        map_coefficients == 44 && embedded_source_copies == 44 && every_target_multiplicity_is_one;
+    FirstMomentumSourcePrecheck {
+        schema_version: "adynkra-11d-first-momentum-source-precheck-v1",
+        role: "fixed level-14 source work list for the 44 first-momentum intertwiners",
+        exterior_degree: 14,
+        channels,
+        source_kernel_systems,
+        distinct_source_target_pairs,
+        embedded_source_copies,
+        expected_map_coefficients: 44,
+        every_target_multiplicity_is_one,
+        passed,
+    }
 }
 
 pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
@@ -399,6 +488,14 @@ mod tests {
         assert!(report.direct_hook_is_permitted_by_conventional_constraints);
         assert!(!report.direct_hook_cancellation_required);
         assert!(!report.scalar_strengthened_constraint_applied_to_spinor_route);
+    }
+
+    #[test]
+    fn first_momentum_source_work_list_has_forty_four_multiplicity_one_maps() {
+        let report = verify_first_momentum_source_precheck();
+        assert!(report.passed);
+        assert_eq!(report.embedded_source_copies, 44);
+        assert!(report.every_target_multiplicity_is_one);
     }
 
     #[test]

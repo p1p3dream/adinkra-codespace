@@ -1,0 +1,48 @@
+{
+  "schema_version": "adynkra.11d.bridge-crosscheck.v2",
+  "role": "independent floating-point cross-check of the Rust exact sparse system",
+  "dynkin_label": "01100",
+  "exterior_degree": 14,
+  "matrix_rows": 261478,
+  "matrix_columns": 91936,
+  "nonzero_entries": 985122,
+  "raising_block_rows": [
+    60298,
+    37096,
+    34946,
+    56758,
+    72380
+  ],
+  "expected_kernel_dimension": 2,
+  "smallest_eigenvalues_of_transpose_product": [
+    -6.938905304857754e-18,
+    7.088721812468741e-22,
+    0.06241464074791085,
+    0.0624146407479109,
+    0.062414640747910914
+  ],
+  "numerical_zero_threshold": 1e-06,
+  "observed_numerical_kernel_dimension": 2,
+  "passed": true,
+  "boundary": "The eigenvalue calculation and integer reconstruction are numerical. The Rust verifier independently checks every stored integer coefficient against every exact raising equation.",
+  "integer_kernel_candidates": [
+    {
+      "path": "work/level14-proposals/artifacts/level14_01100_highest_weight_kernel_1.i16le",
+      "scale_before_primitive_reduction": 1800,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 1.847118937803316e-07,
+      "nonzero_coefficients": 89664,
+      "minimum_coefficient": -1800,
+      "maximum_coefficient": 1800
+    },
+    {
+      "path": "work/level14-proposals/artifacts/level14_01100_highest_weight_kernel_2.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 1.2684175931809705e-10,
+      "nonzero_coefficients": 3168,
+      "minimum_coefficient": -1,
+      "maximum_coefficient": 1
+    }
+  ]
+}

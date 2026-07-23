@@ -75,6 +75,7 @@ pub struct ExteriorHighestWeightSystemShape {
 pub struct ExteriorHighestWeightKernelFixture {
     pub exterior_degree: u8,
     pub dynkin_label: &'static str,
+    pub coefficient_width_bytes: usize,
     pub kernel_artifacts: &'static [(&'static str, &'static [u8])],
 }
 
@@ -84,9 +85,9 @@ pub struct ExactKernelVectorReport {
     pub scalar_type: &'static str,
     pub coefficients: usize,
     pub nonzero_coefficients: usize,
-    pub minimum_coefficient: i16,
-    pub maximum_coefficient: i16,
-    pub coefficient_gcd: i16,
+    pub minimum_coefficient: i64,
+    pub maximum_coefficient: i64,
+    pub coefficient_gcd: i64,
     pub squared_norm: u64,
     pub raising_rows_checked: usize,
     pub nonzero_residual_rows: usize,
@@ -560,6 +561,15 @@ fn squared_norm(coefficients: &[i16]) -> u64 {
         .map(|coefficient| {
             let coefficient = i64::from(*coefficient);
             (coefficient * coefficient) as u64
+        })
+        .sum()
+}
+
+fn squared_norm_i64(coefficients: &[i64]) -> u64 {
+    coefficients
+        .iter()
+        .map(|coefficient| {
+            u64::try_from(i128::from(*coefficient) * i128::from(*coefficient)).unwrap()
         })
         .sum()
 }
@@ -1450,7 +1460,7 @@ fn lowered_spinor_index(index: usize, root: usize, weights: &[Weight; 32]) -> Op
 
 fn first_lowering(
     source_basis: &[u32],
-    coefficients: &[i16],
+    coefficients: &[i64],
     root: usize,
     weights: &[Weight; 32],
 ) -> HashMap<u32, i64> {
@@ -1459,7 +1469,6 @@ fn first_lowering(
         .copied()
         .zip(coefficients.iter().copied())
         .filter(|(_, coefficient)| *coefficient != 0)
-        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
         .collect::<HashMap<_, _>>();
     lower_sparse(&source, root, weights)
 }
@@ -1849,6 +1858,44 @@ pub struct DirectHookTargetCouplingTerm {
     pub primitive_coefficient: i64,
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumTargetCouplingTerm {
+    pub momentum_vector_index: usize,
+    pub momentum_vector_weight: Weight,
+    pub vector_spinor_weight: Weight,
+    pub vector_spinor_basis_index: usize,
+    pub vector_spinor_pbw_word_simple_roots: Vec<u8>,
+    pub primitive_coefficient: i64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumTargetCouplingAudit {
+    pub tensor_product: &'static str,
+    pub target_dynkin_label: &'static str,
+    pub target_highest_weight: Weight,
+    pub highest_weight_domain_dimension: usize,
+    pub highest_weight_kernel_dimension: usize,
+    pub primitive_nonzero_coefficients: usize,
+    pub raising_residual_terms: usize,
+    pub coefficient_mutation_detected: bool,
+    pub terms: Vec<FirstMomentumTargetCouplingTerm>,
+    pub multiplicity_one_coupling_constructed: bool,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumTargetCouplingReport {
+    pub schema_version: &'static str,
+    pub role: &'static str,
+    pub couplings: Vec<FirstMomentumTargetCouplingAudit>,
+    pub couplings_verified: usize,
+    pub expected_couplings: usize,
+    pub every_residual_is_exactly_zero: bool,
+    pub every_mutation_is_detected: bool,
+    pub boundary: &'static str,
+    pub passed: bool,
+}
+
 #[derive(Clone)]
 struct TargetStateWithWord {
     target: TensorVector,
@@ -2016,6 +2063,162 @@ fn primitive_integer_vector(vector: &[Ratio<i64>]) -> Vec<i64> {
         }
     }
     integers
+}
+
+pub fn verify_first_momentum_target_couplings() -> FirstMomentumTargetCouplingReport {
+    let spinors = spinor_weights();
+    let vectors = vector_weights();
+    let states = generate_layer_adapted_vector_spinor_target_states(&spinors);
+    let word_states = generate_layer_adapted_vector_spinor_target_states_with_words(&spinors);
+    let targets = [
+        ("00001", [1, 1, 1, 1, 1]),
+        ("01001", [3, 3, 1, 1, 1]),
+        ("10001", [3, 1, 1, 1, 1]),
+        ("20001", [5, 1, 1, 1, 1]),
+    ];
+    let couplings = targets
+        .into_iter()
+        .map(|(target_dynkin_label, target_highest_weight)| {
+            let mut domain = Vec::<(usize, Weight, usize)>::new();
+            for (momentum_vector_index, momentum_vector_weight) in
+                vectors.iter().copied().enumerate()
+            {
+                let vector_spinor_weight = subtract(target_highest_weight, momentum_vector_weight);
+                if let Some(weight_states) = states.get(&vector_spinor_weight) {
+                    for vector_spinor_basis_index in 0..weight_states.len() {
+                        domain.push((
+                            momentum_vector_index,
+                            vector_spinor_weight,
+                            vector_spinor_basis_index,
+                        ));
+                    }
+                }
+            }
+            let mut rows = BTreeMap::<usize, Vec<Ratio<i64>>>::new();
+            for (column, (momentum_vector_index, vector_spinor_weight, basis_index)) in
+                domain.iter().copied().enumerate()
+            {
+                let state = &states[&vector_spinor_weight][basis_index].target;
+                for root in 0..5 {
+                    if let Some((raised_vector, factor)) =
+                        raise_vector_weight(vectors[momentum_vector_index], root, &vectors)
+                    {
+                        for (&inner, coefficient) in state {
+                            rows.entry(root * 11 * 352 + raised_vector * 352 + inner)
+                                .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])
+                                [column] += coefficient.clone() * Ratio::from_integer(factor);
+                        }
+                    }
+                    for (inner, coefficient) in raise_target_tensor(state, root, &vectors, &spinors)
+                    {
+                        rows.entry(root * 11 * 352 + momentum_vector_index * 352 + inner)
+                            .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])
+                            [column] += coefficient;
+                    }
+                }
+            }
+            let row_vectors = rows.into_values().collect::<Vec<_>>();
+            let kernel = ratio_nullspace(&row_vectors, domain.len());
+            let primitive = if kernel.len() == 1 {
+                primitive_integer_vector(&kernel[0])
+            } else {
+                Vec::new()
+            };
+            let raising_residual_terms = if primitive.len() == domain.len() {
+                row_vectors
+                    .iter()
+                    .filter(|row| {
+                        row.iter().zip(&primitive).fold(
+                            Ratio::from_integer(0),
+                            |sum, (value, coefficient)| {
+                                sum + value.clone() * Ratio::from_integer(*coefficient)
+                            },
+                        ) != Ratio::from_integer(0)
+                    })
+                    .count()
+            } else {
+                usize::MAX
+            };
+            let coefficient_mutation_detected = if primitive.is_empty() {
+                false
+            } else {
+                let mut mutated = primitive.clone();
+                mutated[0] += 1;
+                let mutation_residual_nonzero = row_vectors.iter().any(|row| {
+                    row.iter().zip(&mutated).fold(
+                        Ratio::from_integer(0),
+                        |sum, (value, coefficient)| {
+                            sum + value.clone() * Ratio::from_integer(*coefficient)
+                        },
+                    ) != Ratio::from_integer(0)
+                });
+                let mutation_is_nonprimitive = mutated
+                    .iter()
+                    .fold(0_i64, |gcd, value| gcd_i64(gcd, *value))
+                    != 1;
+                mutation_residual_nonzero || mutation_is_nonprimitive
+            };
+            let terms = domain
+                .iter()
+                .zip(&primitive)
+                .map(
+                    |((momentum_vector_index, vector_spinor_weight, basis_index), coefficient)| {
+                        let word_state = &word_states[vector_spinor_weight][*basis_index];
+                        assert_eq!(
+                            word_state.target,
+                            states[vector_spinor_weight][*basis_index].target
+                        );
+                        FirstMomentumTargetCouplingTerm {
+                            momentum_vector_index: *momentum_vector_index,
+                            momentum_vector_weight: vectors[*momentum_vector_index],
+                            vector_spinor_weight: *vector_spinor_weight,
+                            vector_spinor_basis_index: *basis_index,
+                            vector_spinor_pbw_word_simple_roots: word_state.pbw_word.clone(),
+                            primitive_coefficient: *coefficient,
+                        }
+                    },
+                )
+                .collect::<Vec<_>>();
+            let multiplicity_one_coupling_constructed =
+                kernel.len() == 1 && !primitive.is_empty() && raising_residual_terms == 0;
+            FirstMomentumTargetCouplingAudit {
+                tensor_product: "(10000) tensor (10001)",
+                target_dynkin_label,
+                target_highest_weight,
+                highest_weight_domain_dimension: domain.len(),
+                highest_weight_kernel_dimension: kernel.len(),
+                primitive_nonzero_coefficients: primitive
+                    .iter()
+                    .filter(|coefficient| **coefficient != 0)
+                    .count(),
+                raising_residual_terms,
+                coefficient_mutation_detected,
+                terms,
+                multiplicity_one_coupling_constructed,
+                passed: multiplicity_one_coupling_constructed && coefficient_mutation_detected,
+            }
+        })
+        .collect::<Vec<_>>();
+    let couplings_verified = couplings.iter().filter(|coupling| coupling.passed).count();
+    let every_residual_is_exactly_zero = couplings
+        .iter()
+        .all(|coupling| coupling.raising_residual_terms == 0);
+    let every_mutation_is_detected = couplings
+        .iter()
+        .all(|coupling| coupling.coefficient_mutation_detected);
+    FirstMomentumTargetCouplingReport {
+        schema_version: "adynkra-11d-first-momentum-target-couplings-v1",
+        role: "exact vector times vector-spinor target couplings for the first-momentum stage",
+        couplings,
+        couplings_verified,
+        expected_couplings: 4,
+        every_residual_is_exactly_zero,
+        every_mutation_is_detected,
+        boundary: "this certifies the four target representation couplings; it does not compose them with the 44 level-14 source maps or include the superspace anticommutator coefficients",
+        passed: couplings_verified == 4
+            && every_residual_is_exactly_zero
+            && every_mutation_is_detected,
+    }
 }
 
 fn build_exterior_channel_plans(spinors: &[Weight; 32]) -> Vec<ExteriorChannelPlan> {
@@ -3118,6 +3321,7 @@ fn build_system(
     left: &HashMap<(u8, Weight), Vec<u16>>,
     right: &HashMap<(u8, Weight), Vec<u16>>,
     weights: &[Weight; 32],
+    coefficient_width_bytes: usize,
     kernel_artifacts: &[(&'static str, &'static [u8])],
 ) -> HighestWeightSystemReport {
     let source_basis = weight_basis(exterior_degree, highest_weight, left, right);
@@ -3130,11 +3334,18 @@ fn build_system(
     let kernels = kernel_artifacts
         .iter()
         .map(|(_, bytes)| {
-            assert_eq!(bytes.len(), source_basis.len() * 2);
-            bytes
-                .chunks_exact(2)
-                .map(|pair| i16::from_le_bytes([pair[0], pair[1]]))
-                .collect::<Vec<_>>()
+            assert_eq!(bytes.len(), source_basis.len() * coefficient_width_bytes);
+            match coefficient_width_bytes {
+                2 => bytes
+                    .chunks_exact(2)
+                    .map(|pair| i64::from(i16::from_le_bytes([pair[0], pair[1]])))
+                    .collect::<Vec<_>>(),
+                4 => bytes
+                    .chunks_exact(4)
+                    .map(|word| i64::from(i32::from_le_bytes([word[0], word[1], word[2], word[3]])))
+                    .collect::<Vec<_>>(),
+                _ => panic!("unsupported kernel coefficient width"),
+            }
         })
         .collect::<Vec<_>>();
     let mut kernel_nonzero_residual_rows = vec![0_usize; kernels.len()];
@@ -3153,7 +3364,7 @@ fn build_system(
             for (source_mask, sign) in &preimages {
                 if let Some(&column) = source_columns.get(source_mask) {
                     for (residual, coefficients) in kernel_residuals.iter_mut().zip(&kernels) {
-                        *residual += i64::from(*sign) * i64::from(coefficients[column]);
+                        *residual += i64::from(*sign) * coefficients[column];
                     }
                 } else {
                     missing_source_columns += 1;
@@ -3184,8 +3395,8 @@ fn build_system(
         .zip(kernels)
         .enumerate()
         .map(|(kernel_index, ((artifact, _), coefficients))| {
-            let coefficient_gcd = coefficients.iter().fold(0_i16, |gcd, coefficient| {
-                integer_gcd(gcd, coefficient.abs())
+            let coefficient_gcd = coefficients.iter().fold(0_i64, |gcd, coefficient| {
+                integer_gcd_i64(gcd, coefficient.abs())
             });
             let first_lowering_descendants = (0..5)
                 .map(|root| {
@@ -3227,7 +3438,11 @@ fn build_system(
                 .collect::<Vec<_>>();
             ExactKernelVectorReport {
                 artifact: *artifact,
-                scalar_type: "signed 16-bit little-endian integer",
+                scalar_type: match coefficient_width_bytes {
+                    2 => "signed 16-bit little-endian integer",
+                    4 => "signed 32-bit little-endian integer",
+                    _ => unreachable!(),
+                },
                 coefficients: coefficients.len(),
                 nonzero_coefficients: coefficients
                     .iter()
@@ -3236,7 +3451,7 @@ fn build_system(
                 minimum_coefficient: *coefficients.iter().min().unwrap(),
                 maximum_coefficient: *coefficients.iter().max().unwrap(),
                 coefficient_gcd,
-                squared_norm: squared_norm(&coefficients),
+                squared_norm: squared_norm_i64(&coefficients),
                 raising_rows_checked: raising_blocks.iter().map(|block| block.rows).sum(),
                 nonzero_residual_rows: kernel_nonzero_residual_rows[kernel_index],
                 maximum_absolute_residual: kernel_maximum_absolute_residual[kernel_index],
@@ -3327,6 +3542,7 @@ pub fn verify_exterior_highest_weight_kernel_fixtures(
                 &left,
                 &right,
                 &weights,
+                fixture.coefficient_width_bytes,
                 fixture.kernel_artifacts,
             )
         })
@@ -3805,6 +4021,14 @@ fn integer_gcd(left: i16, right: i16) -> i16 {
     }
 }
 
+fn integer_gcd_i64(left: i64, right: i64) -> i64 {
+    if right == 0 {
+        left
+    } else {
+        integer_gcd_i64(right, left % right)
+    }
+}
+
 fn decode_kernel(bytes: &[u8]) -> Vec<i16> {
     bytes
         .chunks_exact(2)
@@ -3826,6 +4050,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &left,
             &right,
             &weights,
+            2,
             &[
                 (
                     "data/eleven_dimensional_bridge/00001_highest_weight_kernel_1.i16le",
@@ -3846,6 +4071,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &left,
             &right,
             &weights,
+            2,
             &[(
                 "data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le",
                 VECTOR_SPINOR_KERNEL,
@@ -3862,6 +4088,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &left,
             &right,
             &weights,
+            2,
             &[(
                 "data/eleven_dimensional_bridge/level13_00001_highest_weight_kernel.i16le",
                 LEVEL13_SPINOR_KERNEL,
@@ -3876,6 +4103,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             &left,
             &right,
             &weights,
+            2,
             &[
                 (
                     "data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_1.i16le",
@@ -4012,11 +4240,9 @@ mod tests {
         let weights = spinor_weights();
         let unique: HashSet<_> = weights.into_iter().collect();
         assert_eq!(unique.len(), 32);
-        assert!(
-            weights
-                .iter()
-                .all(|weight| weight.iter().all(|x| x.abs() == 1))
-        );
+        assert!(weights
+            .iter()
+            .all(|weight| weight.iter().all(|x| x.abs() == 1)));
     }
 
     #[test]
@@ -4173,12 +4399,10 @@ mod tests {
         assert_eq!(spinor.total_rows, 1_943_600);
         assert_eq!(spinor.total_nonzero_entries, 7_412_645);
         assert_eq!(spinor.exact_kernel_vectors.len(), 2);
-        assert!(
-            spinor
-                .exact_kernel_vectors
-                .iter()
-                .all(|kernel| kernel.exact_kernel_verified)
-        );
+        assert!(spinor
+            .exact_kernel_vectors
+            .iter()
+            .all(|kernel| kernel.exact_kernel_verified));
         assert_eq!(spinor.exact_kernel_vectors[0].nonzero_coefficients, 374_246);
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
         assert_eq!(spinor.exact_kernel_vectors[0].squared_norm, 426_254_400);
@@ -4207,12 +4431,10 @@ mod tests {
             level13_two_form_spinor.exact_kernel_vectors[1].nonzero_coefficients,
             145_065
         );
-        assert!(
-            level13_two_form_spinor
-                .exact_kernel_vectors
-                .iter()
-                .all(|kernel| kernel.exact_kernel_verified)
-        );
+        assert!(level13_two_form_spinor
+            .exact_kernel_vectors
+            .iter()
+            .all(|kernel| kernel.exact_kernel_verified));
         assert_eq!(report.spinor_descendant_audits.len(), 2);
         for audit in &report.spinor_descendant_audits {
             assert_eq!(audit.target_states_generated, 32);
@@ -4363,5 +4585,25 @@ mod tests {
                 vec![5]
             );
         }
+    }
+
+    #[test]
+    fn four_first_momentum_target_couplings_are_exact() {
+        let report = verify_first_momentum_target_couplings();
+        assert!(report.passed);
+        assert_eq!(report.couplings_verified, 4);
+        assert!(report.every_residual_is_exactly_zero);
+        assert!(report.every_mutation_is_detected);
+        assert_eq!(
+            report
+                .couplings
+                .iter()
+                .map(|coupling| (
+                    coupling.target_dynkin_label,
+                    coupling.highest_weight_domain_dimension,
+                ))
+                .collect::<Vec<_>>(),
+            [("00001", 35), ("01001", 2), ("10001", 10), ("20001", 1),]
+        );
     }
 }
