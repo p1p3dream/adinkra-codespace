@@ -2947,9 +2947,41 @@
       "passed": true
     }
   ],
-  "leading_source_target_couplings_constructed": 1,
+  "second_leading_source_target_coupling": {
+    "source_dynkin_label": "20000",
+    "target_dynkin_label": "10001",
+    "formula": "six weight-chain states from (4,0,0,0,0) to (2,0,0,0,0), with primitive coefficients (4,-2,2,-2,2,-1)",
+    "source_highest_nonzero_terms": 293816,
+    "lowering_chain_nonzero_terms": [
+      293816,
+      461792,
+      461792,
+      461792,
+      461792,
+      594896
+    ],
+    "primitive_chain_coefficients": [
+      4,
+      -2,
+      2,
+      -2,
+      2,
+      -1
+    ],
+    "coupled_nonzero_terms": 2735880,
+    "raising_residual_terms_by_simple_root": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "exact_coupling_constructed": true,
+    "passed": true
+  },
+  "leading_source_target_couplings_constructed": 2,
   "expected_leading_source_target_couplings": 12,
   "derivative_matrix_constructed": false,
-  "boundary": "this verifies the nineteen source embeddings, the unique hook target coupling, and the first of twelve leading source-to-vector-spinor couplings; the other eleven source couplings and the 7-by-12 exterior-derivative matrix remain separate",
+  "boundary": "this verifies the nineteen source embeddings, the unique hook target coupling, and two of twelve leading source-to-vector-spinor couplings; the other ten source couplings and the 7-by-12 exterior-derivative matrix remain separate",
   "passed": true
 }

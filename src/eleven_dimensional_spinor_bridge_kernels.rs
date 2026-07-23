@@ -68,6 +68,8 @@ pub struct DirectSpinorKernelReport {
     pub every_first_lowering_string_verified: bool,
     pub hook_target_coupling: crate::eleven_dimensional_bridge::DirectHookTargetCouplingAudit,
     pub leading_source_target_couplings: Vec<SourceTargetCouplingAudit>,
+    pub second_leading_source_target_coupling:
+        crate::eleven_dimensional_bridge::SecondLeadingSourceCouplingAudit,
     pub leading_source_target_couplings_constructed: usize,
     pub expected_leading_source_target_couplings: usize,
     pub derivative_matrix_constructed: bool,
@@ -241,7 +243,10 @@ pub fn verify() -> DirectSpinorKernelReport {
         passed: vector_kernel.exact_kernel_verified,
     };
     let leading_source_target_couplings = vec![first_leading_coupling];
-    let leading_source_target_couplings_constructed = leading_source_target_couplings.len();
+    let second_leading_source_target_coupling =
+        crate::eleven_dimensional_bridge::audit_20000_to_10001_source_coupling(L16_20000);
+    let leading_source_target_couplings_constructed = leading_source_target_couplings.len()
+        + usize::from(second_leading_source_target_coupling.passed);
     let expected_leading_source_target_couplings = 12;
     let expected_systems = 12;
     let expected_integer_kernel_vectors = 19;
@@ -252,7 +257,8 @@ pub fn verify() -> DirectSpinorKernelReport {
         && hook_target_coupling.passed
         && leading_source_target_couplings
             .iter()
-            .all(|coupling| coupling.passed);
+            .all(|coupling| coupling.passed)
+        && second_leading_source_target_coupling.passed;
     DirectSpinorKernelReport {
         schema_version: "adynkra-11d-spinor-bridge-kernels-v1",
         role: "exact Rust verification of the decomposed direct-spinor source embeddings",
@@ -267,11 +273,12 @@ pub fn verify() -> DirectSpinorKernelReport {
         every_first_lowering_string_verified,
         hook_target_coupling,
         leading_source_target_couplings,
+        second_leading_source_target_coupling,
         leading_source_target_couplings_constructed,
         expected_leading_source_target_couplings,
         derivative_matrix_constructed: false,
         boundary:
-            "this verifies the nineteen source embeddings, the unique hook target coupling, and the first of twelve leading source-to-vector-spinor couplings; the other eleven source couplings and the 7-by-12 exterior-derivative matrix remain separate",
+            "this verifies the nineteen source embeddings, the unique hook target coupling, and two of twelve leading source-to-vector-spinor couplings; the other ten source couplings and the 7-by-12 exterior-derivative matrix remain separate",
         passed,
     }
 }
@@ -288,5 +295,7 @@ mod tests {
         assert_eq!(report.systems_verified, 12);
         assert_eq!(report.integer_kernel_vectors_verified, 19);
         assert_eq!(report.nonzero_raising_residual_rows, 0);
+        assert!(report.second_leading_source_target_coupling.passed);
+        assert_eq!(report.leading_source_target_couplings_constructed, 2);
     }
 }

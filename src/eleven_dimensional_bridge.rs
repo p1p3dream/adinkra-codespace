@@ -1505,6 +1505,46 @@ fn lower_sparse(
     descendant
 }
 
+fn raise_sparse(
+    source: &HashMap<u32, i64>,
+    root: usize,
+    weights: &[Weight; 32],
+) -> HashMap<u32, i64> {
+    let mut raised = HashMap::new();
+    for (&source_mask, &coefficient) in source {
+        for lower_index in 0..32 {
+            if source_mask & (1_u32 << lower_index) == 0 {
+                continue;
+            }
+            let Some(upper_index) = raised_spinor_index(lower_index, root, weights) else {
+                continue;
+            };
+            if source_mask & (1_u32 << upper_index) != 0 {
+                continue;
+            }
+            let output_mask = (source_mask ^ (1_u32 << lower_index)) | (1_u32 << upper_index);
+            let (low, high) = if lower_index < upper_index {
+                (lower_index, upper_index)
+            } else {
+                (upper_index, lower_index)
+            };
+            let interval = if high == low + 1 {
+                0
+            } else {
+                ((1_u32 << high) - 1) ^ ((1_u32 << (low + 1)) - 1)
+            };
+            let sign = if (source_mask & interval).count_ones() % 2 == 0 {
+                1_i64
+            } else {
+                -1_i64
+            };
+            *raised.entry(output_mask).or_insert(0) += sign * coefficient;
+        }
+    }
+    raised.retain(|_, coefficient| *coefficient != 0);
+    raised
+}
+
 fn lower_pairs(source: &[(u32, i64)], root: usize, weights: &[Weight; 32]) -> Vec<(u32, i64)> {
     let source = source.iter().copied().collect::<HashMap<_, _>>();
     let mut lowered = lower_sparse(&source, root, weights)
@@ -3188,6 +3228,103 @@ pub fn verify_exterior_highest_weight_kernel_fixtures(
             )
         })
         .collect()
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SecondLeadingSourceCouplingAudit {
+    pub source_dynkin_label: &'static str,
+    pub target_dynkin_label: &'static str,
+    pub formula: &'static str,
+    pub source_highest_nonzero_terms: usize,
+    pub lowering_chain_nonzero_terms: [usize; 6],
+    pub primitive_chain_coefficients: [i64; 6],
+    pub coupled_nonzero_terms: usize,
+    pub raising_residual_terms_by_simple_root: [usize; 5],
+    pub exact_coupling_constructed: bool,
+    pub passed: bool,
+}
+
+pub fn audit_20000_to_10001_source_coupling(
+    kernel_bytes: &[u8],
+) -> SecondLeadingSourceCouplingAudit {
+    let weights = spinor_weights();
+    let left = half_groups(0, &weights);
+    let right = half_groups(16, &weights);
+    let source_basis = weight_basis(16, [4, 0, 0, 0, 0], &left, &right);
+    let coefficients = decode_kernel(kernel_bytes);
+    assert_eq!(coefficients.len(), source_basis.len());
+    let highest = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients)
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<HashMap<_, _>>();
+    let mut source_chain = vec![highest.clone()];
+    for root in 0..5 {
+        source_chain.push(lower_sparse(source_chain.last().unwrap(), root, &weights));
+    }
+    let free_spinor_weights = [
+        [-1, 1, 1, 1, 1],
+        [1, -1, 1, 1, 1],
+        [1, 1, -1, 1, 1],
+        [1, 1, 1, -1, 1],
+        [1, 1, 1, 1, -1],
+        [1, 1, 1, 1, 1],
+    ];
+    let free_spinor_indices = free_spinor_weights.map(|free_weight| {
+        weights
+            .iter()
+            .position(|weight| *weight == free_weight)
+            .unwrap()
+    });
+    let primitive_chain_coefficients = [4_i64, -2, 2, -2, 2, -1];
+    let mut coupled = HashMap::<(u32, usize), i64>::new();
+    for ((source, spinor_index), chain_coefficient) in source_chain
+        .iter()
+        .zip(free_spinor_indices)
+        .zip(primitive_chain_coefficients)
+    {
+        for (&mask, &coefficient) in source {
+            *coupled.entry((mask, spinor_index)).or_insert(0) += chain_coefficient * coefficient;
+        }
+    }
+    coupled.retain(|_, coefficient| *coefficient != 0);
+    let raising_residual_terms_by_simple_root = std::array::from_fn(|root| {
+        let mut residual = HashMap::<(u32, usize), i64>::new();
+        for psi_index in 0..32 {
+            let exterior = coupled
+                .iter()
+                .filter(|((_, index), _)| *index == psi_index)
+                .map(|((mask, _), coefficient)| (*mask, *coefficient))
+                .collect::<HashMap<_, _>>();
+            for (mask, coefficient) in raise_sparse(&exterior, root, &weights) {
+                *residual.entry((mask, psi_index)).or_insert(0) += coefficient;
+            }
+        }
+        for (&(mask, psi_index), &coefficient) in &coupled {
+            if let Some(next) = raised_spinor_index(psi_index, root, &weights) {
+                *residual.entry((mask, next)).or_insert(0) += coefficient;
+            }
+        }
+        residual
+            .values()
+            .filter(|coefficient| **coefficient != 0)
+            .count()
+    });
+    let exact_coupling_constructed = raising_residual_terms_by_simple_root == [0; 5];
+    SecondLeadingSourceCouplingAudit {
+        source_dynkin_label: "20000",
+        target_dynkin_label: "10001",
+        formula: "six weight-chain states from (4,0,0,0,0) to (2,0,0,0,0), with primitive coefficients (4,-2,2,-2,2,-1)",
+        source_highest_nonzero_terms: highest.len(),
+        lowering_chain_nonzero_terms: std::array::from_fn(|index| source_chain[index].len()),
+        primitive_chain_coefficients,
+        coupled_nonzero_terms: coupled.len(),
+        raising_residual_terms_by_simple_root,
+        exact_coupling_constructed,
+        passed: exact_coupling_constructed,
+    }
 }
 
 fn integer_gcd(left: i16, right: i16) -> i16 {

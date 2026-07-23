@@ -71,13 +71,18 @@ on the target side is also constructed:
 Its highest-weight domain has dimension 8, its kernel has dimension 1, all
 eight primitive coefficients are nonzero, and every raising residual is zero.
 
-The first leading source coupling is also complete. The level-16 `(10000)`
+The first two leading source couplings are complete. The level-16 `(10000)`
 source highest vector, tensored with the highest spinor weight, gives the
 `(10001)` vector-spinor highest vector. Its stored source has 594,896 nonzero
-integer coefficients and zero raising residuals. This completes one of the 12
-leading couplings.
+integer coefficients and zero raising residuals.
 
-The remaining work is to construct the other 11 leading source couplings, the
+For the level-16 `(20000)` source, the coupling is the primitive six-term
+weight chain from source weight `(4,0,0,0,0)` to `(2,0,0,0,0)`. Its
+coefficients are `(4,-2,2,-2,2,-1)`. The coupled vector has 2,735,880 nonzero
+terms. Each of the five simple-root raising operators annihilates it exactly.
+This completes two of the 12 leading couplings.
+
+The remaining work is to construct the other 10 leading source couplings, the
 seven hook source couplings, and the derivative matrix.
 
 ## The proposed hook cancellation is not the direct-spinor test
