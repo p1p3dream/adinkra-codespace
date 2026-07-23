@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "matrixmultiply",
  "nauty-pet",
+ "num-bigint",
  "num-complex",
  "num-rational",
  "num-traits",

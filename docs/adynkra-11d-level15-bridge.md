@@ -280,10 +280,26 @@ occurs once and `(01001)` occurs twice; `(10001)` and `(20001)` are absent.
 Therefore the first lower symbol has three Lorentz-equivariant correction
 coefficients.
 
-This keeps the cancellation question open. The next calculation must construct
-the three level-13 source intertwiners and determine whether their exterior
-images span the nonzero `(11000)` $pD_{[14]}V$ term. The current result neither
-assumes nor establishes that such a cancellation exists.
+The verifier constructs all three source intertwiners. The level-13 `(00001)`
+system has 388,720 columns and 1,260,810 raising rows. Its kernel is
+one-dimensional. The level-13 `(01001)` system has 161,432 columns and 475,801
+raising rows. Its kernel is two-dimensional. Rust checks every raising equation
+for the three primitive integer kernel vectors. Their nonzero supports are
+5,005, 5,148, and 145,065 coefficients.
+
+Each source intertwiner is coupled to the unique target map into `(10001)`.
+This gives the three $pD_{[13]}V$ corrections. Their exterior derivatives and
+the leading anticommutator term are projected into the `(11000)` highest-weight
+line at the exact momentum $p=(1,2,3,4,5,6,7,8,9,10,11)$.
+
+The cancellation system is evaluated with 64 exact integer linear
+functionals. The validation artifact records the full 64-by-4 integer matrix.
+The three correction columns have rank two. Adding the leading
+$pD_{[14]}V$ column raises the rank to three. Therefore the leading term is not
+in the span of these corrections, and no choice of the three first
+lower-symbol coefficients cancels it. This result applies to the first lower
+symbol. It does not settle later lower symbols or the full superspace Bianchi
+system.
 
 ## Canonical computational normalization
 
@@ -328,18 +344,18 @@ module, verifies its full source intertwiner, and fixes a canonical
 computational normalization of the surviving source highest-weight line. It
 also resolves the zero-spacetime-momentum exterior symbol on all ten level-16
 candidate channels and the first level-14 momentum contraction in both torsion
-hooks. It also identifies the three coefficients available in the first
-$pD_{[13]}V$ completion space.
+hooks. It also constructs the three coefficients available in the first
+$pD_{[13]}V$ completion space and evaluates their projected cancellation map.
 Consequently:
 
 - the level-16 exterior two-form-hook symbol has rank zero on the three bridge
   coefficients;
 - the level-14 momentum contraction into the same hook is nonzero, so the
   level-16 inventory does not settle Eq. (2.7) at generic momentum; and
-- three first-completion coefficients are available, but their cancellation
-  map has not yet been constructed. The lower-symbol recursion, component
-  normalization of $V$, generic-momentum gauge reducibility, and the
-  superspace Bianchi complex remain open.
+- three first-completion coefficients are available, but their projected
+  images have rank two and do not span the leading hook term. Later
+  lower-symbol terms, component normalization of $V$, generic-momentum gauge
+  reducibility, and the superspace Bianchi complex remain open.
 
 ## Primary-source dependency for Eq. (2.7)
 
@@ -359,9 +375,9 @@ In Eq. (39), the `(11000)` hook is the hook projection of
 $(\gamma_{ab})^{\gamma\delta}D_\gamma H_\delta{}^c$; the displayed holonomy
 terms occupy the trace-vector and three-form sectors removed by the
 conventional constraints.
-The nonzero level-14 momentum term shows that the lower-symbol completion of
-$H(V)$ must be constructed before determining the rank of Eq. (2.7) on the
-bridge.
+The first lower-symbol completion does not cancel the nonzero level-14 term.
+Further lower symbols and the Bianchi complex must be included before assigning
+a final rank to Eq. (2.7) on the bridge.
 
 ## Zero-momentum exterior projection
 
@@ -417,8 +433,9 @@ map lands in `(10001)` and survives. Thus
 
 up to normalization. The zero-momentum exterior test leaves a three-dimensional
 coefficient space, while the local gamma-trace quotient leaves one
-non-gamma-trace bridge class. The generic-momentum torsion constraint on that
-class is unresolved. The remaining nonzero scale is equivalent to rescaling
+non-gamma-trace bridge class. The first generic-momentum lower-symbol
+cancellation test fails on that class. The remaining nonzero scale is
+equivalent to rescaling
 $V$ until a component convention is supplied. The gauge complex of the
 underlying scalar or spinor prepotential is not yet established.
 
@@ -438,10 +455,11 @@ bridge. It does not establish that $V=D\Psi$ is the fundamental 11D
 prepotential relation, determine gauge-for-gauge reducibility, or fix the
 component normalization of $V$.
 
-The independent Python program rebuilds the same matrices and numerically
+The independent Python program rebuilds the same highest-weight matrices and numerically
 checks the small eigenvalues of $A^T A$. It was also used to propose integer
-kernel bases. It is a cross-check only. Rust independently reads all three
-integer artifacts and verifies every sparse raising equation exactly.
+kernel bases. It is a cross-check only. Rust independently reads all six
+level-15 and level-13 integer artifacts and verifies every sparse raising
+equation exactly.
 
 ## Reproduction
 
@@ -455,6 +473,10 @@ cargo test eleven_dimensional_bridge
 python3 scripts/crosscheck_11d_level15_bridge.py --label 10001 \
   --integer-artifact-directory data/eleven_dimensional_bridge
 python3 scripts/crosscheck_11d_level15_bridge.py --label 00001 \
+  --integer-artifact-directory data/eleven_dimensional_bridge
+python3 scripts/crosscheck_11d_level15_bridge.py --degree 13 --label 00001 \
+  --integer-artifact-directory data/eleven_dimensional_bridge
+python3 scripts/crosscheck_11d_level15_bridge.py --degree 13 --label 01001 \
   --integer-artifact-directory data/eleven_dimensional_bridge
 ```
 

@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra.11d.level15-bridge.v8",
+  "schema_version": "adynkra.11d.level15-bridge.v9",
   "source_arxiv": "2002.08502",
   "source_level": 15,
   "spinor_weights": 32,
@@ -411,6 +411,413 @@
       ]
     }
   ],
+  "first_lower_symbol_systems": [
+    {
+      "dynkin_label": "00001",
+      "representation_dimension": 32,
+      "highest_weight_doubled_coordinates": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 13,
+      "source_weight_space_columns": 388720,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            3,
+            -1,
+            1,
+            1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            1,
+            3,
+            -1,
+            1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            1,
+            1,
+            3,
+            -1,
+            1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            1,
+            1,
+            1,
+            3,
+            -1
+          ],
+          "rows": 252162,
+          "nonzero_entries": 798194,
+          "row_degree_histogram": {
+            "2": 38975,
+            "3": 136088,
+            "4": 73515,
+            "5": 3584
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            1,
+            1,
+            1,
+            1,
+            3
+          ],
+          "rows": 252162,
+          "nonzero_entries": 1513601,
+          "row_degree_histogram": {
+            "3": 1093,
+            "4": 15080,
+            "5": 60774,
+            "6": 97104,
+            "7": 61380,
+            "8": 16731
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 1260810,
+      "total_nonzero_entries": 4706377,
+      "published_multiplicity": 1,
+      "expected_kernel_dimension": 1,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "data/eleven_dimensional_bridge/level13_00001_highest_weight_kernel.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 388720,
+          "nonzero_coefficients": 5005,
+          "minimum_coefficient": -1,
+          "maximum_coefficient": 1,
+          "coefficient_gcd": 1,
+          "squared_norm": 5005,
+          "raising_rows_checked": 1260810,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 5005,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 1,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dynkin_label": "01001",
+      "representation_dimension": 1408,
+      "highest_weight_doubled_coordinates": [
+        3,
+        3,
+        1,
+        1,
+        1
+      ],
+      "exterior_degree": 13,
+      "source_weight_space_columns": 161432,
+      "raising_blocks": [
+        {
+          "simple_root": 1,
+          "output_weight": [
+            5,
+            1,
+            1,
+            1,
+            1
+          ],
+          "rows": 104875,
+          "nonzero_entries": 332612,
+          "row_degree_histogram": {
+            "2": 15952,
+            "3": 56496,
+            "4": 30915,
+            "5": 1512
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 2,
+          "output_weight": [
+            3,
+            5,
+            -1,
+            1,
+            1
+          ],
+          "rows": 65220,
+          "nonzero_entries": 244342,
+          "row_degree_histogram": {
+            "3": 22859,
+            "4": 36040,
+            "5": 6321
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 3,
+          "output_weight": [
+            3,
+            3,
+            3,
+            -1,
+            1
+          ],
+          "rows": 101902,
+          "nonzero_entries": 309532,
+          "row_degree_histogram": {
+            "2": 20214,
+            "3": 58208,
+            "4": 22920,
+            "5": 560
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 4,
+          "output_weight": [
+            3,
+            3,
+            1,
+            3,
+            -1
+          ],
+          "rows": 101902,
+          "nonzero_entries": 309532,
+          "row_degree_histogram": {
+            "2": 20214,
+            "3": 58208,
+            "4": 22920,
+            "5": 560
+          },
+          "missing_source_columns": 0
+        },
+        {
+          "simple_root": 5,
+          "output_weight": [
+            3,
+            3,
+            1,
+            1,
+            3
+          ],
+          "rows": 101902,
+          "nonzero_entries": 581990,
+          "row_degree_histogram": {
+            "3": 701,
+            "4": 8675,
+            "5": 31353,
+            "6": 41076,
+            "7": 18810,
+            "8": 1287
+          },
+          "missing_source_columns": 0
+        }
+      ],
+      "total_rows": 475801,
+      "total_nonzero_entries": 1778008,
+      "published_multiplicity": 2,
+      "expected_kernel_dimension": 2,
+      "exact_sparse_system_constructed": true,
+      "exact_kernel_vectors": [
+        {
+          "artifact": "data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_1.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 161432,
+          "nonzero_coefficients": 5148,
+          "minimum_coefficient": -2,
+          "maximum_coefficient": 2,
+          "coefficient_gcd": 1,
+          "squared_norm": 9009,
+          "raising_rows_checked": 475801,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 5148,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 2,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 5148,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 2,
+              "matches_highest_weight_string": true
+            }
+          ]
+        },
+        {
+          "artifact": "data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_2.i16le",
+          "scalar_type": "signed 16-bit little-endian integer",
+          "coefficients": 161432,
+          "nonzero_coefficients": 145065,
+          "minimum_coefficient": -9900,
+          "maximum_coefficient": 2040,
+          "coefficient_gcd": 1,
+          "squared_norm": 1531530000,
+          "raising_rows_checked": 475801,
+          "nonzero_residual_rows": 0,
+          "maximum_absolute_residual": 0,
+          "exact_kernel_verified": true,
+          "first_lowering_descendants": [
+            {
+              "simple_root": 1,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 2,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 145065,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 9900,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 3,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 4,
+              "expected_nonzero_from_dynkin_label": false,
+              "nonzero_terms": 0,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 0,
+              "matches_highest_weight_string": true
+            },
+            {
+              "simple_root": 5,
+              "expected_nonzero_from_dynkin_label": true,
+              "nonzero_terms": 145065,
+              "second_lowering_nonzero_terms": 0,
+              "maximum_absolute_coefficient": 9900,
+              "matches_highest_weight_string": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "generic_bridge": "H_alpha^a(V) = a I_32^(1)(D^15 V) + b I_32^(2)(D^15 V) + c I_320(D^15 V)",
   "coefficients": [
     {
@@ -432,8 +839,8 @@
       "target_sector": "gamma-traceless vector-spinor"
     }
   ],
-  "equation_2_7_status": "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels, but the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook; the full generic-momentum Eq. (2.7) operator remains to be solved",
-  "coefficient_solution_status": "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; whether the generic-momentum torsion constraint permits the surviving c channel is unresolved",
+  "equation_2_7_status": "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels; the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook, and the three level-13 corrections do not cancel it; lower symbols and the full superspace Bianchi system remain",
+  "coefficient_solution_status": "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the first lower-symbol correction space does not cancel the generic-momentum 11000 term in the surviving c channel",
   "expected_kernel_vectors": 3,
   "exact_kernel_vectors_verified": 3,
   "all_expected_kernel_vectors_verified": true,
@@ -1015,9 +1422,406 @@
     ],
     "first_completion_coefficient_dimension": 3,
     "leading_two_form_hook_momentum_term_nonzero": true,
-    "cancellation_system_constructed": false,
-    "cancellation_exists": null,
-    "implication": "three Lorentz-equivariant p D_[13] correction coefficients are available at the first lower symbol; the current nonzero p D_[14] hook is an obstruction term to cancel, not yet a proof that the scalar bridge fails",
+    "cancellation_system_constructed": true,
+    "cancellation_exists": false,
+    "exact_functional_rows": 64,
+    "exact_functional_definition": "32 deterministic signed mask buckets, with separate real and imaginary rows, evaluated over exact integers at p=(1,2,3,4,5,6,7,8,9,10,11)",
+    "exact_functional_columns": [
+      "level13_00001_copy1",
+      "level13_01001_copy1",
+      "level13_01001_copy2",
+      "leading_level15_10001"
+    ],
+    "exact_functional_matrix": [
+      [
+        "0",
+        "31920",
+        "3025470",
+        "3108"
+      ],
+      [
+        "0",
+        "-97920",
+        "-33409350",
+        "-178876"
+      ],
+      [
+        "0",
+        "109230",
+        "33149010",
+        "-127852"
+      ],
+      [
+        "0",
+        "-185370",
+        "51302490",
+        "-34036"
+      ],
+      [
+        "0",
+        "36210",
+        "39952590",
+        "266436"
+      ],
+      [
+        "0",
+        "88320",
+        "-10245990",
+        "-586740"
+      ],
+      [
+        "0",
+        "-220170",
+        "-11372190",
+        "198932"
+      ],
+      [
+        "0",
+        "102300",
+        "-31380990",
+        "-455660"
+      ],
+      [
+        "0",
+        "54660",
+        "-7465260",
+        "-11208"
+      ],
+      [
+        "0",
+        "-175590",
+        "-9833400",
+        "145368"
+      ],
+      [
+        "0",
+        "-71790",
+        "-30791910",
+        "-56860"
+      ],
+      [
+        "0",
+        "1080",
+        "-100523160",
+        "800"
+      ],
+      [
+        "0",
+        "26370",
+        "-11755980",
+        "-85360"
+      ],
+      [
+        "0",
+        "-44550",
+        "-73776240",
+        "21296"
+      ],
+      [
+        "0",
+        "61050",
+        "11661360",
+        "97488"
+      ],
+      [
+        "0",
+        "149640",
+        "-5187480",
+        "183760"
+      ],
+      [
+        "0",
+        "-223560",
+        "28623330",
+        "122172"
+      ],
+      [
+        "0",
+        "18270",
+        "12172500",
+        "-94304"
+      ],
+      [
+        "0",
+        "123090",
+        "31202670",
+        "173444"
+      ],
+      [
+        "0",
+        "-52110",
+        "-5492430",
+        "27004"
+      ],
+      [
+        "0",
+        "66870",
+        "-18776700",
+        "-103008"
+      ],
+      [
+        "0",
+        "-157650",
+        "12585750",
+        "-43884"
+      ],
+      [
+        "0",
+        "53010",
+        "-40702500",
+        "39176"
+      ],
+      [
+        "0",
+        "-78810",
+        "8407050",
+        "-65252"
+      ],
+      [
+        "0",
+        "-221820",
+        "-83156880",
+        "253976"
+      ],
+      [
+        "0",
+        "98340",
+        "-8384730",
+        "6036"
+      ],
+      [
+        "0",
+        "89790",
+        "44218650",
+        "-71036"
+      ],
+      [
+        "0",
+        "119610",
+        "-22370040",
+        "-74216"
+      ],
+      [
+        "0",
+        "226740",
+        "36670020",
+        "11248"
+      ],
+      [
+        "0",
+        "46440",
+        "-51894000",
+        "5552"
+      ],
+      [
+        "0",
+        "-7530",
+        "42699930",
+        "235732"
+      ],
+      [
+        "0",
+        "-208170",
+        "101209050",
+        "-56660"
+      ],
+      [
+        "0",
+        "15000",
+        "-9057660",
+        "433090"
+      ],
+      [
+        "0",
+        "-2760",
+        "-34269060",
+        "455662"
+      ],
+      [
+        "0",
+        "-115500",
+        "71685300",
+        "81350"
+      ],
+      [
+        "0",
+        "-125580",
+        "15173940",
+        "12654"
+      ],
+      [
+        "0",
+        "-10020",
+        "66307260",
+        "-319570"
+      ],
+      [
+        "0",
+        "56520",
+        "57026340",
+        "-282214"
+      ],
+      [
+        "0",
+        "6180",
+        "-13465140",
+        "213730"
+      ],
+      [
+        "0",
+        "12600",
+        "8935020",
+        "-155922"
+      ],
+      [
+        "0",
+        "16440",
+        "87548160",
+        "59308"
+      ],
+      [
+        "0",
+        "46500",
+        "61590360",
+        "120124"
+      ],
+      [
+        "0",
+        "-3660",
+        "73549500",
+        "228806"
+      ],
+      [
+        "0",
+        "-54240",
+        "94680240",
+        "304952"
+      ],
+      [
+        "0",
+        "-132420",
+        "-33326160",
+        "-291424"
+      ],
+      [
+        "0",
+        "38460",
+        "-21396360",
+        "308536"
+      ],
+      [
+        "0",
+        "38340",
+        "-29491200",
+        "-476168"
+      ],
+      [
+        "0",
+        "-193680",
+        "-25717680",
+        "-136012"
+      ],
+      [
+        "0",
+        "138000",
+        "2189580",
+        "-114050"
+      ],
+      [
+        "0",
+        "-47940",
+        "10294800",
+        "-427484"
+      ],
+      [
+        "0",
+        "-129780",
+        "-22985460",
+        "52238"
+      ],
+      [
+        "0",
+        "-156180",
+        "22668060",
+        "-314394"
+      ],
+      [
+        "0",
+        "-61980",
+        "55738680",
+        "-165472"
+      ],
+      [
+        "0",
+        "13140",
+        "-71565300",
+        "65782"
+      ],
+      [
+        "0",
+        "28020",
+        "963960",
+        "-349472"
+      ],
+      [
+        "0",
+        "32220",
+        "49408740",
+        "-132954"
+      ],
+      [
+        "0",
+        "-165720",
+        "24506760",
+        "217960"
+      ],
+      [
+        "0",
+        "-33960",
+        "27726060",
+        "74030"
+      ],
+      [
+        "0",
+        "-30780",
+        "102544020",
+        "-134234"
+      ],
+      [
+        "0",
+        "-52260",
+        "-16164480",
+        "-434624"
+      ],
+      [
+        "0",
+        "129600",
+        "10016640",
+        "-196368"
+      ],
+      [
+        "0",
+        "-213240",
+        "-42271800",
+        "80856"
+      ],
+      [
+        "0",
+        "-31260",
+        "5691180",
+        "-341402"
+      ],
+      [
+        "0",
+        "-127620",
+        "-5666940",
+        "-67458"
+      ]
+    ],
+    "correction_span_rank": 2,
+    "augmented_span_rank": 3,
+    "exact_non_cancellation_certificate": true,
+    "implication": "the three first lower-symbol corrections do not span the leading p D_[14] two-form-hook term; this closes the first cancellation gate, but not the lower-symbol recursion or the full superspace Bianchi problem",
     "passed": true
   },
   "zero_momentum_equation_2_7_projection": {
@@ -1104,6 +1908,6 @@
     "boundary": "This is inherited invariance under the direct two-form and five-form spinor-parameter channels. It does not establish that V = D Psi is the fundamental 11D prepotential relation or provide gauge-for-gauge reducibility.",
     "passed": true
   },
-  "boundary": "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both torsion-hook tests. The nonzero X_[2] term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. The first lower-symbol inventory supplies three p D_[13] correction coefficients. Constructing their exact cancellation map, then continuing the lower-symbol recursion and the superspace Bianchi complex, remains.",
+  "boundary": "This verifies the level-15 bridge intertwiners, the level-16 exterior symbol, the level-14 momentum contractions, the three level-13 source intertwiners, and the first lower-symbol cancellation system. The 64 exact integer functionals give correction rank two and augmented rank three, so the three p D_[13] corrections cannot cancel the leading p D_[14] term in the 11000 hook. This result does not close later lower symbols or the full superspace Bianchi complex.",
   "passed": true
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent numerical cross-check of the Rust level-15 bridge systems.
+"""Independent numerical cross-check of the Rust bridge source systems.
 
 This script deliberately rebuilds the sparse raising equations without using
 the Rust implementation.  It is not the primary verifier.  Its floating-point
@@ -27,8 +27,10 @@ ROOTS = [
     (0, 0, 0, 0, 2),
 ]
 CASES = {
-    "00001": ((1, 1, 1, 1, 1), 2),
-    "10001": ((3, 1, 1, 1, 1), 1),
+    (15, "00001"): ((1, 1, 1, 1, 1), 2),
+    (15, "10001"): ((3, 1, 1, 1, 1), 1),
+    (13, "00001"): ((1, 1, 1, 1, 1), 1),
+    (13, "01001"): ((3, 3, 1, 1, 1), 2),
 }
 
 
@@ -43,12 +45,14 @@ def half_groups(weights):
     return groups
 
 
-def weight_basis(target, left, right):
+def weight_basis(degree, target, left, right):
     basis = []
     for (left_degree, left_weight), left_masks in left.items():
+        if left_degree > degree or degree - left_degree > 16:
+            continue
         right_masks = right.get(
             (
-                15 - left_degree,
+                degree - left_degree,
                 tuple(target[axis] - left_weight[axis] for axis in range(5)),
             ),
             (),
@@ -71,9 +75,9 @@ def lower_index(weight, root, weight_index):
     return weight_index[tuple(lower)]
 
 
-def build_matrix(label, left, right, weights, weight_index):
-    highest_weight, expected_nullity = CASES[label]
-    source = weight_basis(highest_weight, left, right)
+def build_matrix(degree, label, left, right, weights, weight_index):
+    highest_weight, expected_nullity = CASES[(degree, label)]
+    source = weight_basis(degree, highest_weight, left, right)
     columns = {mask: index for index, mask in enumerate(source)}
     row_indices = []
     column_indices = []
@@ -85,7 +89,7 @@ def build_matrix(label, left, right, weights, weight_index):
         output_weight = tuple(
             highest_weight[axis] + simple_root[axis] for axis in range(5)
         )
-        output = weight_basis(output_weight, left, right)
+        output = weight_basis(degree, output_weight, left, right)
         block_rows.append(len(output))
         for local_row, output_mask in enumerate(output):
             for upper_index, weight in enumerate(weights):
@@ -145,11 +149,56 @@ def smallest_eigenvalues(matrix, count, seed, tolerance, iterations):
     return [float(eigenvalues[index]) for index in order], eigenvectors[:, order]
 
 
-def extract_integer_kernels(label, matrix, eigenvectors, output_directory):
-    expected_nullity = CASES[label][1]
+def discover_integer_scale(vector, maximum=32767, tolerance=2e-5):
+    """Find the smallest scale that makes a normalized kernel integral."""
+    active = np.flatnonzero(np.abs(vector) > 1e-7)
+    if active.size > 2048:
+        active = active[np.linspace(0, active.size - 1, 2048, dtype=np.int64)]
+    sample = vector[active]
+    best = None
+    for start in range(1, maximum + 1, 1024):
+        scales = np.arange(start, min(start + 1024, maximum + 1), dtype=np.float64)
+        products = scales[:, None] * sample[None, :]
+        residuals = np.max(np.abs(products - np.rint(products)), axis=1)
+        for local in np.flatnonzero(residuals < tolerance):
+            scale = int(scales[local])
+            full = vector * scale
+            maximum_residual = float(np.max(np.abs(full - np.rint(full))))
+            if maximum_residual < tolerance:
+                return scale
+            if best is None or maximum_residual < best[1]:
+                best = (scale, maximum_residual)
+    detail = "none" if best is None else f"{best[0]} with residual {best[1]}"
+    raise RuntimeError(f"no integral scale through {maximum}; best candidate {detail}")
+
+
+def extract_integer_kernels(degree, label, matrix, eigenvectors, output_directory):
+    expected_nullity = CASES[(degree, label)][1]
     if expected_nullity == 1:
         normalized = eigenvectors[:, :1] / np.max(np.abs(eigenvectors[:, 0]))
-        scales = [1320]
+        scales = [discover_integer_scale(normalized[:, 0])]
+    elif (degree, label) == (13, "01001"):
+        angles = np.mod(np.arctan2(eigenvectors[:, 1], eigenvectors[:, 0]), np.pi)
+        active = np.linalg.norm(eigenvectors[:, :2], axis=1) > 1e-10
+        rounded = np.round(angles[active], 6)
+        values, counts = np.unique(rounded, return_counts=True)
+        dominant = values[np.argmax(counts)]
+        rows = eigenvectors[np.abs(angles - dominant) < 2e-6, :2].copy()
+        reference = rows[0]
+        rows[np.sum(rows * reference, axis=1) < 0] *= -1
+        row = rows.mean(axis=0)
+        sparse_direction = np.asarray([-row[1], row[0]])
+        sparse = eigenvectors[:, :2] @ sparse_direction
+        sparse /= np.max(np.abs(sparse))
+        sparse_scale = discover_integer_scale(sparse)
+        sparse_integer = np.rint(sparse * sparse_scale)
+
+        coordinates = eigenvectors[:, :2].T @ sparse_integer
+        complementary_direction = np.asarray([-coordinates[1], coordinates[0]])
+        complementary = eigenvectors[:, :2] @ complementary_direction
+        complementary /= np.max(np.abs(complementary))
+        normalized = np.column_stack((sparse, complementary))
+        scales = [sparse_scale, discover_integer_scale(complementary)]
     else:
         _, _, pivots = la.qr(
             eigenvectors[:, :expected_nullity].T,
@@ -158,7 +207,7 @@ def extract_integer_kernels(label, matrix, eigenvectors, output_directory):
         )
         pivot_block = eigenvectors[pivots[:expected_nullity], :expected_nullity]
         normalized = eigenvectors[:, :expected_nullity] @ np.linalg.inv(pivot_block)
-        scales = [7920, 1]
+        scales = [discover_integer_scale(normalized[:, index]) for index in range(expected_nullity)]
 
     os.makedirs(output_directory, exist_ok=True)
     artifacts = []
@@ -166,7 +215,7 @@ def extract_integer_kernels(label, matrix, eigenvectors, output_directory):
         approximation = normalized[:, index] * scale
         coefficients = np.rint(approximation).astype(np.int64)
         maximum_rounding_residual = float(np.max(np.abs(approximation - coefficients)))
-        if maximum_rounding_residual > 1e-5:
+        if maximum_rounding_residual > 2e-5:
             raise RuntimeError(
                 f"integer reconstruction residual {maximum_rounding_residual} is too large"
             )
@@ -179,11 +228,12 @@ def extract_integer_kernels(label, matrix, eigenvectors, output_directory):
         residual = matrix @ coefficients
         if np.count_nonzero(residual):
             raise RuntimeError("reconstructed integer vector has a nonzero raising residual")
+        prefix = f"level{degree}_" if degree != 15 else ""
         path = os.path.join(
             output_directory,
-            f"{label}_highest_weight_kernel_{index + 1}.i16le"
+            f"{prefix}{label}_highest_weight_kernel_{index + 1}.i16le"
             if expected_nullity > 1
-            else f"{label}_highest_weight_kernel.i16le",
+            else f"{prefix}{label}_highest_weight_kernel.i16le",
         )
         coefficients.astype("<i2").tofile(path)
         artifacts.append(
@@ -202,7 +252,8 @@ def extract_integer_kernels(label, matrix, eigenvectors, output_directory):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--label", choices=["00001", "10001"], required=True)
+    parser.add_argument("--degree", type=int, choices=[13, 15], default=15)
+    parser.add_argument("--label", choices=["00001", "01001", "10001"], required=True)
     parser.add_argument("--iterations", type=int, default=600)
     parser.add_argument("--tolerance", type=float, default=1e-8)
     parser.add_argument("--seed", type=int, default=1)
@@ -215,8 +266,10 @@ def main():
     weight_index = {weight: index for index, weight in enumerate(weights)}
     left = half_groups(weights[:16])
     right = half_groups(weights[16:])
+    if (args.degree, args.label) not in CASES:
+        parser.error(f"label {args.label} is not configured at degree {args.degree}")
     matrix, block_rows, expected_nullity = build_matrix(
-        args.label, left, right, weights, weight_index
+        args.degree, args.label, left, right, weights, weight_index
     )
     eigenvalues, eigenvectors = smallest_eigenvalues(
         matrix,
@@ -227,9 +280,10 @@ def main():
     )
     threshold = 1e-6
     report = {
-        "schema_version": "adynkra.11d.level15-bridge-crosscheck.v1",
+        "schema_version": "adynkra.11d.bridge-crosscheck.v2",
         "role": "independent floating-point cross-check of the Rust exact sparse system",
         "dynkin_label": args.label,
+        "exterior_degree": args.degree,
         "matrix_rows": matrix.shape[0],
         "matrix_columns": matrix.shape[1],
         "nonzero_entries": matrix.nnz,
@@ -244,8 +298,15 @@ def main():
         == expected_nullity,
         "boundary": "The eigenvalue calculation is numerical. It checks nullity and separation but does not supply an exact kernel basis.",
     }
+    if args.vectors_output:
+        np.savez_compressed(
+            args.vectors_output,
+            eigenvalues=np.asarray(eigenvalues),
+            eigenvectors=eigenvectors[:, :expected_nullity],
+        )
     if args.integer_artifact_directory:
         report["integer_kernel_candidates"] = extract_integer_kernels(
+            args.degree,
             args.label,
             matrix,
             eigenvectors,
@@ -260,12 +321,6 @@ def main():
     if args.output:
         with open(args.output, "w", encoding="utf-8") as handle:
             handle.write(rendered + "\n")
-    if args.vectors_output:
-        np.savez_compressed(
-            args.vectors_output,
-            eigenvalues=np.asarray(eigenvalues),
-            eigenvectors=eigenvectors[:, :expected_nullity],
-        )
     print(rendered)
 
 

@@ -1,11 +1,13 @@
-//! Exact sparse highest-weight systems for the level-15 11D bridge.
+//! Exact sparse highest-weight systems for the 11D bridge and first lower symbol.
 //!
 //! The scalar 11D superfield has level-15 space `exterior^15 S`, where `S`
 //! is the 32-dimensional spinor of B5.  The published level inventory contains
 //! two copies of `(00001)` and one copy of `(10001)`.  A highest-weight vector
 //! of either type is an integer vector in the corresponding weight space that
 //! is killed by all five simple-root raising operators.  This module builds
-//! those sparse integer systems directly from the spinor weights.
+//! those sparse integer systems directly from the spinor weights. It also
+//! constructs the three level-13 momentum corrections and tests their
+//! level-14 two-form-hook images.
 
 use num_rational::Ratio;
 use serde::Serialize;
@@ -26,6 +28,12 @@ const SPINOR_KERNEL_2: &[u8] =
     include_bytes!("../data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le");
 const VECTOR_SPINOR_KERNEL: &[u8] =
     include_bytes!("../data/eleven_dimensional_bridge/10001_highest_weight_kernel.i16le");
+const LEVEL13_SPINOR_KERNEL: &[u8] =
+    include_bytes!("../data/eleven_dimensional_bridge/level13_00001_highest_weight_kernel.i16le");
+const LEVEL13_TWO_FORM_SPINOR_KERNEL_1: &[u8] =
+    include_bytes!("../data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_1.i16le");
+const LEVEL13_TWO_FORM_SPINOR_KERNEL_2: &[u8] =
+    include_bytes!("../data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_2.i16le");
 
 #[derive(Debug, Clone, Serialize)]
 pub struct RaisingBlockReport {
@@ -95,6 +103,7 @@ pub struct ElevenDimensionalBridgeReport {
     pub source_level: usize,
     pub spinor_weights: usize,
     pub systems: Vec<HighestWeightSystemReport>,
+    pub first_lower_symbol_systems: Vec<HighestWeightSystemReport>,
     pub generic_bridge: &'static str,
     pub coefficients: Vec<BridgeCoefficient>,
     pub equation_2_7_status: &'static str,
@@ -341,6 +350,13 @@ pub struct FirstMomentumCompletionAudit {
     pub leading_two_form_hook_momentum_term_nonzero: bool,
     pub cancellation_system_constructed: bool,
     pub cancellation_exists: Option<bool>,
+    pub exact_functional_rows: usize,
+    pub exact_functional_definition: &'static str,
+    pub exact_functional_columns: [&'static str; 4],
+    pub exact_functional_matrix: Vec<Vec<String>>,
+    pub correction_span_rank: usize,
+    pub augmented_span_rank: usize,
+    pub exact_non_cancellation_certificate: bool,
     pub implication: &'static str,
     pub passed: bool,
 }
@@ -695,6 +711,9 @@ fn audit_zero_momentum_equation_2_7_projection() -> ZeroMomentumEquationProjecti
 
 fn audit_first_momentum_completion(
     momentum: &FirstDerivativeMomentumAudit,
+    weights: &[Weight; 32],
+    left: &HashMap<(u8, Weight), Vec<u16>>,
+    right: &HashMap<(u8, Weight), Vec<u16>>,
 ) -> FirstMomentumCompletionAudit {
     let vector_times_target =
         crate::eleven_dimensional_prepotential::vector_tensor_gamma_traceless_vector_spinor_channels();
@@ -733,16 +752,101 @@ fn audit_first_momentum_completion(
         .sum::<usize>();
     let leading_two_form_hook_momentum_term_nonzero =
         momentum.two_form_hook_momentum_contraction_nonzero;
-    let cancellation_system_constructed = false;
-    let cancellation_exists = None;
+    let plans = build_exterior_channel_plans(weights);
+    let hook_plan = plans
+        .iter()
+        .find(|plan| plan.dynkin_label == "11000")
+        .unwrap();
+    let needed_weights = hook_plan
+        .domain
+        .iter()
+        .map(|entry| entry.vector_spinor_weight)
+        .collect::<std::collections::BTreeSet<_>>();
+    let level15_basis = weight_basis(15, [3, 1, 1, 1, 1], left, right);
+    let leading_states = generate_partial_vector_spinor_source_states(
+        &level15_basis,
+        &decode_kernel(VECTOR_SPINOR_KERNEL),
+        weights,
+        &needed_weights,
+    );
+    let exact_sample_momentum = [1_i64, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    let contracted_bilinear = contracted_translation_bilinear(&exact_sample_momentum);
+    let leading = leading_hook_functionals(hook_plan, &leading_states, &contracted_bilinear);
+
+    let level13_spinor_basis = weight_basis(13, [1, 1, 1, 1, 1], left, right);
+    let spinor_highest = spinor_correction_highest_source(
+        &level13_spinor_basis,
+        &decode_kernel(LEVEL13_SPINOR_KERNEL),
+    );
+    let spinor_states =
+        generate_partial_momentum_correction_states(spinor_highest, weights, &needed_weights);
+    let mut correction_functionals = vec![correction_hook_functionals(
+        hook_plan,
+        &spinor_states,
+        &exact_sample_momentum,
+    )];
+    drop(spinor_states);
+
+    let level13_two_form_spinor_basis = weight_basis(13, [3, 3, 1, 1, 1], left, right);
+    for kernel in [
+        LEVEL13_TWO_FORM_SPINOR_KERNEL_1,
+        LEVEL13_TWO_FORM_SPINOR_KERNEL_2,
+    ] {
+        let highest = two_form_spinor_correction_highest_source(
+            &level13_two_form_spinor_basis,
+            &decode_kernel(kernel),
+            weights,
+        );
+        let states = generate_partial_momentum_correction_states(highest, weights, &needed_weights);
+        correction_functionals.push(correction_hook_functionals(
+            hook_plan,
+            &states,
+            &exact_sample_momentum,
+        ));
+    }
+    let mut correction_rows = Vec::with_capacity(2 * CANCELLATION_FUNCTIONAL_BUCKETS);
+    let mut augmented_rows = Vec::with_capacity(2 * CANCELLATION_FUNCTIONAL_BUCKETS);
+    for component in 0..2 {
+        for bucket in 0..CANCELLATION_FUNCTIONAL_BUCKETS {
+            let correction_row = correction_functionals
+                .iter()
+                .map(|functional| {
+                    if component == 0 {
+                        functional.0[bucket]
+                    } else {
+                        functional.1[bucket]
+                    }
+                })
+                .collect::<Vec<_>>();
+            let mut augmented_row = correction_row.clone();
+            augmented_row.push(if component == 0 {
+                leading.0[bucket]
+            } else {
+                leading.1[bucket]
+            });
+            correction_rows.push(correction_row);
+            augmented_rows.push(augmented_row);
+        }
+    }
+    let correction_span_rank = rational_rank_i128(&correction_rows);
+    let augmented_span_rank = rational_rank_i128(&augmented_rows);
+    let exact_functional_matrix = augmented_rows
+        .iter()
+        .map(|row| row.iter().map(ToString::to_string).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+    let exact_non_cancellation_certificate = augmented_span_rank > correction_span_rank;
+    let cancellation_system_constructed = true;
+    let cancellation_exists = exact_non_cancellation_certificate.then_some(false);
     let passed = vector_times_target_dimension == 11 * 320
         && available_level_thirteen_source_channels == vec!["00001", "01001"]
         && first_completion_coefficient_dimension == 3
         && leading_two_form_hook_momentum_term_nonzero
-        && !cancellation_system_constructed
-        && cancellation_exists.is_none();
+        && cancellation_system_constructed
+        && correction_span_rank <= 3
+        && augmented_span_rank <= 4;
     FirstMomentumCompletionAudit {
-        normal_form_term: "p D_[13] V in H_alpha^a(V), whose exterior derivative contributes at p D_[14] V",
+        normal_form_term:
+            "p D_[13] V in H_alpha^a(V), whose exterior derivative contributes at p D_[14] V",
         target_dynkin_label: "10001",
         target_dimension: 320,
         vector_times_target_dimension,
@@ -752,7 +856,23 @@ fn audit_first_momentum_completion(
         leading_two_form_hook_momentum_term_nonzero,
         cancellation_system_constructed,
         cancellation_exists,
-        implication: "three Lorentz-equivariant p D_[13] correction coefficients are available at the first lower symbol; the current nonzero p D_[14] hook is an obstruction term to cancel, not yet a proof that the scalar bridge fails",
+        exact_functional_rows: 2 * CANCELLATION_FUNCTIONAL_BUCKETS,
+        exact_functional_definition: "32 deterministic signed mask buckets, with separate real and imaginary rows, evaluated over exact integers at p=(1,2,3,4,5,6,7,8,9,10,11)",
+        exact_functional_columns: [
+            "level13_00001_copy1",
+            "level13_01001_copy1",
+            "level13_01001_copy2",
+            "leading_level15_10001",
+        ],
+        exact_functional_matrix,
+        correction_span_rank,
+        augmented_span_rank,
+        exact_non_cancellation_certificate,
+        implication: if exact_non_cancellation_certificate {
+            "the three first lower-symbol corrections do not span the leading p D_[14] two-form-hook term; this closes the first cancellation gate, but not the lower-symbol recursion or the full superspace Bianchi problem"
+        } else {
+            "the exact functionals do not separate the leading term from the three first lower-symbol corrections; a full coordinate cancellation check remains required"
+        },
         passed,
     }
 }
@@ -771,6 +891,7 @@ pub struct VectorSpinorTargetAudit {
 }
 
 type TensorVector = HashMap<usize, Ratio<i64>>;
+type MomentumExteriorVector = HashMap<(usize, u32), i64>;
 
 fn vector_weights() -> Vec<Weight> {
     let mut weights = Vec::new();
@@ -830,6 +951,213 @@ fn raise_vector_weight(weight: Weight, root: usize, weights: &[Weight]) -> Optio
     } else {
         None
     }
+}
+
+fn two_form_pairs() -> Vec<(usize, usize)> {
+    (0..11)
+        .flat_map(|left| ((left + 1)..11).map(move |right| (left, right)))
+        .collect()
+}
+
+fn wedge_pair_index(left: usize, right: usize, pairs: &[(usize, usize)]) -> Option<(usize, i64)> {
+    if left == right {
+        return None;
+    }
+    let (pair, sign) = if left < right {
+        ((left, right), 1)
+    } else {
+        ((right, left), -1)
+    };
+    Some((pairs.iter().position(|item| *item == pair).unwrap(), sign))
+}
+
+fn lower_two_form_index(
+    pair_index: usize,
+    root: usize,
+    vectors: &[Weight],
+    pairs: &[(usize, usize)],
+) -> Vec<(usize, i64)> {
+    let (left, right) = pairs[pair_index];
+    let mut output = Vec::new();
+    if let Some((next, factor)) = lower_vector_weight(vectors[left], root, vectors) {
+        if let Some((index, sign)) = wedge_pair_index(next, right, pairs) {
+            output.push((index, sign * factor));
+        }
+    }
+    if let Some((next, factor)) = lower_vector_weight(vectors[right], root, vectors) {
+        if let Some((index, sign)) = wedge_pair_index(left, next, pairs) {
+            output.push((index, sign * factor));
+        }
+    }
+    output
+}
+
+fn raise_two_form_index(
+    pair_index: usize,
+    root: usize,
+    vectors: &[Weight],
+    pairs: &[(usize, usize)],
+) -> Vec<(usize, i64)> {
+    let (left, right) = pairs[pair_index];
+    let mut output = Vec::new();
+    if let Some((next, factor)) = raise_vector_weight(vectors[left], root, vectors) {
+        if let Some((index, sign)) = wedge_pair_index(next, right, pairs) {
+            output.push((index, sign * factor));
+        }
+    }
+    if let Some((next, factor)) = raise_vector_weight(vectors[right], root, vectors) {
+        if let Some((index, sign)) = wedge_pair_index(left, next, pairs) {
+            output.push((index, sign * factor));
+        }
+    }
+    output
+}
+
+fn lower_two_form_spinor_tensor(
+    source: &TensorVector,
+    root: usize,
+    vectors: &[Weight],
+    pairs: &[(usize, usize)],
+    spinors: &[Weight; 32],
+) -> TensorVector {
+    let mut target = TensorVector::new();
+    for (&index, coefficient) in source {
+        let pair_index = index / 32;
+        let spinor_index = index % 32;
+        for (next, factor) in lower_two_form_index(pair_index, root, vectors, pairs) {
+            *target.entry(next * 32 + spinor_index).or_default() +=
+                coefficient.clone() * Ratio::from_integer(factor);
+        }
+        if let Some(next) = lowered_spinor_index(spinor_index, root, spinors) {
+            *target.entry(pair_index * 32 + next).or_default() += coefficient.clone();
+        }
+    }
+    target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    target
+}
+
+fn raise_two_form_spinor_tensor(
+    source: &TensorVector,
+    root: usize,
+    vectors: &[Weight],
+    pairs: &[(usize, usize)],
+    spinors: &[Weight; 32],
+) -> TensorVector {
+    let mut target = TensorVector::new();
+    for (&index, coefficient) in source {
+        let pair_index = index / 32;
+        let spinor_index = index % 32;
+        for (next, factor) in raise_two_form_index(pair_index, root, vectors, pairs) {
+            *target.entry(next * 32 + spinor_index).or_default() +=
+                coefficient.clone() * Ratio::from_integer(factor);
+        }
+        if let Some(next) = raised_spinor_index(spinor_index, root, spinors) {
+            *target.entry(pair_index * 32 + next).or_default() += coefficient.clone();
+        }
+    }
+    target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    target
+}
+
+fn two_form_spinor_weight(
+    vector: &TensorVector,
+    vectors: &[Weight],
+    pairs: &[(usize, usize)],
+    spinors: &[Weight; 32],
+) -> Weight {
+    let index = *vector.keys().next().unwrap();
+    let (left, right) = pairs[index / 32];
+    add(add(vectors[left], vectors[right]), spinors[index % 32])
+}
+
+#[cfg(test)]
+fn generate_two_form_spinor_target_basis(
+    spinors: &[Weight; 32],
+) -> (HashMap<Weight, Vec<(usize, TensorVector)>>, usize) {
+    use std::collections::VecDeque;
+    let vectors = vector_weights();
+    let pairs = two_form_pairs();
+    let pair_highest = pairs.iter().position(|pair| *pair == (0, 2)).unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let start = HashMap::from([(pair_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_weight = [3, 3, 1, 1, 1];
+    let mut by_weight = HashMap::<Weight, Vec<(usize, TensorVector)>>::new();
+    add_target_basis(start.clone(), by_weight.entry(highest_weight).or_default());
+    let mut queue = VecDeque::from([start]);
+    let mut nonzero_lowering_actions = 0;
+    while let Some(state) = queue.pop_front() {
+        for root in 0..5 {
+            let descendant = lower_two_form_spinor_tensor(&state, root, &vectors, &pairs, spinors);
+            if descendant.is_empty() {
+                continue;
+            }
+            nonzero_lowering_actions += 1;
+            let weight = two_form_spinor_weight(&descendant, &vectors, &pairs, spinors);
+            if add_target_basis(descendant.clone(), by_weight.entry(weight).or_default()) {
+                queue.push_back(descendant);
+            }
+        }
+    }
+    (by_weight, nonzero_lowering_actions)
+}
+
+#[derive(Clone)]
+struct LowerSymbolDomainEntry {
+    vector_index: usize,
+    source_weight: Weight,
+    source_basis_index: usize,
+}
+
+fn build_01001_to_10001_highest_map(
+    spinors: &[Weight; 32],
+) -> (Vec<LowerSymbolDomainEntry>, Vec<i64>, usize) {
+    let vectors = vector_weights();
+    let pairs = two_form_pairs();
+    let source_states = generate_layer_adapted_two_form_spinor_target_states(spinors);
+    let target_highest = [3, 1, 1, 1, 1];
+    let mut domain = Vec::new();
+    for (vector_index, vector_weight) in vectors.iter().enumerate() {
+        let source_weight = subtract(target_highest, *vector_weight);
+        if let Some(states) = source_states.get(&source_weight) {
+            for source_basis_index in 0..states.len() {
+                domain.push(LowerSymbolDomainEntry {
+                    vector_index,
+                    source_weight,
+                    source_basis_index,
+                });
+            }
+        }
+    }
+    let mut rows = BTreeMap::<usize, Vec<Ratio<i64>>>::new();
+    for (column, entry) in domain.iter().enumerate() {
+        let source = &source_states[&entry.source_weight][entry.source_basis_index].target;
+        for root in 0..5 {
+            if let Some((raised_vector, factor)) =
+                raise_vector_weight(vectors[entry.vector_index], root, &vectors)
+            {
+                for (&inner, coefficient) in source {
+                    rows.entry(root * 11 * 55 * 32 + raised_vector * 55 * 32 + inner)
+                        .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])[column] +=
+                        coefficient.clone() * Ratio::from_integer(factor);
+                }
+            }
+            for (inner, coefficient) in
+                raise_two_form_spinor_tensor(source, root, &vectors, &pairs, spinors)
+            {
+                rows.entry(root * 11 * 55 * 32 + entry.vector_index * 55 * 32 + inner)
+                    .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])[column] +=
+                    coefficient;
+            }
+        }
+    }
+    let row_vectors = rows.into_values().collect::<Vec<_>>();
+    let kernel = ratio_nullspace(&row_vectors, domain.len());
+    let primitive = if kernel.len() == 1 {
+        primitive_integer_vector(&kernel[0])
+    } else {
+        Vec::new()
+    };
+    (domain, primitive, kernel.len())
 }
 
 fn lower_target_tensor(
@@ -1033,13 +1361,17 @@ fn dynkin_highest_weight(label: &str) -> Weight {
 }
 
 fn weight_basis(
+    exterior_degree: u8,
     target: Weight,
     left: &HashMap<(u8, Weight), Vec<u16>>,
     right: &HashMap<(u8, Weight), Vec<u16>>,
 ) -> Vec<u32> {
     let mut basis = Vec::new();
-    for left_degree in 0_u8..=15 {
-        let right_degree = 15 - left_degree;
+    for left_degree in 0_u8..=exterior_degree.min(16) {
+        let right_degree = exterior_degree - left_degree;
+        if right_degree > 16 {
+            continue;
+        }
         for ((degree, left_weight), left_masks) in left {
             if *degree != left_degree {
                 continue;
@@ -1163,10 +1495,81 @@ fn lower_pairs(source: &[(u32, i64)], root: usize, weights: &[Weight; 32]) -> Ve
     lowered
 }
 
+fn lower_momentum_exterior(
+    source: &MomentumExteriorVector,
+    root: usize,
+    vectors: &[Weight],
+    spinors: &[Weight; 32],
+) -> MomentumExteriorVector {
+    let mut descendant = MomentumExteriorVector::new();
+    for (&(vector_index, mask), &coefficient) in source {
+        if let Some((next, factor)) = lower_vector_weight(vectors[vector_index], root, vectors) {
+            *descendant.entry((next, mask)).or_insert(0) += factor * coefficient;
+        }
+        for upper_index in 0..32 {
+            if mask & (1_u32 << upper_index) == 0 {
+                continue;
+            }
+            let Some(lower_index) = lowered_spinor_index(upper_index, root, spinors) else {
+                continue;
+            };
+            if mask & (1_u32 << lower_index) != 0 {
+                continue;
+            }
+            let next_mask = (mask ^ (1_u32 << upper_index)) | (1_u32 << lower_index);
+            let (low, high) = if lower_index < upper_index {
+                (lower_index, upper_index)
+            } else {
+                (upper_index, lower_index)
+            };
+            let interval = if high == low + 1 {
+                0
+            } else {
+                ((1_u32 << high) - 1) ^ ((1_u32 << (low + 1)) - 1)
+            };
+            let sign = if (mask & interval).count_ones() % 2 == 0 {
+                1_i64
+            } else {
+                -1_i64
+            };
+            *descendant.entry((vector_index, next_mask)).or_insert(0) += sign * coefficient;
+        }
+    }
+    descendant.retain(|_, coefficient| *coefficient != 0);
+    descendant
+}
+
+fn momentum_source_relation_residual(
+    candidate: &MomentumExteriorVector,
+    basis: &[MomentumCorrectionState],
+    coefficients: &[Ratio<i64>],
+) -> usize {
+    let denominator = coefficients.iter().fold(1_i64, |common, coefficient| {
+        lcm_i64(common, *coefficient.denom())
+    });
+    let mut residual = HashMap::<(usize, u32), i128>::new();
+    for (&key, &value) in candidate {
+        *residual.entry(key).or_insert(0) += i128::from(denominator) * i128::from(value);
+    }
+    for (state, coefficient) in basis.iter().zip(coefficients) {
+        let numerator = *coefficient.numer() * (denominator / *coefficient.denom());
+        for (&key, &value) in &state.source {
+            *residual.entry(key).or_insert(0) -= i128::from(numerator) * i128::from(value);
+        }
+    }
+    residual.values().filter(|value| **value != 0).count()
+}
+
 #[derive(Clone)]
 struct VectorSpinorIntertwinerState {
     target: TensorVector,
     source: Vec<(u32, i64)>,
+}
+
+#[derive(Clone)]
+struct MomentumCorrectionState {
+    target: TensorVector,
+    source: MomentumExteriorVector,
 }
 
 fn generate_layer_adapted_vector_spinor_target_states(
@@ -1199,7 +1602,58 @@ fn generate_layer_adapted_vector_spinor_target_states(
                     }
                     let weight = tensor_weight(&target_descendant, &vectors, spinors);
                     let basis = next.entry(weight).or_default();
-                    if target_span_coefficients(&target_descendant, basis).is_none() {
+                    if target_span_coefficients(&target_descendant, basis, 11 * 32).is_none() {
+                        basis.push(VectorSpinorIntertwinerState {
+                            target: target_descendant,
+                            source: Vec::new(),
+                        });
+                    }
+                }
+            }
+        }
+        for (weight, states) in &next {
+            all.insert(*weight, states.clone());
+        }
+        current = next;
+    }
+    all
+}
+
+fn generate_layer_adapted_two_form_spinor_target_states(
+    spinors: &[Weight; 32],
+) -> BTreeMap<Weight, Vec<VectorSpinorIntertwinerState>> {
+    let vectors = vector_weights();
+    let pairs = two_form_pairs();
+    let pair_highest = pairs.iter().position(|pair| *pair == (0, 2)).unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_target =
+        HashMap::from([(pair_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_weight = [3, 3, 1, 1, 1];
+    let highest_state = VectorSpinorIntertwinerState {
+        target: highest_target,
+        source: Vec::new(),
+    };
+    let mut all = BTreeMap::from([(highest_weight, vec![highest_state.clone()])]);
+    let mut current = BTreeMap::from([(highest_weight, vec![highest_state])]);
+    while !current.is_empty() {
+        let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let target_descendant = lower_two_form_spinor_tensor(
+                        &state.target,
+                        root,
+                        &vectors,
+                        &pairs,
+                        spinors,
+                    );
+                    if target_descendant.is_empty() {
+                        continue;
+                    }
+                    let weight =
+                        two_form_spinor_weight(&target_descendant, &vectors, &pairs, spinors);
+                    let basis = next.entry(weight).or_default();
+                    if target_span_coefficients(&target_descendant, basis, 55 * 32).is_none() {
                         basis.push(VectorSpinorIntertwinerState {
                             target: target_descendant,
                             source: Vec::new(),
@@ -1219,6 +1673,7 @@ fn generate_layer_adapted_vector_spinor_target_states(
 fn target_span_coefficients(
     candidate: &TensorVector,
     basis: &[VectorSpinorIntertwinerState],
+    ambient_dimension: usize,
 ) -> Option<Vec<Ratio<i64>>> {
     let dimension = basis.len();
     if dimension == 0 {
@@ -1235,7 +1690,7 @@ fn target_span_coefficients(
         })
         .collect::<Vec<_>>();
     let mut rank = 0;
-    for column in 0..11 * 32 {
+    for column in 0..ambient_dimension {
         let Some(pivot_row) = (rank..dimension).find(|row| {
             rows[*row]
                 .0
@@ -1618,6 +2073,455 @@ fn source_relation_residual(
     )
 }
 
+fn generate_partial_two_form_spinor_source_states(
+    source_basis: &[u32],
+    coefficients: &[i16],
+    spinors: &[Weight; 32],
+    needed_weights: &std::collections::BTreeSet<Weight>,
+) -> BTreeMap<Weight, Vec<VectorSpinorIntertwinerState>> {
+    let vectors = vector_weights();
+    let pairs = two_form_pairs();
+    let pair_highest = pairs.iter().position(|pair| *pair == (0, 2)).unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_weight = [3, 3, 1, 1, 1];
+    let highest_target =
+        HashMap::from([(pair_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_source = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients.iter().copied())
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<Vec<_>>();
+    let highest_state = VectorSpinorIntertwinerState {
+        target: highest_target,
+        source: highest_source,
+    };
+    let reference = generate_layer_adapted_two_form_spinor_target_states(spinors);
+    let mut selected = BTreeMap::new();
+    if needed_weights.contains(&highest_weight) {
+        selected.insert(highest_weight, vec![highest_state.clone()]);
+    }
+    let mut current = BTreeMap::from([(highest_weight, vec![highest_state])]);
+    while !current.is_empty()
+        && !needed_weights.iter().all(|weight| {
+            selected.get(weight).map(Vec::len).unwrap_or(0)
+                == reference.get(weight).map(Vec::len).unwrap_or(0)
+        })
+    {
+        let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let target_descendant = lower_two_form_spinor_tensor(
+                        &state.target,
+                        root,
+                        &vectors,
+                        &pairs,
+                        spinors,
+                    );
+                    let source_descendant = lower_pairs(&state.source, root, spinors);
+                    if target_descendant.is_empty() {
+                        assert!(source_descendant.is_empty());
+                        continue;
+                    }
+                    let weight =
+                        two_form_spinor_weight(&target_descendant, &vectors, &pairs, spinors);
+                    let basis = next.entry(weight).or_default();
+                    if let Some(span_coefficients) =
+                        target_span_coefficients(&target_descendant, basis, 55 * 32)
+                    {
+                        let (residual_terms, _) =
+                            source_relation_residual(&source_descendant, basis, &span_coefficients);
+                        assert_eq!(residual_terms, 0);
+                    } else {
+                        basis.push(VectorSpinorIntertwinerState {
+                            target: target_descendant,
+                            source: source_descendant,
+                        });
+                    }
+                }
+            }
+        }
+        for weight in needed_weights {
+            if let Some(states) = next.get(weight) {
+                selected.insert(*weight, states.clone());
+            }
+        }
+        current = next;
+    }
+    assert!(needed_weights.iter().all(|weight| {
+        selected.get(weight).map(Vec::len).unwrap_or(0)
+            == reference.get(weight).map(Vec::len).unwrap_or(0)
+    }));
+    selected
+}
+
+fn spinor_correction_highest_source(
+    source_basis: &[u32],
+    coefficients: &[i16],
+) -> MomentumExteriorVector {
+    source_basis
+        .iter()
+        .copied()
+        .zip(coefficients.iter().copied())
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| ((0, mask), i64::from(coefficient)))
+        .collect()
+}
+
+fn two_form_spinor_correction_highest_source(
+    source_basis: &[u32],
+    coefficients: &[i16],
+    spinors: &[Weight; 32],
+) -> MomentumExteriorVector {
+    let (domain, highest_coefficients, kernel_dimension) =
+        build_01001_to_10001_highest_map(spinors);
+    assert_eq!(kernel_dimension, 1);
+    let needed = domain
+        .iter()
+        .map(|entry| entry.source_weight)
+        .collect::<std::collections::BTreeSet<_>>();
+    let source_states = generate_partial_two_form_spinor_source_states(
+        source_basis,
+        coefficients,
+        spinors,
+        &needed,
+    );
+    let mut output = MomentumExteriorVector::new();
+    for (entry, &domain_coefficient) in domain.iter().zip(&highest_coefficients) {
+        let state = &source_states[&entry.source_weight][entry.source_basis_index];
+        for &(mask, source_coefficient) in &state.source {
+            let value = domain_coefficient
+                .checked_mul(source_coefficient)
+                .expect("level-13 correction coefficient overflow");
+            *output.entry((entry.vector_index, mask)).or_insert(0) += value;
+        }
+    }
+    output.retain(|_, coefficient| *coefficient != 0);
+    output
+}
+
+fn generate_partial_momentum_correction_states(
+    highest_source: MomentumExteriorVector,
+    spinors: &[Weight; 32],
+    needed_weights: &std::collections::BTreeSet<Weight>,
+) -> BTreeMap<Weight, Vec<MomentumCorrectionState>> {
+    let vectors = vector_weights();
+    let vector_highest = vectors
+        .iter()
+        .position(|weight| *weight == [2, 0, 0, 0, 0])
+        .unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_weight = [3, 1, 1, 1, 1];
+    let highest_target =
+        HashMap::from([(vector_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_state = MomentumCorrectionState {
+        target: highest_target,
+        source: highest_source,
+    };
+    let reference = generate_layer_adapted_vector_spinor_target_states(spinors);
+    let mut selected = BTreeMap::new();
+    if needed_weights.contains(&highest_weight) {
+        selected.insert(highest_weight, vec![highest_state.clone()]);
+    }
+    let mut current = BTreeMap::from([(highest_weight, vec![highest_state])]);
+    while !current.is_empty()
+        && !needed_weights.iter().all(|weight| {
+            selected.get(weight).map(Vec::len).unwrap_or(0)
+                == reference.get(weight).map(Vec::len).unwrap_or(0)
+        })
+    {
+        let mut next = BTreeMap::<Weight, Vec<MomentumCorrectionState>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let target_descendant =
+                        lower_target_tensor(&state.target, root, &vectors, spinors);
+                    let source_descendant =
+                        lower_momentum_exterior(&state.source, root, &vectors, spinors);
+                    if target_descendant.is_empty() {
+                        assert!(source_descendant.is_empty());
+                        continue;
+                    }
+                    let weight = tensor_weight(&target_descendant, &vectors, spinors);
+                    let basis = next.entry(weight).or_default();
+                    let target_basis = basis
+                        .iter()
+                        .map(|item| VectorSpinorIntertwinerState {
+                            target: item.target.clone(),
+                            source: Vec::new(),
+                        })
+                        .collect::<Vec<_>>();
+                    if let Some(span_coefficients) =
+                        target_span_coefficients(&target_descendant, &target_basis, 11 * 32)
+                    {
+                        assert_eq!(
+                            momentum_source_relation_residual(
+                                &source_descendant,
+                                basis,
+                                &span_coefficients,
+                            ),
+                            0
+                        );
+                    } else {
+                        basis.push(MomentumCorrectionState {
+                            target: target_descendant,
+                            source: source_descendant,
+                        });
+                    }
+                }
+            }
+        }
+        for weight in needed_weights {
+            if let Some(states) = next.get(weight) {
+                selected.insert(*weight, states.clone());
+            }
+        }
+        current = next;
+    }
+    assert!(needed_weights.iter().all(|weight| {
+        selected.get(weight).map(Vec::len).unwrap_or(0)
+            == reference.get(weight).map(Vec::len).unwrap_or(0)
+    }));
+    selected
+}
+
+fn generate_partial_vector_spinor_source_states(
+    source_basis: &[u32],
+    coefficients: &[i16],
+    spinors: &[Weight; 32],
+    needed_weights: &std::collections::BTreeSet<Weight>,
+) -> BTreeMap<Weight, Vec<VectorSpinorIntertwinerState>> {
+    let vectors = vector_weights();
+    let vector_highest = vectors
+        .iter()
+        .position(|weight| *weight == [2, 0, 0, 0, 0])
+        .unwrap();
+    let spinor_highest = spinors.iter().position(|weight| *weight == [1; 5]).unwrap();
+    let highest_weight = [3, 1, 1, 1, 1];
+    let highest_target =
+        HashMap::from([(vector_highest * 32 + spinor_highest, Ratio::from_integer(1))]);
+    let highest_source = source_basis
+        .iter()
+        .copied()
+        .zip(coefficients.iter().copied())
+        .filter(|(_, coefficient)| *coefficient != 0)
+        .map(|(mask, coefficient)| (mask, i64::from(coefficient)))
+        .collect::<Vec<_>>();
+    let highest_state = VectorSpinorIntertwinerState {
+        target: highest_target,
+        source: highest_source,
+    };
+    let reference = generate_layer_adapted_vector_spinor_target_states(spinors);
+    let mut selected = BTreeMap::new();
+    if needed_weights.contains(&highest_weight) {
+        selected.insert(highest_weight, vec![highest_state.clone()]);
+    }
+    let mut current = BTreeMap::from([(highest_weight, vec![highest_state])]);
+    while !current.is_empty()
+        && !needed_weights.iter().all(|weight| {
+            selected.get(weight).map(Vec::len).unwrap_or(0)
+                == reference.get(weight).map(Vec::len).unwrap_or(0)
+        })
+    {
+        let mut next = BTreeMap::<Weight, Vec<VectorSpinorIntertwinerState>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let target_descendant =
+                        lower_target_tensor(&state.target, root, &vectors, spinors);
+                    let source_descendant = lower_pairs(&state.source, root, spinors);
+                    if target_descendant.is_empty() {
+                        assert!(source_descendant.is_empty());
+                        continue;
+                    }
+                    let weight = tensor_weight(&target_descendant, &vectors, spinors);
+                    let basis = next.entry(weight).or_default();
+                    if let Some(span_coefficients) =
+                        target_span_coefficients(&target_descendant, basis, 11 * 32)
+                    {
+                        assert_eq!(
+                            source_relation_residual(
+                                &source_descendant,
+                                basis,
+                                &span_coefficients,
+                            )
+                            .0,
+                            0
+                        );
+                    } else {
+                        basis.push(VectorSpinorIntertwinerState {
+                            target: target_descendant,
+                            source: source_descendant,
+                        });
+                    }
+                }
+            }
+        }
+        for weight in needed_weights {
+            if let Some(states) = next.get(weight) {
+                selected.insert(*weight, states.clone());
+            }
+        }
+        current = next;
+    }
+    assert!(needed_weights.iter().all(|weight| {
+        selected.get(weight).map(Vec::len).unwrap_or(0)
+            == reference.get(weight).map(Vec::len).unwrap_or(0)
+    }));
+    selected
+}
+
+const CANCELLATION_FUNCTIONAL_BUCKETS: usize = 32;
+
+fn bucket_and_sign(mask: u32) -> (usize, i128) {
+    let hash = splitmix64(u64::from(mask) ^ 0x6a09_e667_f3bc_c909);
+    (
+        (hash as usize) % CANCELLATION_FUNCTIONAL_BUCKETS,
+        if hash >> 63 == 0 { 1 } else { -1 },
+    )
+}
+
+fn doubled_momentum_weight_coefficient(vector_index: usize, momentum: &[i64; 11]) -> (i64, i64) {
+    if vector_index == 10 {
+        return (2 * momentum[10], 0);
+    }
+    let axis = vector_index / 2;
+    let real = momentum[2 * axis];
+    let imaginary = if vector_index % 2 == 0 {
+        momentum[2 * axis + 1]
+    } else {
+        -momentum[2 * axis + 1]
+    };
+    (real, imaginary)
+}
+
+fn correction_hook_functionals(
+    plan: &ExteriorChannelPlan,
+    states: &BTreeMap<Weight, Vec<MomentumCorrectionState>>,
+    momentum: &[i64; 11],
+) -> (
+    [i128; CANCELLATION_FUNCTIONAL_BUCKETS],
+    [i128; CANCELLATION_FUNCTIONAL_BUCKETS],
+) {
+    let mut real = [0_i128; CANCELLATION_FUNCTIONAL_BUCKETS];
+    let mut imaginary = [0_i128; CANCELLATION_FUNCTIONAL_BUCKETS];
+    for (entry, &domain_coefficient) in plan
+        .domain
+        .iter()
+        .zip(&plan.primitive_highest_weight_coefficients)
+    {
+        let state = &states[&entry.vector_spinor_weight][entry.vector_spinor_basis_index];
+        let outer_bit = 1_u32 << entry.outer_spinor_index;
+        let lower_bits = outer_bit - 1;
+        for (&(vector_index, mask), &source_coefficient) in &state.source {
+            if mask & outer_bit != 0 {
+                continue;
+            }
+            let wedge_sign = if (mask & lower_bits).count_ones() % 2 == 0 {
+                1_i128
+            } else {
+                -1_i128
+            };
+            let output_mask = mask | outer_bit;
+            let (bucket, sign) = bucket_and_sign(output_mask);
+            let common =
+                i128::from(domain_coefficient) * i128::from(source_coefficient) * wedge_sign * sign;
+            let (momentum_real, momentum_imaginary) =
+                doubled_momentum_weight_coefficient(vector_index, momentum);
+            real[bucket] += common * i128::from(momentum_real);
+            imaginary[bucket] += common * i128::from(momentum_imaginary);
+        }
+    }
+    (real, imaginary)
+}
+
+fn leading_hook_functionals(
+    plan: &ExteriorChannelPlan,
+    states: &BTreeMap<Weight, Vec<VectorSpinorIntertwinerState>>,
+    contracted_bilinear: &[Vec<(i64, i64)>],
+) -> (
+    [i128; CANCELLATION_FUNCTIONAL_BUCKETS],
+    [i128; CANCELLATION_FUNCTIONAL_BUCKETS],
+) {
+    let mut real = [0_i128; CANCELLATION_FUNCTIONAL_BUCKETS];
+    let mut imaginary = [0_i128; CANCELLATION_FUNCTIONAL_BUCKETS];
+    for (entry, &domain_coefficient) in plan
+        .domain
+        .iter()
+        .zip(&plan.primitive_highest_weight_coefficients)
+    {
+        let state = &states[&entry.vector_spinor_weight][entry.vector_spinor_basis_index];
+        for &(mask, source_coefficient) in &state.source {
+            let mut remaining = mask;
+            let mut position = 0_u32;
+            while remaining != 0 {
+                let contracted_spinor_index = remaining.trailing_zeros() as usize;
+                remaining &= remaining - 1;
+                let contraction_sign = if position % 2 == 0 { 1_i128 } else { -1_i128 };
+                position += 1;
+                let output_mask = mask ^ (1_u32 << contracted_spinor_index);
+                let (bucket, sign) = bucket_and_sign(output_mask);
+                let common = i128::from(domain_coefficient)
+                    * i128::from(source_coefficient)
+                    * contraction_sign
+                    * sign
+                    * 2;
+                let (gamma_real, gamma_imaginary) =
+                    contracted_bilinear[entry.outer_spinor_index][contracted_spinor_index];
+                real[bucket] += common * i128::from(gamma_real);
+                imaginary[bucket] += common * i128::from(gamma_imaginary);
+            }
+        }
+    }
+    (real, imaginary)
+}
+
+fn rational_rank_i128(rows: &[Vec<i128>]) -> usize {
+    use num_bigint::BigInt;
+    let zero = Ratio::from_integer(BigInt::from(0));
+    let mut matrix = rows
+        .iter()
+        .map(|row| {
+            row.iter()
+                .copied()
+                .map(|value| Ratio::from_integer(BigInt::from(value)))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    if matrix.is_empty() {
+        return 0;
+    }
+    let columns = matrix[0].len();
+    let mut rank = 0;
+    for column in 0..columns {
+        let Some(pivot) = (rank..matrix.len()).find(|row| matrix[*row][column] != zero) else {
+            continue;
+        };
+        matrix.swap(rank, pivot);
+        let normalization = matrix[rank][column].clone();
+        for value in &mut matrix[rank][column..] {
+            *value /= normalization.clone();
+        }
+        let pivot_row = matrix[rank].clone();
+        for row in (rank + 1)..matrix.len() {
+            let factor = matrix[row][column].clone();
+            if factor == zero {
+                continue;
+            }
+            for index in column..columns {
+                matrix[row][index] -= factor.clone() * pivot_row[index].clone();
+            }
+        }
+        rank += 1;
+        if rank == matrix.len() {
+            break;
+        }
+    }
+    rank
+}
+
 fn audit_full_vector_spinor_source_descendants(
     source_basis: &[u32],
     coefficients: &[i16],
@@ -1738,7 +2642,7 @@ fn audit_full_vector_spinor_source_descendants(
                     let target_weight_was_new = !next.contains_key(&weight);
                     let basis = next.entry(weight).or_default();
                     if let Some(span_coefficients) =
-                        target_span_coefficients(&target_descendant, basis)
+                        target_span_coefficients(&target_descendant, basis, 11 * 32)
                     {
                         dependent_target_relations_checked += 1;
                         let (residual_terms, maximum_absolute_residual) =
@@ -2003,6 +2907,7 @@ fn audit_full_spinor_descendants(
 }
 
 fn build_system(
+    exterior_degree: u8,
     dynkin_label: &'static str,
     representation_dimension: usize,
     highest_weight: Weight,
@@ -2012,7 +2917,7 @@ fn build_system(
     weights: &[Weight; 32],
     kernel_artifacts: &[(&'static str, &'static [u8])],
 ) -> HighestWeightSystemReport {
-    let source_basis = weight_basis(highest_weight, left, right);
+    let source_basis = weight_basis(exterior_degree, highest_weight, left, right);
     let source_columns: HashMap<u32, usize> = source_basis
         .iter()
         .copied()
@@ -2035,7 +2940,7 @@ fn build_system(
 
     for root in 0..5 {
         let output_weight = add(highest_weight, SIMPLE_ROOTS[root]);
-        let output_basis = weight_basis(output_weight, left, right);
+        let output_basis = weight_basis(exterior_degree, output_weight, left, right);
         let mut nonzero_entries = 0;
         let mut missing_source_columns = 0;
         let mut row_degree_histogram = BTreeMap::new();
@@ -2131,7 +3036,7 @@ fn build_system(
         dynkin_label,
         representation_dimension,
         highest_weight_doubled_coordinates: highest_weight,
-        exterior_degree: 15,
+        exterior_degree: usize::from(exterior_degree),
         source_weight_space_columns: source_basis.len(),
         total_rows: raising_blocks.iter().map(|block| block.rows).sum(),
         total_nonzero_entries: raising_blocks
@@ -2169,6 +3074,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
     let right = half_groups(16, &weights);
     let systems = vec![
         build_system(
+            15,
             "00001",
             32,
             [1, 1, 1, 1, 1],
@@ -2188,6 +3094,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             ],
         ),
         build_system(
+            15,
             "10001",
             320,
             [3, 1, 1, 1, 1],
@@ -2201,12 +3108,48 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
             )],
         ),
     ];
+    let first_lower_symbol_systems = vec![
+        build_system(
+            13,
+            "00001",
+            32,
+            [1, 1, 1, 1, 1],
+            1,
+            &left,
+            &right,
+            &weights,
+            &[(
+                "data/eleven_dimensional_bridge/level13_00001_highest_weight_kernel.i16le",
+                LEVEL13_SPINOR_KERNEL,
+            )],
+        ),
+        build_system(
+            13,
+            "01001",
+            1_408,
+            [3, 3, 1, 1, 1],
+            2,
+            &left,
+            &right,
+            &weights,
+            &[
+                (
+                    "data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_1.i16le",
+                    LEVEL13_TWO_FORM_SPINOR_KERNEL_1,
+                ),
+                (
+                    "data/eleven_dimensional_bridge/level13_01001_highest_weight_kernel_2.i16le",
+                    LEVEL13_TWO_FORM_SPINOR_KERNEL_2,
+                ),
+            ],
+        ),
+    ];
     let exact_kernel_vectors_verified = systems
         .iter()
         .flat_map(|system| &system.exact_kernel_vectors)
         .filter(|kernel| kernel.exact_kernel_verified)
         .count();
-    let spinor_basis = weight_basis([1, 1, 1, 1, 1], &left, &right);
+    let spinor_basis = weight_basis(15, [1, 1, 1, 1, 1], &left, &right);
     let spinor_descendant_audits = [SPINOR_KERNEL_1, SPINOR_KERNEL_2]
         .into_iter()
         .enumerate()
@@ -2215,7 +3158,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         })
         .collect::<Vec<_>>();
     let vector_spinor_target_audit = audit_vector_spinor_target(&weights);
-    let vector_spinor_source_basis = weight_basis([3, 1, 1, 1, 1], &left, &right);
+    let vector_spinor_source_basis = weight_basis(15, [3, 1, 1, 1, 1], &left, &right);
     let (
         vector_spinor_source_descendant_audit,
         level_sixteen_exterior_derivative_audit,
@@ -2226,7 +3169,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         &weights,
     );
     let first_momentum_completion_audit =
-        audit_first_momentum_completion(&first_derivative_momentum_audit);
+        audit_first_momentum_completion(&first_derivative_momentum_audit, &weights, &left, &right);
     let level_sixteen_derivative_channel_audit = audit_level_sixteen_derivative_channels();
     let dimension_zero_torsion_sector_audit =
         audit_dimension_zero_torsion_sectors(&level_sixteen_exterior_derivative_audit);
@@ -2240,6 +3183,13 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
     let passed = systems
         .iter()
         .all(|system| system.exact_sparse_system_constructed)
+        && first_lower_symbol_systems.iter().all(|system| {
+            system.exact_sparse_system_constructed
+                && system
+                    .exact_kernel_vectors
+                    .iter()
+                    .all(|kernel| kernel.exact_kernel_verified)
+        })
         && exact_kernel_vectors_verified == 3
         && spinor_descendant_audits
             .iter()
@@ -2258,11 +3208,12 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         && inherited_spinor_gauge_audit.passed;
 
     ElevenDimensionalBridgeReport {
-        schema_version: "adynkra.11d.level15-bridge.v8",
+        schema_version: "adynkra.11d.level15-bridge.v9",
         source_arxiv: "2002.08502",
         source_level: 15,
         spinor_weights: weights.len(),
         systems,
+        first_lower_symbol_systems,
         generic_bridge: "H_alpha^a(V) = a I_32^(1)(D^15 V) + b I_32^(2)(D^15 V) + c I_320(D^15 V)",
         coefficients: vec![
             BridgeCoefficient {
@@ -2284,8 +3235,8 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
                 target_sector: "gamma-traceless vector-spinor",
             },
         ],
-        equation_2_7_status: "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels, but the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook; the full generic-momentum Eq. (2.7) operator remains to be solved",
-        coefficient_solution_status: "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; whether the generic-momentum torsion constraint permits the surviving c channel is unresolved",
+        equation_2_7_status: "the zero-momentum exterior gamma^[2] symbol has rank zero on the three bridge channels; the aligned Clifford calculation gives a nonzero level-14 momentum contraction in the 11000 hook, and the three level-13 corrections do not cancel it; lower symbols and the full superspace Bianchi system remain",
+        coefficient_solution_status: "the exterior symbol leaves a, b, and c unrestricted; quotienting the local gamma-trace symmetry removes a and b; the first lower-symbol correction space does not cancel the generic-momentum 11000 term in the surviving c channel",
         expected_kernel_vectors: 3,
         exact_kernel_vectors_verified,
         all_expected_kernel_vectors_verified: exact_kernel_vectors_verified == 3,
@@ -2302,7 +3253,7 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
         canonical_source_line_normalization,
         linearized_scale_freedom_audit,
         inherited_spinor_gauge_audit,
-        boundary: "This constructs the sparse equations, verifies all three highest-weight kernel vectors, completes the source descendants, resolves the level-16 exterior symbol, identifies its X_[2] and X_[5] sectors, and evaluates the level-14 momentum contraction for both torsion-hook tests. The nonzero X_[2] term shows that level-16 inventory absence alone does not settle the generic-momentum constraint. The first lower-symbol inventory supplies three p D_[13] correction coefficients. Constructing their exact cancellation map, then continuing the lower-symbol recursion and the superspace Bianchi complex, remains.",
+        boundary: "This verifies the level-15 bridge intertwiners, the level-16 exterior symbol, the level-14 momentum contractions, the three level-13 source intertwiners, and the first lower-symbol cancellation system. The 64 exact integer functionals give correction rank two and augmented rank three, so the three p D_[13] corrections cannot cancel the leading p D_[14] term in the 11000 hook. This result does not close later lower symbols or the full superspace Bianchi complex.",
         passed,
     }
 }
@@ -2333,6 +3284,50 @@ mod tests {
             })
             .collect();
         assert_eq!(counts, vec![8, 8, 8, 8, 16]);
+    }
+
+    #[test]
+    fn two_form_spinor_target_generates_01001() {
+        let spinors = spinor_weights();
+        let (by_weight, nonzero_lowering_actions) = generate_two_form_spinor_target_basis(&spinors);
+        assert_eq!(by_weight.values().map(Vec::len).sum::<usize>(), 1_408);
+        assert!(nonzero_lowering_actions >= 1_407);
+    }
+
+    #[test]
+    fn vector_times_01001_contains_one_10001_highest_line() {
+        let spinors = spinor_weights();
+        let (domain, primitive, kernel_dimension) = build_01001_to_10001_highest_map(&spinors);
+        assert_eq!(kernel_dimension, 1);
+        assert!(!domain.is_empty());
+        assert_eq!(primitive.len(), domain.len());
+        assert!(primitive.iter().any(|coefficient| *coefficient != 0));
+    }
+
+    #[test]
+    #[ignore = "lowers two large exact level-13 source kernels through all correction weights"]
+    fn level_thirteen_01001_sources_reach_all_correction_weights() {
+        let spinors = spinor_weights();
+        let left = half_groups(0, &spinors);
+        let right = half_groups(16, &spinors);
+        let source_basis = weight_basis(13, [3, 3, 1, 1, 1], &left, &right);
+        let (domain, _, _) = build_01001_to_10001_highest_map(&spinors);
+        let needed = domain
+            .iter()
+            .map(|entry| entry.source_weight)
+            .collect::<std::collections::BTreeSet<_>>();
+        for bytes in [
+            LEVEL13_TWO_FORM_SPINOR_KERNEL_1,
+            LEVEL13_TWO_FORM_SPINOR_KERNEL_2,
+        ] {
+            let states = generate_partial_two_form_spinor_source_states(
+                &source_basis,
+                &decode_kernel(bytes),
+                &spinors,
+                &needed,
+            );
+            assert_eq!(states.values().map(Vec::len).sum::<usize>(), domain.len());
+        }
     }
 
     #[test]
@@ -2440,6 +3435,34 @@ mod tests {
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
         assert_eq!(spinor.exact_kernel_vectors[0].squared_norm, 426_254_400);
         assert_eq!(spinor.exact_kernel_vectors[1].squared_norm, 6_435);
+        assert_eq!(report.first_lower_symbol_systems.len(), 2);
+        let level13_spinor = &report.first_lower_symbol_systems[0];
+        assert_eq!(level13_spinor.exterior_degree, 13);
+        assert_eq!(level13_spinor.source_weight_space_columns, 388_720);
+        assert_eq!(level13_spinor.total_rows, 1_260_810);
+        assert_eq!(level13_spinor.exact_kernel_vectors.len(), 1);
+        assert_eq!(
+            level13_spinor.exact_kernel_vectors[0].nonzero_coefficients,
+            5_005
+        );
+        assert!(level13_spinor.exact_kernel_vectors[0].exact_kernel_verified);
+        let level13_two_form_spinor = &report.first_lower_symbol_systems[1];
+        assert_eq!(level13_two_form_spinor.exterior_degree, 13);
+        assert_eq!(level13_two_form_spinor.source_weight_space_columns, 161_432);
+        assert_eq!(level13_two_form_spinor.total_rows, 475_801);
+        assert_eq!(level13_two_form_spinor.exact_kernel_vectors.len(), 2);
+        assert_eq!(
+            level13_two_form_spinor.exact_kernel_vectors[0].nonzero_coefficients,
+            5_148
+        );
+        assert_eq!(
+            level13_two_form_spinor.exact_kernel_vectors[1].nonzero_coefficients,
+            145_065
+        );
+        assert!(level13_two_form_spinor
+            .exact_kernel_vectors
+            .iter()
+            .all(|kernel| kernel.exact_kernel_verified));
         assert_eq!(report.spinor_descendant_audits.len(), 2);
         for audit in &report.spinor_descendant_audits {
             assert_eq!(audit.target_states_generated, 32);
@@ -2514,8 +3537,12 @@ mod tests {
         );
         assert_eq!(completion.first_completion_coefficient_dimension, 3);
         assert!(completion.leading_two_form_hook_momentum_term_nonzero);
-        assert!(!completion.cancellation_system_constructed);
-        assert_eq!(completion.cancellation_exists, None);
+        assert!(completion.cancellation_system_constructed);
+        assert_eq!(completion.cancellation_exists, Some(false));
+        assert_eq!(completion.exact_functional_rows, 64);
+        assert_eq!(completion.correction_span_rank, 2);
+        assert_eq!(completion.augmented_span_rank, 3);
+        assert!(completion.exact_non_cancellation_certificate);
         assert!(completion.passed);
         let projection = &report.zero_momentum_equation_2_7_projection;
         assert_eq!(projection.raw_two_form_vector_dimension, 605);

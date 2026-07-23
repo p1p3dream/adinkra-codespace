@@ -195,7 +195,7 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkrafield-operator-verify Verify the old-minimal Adynkrafield operator");
     eprintln!("  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
-    eprintln!("  adynkra-11d-bridge-verify Verify the exact level-15 bridge systems");
+    eprintln!("  adynkra-11d-bridge-verify Verify the 11D bridge and first lower symbol");
     eprintln!("  export-3d-assets [json] [output-dir]");
     eprintln!("                          Export catalog-wide 3D dashing assets");
     eprintln!("  help                    Print this help message");
