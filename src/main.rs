@@ -497,7 +497,7 @@ fn cmd_adynkra_11d_level16_coupling_verify(args: &[String]) {
         let estimated_memory_gib_per_worker = std::env::var("ADINKRA_LEVEL16_WORKER_GIB")
             .ok()
             .and_then(|value| value.parse::<usize>().ok())
-            .unwrap_or(6)
+            .unwrap_or(10)
             .max(1);
         let requested_workers = std::env::var("ADINKRA_LEVEL16_WORKERS")
             .ok()
