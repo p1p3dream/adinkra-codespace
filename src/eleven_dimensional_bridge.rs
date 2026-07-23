@@ -3434,7 +3434,7 @@ fn relevant_source_weight_bases(
     source_highest_weight: Weight,
     target_weight: Weight,
     spinors: &[Weight; 32],
-) -> HashMap<Weight, Vec<HashMap<u32, i64>>> {
+) -> BTreeMap<Weight, Vec<HashMap<u32, i64>>> {
     let needed_weights = spinors
         .iter()
         .map(|spinor| subtract(target_weight, *spinor))
@@ -3447,12 +3447,12 @@ fn relevant_source_weight_bases(
                 (weight, depth)
             })
         })
-        .collect::<HashMap<_, _>>();
+        .collect::<BTreeMap<_, _>>();
     let maximum_depth = needed_weights.values().copied().max().unwrap_or(0);
-    let mut current = HashMap::from([(source_highest_weight, vec![highest])]);
-    let mut required = HashMap::new();
+    let mut current = BTreeMap::from([(source_highest_weight, vec![highest])]);
+    let mut required = BTreeMap::new();
     for depth in 0..=maximum_depth {
-        let mut next_candidates = HashMap::<Weight, Vec<HashMap<u32, i64>>>::new();
+        let mut next_candidates = BTreeMap::<Weight, Vec<HashMap<u32, i64>>>::new();
         for (weight, basis) in current {
             if needed_weights
                 .get(&weight)
@@ -3523,10 +3523,12 @@ fn one_dimensional_tensor_kernel(outputs: &[Vec<HashMap<(u32, usize), i64>>]) ->
     let columns = outputs.len();
     let mut rows = Vec::<Vec<Ratio<i64>>>::new();
     let mut modular_echelon = Vec::<(usize, Vec<u64>)>::new();
-    let mut seen = std::collections::HashSet::new();
+    let mut seen = std::collections::BTreeSet::new();
     'scan: for root in 0..5 {
         for column in outputs {
-            for key in column[root].keys().copied() {
+            let mut keys = column[root].keys().copied().collect::<Vec<_>>();
+            keys.sort_unstable();
+            for key in keys {
                 if !seen.insert((root, key)) {
                     continue;
                 }
@@ -3579,10 +3581,8 @@ fn one_dimensional_tensor_kernel(outputs: &[Vec<HashMap<(u32, usize), i64>>]) ->
                     *combined.entry(key).or_insert(0) += coefficient * value;
                 }
             }
-            combined
-                .into_iter()
-                .find(|(_, coefficient)| *coefficient != 0)
-                .map(|(key, _)| (root, key))
+            combined.retain(|_, coefficient| *coefficient != 0);
+            combined.keys().copied().min().map(|key| (root, key))
         });
         let Some((root, key)) = residual else {
             return Some(primitive);

@@ -402,6 +402,11 @@ mod tests {
             .additional_leading_source_target_couplings
             .iter()
             .all(|coupling| coupling.passed));
+        assert_eq!(
+            report.additional_leading_source_target_couplings[0]
+                .primitive_domain_coefficients,
+            [2, 4, -1, -3, -2, 2, -4, -2, 4, -4, 2, -4, 4, -4]
+        );
         assert_eq!(report.leading_source_target_couplings_constructed, 3);
     }
 }
