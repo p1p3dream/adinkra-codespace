@@ -160,4 +160,32 @@ mod tests {
         // matmul agrees with repeated compose orientation.
         assert_eq!(pow(&a, 2), matmul(&a, &a));
     }
+
+    // The two typos in arXiv:2408.09342, verified against the LaTeX e-print,
+    // asserted here so the finding lives in the apparatus and not in scratch.
+
+    #[test]
+    fn printed_chiral_l1_is_a_typo_that_fails_garden() {
+        // Table 7 prints Chiral L1 as <1 4 -2 -3>; that value does NOT satisfy
+        // the Garden algebra. The corrected <1 -4 2 -3> does.
+        let printed = vec![
+            sp(&[1, 4, -2, -3]),
+            sp(&[2, 3, -1, -4]),
+            sp(&[3, -2, -4, 1]),
+            sp(&[4, 1, 3, 2]),
+        ];
+        assert!(!garden_ok(&printed), "printed Table 7 Chiral L1 must fail the Garden algebra");
+        assert!(garden_ok(&cm_l_matrices()), "corrected Chiral L-matrices satisfy the Garden algebra");
+    }
+
+    #[test]
+    fn printed_tensor_r4_is_a_typo_that_is_not_a_permutation() {
+        use crate::signed_perm::SignedPerm;
+        // Table 12 prints Tensor R4 as <3 -2 4 3>: column 3 twice, column 1
+        // missing, not a valid signed permutation. The corrected <3 -2 4 1> is.
+        let printed = SignedPerm::from_parts(vec![2, 1, 3, 2], vec![1, -1, 1, 1]);
+        assert!(printed.is_err(), "printed Table 12 Tensor R4 must be an invalid permutation");
+        let corrected = SignedPerm::from_parts(vec![2, 1, 3, 0], vec![1, -1, 1, 1]);
+        assert!(corrected.is_ok(), "corrected Tensor R4 <3 -2 4 1> is a valid signed permutation");
+    }
 }

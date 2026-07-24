@@ -423,9 +423,27 @@ pub fn brute_pth_roots(a: &SignedPerm, p: u32) -> Vec<SignedPerm> {
         .collect()
 }
 
-/// One-line status report.
+/// Status report. Genuinely verifies (not just asserts) that the structural
+/// solver equals brute force on a few concrete cases before reporting PASS; the
+/// full d<=4, p<=6 set-equality proof lives in the tests below.
 pub fn report() -> String {
-    "roots: structural == brute for all d<=4, p<=6; scales to d=12 without enumerating 3^144"
+    use std::collections::HashSet;
+    let cases: [(SignedPerm, u32); 3] = [
+        (SignedPerm::identity(4), 4),
+        (SignedPerm::identity(3), 2),
+        (SignedPerm::from_parts(vec![1, 2, 0], vec![1, -1, 1]).unwrap(), 3),
+    ];
+    for (a, p) in &cases {
+        let structural: HashSet<SignedPerm> = pth_roots(a, *p).into_iter().collect();
+        let brute: HashSet<SignedPerm> = brute_pth_roots(a, *p).into_iter().collect();
+        if structural != brute {
+            return format!("roots: FAIL structural != brute (d={}, p={})", a.dim(), p);
+        }
+        if !structural.iter().all(|g| super::pow(g, *p) == *a) {
+            return "roots: FAIL a returned root does not power back to A".to_string();
+        }
+    }
+    "roots: PASS structural roots == brute force on checked cases; full d<=4, p<=6 proof in tests"
         .to_string()
 }
 

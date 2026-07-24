@@ -269,6 +269,9 @@ mod tests {
             let next = super::super::matmul(&w[(n + 1) % 4], &w[n].inverse());
             assert!(next.is_identity());
         }
-        assert!(neg_i().is_neg_identity());
+        // Each W_n is exactly -I4 (Table 13 Chiral row); the real claim, not a tautology.
+        for wn in &w {
+            assert_eq!(*wn, neg_i(), "W_n must equal -I4");
+        }
     }
 }

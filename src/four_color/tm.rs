@@ -135,8 +135,8 @@ pub fn report() -> String {
     }
 
     if ok {
-        "tm: PASS (Garden algebra L+R; Z_n in {+I,-I}; W_n = -I4 both sides; \
-         Tables 11, 12, Table 13 Tensor row reproduced)"
+        "tm: PASS (this report verifies Garden algebra L+R and Z_n in {+I,-I}, W_n = -I4 both \
+         sides; the byte-for-byte Table 11/12 X/Y/Z/W match is asserted in cargo test four_color::tm)"
             .to_string()
     } else {
         "tm: FAIL (see cargo test four_color::tm for the failing assertion)".to_string()
