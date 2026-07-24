@@ -3,8 +3,11 @@
 //!
 //! Goal: reproduce Tables 7 to 13 exactly (the X/Y/Z/W hopper recursion for the
 //! minimal 4D N=1 chiral, vector, and tensor supermultiplets and the complex
-//! linear system), and build an exact signed-permutation p-th-root solver that
-//! replaces the paper's brute-force `Select[Tuples[{-1,0,1}, n^2], ...]` search.
+//! linear system). Two separate solvers live here: a signed-permutation
+//! p-th-root solver (`roots.rs`) for the hopper operators, and the G-matrix
+//! solver (`gmatrix.rs`) for the general {-1,0,1} matrix G with G^2 = A of
+//! Eq 8.2. It is the G-matrix solver, not the p-th-root solver, that replaces
+//! the paper's brute-force `Select[Tuples[{-1,0,1}, n^2], ...]` search.
 //!
 //! Shared conventions (locked by the `cm_l_matrices_satisfy_garden_algebra`
 //! test below, do NOT change without re-running it):

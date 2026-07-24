@@ -556,22 +556,39 @@ mod tests {
                 return;
             }
         };
-        // Artifact present: extract the L and R counts by a tolerant scan and
-        // compare. We look for integer counts near the substrings "L" and "R".
+        // Artifact present: parse it and compare as DATA, not substrings.
+        let v: serde_json::Value = serde_json::from_str(&raw).expect("artifact is valid JSON");
         let a_l = a_matrix(&super::super::cls::cls_l_matrices());
         let a_r = a_matrix(&super::super::cls::cls_r_matrices());
         let my_l = g_matrices_alt(&a_l).len();
         let my_r = g_matrices_alt(&a_r).len();
-        // The artifact must at least contain our two counts as substrings if it
-        // records them; assert the numbers appear.
-        assert!(
-            raw.contains(&my_l.to_string()),
-            "artifact present but does not contain our independent A_(L) count {my_l}"
-        );
-        assert!(
-            raw.contains(&my_r.to_string()),
-            "artifact present but does not contain our independent A_(R) count {my_r}"
-        );
-        println!("artifact cross-check OK: A_(L)={my_l}, A_(R)={my_r}");
+
+        // 1. Counts compared as integers (a file containing only "1728" fails here).
+        let art_l = v["block_diagonal_count_L"].as_u64().expect("block_diagonal_count_L") as usize;
+        let art_r = v["block_diagonal_count_R"].as_u64().expect("block_diagonal_count_R") as usize;
+        assert_eq!(art_l, my_l, "artifact A_(L) count {art_l} != independent {my_l}");
+        assert_eq!(art_r, my_r, "artifact A_(R) count {art_r} != independent {my_r}");
+
+        // 2. The artifact's A matrices equal our independently computed A.
+        let parse_mat = |val: &serde_json::Value| -> super::super::IntMat {
+            val.as_array()
+                .unwrap()
+                .iter()
+                .map(|row| row.as_array().unwrap().iter().map(|x| x.as_i64().unwrap() as i32).collect())
+                .collect()
+        };
+        assert_eq!(parse_mat(&v["A_L"]), a_l, "artifact A_L matrix != independent A_L");
+        assert_eq!(parse_mat(&v["A_R"]), a_r, "artifact A_R matrix != independent A_R");
+
+        // 3. Every sample G in the artifact actually squares to A (verify the data itself).
+        let mut checked = 0usize;
+        for (samples, a) in [(&v["g_sample_L"], &a_l), (&v["g_sample_R"], &a_r)] {
+            for g in samples.as_array().unwrap() {
+                let gm = parse_mat(g);
+                assert_eq!(super::super::imm(&gm, &gm), *a, "an artifact sample G does not square to A");
+                checked += 1;
+            }
+        }
+        println!("artifact cross-check OK: counts {my_l}/{my_r}, A matrices match, {checked} samples square to A");
     }
 }

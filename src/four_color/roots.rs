@@ -1,12 +1,15 @@
 #![allow(dead_code)]
-//! Exact signed-permutation p-th-root solver.
+//! Exact signed-permutation p-th-root solver, for the HOPPER operators.
 //!
-//! Gates and Lee (arXiv:2408.09342, Appendix A) find "G-matrices" by the brute
-//! force `Select[Tuples[{-1,0,1},{n,n}], MatrixPower[#,p]==A &]`, which scans
-//! 3^(n^2) matrices and is hopeless at n=12 (3^144). The G-matrices that matter
-//! are SIGNED PERMUTATIONS (elements of the hyperoctahedral group B_d), so their
-//! p-th roots can be found structurally from the signed-cycle decomposition in
-//! polynomial time.
+//! The four-color hopper operators X, Y, Z, W (Tables 7-13) are signed
+//! permutations (elements of the hyperoctahedral group B_d), so their p-th
+//! roots can be found structurally from the signed-cycle decomposition in
+//! polynomial time. This is a DIFFERENT object from Gates and Lee's G-matrix
+//! (arXiv:2408.09342, Eq 8.2/8.3): that G-matrix is a general {-1,0,1} matrix
+//! with several nonzeros per row, NOT a signed permutation, and it is solved
+//! separately in `gmatrix.rs`. This module does not produce the G-matrix; the
+//! paper's brute-force `Select[Tuples[{-1,0,1},{n,n}], ...]` search is what
+//! `gmatrix.rs` replaces, not this solver.
 //!
 //! Convention. Every product here goes through `super::matmul` / `super::pow`,
 //! so "p-th root of A" means a signed permutation G with matrix(G)^p = matrix(A),
