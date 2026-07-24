@@ -3,6 +3,7 @@ mod canonical;
 mod chromochar;
 mod chromotopology;
 mod code;
+mod four_color;
 mod dashing;
 mod decompose;
 mod enhance;
