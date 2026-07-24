@@ -3,8 +3,11 @@
 //!
 //! The four-color hopper operators X, Y, Z, W (Tables 7-13) are signed
 //! permutations (elements of the hyperoctahedral group B_d), so their p-th
-//! roots can be found structurally from the signed-cycle decomposition in
-//! polynomial time. This is a DIFFERENT object from Gates and Lee's G-matrix
+//! roots can be found structurally from the signed-cycle decomposition,
+//! working on cycle structure instead of scanning the 3^(d^2) matrix grid.
+//! (Finding ALL roots is output-sensitive and can be exponential when the
+//! root set is large; this is not polynomial in general.) This is a DIFFERENT
+//! object from Gates and Lee's G-matrix
 //! (arXiv:2408.09342, Eq 8.2/8.3): that G-matrix is a general {-1,0,1} matrix
 //! with several nonzeros per row, NOT a signed permutation, and it is solved
 //! separately in `gmatrix.rs`. This module does not produce the G-matrix; the
@@ -35,7 +38,10 @@
 //!      A.sign[o_k] = prod_{t=0}^{p-1} g_{k+t mod M}, a small linear system over
 //!      GF(2). We enumerate the 2^M sign vectors of that ONE cycle and keep those
 //!      reproducing A's signs on it, then take the Cartesian product across cycles.
-//!      M is bounded by d, so this is polynomial in d, never 3^(d^2).
+//!      M is bounded by d, so each cycle's sign search is at most 2^M, far smaller
+//!      than the 3^(d^2) whole-matrix grid. The total is output-sensitive (the root
+//!      set can be exponential), so this is not polynomial in general; it never
+//!      touches the 3^(d^2) grid.
 
 use crate::signed_perm::SignedPerm;
 use std::collections::BTreeSet;
@@ -540,6 +546,9 @@ mod tests {
         let sign: Vec<i8> = vec![1, 1, -1, 1, -1, 1, 1, -1, 1, 1, -1, 1];
         let a = SignedPerm::from_parts(perm, sign).unwrap();
 
+        // Non-vacuity guard: p=1 always returns exactly {a}, so the solver is
+        // actually producing a concrete root here (a zero-returning bug fails).
+        assert_eq!(pth_roots(&a, 1), vec![a.clone()], "p=1 must return exactly {{a}} at d=12");
         for p in [2u32, 3, 4, 6] {
             let roots = pth_roots(&a, p);
             for g in &roots {

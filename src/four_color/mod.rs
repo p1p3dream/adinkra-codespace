@@ -135,7 +135,16 @@ pub fn cm_l_matrices() -> Vec<SignedPerm> {
 
 /// Run every submodule's report (called by the CLI or a smoke test).
 pub fn verify_all() {
-    for line in [cm::report(), vm::report(), tm::report(), roots::report(), cls::report()] {
+    for line in [
+        cm::report(),
+        vm::report(),
+        tm::report(),
+        roots::report(),
+        cls::report(),
+        gmatrix::report(),
+        gmatrix_oracle::report(),
+        gmatrix_verify::report(),
+    ] {
         println!("{line}");
     }
 }

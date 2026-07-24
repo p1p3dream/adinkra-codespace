@@ -22,9 +22,12 @@
 //!   2. Quadratic.  The defining equation itself, (G^2)[i][j] = A[i][j],
 //!      bracketed the same way over the unassigned entries.
 //!
-//! The commutation prune collapses the search by orders of magnitude and makes
-//! the 12x12 CLS case tractable. Completeness at n=4 is proven by an inline test
-//! that compares the search output against a full 3^16 brute force.
+//! The commutation prune collapses the search by orders of magnitude. It makes
+//! the block-diagonal CLS enumeration tractable (via the 4x4 blocks); it does
+//! NOT make the full 12x12 search tractable, the full count includes cross-block
+//! solutions and is combinatorially large and not enumerated (see the CLS
+//! handling below). Completeness at n=4 is proven by an inline test that compares
+//! the search output against a full 3^16 brute force.
 
 use super::{imm, IntMat};
 use std::io::Write;

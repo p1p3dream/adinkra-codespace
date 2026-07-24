@@ -38,9 +38,9 @@
 //!      not tame it because the quadratic G^2 = A constraints do not prune until
 //!      the matrix is nearly complete. This module therefore does NOT claim to
 //!      have exhausted the cross-block space at n = 12; it reports the count of
-//!      block-diagonal roots (12^3 = 1728 per CLS side), which is the physically
-//!      relevant family and the natural independent cross-check on a primary
-//!      solver.
+//!      block-diagonal roots (12^3 = 1728 per CLS side), the complete
+//!      block-diagonal family and a natural independent cross-check on a primary
+//!      solver. (Cross-block solutions also exist; gmatrix.rs constructs one.)
 //!
 //!   2. If A is not block-diagonal (the dense minimal n=4 A), fall through to a
 //!      complete search that assigns G COLUMN BY COLUMN with EXACT reachability
@@ -212,7 +212,7 @@ fn col_dfs(j: usize, n: usize, a: &IntMat, g: &mut Vec<Vec<i32>>, out: &mut Vec<
 /// is a single block, run the complete column-DFS directly.
 ///
 /// The block route returns exactly the block-diagonal roots (all of them, and
-/// only block-diagonal ones). This is the physically relevant family and the
+/// only block-diagonal ones). This is the complete block-diagonal family and the
 /// independent cross-check on a primary solver; see the module docs for why the
 /// cross-block space is not exhausted at n = 12.
 pub fn g_matrices_alt(a: &IntMat) -> Vec<IntMat> {
@@ -507,7 +507,9 @@ mod tests {
                 "every CLS {name} G must square to A"
             );
 
-            // Independent direct recompute: per-block root counts, then product.
+            // Consistency of the Cartesian assembly: the total must equal the
+            // product of the per-block counts. This uses the same per-block solver,
+            // so it checks the assembly, not an independent root count.
             let blocks = block_split(a);
             let per_block_counts: Vec<usize> = blocks
                 .iter()

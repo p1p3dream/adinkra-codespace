@@ -23,8 +23,10 @@
 //!
 //! This module is the GROUND-TRUTH ORACLE. It does the honest 3^(n^2) search
 //! (fast enough at n = 4: 3^16 = 43,046,721 candidates, with row-by-row early
-//! abort) so the fast structural solver in `super::roots` can be checked against
-//! it. It does NOT assume the G-matrix is a signed permutation; the search runs
+//! abort) so the fast constrained G-matrix solver in `super::gmatrix` (and the
+//! independent `super::gmatrix_verify`) can be checked against it. It is NOT a
+//! check on the hopper p-th-root solver in `super::roots`, which solves a
+//! different problem. It does NOT assume the G-matrix is a signed permutation; the search runs
 //! over all {-1,0,1} matrices, and (as Eq 8.3 shows and the tests confirm) the
 //! solutions are in fact NOT signed permutations.
 
@@ -334,7 +336,10 @@ mod tests {
         assert_eq!(g1, g2, "brute force must be deterministic");
     }
 
-    /// Sanity: the partial-abort prune does not drop valid roots. Every returned
+    /// Soundness and non-vacuity only: every returned square root of I4 actually
+    /// squares to I4, and the set is non-empty. This does NOT by itself prove the
+    /// early-abort prune drops no roots; that completeness is covered by the n=4
+    /// equals-brute cross-checks in gmatrix and gmatrix_verify. Every returned
     /// square root of I4 actually squares to I4, and the set is non-empty.
     #[test]
     fn identity_root_set_is_consistent() {
