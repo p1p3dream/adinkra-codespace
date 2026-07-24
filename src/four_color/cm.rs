@@ -18,15 +18,18 @@
 //! W_n = -I4. The same recursion applied to the R-matrices gives the primed
 //! quantities of Table 8.
 //!
-//! OCR resolution (documented per the task rules): the OCR of Table 7's [Ln]
-//! row reads <1 4 -2 -3> for n=1 (and <2 3 -1 -4>, <3 -2 -4 1>, <4 1 3 2> for
-//! n=2,3,4). The Garden-valid, convention-locked chiral L-set in
-//! `super::cm_l_matrices()` has L_1 = <1 -4 2 -3> instead. The n=1 OCR entry
-//! carries a spurious sign/transposition of the interior pair. The arbiter for a
-//! correct transcription (task rule) is that BOTH the Garden algebra and the
-//! recursion (Z_n = +/-I, W_n = -I) hold. They hold for `cm_l_matrices()` and
-//! reproduce the [Xn],[Yn],[Zn],[Wn] rows of Table 7 exactly, so we use that set.
-//! The other three [Ln] entries match the OCR as-is.
+//! Table 7 [Ln] n=1 typo in arXiv:2408.09342. The published paper (verified
+//! against the arXiv LaTeX e-print, file AdnkWolfram.tex) prints L_1 as
+//! \vev{14\bar2\bar3} = <1 4 -2 -3>. That value is a typo in the paper itself,
+//! not an OCR artifact: it appears verbatim in the LaTeX source. The printed
+//! <1 4 -2 -3> does NOT satisfy the Garden algebra and does NOT reproduce Table
+//! 7's own [Xn],[Yn],[Zn],[Wn] rows. The internally consistent value is
+//! \vev{1\bar42\bar3} = <1 -4 2 -3>, which is what the Garden-valid,
+//! convention-locked chiral L-set in `super::cm_l_matrices()` uses. That value
+//! satisfies the Garden algebra AND makes the recursion (Z_n = +/-I, W_n = -I)
+//! hold, reproducing the [Xn],[Yn],[Zn],[Wn] rows of Table 7 exactly. This was
+//! confirmed by convention-free 4x4 matrix arithmetic. The other three [Ln]
+//! entries (n=2,3,4) match the paper as printed.
 
 use crate::signed_perm::SignedPerm;
 
@@ -123,7 +126,7 @@ pub fn report() -> String {
 }
 
 // ---------------------------------------------------------------------------
-// Transcribed paper entries (signed-address form). See module OCR note.
+// Transcribed paper entries (signed-address form). See module typo note.
 // ---------------------------------------------------------------------------
 
 /// Helper: build the signed-permutation list from a list of signed addresses.
@@ -218,16 +221,16 @@ mod tests {
         assert_eq!(w_matrices(), addr_set(&TABLE7_W), "Table 7 [Wn]");
     }
 
-    // The three unambiguous [Ln] entries (n=2,3,4) match the OCR as-is; n=1 is
-    // resolved to the Garden-valid <1 -4 2 -3> (see module OCR note).
+    // The three [Ln] entries n=2,3,4 match the paper as printed; n=1 uses the
+    // Garden-valid <1 -4 2 -3> in place of the paper's typo (see module typo note).
     #[test]
     fn table7_l_row_matches_except_documented_n1() {
         let l = l_matrices();
         assert_eq!(l[1], super::super::sp(&[2, 3, -1, -4]));
         assert_eq!(l[2], super::super::sp(&[3, -2, -4, 1]));
         assert_eq!(l[3], super::super::sp(&[4, 1, 3, 2]));
-        // Documented resolution: recursion + Garden require this over the OCR's
-        // <1 4 -2 -3> for n=1.
+        // Recursion + Garden require this over the paper's typo <1 4 -2 -3> for
+        // n=1 (Table 7; see module typo note).
         assert_eq!(l[0], super::super::sp(&[1, -4, 2, -3]));
     }
 

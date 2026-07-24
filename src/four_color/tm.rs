@@ -42,16 +42,21 @@ pub fn tm_l_matrices() -> Vec<SignedPerm> {
 /// Tensor R-matrices, Table 12 (R_n row):
 /// <1 -4 -2 -3>, <4 1 -3 2>, <2 3 1 -4>, and the fourth entry.
 ///
-/// OCR note: the paper's fourth R entry is rendered as `<3 -2 4 3>`, which is
-/// not a valid signed permutation (column 4 appears twice, column 1 is absent).
-/// The Garden algebra plus the requirement R_I = L_I^T is the arbiter. Since the
+/// Table 12 R4 typo in arXiv:2408.09342. The published paper (verified against
+/// the arXiv LaTeX e-print, file AdnkWolfram.tex) prints the fourth R entry as
+/// \vev{3\bar243} = `<3 -2 4 3>`. That value is a typo in the paper itself, not
+/// an OCR artifact: it appears verbatim in the LaTeX source, and it is not even a
+/// valid signed permutation (column 3 appears twice, column 1 is absent). The
+/// Garden algebra plus the requirement R_I = L_I^T is the arbiter. Since the
 /// paper builds R_I as the transpose of L_I (see mod.rs convention note), the
 /// correct fourth R-matrix is L_4^T. Transposing L_4 = <4 -2 1 3> gives
-/// <3 -2 4 1>: L_4 has row 1 -> col 4 (+), row 2 -> col 2 (-), row 3 -> col 1
-/// (+), row 4 -> col 3 (+); the transpose has row 1 -> col 3 (+), row 2 -> col 2
-/// (-), row 3 -> col 4 (+), row 4 -> col 1 (+), i.e. <3 -2 4 1>. This matches the
-/// paper's `<3 -2 4 _>` up to the corrupted final slot, so the OCR "3" in the
-/// last position should read "1". We assert garden_ok on the R set to confirm.
+/// \vev{3\bar241} = <3 -2 4 1>: L_4 has row 1 -> col 4 (+), row 2 -> col 2 (-),
+/// row 3 -> col 1 (+), row 4 -> col 3 (+); the transpose has row 1 -> col 3 (+),
+/// row 2 -> col 2 (-), row 3 -> col 4 (+), row 4 -> col 1 (+), i.e. <3 -2 4 1>.
+/// This matches the paper's `<3 -2 4 _>` up to the mistyped final slot, so the
+/// printed "3" in the last position should read "1". The corrected value <3 -2 4
+/// 1> satisfies the Garden algebra; the printed value does not. We assert
+/// garden_ok on the R set to confirm.
 pub fn tm_r_matrices() -> Vec<SignedPerm> {
     vec![
         super::sp(&[1, -4, -2, -3]),
@@ -215,7 +220,8 @@ mod tests {
 
     #[test]
     fn tm_r_matrices_satisfy_garden_algebra() {
-        // Confirms the OCR-corrupted fourth R entry is <3 -2 4 1> (= L_4^T).
+        // Confirms the corrected fourth R entry is <3 -2 4 1> (= L_4^T); the
+        // paper's Table 12 typo prints an invalid <3 -2 4 3> (see docstring).
         assert!(
             super::super::garden_ok(&tm_r_matrices()),
             "TM R-matrices must satisfy the Garden algebra"
@@ -224,7 +230,7 @@ mod tests {
 
     #[test]
     fn tm_r_is_transpose_of_l() {
-        // R_I = L_I^T is the module convention; the OCR fix relies on it.
+        // R_I = L_I^T is the module convention; the R4 typo correction relies on it.
         let l = tm_l_matrices();
         let r = tm_r_matrices();
         for (li, ri) in l.iter().zip(r.iter()) {
