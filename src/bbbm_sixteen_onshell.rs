@@ -177,11 +177,7 @@ impl Clifford {
                 for row in 0..SPINORS {
                     for col in 0..SPINORS {
                         let metric = if mu == nu {
-                            if mu == 0 {
-                                -1
-                            } else {
-                                1
-                            }
+                            if mu == 0 { -1 } else { 1 }
                         } else {
                             0
                         };

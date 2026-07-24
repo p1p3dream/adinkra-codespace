@@ -141,7 +141,11 @@ pub struct DenseMat {
 
 impl DenseMat {
     pub fn zeros(rows: usize, cols: usize) -> Self {
-        DenseMat { rows, cols, data: vec![0.0; rows * cols] }
+        DenseMat {
+            rows,
+            cols,
+            data: vec![0.0; rows * cols],
+        }
     }
 
     /// The d×d identity.
@@ -698,7 +702,12 @@ pub fn decompose_rep(rep: &AdinkraRep) -> Option<Decomposition> {
             d,
             dmin: dm,
             commutant_dim,
-            summands: vec![IrrepSummand { n, dmin: dm, basis, l_restricted }],
+            summands: vec![IrrepSummand {
+                n,
+                dmin: dm,
+                basis,
+                l_restricted,
+            }],
         });
     }
 
@@ -764,11 +773,22 @@ pub fn decompose_rep(rep: &AdinkraRep) -> Option<Decomposition> {
         .map(|basis| {
             assert_eq!(basis.cols, dm);
             let l_restricted = rep.l_matrices.iter().map(|l| restrict(l, &basis)).collect();
-            IrrepSummand { n, dmin: dm, basis, l_restricted }
+            IrrepSummand {
+                n,
+                dmin: dm,
+                basis,
+                l_restricted,
+            }
         })
         .collect();
 
-    Some(Decomposition { n, d, dmin: dm, commutant_dim, summands })
+    Some(Decomposition {
+        n,
+        d,
+        dmin: dm,
+        commutant_dim,
+        summands,
+    })
 }
 
 // ===========================================================================
@@ -891,7 +911,7 @@ pub fn summand_residual(summand: &IrrepSummand) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::holoraumy::{gadget, HoloraumyData};
+    use crate::holoraumy::{HoloraumyData, gadget};
 
     // -- N=4 fixtures (identical to holoraumy.rs / lr_matrix.rs) ---------------
 
@@ -902,7 +922,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, -1, -1, 1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, 1, -1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     fn vs_n4() -> AdinkraRep {
@@ -912,7 +936,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, 1, -1, -1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, -1, 1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     /// Block-diagonal direct sum of two N=4 reps into an 8-dim rep.
@@ -1012,7 +1040,10 @@ mod tests {
             let decomp = decompose_rep(&rep).unwrap();
             assert_eq!(decomp.summands.len(), 1, "N=4 rep is already irreducible");
             let dh = DenseHoloraumy::from_summand(&decomp.summands[0]);
-            let signed = gadget(&HoloraumyData::from_rep(&rep), &HoloraumyData::from_rep(&rep));
+            let signed = gadget(
+                &HoloraumyData::from_rep(&rep),
+                &HoloraumyData::from_rep(&rep),
+            );
             assert!(
                 (dense_gadget(&dh, &dh) - signed).abs() < 1e-9,
                 "dense self-gadget {} != signed {}",
@@ -1035,11 +1066,17 @@ mod tests {
     #[test]
     fn decompose_cs_plus_cs() {
         let rep = block_diag_n4(&cs_n4(), &cs_n4());
-        assert!(rep.verify_garden_algebra(), "CS⊕CS fixture must be a valid rep");
+        assert!(
+            rep.verify_garden_algebra(),
+            "CS⊕CS fixture must be a valid rep"
+        );
 
         // Pre-decomposition: full self-gadget = d/dmin = 8/4 = 2 (signed path).
         let full = HoloraumyData::from_rep(&rep);
-        assert!((gadget(&full, &full) - 2.0).abs() < 1e-9, "full self-gadget should be 2");
+        assert!(
+            (gadget(&full, &full) - 2.0).abs() < 1e-9,
+            "full self-gadget should be 2"
+        );
 
         let decomp = decompose_rep(&rep).unwrap();
         assert_eq!(decomp.summands.len(), 2, "r = d/dmin = 8/4 = 2");
@@ -1047,14 +1084,21 @@ mod tests {
         // Each summand: valid algebra + self-gadget 1.0 (basis-independent).
         let mut self_sum = 0.0;
         for s in &decomp.summands {
-            assert!(summand_residual(s) < 1e-7, "summand algebra residual too large");
+            assert!(
+                summand_residual(s) < 1e-7,
+                "summand algebra residual too large"
+            );
             let dh = DenseHoloraumy::from_summand(s);
             let g = dense_gadget(&dh, &dh);
             assert!((g - 1.0).abs() < 1e-7, "summand self-gadget {} != 1", g);
             self_sum += g;
         }
         // Reconstruction: Σ self-gadgets = d/dmin = 2.
-        assert!((self_sum - 2.0).abs() < 1e-7, "self-gadget sum {} != 2", self_sum);
+        assert!(
+            (self_sum - 2.0).abs() < 1e-7,
+            "self-gadget sum {} != 2",
+            self_sum
+        );
     }
 
     // -- CS ⊕ VS (d=8): inequivalent summands separate -------------------------
@@ -1086,7 +1130,9 @@ mod tests {
         // basis-independent fact visible in the commutant dimension: CS⊕VS has
         // commutant H⊕H (distinct blocks) which is strictly smaller than the
         // M_2(H) of CS⊕CS (same irrep twice). See commutant_dim_isotypic_vs_distinct.
-        let cc = decompose_rep(&block_diag_n4(&cs_n4(), &cs_n4())).unwrap().commutant_dim;
+        let cc = decompose_rep(&block_diag_n4(&cs_n4(), &cs_n4()))
+            .unwrap()
+            .commutant_dim;
         assert!(
             decomp.commutant_dim < cc,
             "CS⊕VS commutant {} should be smaller than CS⊕CS {}",
@@ -1102,12 +1148,19 @@ mod tests {
         // CS⊕CS: 2 copies of the SAME irrep -> larger commutant (M_2(D)).
         // CS⊕VS: 2 DISTINCT irreps -> block-diagonal commutant (D ⊕ D).
         // Convention-independent: dim(CS⊕CS) == 2 * dim(CS⊕VS).
-        let cc = decompose_rep(&block_diag_n4(&cs_n4(), &cs_n4())).unwrap().commutant_dim;
-        let cv = decompose_rep(&block_diag_n4(&cs_n4(), &vs_n4())).unwrap().commutant_dim;
+        let cc = decompose_rep(&block_diag_n4(&cs_n4(), &cs_n4()))
+            .unwrap()
+            .commutant_dim;
+        let cv = decompose_rep(&block_diag_n4(&cs_n4(), &vs_n4()))
+            .unwrap()
+            .commutant_dim;
         assert_eq!(cc, 2 * cv, "dim(CS⊕CS)={cc} should be 2*dim(CS⊕VS)={cv}");
         // Single irrep baseline (quaternionic at N=4 => End = H, real dim 4).
         let single = decompose_rep(&cs_n4()).unwrap().commutant_dim;
-        assert_eq!(single, 4, "single N=4 irrep commutant should be 4 (quaternionic H)");
+        assert_eq!(
+            single, 4,
+            "single N=4 irrep commutant should be 4 (quaternionic H)"
+        );
         assert_eq!(cv, 8, "CS⊕VS commutant should be H⊕H = 8");
         assert_eq!(cc, 16, "CS⊕CS commutant should be M_2(H) = 16");
     }
@@ -1120,16 +1173,26 @@ mod tests {
     #[test]
     fn central_charge_count_n4_quaternionic() {
         let anti = antisymmetric_commutant_dim(&cs_n4());
-        assert_eq!(anti, 3, "N=4 CS is quaternionic: expect 3 central charges (3 imaginary units), got {anti}");
-        assert_eq!(antisymmetric_commutant_dim(&vs_n4()), 3, "N=4 VS also quaternionic");
+        assert_eq!(
+            anti, 3,
+            "N=4 CS is quaternionic: expect 3 central charges (3 imaginary units), got {anti}"
+        );
+        assert_eq!(
+            antisymmetric_commutant_dim(&vs_n4()),
+            3,
+            "N=4 VS also quaternionic"
+        );
         // full commutant = 4 (H); symmetric part must be 4 - 3 = 1 (the identity).
         assert_eq!(commutant_dim(&cs_n4()), 4);
         // CS+CS: M_2(H), real dim 16; antisymmetric (skew) part of M_2(H) has dim 6+...
         // just assert it's > 3 (richer than a single H) and < full.
         let cc = block_diag_n4(&cs_n4(), &cs_n4());
         let anti_cc = antisymmetric_commutant_dim(&cc);
-        assert!(anti_cc > 3 && anti_cc < commutant_dim(&cc),
-            "CS+CS antisym commutant {anti_cc} should be between 3 and full {}", commutant_dim(&cc));
+        assert!(
+            anti_cc > 3 && anti_cc < commutant_dim(&cc),
+            "CS+CS antisym commutant {anti_cc} should be between 3 and full {}",
+            commutant_dim(&cc)
+        );
     }
 
     /// The lightweight `commutant_dim` (no orbit materialization) must equal
@@ -1173,8 +1236,15 @@ mod tests {
         // guard to fire before any dense d×d work, so use identity L-matrices.
         let d = MAX_DECOMPOSE_D + 2;
         let l_matrices: Vec<SignedPerm> = (0..4).map(|_| SignedPerm::identity(d)).collect();
-        let rep = AdinkraRep { n: 4, d, l_matrices };
-        assert!(decompose_rep(&rep).is_none(), "decomposition must be skipped for large d");
+        let rep = AdinkraRep {
+            n: 4,
+            d,
+            l_matrices,
+        };
+        assert!(
+            decompose_rep(&rep).is_none(),
+            "decomposition must be skipped for large d"
+        );
     }
 
     #[test]
@@ -1188,14 +1258,24 @@ mod tests {
         let b = decompose_rep(&rep).unwrap();
         assert_eq!(a.summands.len(), b.summands.len());
         for (sa, sb) in a.summands.iter().zip(b.summands.iter()) {
-            assert_eq!(sa.basis.max_abs_diff(&sb.basis), 0.0, "bases differ across runs");
+            assert_eq!(
+                sa.basis.max_abs_diff(&sb.basis),
+                0.0,
+                "bases differ across runs"
+            );
         }
         // And the full irreducible gadget matrix is identical.
         let ma = dense_gadget_matrix(
-            &a.summands.iter().map(DenseHoloraumy::from_summand).collect::<Vec<_>>(),
+            &a.summands
+                .iter()
+                .map(DenseHoloraumy::from_summand)
+                .collect::<Vec<_>>(),
         );
         let mb = dense_gadget_matrix(
-            &b.summands.iter().map(DenseHoloraumy::from_summand).collect::<Vec<_>>(),
+            &b.summands
+                .iter()
+                .map(DenseHoloraumy::from_summand)
+                .collect::<Vec<_>>(),
         );
         assert_eq!(ma, mb, "gadget matrix not reproducible");
     }

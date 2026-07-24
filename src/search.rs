@@ -1,6 +1,6 @@
 use crate::baselines;
 use crate::canonical::{compute_invariants, is_decomposable};
-use crate::code::{enumerate_codes, DoublyEvenCode};
+use crate::code::{DoublyEvenCode, enumerate_codes};
 
 use std::collections::{HashMap, HashSet};
 use std::time::Instant;
@@ -18,18 +18,21 @@ use std::time::Instant;
 const MILLER_N4: [(usize, usize); 1] = [(1, 1)];
 
 /// N=8: includes zero-column embeddings from N=4.
-const MILLER_N8: [(usize, usize); 4] = [
-    (1, 2), (2, 2), (3, 2), (4, 1),
-];
+const MILLER_N8: [(usize, usize); 4] = [(1, 2), (2, 2), (3, 2), (4, 1)];
 
 /// N=12: includes zero-column embeddings from N=4 and N=8.
-const MILLER_N12: [(usize, usize); 5] = [
-    (1, 3), (2, 5), (3, 7), (4, 7), (5, 2),
-];
+const MILLER_N12: [(usize, usize); 5] = [(1, 3), (2, 5), (3, 7), (4, 7), (5, 2)];
 
 /// N=16: full breakdown from Table 4.
 const MILLER_N16: [(usize, usize); 8] = [
-    (1, 4), (2, 10), (3, 23), (4, 38), (5, 36), (6, 23), (7, 9), (8, 2),
+    (1, 4),
+    (2, 10),
+    (3, 23),
+    (4, 38),
+    (5, 36),
+    (6, 23),
+    (7, 9),
+    (8, 2),
 ];
 
 pub struct SearchConfig {
@@ -98,7 +101,9 @@ impl SearchState {
     /// code as a subcode will be found.
     fn extend_from_k(&mut self, target_k: usize) -> usize {
         let n = self.target_n;
-        let sources: Vec<DoublyEvenCode> = self.found.iter()
+        let sources: Vec<DoublyEvenCode> = self
+            .found
+            .iter()
             .filter(|c| c.k() == target_k - 1)
             .cloned()
             .collect();
@@ -123,7 +128,9 @@ impl SearchState {
                 let mut reduced = candidate;
                 let basis = crate::code::rref(gens);
                 for &row in &basis {
-                    if row == 0 { continue; }
+                    if row == 0 {
+                        continue;
+                    }
                     let lead = 31 - row.leading_zeros();
                     if reduced & (1 << lead) != 0 {
                         reduced ^= row;
@@ -306,7 +313,10 @@ pub fn search(config: &SearchConfig) {
             phase1_start.elapsed()
         );
     } else {
-        eprintln!("Phase 1: Skipping chain extension for N={} (too expensive)", config.target_n);
+        eprintln!(
+            "Phase 1: Skipping chain extension for N={} (too expensive)",
+            config.target_n
+        );
     }
 
     // Phase 2: Random valid code generation
@@ -315,11 +325,8 @@ pub fn search(config: &SearchConfig) {
         config.random_batch_size
     );
     let phase2_start = Instant::now();
-    let random_codes = baselines::random_batch(
-        config.target_n,
-        config.random_batch_size,
-        config.seed,
-    );
+    let random_codes =
+        baselines::random_batch(config.target_n, config.random_batch_size, config.seed);
     let mut phase2_new = 0usize;
     for code in random_codes {
         if state.try_add(code) {
@@ -343,11 +350,7 @@ pub fn search(config: &SearchConfig) {
             batch, batch_seed, config.random_batch_size
         );
         let batch_start = Instant::now();
-        let codes = baselines::random_batch(
-            config.target_n,
-            config.random_batch_size,
-            batch_seed,
-        );
+        let codes = baselines::random_batch(config.target_n, config.random_batch_size, batch_seed);
         let mut batch_new = 0usize;
         for code in codes {
             if state.try_add(code) {
@@ -366,19 +369,13 @@ pub fn search(config: &SearchConfig) {
     // Phase 4: More random batches to saturate coverage
     let num_extra_batches2 = 8;
     for batch in 0..num_extra_batches2 {
-        let batch_seed = config
-            .seed
-            .wrapping_add(20000 + 1000 * (batch as u64 + 1));
+        let batch_seed = config.seed.wrapping_add(20000 + 1000 * (batch as u64 + 1));
         eprintln!(
             "Phase 4.{}: Random batch (seed={}, {} attempts)...",
             batch, batch_seed, config.random_batch_size
         );
         let batch_start = Instant::now();
-        let codes = baselines::random_batch(
-            config.target_n,
-            config.random_batch_size,
-            batch_seed,
-        );
+        let codes = baselines::random_batch(config.target_n, config.random_batch_size, batch_seed);
         let mut batch_new = 0usize;
         for code in codes {
             if state.try_add(code) {
@@ -439,7 +436,11 @@ pub fn search(config: &SearchConfig) {
         .iter()
         .filter(|c| c.k() > 1 && !is_decomposable(c))
         .collect();
-    interesting.sort_by(|a, b| b.k().cmp(&a.k()).then(b.min_distance().cmp(&a.min_distance())));
+    interesting.sort_by(|a, b| {
+        b.k()
+            .cmp(&a.k())
+            .then(b.min_distance().cmp(&a.min_distance()))
+    });
     interesting.truncate(20);
 
     if !interesting.is_empty() {
@@ -652,7 +653,10 @@ pub fn saturate(n: usize, batch_size: usize, max_batches: usize) {
     println!();
     println!("=== SATURATION RESULTS: N={} ===", n);
     println!("Total equivalence classes found: {}", state.count());
-    println!("Total attempts: {} ({} batches x {})", total_attempts, total_batches, batch_size);
+    println!(
+        "Total attempts: {} ({} batches x {})",
+        total_attempts, total_batches, batch_size
+    );
     println!("Last new class found in batch: {}", last_new_batch);
     println!("Total time: {:?}", elapsed);
     println!();
@@ -712,18 +716,31 @@ fn save_codes_to_json(codes: &[DoublyEvenCode], n: usize, output_path: &str) {
         let canonical_key = crate::nauty_canonical::exact_canonical_key(code);
 
         // Generator matrix as binary strings
-        let gen_strings: Vec<String> = code.generators.iter().map(|&row| {
-            (0..code.n).map(|col| if row & (1 << col) != 0 { '1' } else { '0' }).collect()
-        }).collect();
+        let gen_strings: Vec<String> = code
+            .generators
+            .iter()
+            .map(|&row| {
+                (0..code.n)
+                    .map(|col| if row & (1 << col) != 0 { '1' } else { '0' })
+                    .collect()
+            })
+            .collect();
 
         // Generator matrix as hex values
-        let gen_hex: Vec<String> = code.generators.iter().map(|&row| format!("0x{:x}", row)).collect();
+        let gen_hex: Vec<String> = code
+            .generators
+            .iter()
+            .map(|&row| format!("0x{:x}", row))
+            .collect();
 
         // All codewords as hex
         let cw_hex: Vec<String> = codewords.iter().map(|&cw| format!("0x{:x}", cw)).collect();
 
         // Weight distribution: only nonzero entries
-        let weight_dist: Vec<(usize, usize)> = inv.weight_enumerator.iter().enumerate()
+        let weight_dist: Vec<(usize, usize)> = inv
+            .weight_enumerator
+            .iter()
+            .enumerate()
             .filter(|(_, c)| **c > 0)
             .map(|(w, c)| (w, *c))
             .collect();
@@ -758,16 +775,36 @@ fn save_codes_to_json(codes: &[DoublyEvenCode], n: usize, output_path: &str) {
         writeln!(file, "      \"k\": {},", code.k()).unwrap();
         writeln!(file, "      \"num_codewords\": {},", codewords.len()).unwrap();
         writeln!(file, "      \"min_distance\": {},", inv.min_distance).unwrap();
-        writeln!(file, "      \"is_self_orthogonal\": {},", inv.is_self_orthogonal).unwrap();
+        writeln!(
+            file,
+            "      \"is_self_orthogonal\": {},",
+            inv.is_self_orthogonal
+        )
+        .unwrap();
         writeln!(file, "      \"is_self_dual\": {},", inv.is_self_dual).unwrap();
-        writeln!(file, "      \"is_indecomposable\": {},", inv.is_indecomposable).unwrap();
-        writeln!(file, "      \"automorphism_group_size\": {},", inv.automorphism_group_size).unwrap();
+        writeln!(
+            file,
+            "      \"is_indecomposable\": {},",
+            inv.is_indecomposable
+        )
+        .unwrap();
+        writeln!(
+            file,
+            "      \"automorphism_group_size\": {},",
+            inv.automorphism_group_size
+        )
+        .unwrap();
         writeln!(file, "      \"zero_columns\": {},", zero_columns).unwrap();
         writeln!(file, "      \"generators_binary\": {:?},", gen_strings).unwrap();
         writeln!(file, "      \"generators_hex\": {:?},", gen_hex).unwrap();
         writeln!(file, "      \"generators_raw\": {:?},", code.generators).unwrap();
         writeln!(file, "      \"weight_distribution\": {:?},", weight_dist).unwrap();
-        writeln!(file, "      \"weight_enumerator_full\": {:?},", inv.weight_enumerator).unwrap();
+        writeln!(
+            file,
+            "      \"weight_enumerator_full\": {:?},",
+            inv.weight_enumerator
+        )
+        .unwrap();
         writeln!(file, "      \"column_weight_profile\": {:?},", col_weights).unwrap();
         writeln!(file, "      \"all_codewords_hex\": {:?},", cw_hex).unwrap();
         writeln!(file, "      \"canonical_key\": {:?}", canonical_key).unwrap();
@@ -817,9 +854,7 @@ pub fn validate_miller(n: usize) {
 
     println!("=== Miller/Doran-Faux-Gates Validation: N={} ===", n);
     println!();
-    println!(
-        "Reference: arXiv:0806.0050 Table 4 (permutation equivalence classes"
-    );
+    println!("Reference: arXiv:0806.0050 Table 4 (permutation equivalence classes");
     println!("of doubly-even codes, including zero-column embeddings).");
     println!();
 
@@ -871,15 +906,15 @@ pub fn validate_miller(n: usize) {
         if batch_idx % 20 == 0 || new_this_batch > 0 {
             eprintln!(
                 "  batch {:>4} | +{:<3} new | total {:>4} | dry {:>3}",
-                batch_idx, new_this_batch, state.count(), dry_streak
+                batch_idx,
+                new_this_batch,
+                state.count(),
+                dry_streak
             );
         }
 
         if dry_streak >= dry_limit {
-            eprintln!(
-                "  Saturated after {} consecutive dry batches.",
-                dry_limit
-            );
+            eprintln!("  Saturated after {} consecutive dry batches.", dry_limit);
             break;
         }
     }
@@ -898,18 +933,26 @@ pub fn validate_miller(n: usize) {
         if new > 0 {
             eprintln!(
                 "  k={}: +{} new classes [{:?}] (total: {})",
-                target_k, new, ext_start.elapsed(), state.count()
+                target_k,
+                new,
+                ext_start.elapsed(),
+                state.count()
             );
             total_extended += new;
         }
     }
     eprintln!(
         "Phase 2 complete: {} new classes from extension [{:?}]",
-        total_extended, phase2_start.elapsed()
+        total_extended,
+        phase2_start.elapsed()
     );
 
     let elapsed = total_start.elapsed();
-    println!("Search complete: {} classes found in {:?}", state.count(), elapsed);
+    println!(
+        "Search complete: {} classes found in {:?}",
+        state.count(),
+        elapsed
+    );
     println!();
 
     // Build per-k counts from our results
@@ -943,20 +986,14 @@ pub fn validate_miller(n: usize) {
             all_pass = false;
             "FAIL (high)"
         };
-        println!(
-            "{:>5} | {:>10} | {:>8} | {}",
-            k, expected, found, status
-        );
+        println!("{:>5} | {:>10} | {:>8} | {}", k, expected, found, status);
     }
 
     // Check for unexpected k values in our results not in the reference
     let ref_ks: HashSet<usize> = reference.iter().map(|&(k, _)| k).collect();
     for (&k, &count) in &our_counts {
         if !ref_ks.contains(&k) && count > 0 {
-            println!(
-                "{:>5} | {:>10} | {:>8} | UNEXPECTED",
-                k, "-", count
-            );
+            println!("{:>5} | {:>10} | {:>8} | UNEXPECTED", k, "-", count);
             all_pass = false;
         }
     }
@@ -967,7 +1004,11 @@ pub fn validate_miller(n: usize) {
         "TOTAL",
         expected_total,
         our_total,
-        if our_total == expected_total { "PASS" } else { "FAIL" }
+        if our_total == expected_total {
+            "PASS"
+        } else {
+            "FAIL"
+        }
     );
 
     // Save all discovered codes to JSON

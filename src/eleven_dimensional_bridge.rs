@@ -1869,6 +1869,29 @@ pub struct FirstMomentumTargetCouplingTerm {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumRecouplingTerm {
+    pub momentum_vector_index: usize,
+    pub momentum_vector_weight: Weight,
+    pub intermediate_weight: Weight,
+    pub intermediate_basis_index: usize,
+    pub intermediate_pbw_word_simple_roots: Vec<u8>,
+    pub primitive_coefficient: i64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FirstMomentumRecouplingAudit {
+    pub intermediate_dynkin_label: String,
+    pub tensor_product: &'static str,
+    pub target_dynkin_label: &'static str,
+    pub highest_weight_domain_dimension: usize,
+    pub highest_weight_kernel_dimension: usize,
+    pub primitive_nonzero_coefficients: usize,
+    pub raising_residual_terms: usize,
+    pub terms: Vec<FirstMomentumRecouplingTerm>,
+    pub passed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct FirstMomentumTargetCouplingAudit {
     pub tensor_product: &'static str,
     pub target_dynkin_label: &'static str,
@@ -1900,6 +1923,131 @@ pub struct FirstMomentumTargetCouplingReport {
 struct TargetStateWithWord {
     target: TensorVector,
     pbw_word: Vec<u8>,
+}
+
+fn lower_vector_times_vector_spinor(
+    source: &TensorVector,
+    root: usize,
+    vectors: &[Weight],
+    spinors: &[Weight; 32],
+) -> TensorVector {
+    let mut target = TensorVector::new();
+    for (&index, coefficient) in source {
+        let outer_vector = index / (11 * 32);
+        let inner = index % (11 * 32);
+        if let Some((next, factor)) = lower_vector_weight(vectors[outer_vector], root, vectors) {
+            *target.entry(next * 11 * 32 + inner).or_default() +=
+                coefficient.clone() * Ratio::from_integer(factor);
+        }
+        let inner_state = HashMap::from([(inner, coefficient.clone())]);
+        for (next, value) in lower_target_tensor(&inner_state, root, vectors, spinors) {
+            *target.entry(outer_vector * 11 * 32 + next).or_default() += value;
+        }
+    }
+    target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    target
+}
+
+fn raise_vector_times_vector_spinor(
+    source: &TensorVector,
+    root: usize,
+    vectors: &[Weight],
+    spinors: &[Weight; 32],
+) -> TensorVector {
+    let mut target = TensorVector::new();
+    for (&index, coefficient) in source {
+        let outer_vector = index / (11 * 32);
+        let inner = index % (11 * 32);
+        if let Some((next, factor)) = raise_vector_weight(vectors[outer_vector], root, vectors) {
+            *target.entry(next * 11 * 32 + inner).or_default() +=
+                coefficient.clone() * Ratio::from_integer(factor);
+        }
+        let inner_state = HashMap::from([(inner, coefficient.clone())]);
+        for (next, value) in raise_target_tensor(&inner_state, root, vectors, spinors) {
+            *target.entry(outer_vector * 11 * 32 + next).or_default() += value;
+        }
+    }
+    target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    target
+}
+
+fn vector_times_vector_spinor_weight(
+    source: &TensorVector,
+    vectors: &[Weight],
+    spinors: &[Weight; 32],
+) -> Weight {
+    let index = *source.keys().next().unwrap();
+    let outer_vector = index / (11 * 32);
+    let inner = index % (11 * 32);
+    add(
+        vectors[outer_vector],
+        add(vectors[inner / 32], spinors[inner % 32]),
+    )
+}
+
+fn generate_intermediate_target_states_with_words(
+    coupling: &FirstMomentumTargetCouplingAudit,
+    spinors: &[Weight; 32],
+) -> BTreeMap<Weight, Vec<TargetStateWithWord>> {
+    let vectors = vector_weights();
+    let vector_spinor_states =
+        generate_layer_adapted_vector_spinor_target_states_with_words(spinors);
+    let mut highest_target = TensorVector::new();
+    for term in &coupling.terms {
+        let state = &vector_spinor_states[&term.vector_spinor_weight]
+            [term.vector_spinor_basis_index]
+            .target;
+        for (&inner, coefficient) in state {
+            *highest_target
+                .entry(term.momentum_vector_index * 11 * 32 + inner)
+                .or_default() +=
+                coefficient.clone() * Ratio::from_integer(term.primitive_coefficient);
+        }
+    }
+    highest_target.retain(|_, coefficient| *coefficient != Ratio::from_integer(0));
+    let highest = TargetStateWithWord {
+        target: highest_target,
+        pbw_word: Vec::new(),
+    };
+    let mut all = BTreeMap::from([(coupling.target_highest_weight, vec![highest.clone()])]);
+    let mut current = BTreeMap::from([(coupling.target_highest_weight, vec![highest])]);
+    while !current.is_empty() {
+        let mut next = BTreeMap::<Weight, Vec<TargetStateWithWord>>::new();
+        for states in current.into_values() {
+            for state in states {
+                for root in 0..5 {
+                    let descendant =
+                        lower_vector_times_vector_spinor(&state.target, root, &vectors, spinors);
+                    if descendant.is_empty() {
+                        continue;
+                    }
+                    let weight = vector_times_vector_spinor_weight(&descendant, &vectors, spinors);
+                    let basis = next.entry(weight).or_default();
+                    let target_basis = basis
+                        .iter()
+                        .map(|entry| VectorSpinorIntertwinerState {
+                            target: entry.target.clone(),
+                            source: Vec::new(),
+                        })
+                        .collect::<Vec<_>>();
+                    if target_span_coefficients(&descendant, &target_basis, 11 * 11 * 32).is_none()
+                    {
+                        let mut pbw_word = state.pbw_word.clone();
+                        pbw_word.push(u8::try_from(root + 1).unwrap());
+                        basis.push(TargetStateWithWord {
+                            target: descendant,
+                            pbw_word,
+                        });
+                    }
+                }
+            }
+        }
+        for (weight, states) in &next {
+            all.insert(*weight, states.clone());
+        }
+        current = next;
+    }
+    all
 }
 
 fn generate_layer_adapted_vector_spinor_target_states_with_words(
@@ -2219,6 +2367,125 @@ pub fn verify_first_momentum_target_couplings() -> FirstMomentumTargetCouplingRe
             && every_residual_is_exactly_zero
             && every_mutation_is_detected,
     }
+}
+
+pub fn first_momentum_recoupling_audits() -> Vec<FirstMomentumRecouplingAudit> {
+    let target_report = verify_first_momentum_target_couplings();
+    assert!(target_report.passed);
+    let spinors = spinor_weights();
+    let vectors = vector_weights();
+    let target_highest_weight = [3, 1, 1, 1, 1];
+    target_report
+        .couplings
+        .iter()
+        .map(|coupling| {
+            let states = generate_intermediate_target_states_with_words(coupling, &spinors);
+            let mut domain = Vec::<(usize, Weight, usize)>::new();
+            for (momentum_vector_index, momentum_vector_weight) in
+                vectors.iter().copied().enumerate()
+            {
+                let intermediate_weight = subtract(target_highest_weight, momentum_vector_weight);
+                if let Some(weight_states) = states.get(&intermediate_weight) {
+                    for intermediate_basis_index in 0..weight_states.len() {
+                        domain.push((
+                            momentum_vector_index,
+                            intermediate_weight,
+                            intermediate_basis_index,
+                        ));
+                    }
+                }
+            }
+            let intermediate_ambient_dimension = 11 * 11 * 32;
+            let mut rows = BTreeMap::<usize, Vec<Ratio<i64>>>::new();
+            for (column, (momentum_vector_index, intermediate_weight, intermediate_basis_index)) in
+                domain.iter().copied().enumerate()
+            {
+                let state = &states[&intermediate_weight][intermediate_basis_index].target;
+                for root in 0..5 {
+                    if let Some((raised_vector, factor)) =
+                        raise_vector_weight(vectors[momentum_vector_index], root, &vectors)
+                    {
+                        for (&inner, coefficient) in state {
+                            rows.entry(
+                                root * 11 * intermediate_ambient_dimension
+                                    + raised_vector * intermediate_ambient_dimension
+                                    + inner,
+                            )
+                            .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])
+                                [column] += coefficient.clone() * Ratio::from_integer(factor);
+                        }
+                    }
+                    for (inner, coefficient) in
+                        raise_vector_times_vector_spinor(state, root, &vectors, &spinors)
+                    {
+                        rows.entry(
+                            root * 11 * intermediate_ambient_dimension
+                                + momentum_vector_index * intermediate_ambient_dimension
+                                + inner,
+                        )
+                        .or_insert_with(|| vec![Ratio::from_integer(0); domain.len()])[column] +=
+                            coefficient;
+                    }
+                }
+            }
+            let row_vectors = rows.into_values().collect::<Vec<_>>();
+            let kernel = ratio_nullspace(&row_vectors, domain.len());
+            let primitive = if kernel.len() == 1 {
+                primitive_integer_vector(&kernel[0])
+            } else {
+                Vec::new()
+            };
+            let raising_residual_terms = if primitive.len() == domain.len() {
+                row_vectors
+                    .iter()
+                    .filter(|row| {
+                        row.iter().zip(&primitive).fold(
+                            Ratio::from_integer(0),
+                            |sum, (value, coefficient)| {
+                                sum + value.clone() * Ratio::from_integer(*coefficient)
+                            },
+                        ) != Ratio::from_integer(0)
+                    })
+                    .count()
+            } else {
+                usize::MAX
+            };
+            let terms = domain
+                .iter()
+                .zip(&primitive)
+                .map(
+                    |(
+                        (momentum_vector_index, intermediate_weight, intermediate_basis_index),
+                        coefficient,
+                    )| {
+                        let state = &states[intermediate_weight][*intermediate_basis_index];
+                        FirstMomentumRecouplingTerm {
+                            momentum_vector_index: *momentum_vector_index,
+                            momentum_vector_weight: vectors[*momentum_vector_index],
+                            intermediate_weight: *intermediate_weight,
+                            intermediate_basis_index: *intermediate_basis_index,
+                            intermediate_pbw_word_simple_roots: state.pbw_word.clone(),
+                            primitive_coefficient: *coefficient,
+                        }
+                    },
+                )
+                .collect::<Vec<_>>();
+            FirstMomentumRecouplingAudit {
+                intermediate_dynkin_label: coupling.target_dynkin_label.to_string(),
+                tensor_product: "(10000) tensor intermediate",
+                target_dynkin_label: "10001",
+                highest_weight_domain_dimension: domain.len(),
+                highest_weight_kernel_dimension: kernel.len(),
+                primitive_nonzero_coefficients: primitive
+                    .iter()
+                    .filter(|coefficient| **coefficient != 0)
+                    .count(),
+                raising_residual_terms,
+                terms,
+                passed: kernel.len() == 1 && !primitive.is_empty() && raising_residual_terms == 0,
+            }
+        })
+        .collect()
 }
 
 fn build_exterior_channel_plans(spinors: &[Weight; 32]) -> Vec<ExteriorChannelPlan> {
@@ -4240,9 +4507,11 @@ mod tests {
         let weights = spinor_weights();
         let unique: HashSet<_> = weights.into_iter().collect();
         assert_eq!(unique.len(), 32);
-        assert!(weights
-            .iter()
-            .all(|weight| weight.iter().all(|x| x.abs() == 1)));
+        assert!(
+            weights
+                .iter()
+                .all(|weight| weight.iter().all(|x| x.abs() == 1))
+        );
     }
 
     #[test]
@@ -4399,10 +4668,12 @@ mod tests {
         assert_eq!(spinor.total_rows, 1_943_600);
         assert_eq!(spinor.total_nonzero_entries, 7_412_645);
         assert_eq!(spinor.exact_kernel_vectors.len(), 2);
-        assert!(spinor
-            .exact_kernel_vectors
-            .iter()
-            .all(|kernel| kernel.exact_kernel_verified));
+        assert!(
+            spinor
+                .exact_kernel_vectors
+                .iter()
+                .all(|kernel| kernel.exact_kernel_verified)
+        );
         assert_eq!(spinor.exact_kernel_vectors[0].nonzero_coefficients, 374_246);
         assert_eq!(spinor.exact_kernel_vectors[1].nonzero_coefficients, 6_435);
         assert_eq!(spinor.exact_kernel_vectors[0].squared_norm, 426_254_400);
@@ -4431,10 +4702,12 @@ mod tests {
             level13_two_form_spinor.exact_kernel_vectors[1].nonzero_coefficients,
             145_065
         );
-        assert!(level13_two_form_spinor
-            .exact_kernel_vectors
-            .iter()
-            .all(|kernel| kernel.exact_kernel_verified));
+        assert!(
+            level13_two_form_spinor
+                .exact_kernel_vectors
+                .iter()
+                .all(|kernel| kernel.exact_kernel_verified)
+        );
         assert_eq!(report.spinor_descendant_audits.len(), 2);
         for audit in &report.spinor_descendant_audits {
             assert_eq!(audit.target_states_generated, 32);
@@ -4605,5 +4878,18 @@ mod tests {
                 .collect::<Vec<_>>(),
             [("00001", 35), ("01001", 2), ("10001", 10), ("20001", 1),]
         );
+    }
+
+    #[test]
+    fn four_first_momentum_reciprocal_couplings_are_exact() {
+        let audits = first_momentum_recoupling_audits();
+        assert_eq!(audits.len(), 4);
+        assert!(audits.iter().all(|audit| audit.passed));
+        assert!(
+            audits
+                .iter()
+                .all(|audit| audit.highest_weight_kernel_dimension == 1)
+        );
+        assert!(audits.iter().all(|audit| audit.raising_residual_terms == 0));
     }
 }

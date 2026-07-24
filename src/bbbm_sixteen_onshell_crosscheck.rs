@@ -477,8 +477,10 @@ fn report_excludes_a_sixteen_charge_auxiliary_claim() {
     assert_eq!(boundary.raw_component_fields, 26);
     assert_eq!(boundary.supersymmetries, 16);
     assert!(!boundary.closes_without_gaugino_eom);
-    assert!(boundary
-        .claim_excluded
-        .contains("not a 16-charge extension"));
+    assert!(
+        boundary
+            .claim_excluded
+            .contains("not a 16-charge extension")
+    );
     assert!(boundary.claim_excluded.contains("33-field auxiliary"));
 }

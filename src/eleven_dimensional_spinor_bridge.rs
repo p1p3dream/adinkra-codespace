@@ -386,8 +386,7 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         hook_multiplicity,
         hook_source_kernel_systems,
         conventional_constraint_set: "Eq. (2.6), which permits X_[ab]^c in the 429",
-        scalar_strengthened_constraint:
-            "Eq. (2.7), proposed for a scalar-superfield prepotential and setting the full gamma-two torsion sector to zero",
+        scalar_strengthened_constraint: "Eq. (2.7), proposed for a scalar-superfield prepotential and setting the full gamma-two torsion sector to zero",
         source_motivates_strengthened_constraint_by_scalar_prepotential: true,
         direct_hook_is_permitted_by_conventional_constraints: true,
         direct_hook_cancellation_required: false,
@@ -405,16 +404,11 @@ pub fn verify() -> ElevenDimensionalSpinorBridgeReport {
         exact_source_kernel_vectors_constructed: true,
         component_clebsch_maps_constructed: true,
         derivative_matrix_constructed: true,
-        explicit_intertwiner_pass_status:
-            "all twelve leading and seven hook source embeddings and couplings are exact; the 7-by-12 exterior-derivative matrix has rank 7 and nullity 5",
-        next_computational_step:
-            "construct the six gauge-parameter intertwiners and the 44 first-momentum correction intertwiners, then solve their joint exact compatibility system",
-        next_required_input:
-            "select the direct-map coefficients and the spinor-prepotential gauge transformation, including the induced transformation of H_alpha^a",
-        result:
-            "the scalar factorization occupies one of twelve direct leading directions and lies in the five-dimensional kernel of the exact rank-7 hook derivative; four kernel directions remain after quotienting by the scalar line",
-        boundary:
-            "this is an exact Lorentz-representation calculation, not a component Clebsch construction, gauge quotient, torsion solution, action, or field equation",
+        explicit_intertwiner_pass_status: "all twelve leading and seven hook source embeddings and couplings are exact; the 7-by-12 exterior-derivative matrix has rank 7 and nullity 5",
+        next_computational_step: "construct the six gauge-parameter intertwiners and the 44 first-momentum correction intertwiners, then solve their joint exact compatibility system",
+        next_required_input: "select the direct-map coefficients and the spinor-prepotential gauge transformation, including the induced transformation of H_alpha^a",
+        result: "the scalar factorization occupies one of twelve direct leading directions and lies in the five-dimensional kernel of the exact rank-7 hook derivative; four kernel directions remain after quotienting by the scalar line",
+        boundary: "this is an exact Lorentz-representation calculation, not a component Clebsch construction, gauge quotient, torsion solution, action, or field equation",
         passed,
     }
 }

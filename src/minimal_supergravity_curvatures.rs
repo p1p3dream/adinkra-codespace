@@ -1,7 +1,7 @@
 //! Linearized old-minimal 4D N=1 curvature complex from *Superspace*,
 //! Eqs. (3.1.22), (5.4.18), (7.4.2b), and (7.5.19).
 
-use crate::supercovariant_derivative::{apply, Derivative, GaussianRational, Polynomial};
+use crate::supercovariant_derivative::{Derivative, GaussianRational, Polynomial, apply};
 use num_complex::Complex;
 use num_rational::Ratio;
 use serde::Serialize;
@@ -1154,10 +1154,12 @@ mod tests {
             1
         );
         assert!(report.euler_non_null_fibers_have_zero_cohomology);
-        assert!(report
-            .euler_lagrange_momentum_checks
-            .iter()
-            .filter(|check| check.momentum_class == "null")
-            .all(|check| check.middle_cohomology_dimension == 4));
+        assert!(
+            report
+                .euler_lagrange_momentum_checks
+                .iter()
+                .filter(|check| check.momentum_class == "null")
+                .all(|check| check.middle_cohomology_dimension == 4)
+        );
     }
 }

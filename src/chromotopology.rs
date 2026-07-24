@@ -313,10 +313,7 @@ mod tests {
 
     /// The [8,4,4] extended Hamming code in systematic form.
     fn hamming_8_4() -> DoublyEvenCode {
-        DoublyEvenCode::new(
-            8,
-            vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-        )
+        DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000])
     }
 
     // -- Test 1: N=4, k=1 basic structure ----------------------------------
@@ -327,7 +324,7 @@ mod tests {
         assert_eq!(ct.n(), 4);
         assert_eq!(ct.k(), 1);
         assert_eq!(ct.num_vertices(), 8); // 2^(4-1)
-        assert_eq!(ct.d(), 4);            // 2^(4-1-1)
+        assert_eq!(ct.d(), 4); // 2^(4-1-1)
     }
 
     #[test]
@@ -353,7 +350,7 @@ mod tests {
         assert_eq!(ct.n(), 4);
         assert_eq!(ct.k(), 0);
         assert_eq!(ct.num_vertices(), 16); // 2^4
-        assert_eq!(ct.d(), 8);             // 2^3
+        assert_eq!(ct.d(), 8); // 2^3
     }
 
     #[test]
@@ -370,7 +367,7 @@ mod tests {
         assert_eq!(ct.n(), 8);
         assert_eq!(ct.k(), 4);
         assert_eq!(ct.num_vertices(), 16); // 2^(8-4)
-        assert_eq!(ct.d(), 8);             // 2^(8-4-1)
+        assert_eq!(ct.d(), 8); // 2^(8-4-1)
     }
 
     #[test]
@@ -389,19 +386,11 @@ mod tests {
             let inv = ct.color_perm_inverse(color);
             // fwd[inv[k]] == k for all k
             for k in 0..ct.d() {
-                assert_eq!(
-                    fwd[inv[k]], k,
-                    "color {}: fwd(inv({})) != {}",
-                    color, k, k
-                );
+                assert_eq!(fwd[inv[k]], k, "color {}: fwd(inv({})) != {}", color, k, k);
             }
             // inv[fwd[j]] == j for all j
             for j in 0..ct.d() {
-                assert_eq!(
-                    inv[fwd[j]], j,
-                    "color {}: inv(fwd({})) != {}",
-                    color, j, j
-                );
+                assert_eq!(inv[fwd[j]], j, "color {}: inv(fwd({})) != {}", color, j, j);
             }
         }
     }

@@ -24,7 +24,7 @@
 use crate::bbbm::n9_minimal_code_pub;
 use crate::chromotopology::Chromotopology;
 use crate::dashing::DashingEnumerator;
-use crate::holoraumy::{dmin, gadget, HoloraumyData};
+use crate::holoraumy::{HoloraumyData, dmin, gadget};
 use crate::lr_matrix::AdinkraRep;
 
 /// Build every dashing-class AdinkraRep of the minimal N=9 valise.
@@ -132,8 +132,7 @@ pub fn compute() -> BbbmHoloraumyReport {
             cross.insert(key(gadget(&holos[a], &holos[b])));
         }
     }
-    let distinct_cross_gadget_values: Vec<f64> =
-        cross.iter().map(|&k| k as f64 / 1e9).collect();
+    let distinct_cross_gadget_values: Vec<f64> = cross.iter().map(|&k| k as f64 / 1e9).collect();
 
     BbbmHoloraumyReport {
         n,

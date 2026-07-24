@@ -106,6 +106,21 @@ fn transpose(matrix: &Matrix) -> Matrix {
         .collect()
 }
 
+fn conjugate_transpose(matrix: &Matrix) -> Matrix {
+    (0..matrix[0].len())
+        .map(|column| {
+            (0..matrix.len())
+                .map(|row| {
+                    Complex::new(
+                        matrix[row][column].re.clone(),
+                        -matrix[row][column].im.clone(),
+                    )
+                })
+                .collect()
+        })
+        .collect()
+}
+
 fn kronecker(left: &Matrix, right: &Matrix) -> Matrix {
     let mut result = vec![vec![g(0, 0); left[0].len() * right[0].len()]; left.len() * right.len()];
     for left_row in 0..left.len() {
@@ -312,6 +327,46 @@ pub(crate) fn spinor_charge_bilinear() -> Matrix {
         }
     }
     charge
+}
+
+pub(crate) fn gauge_form_bilinear_basis() -> Vec<(usize, Vec<usize>, Matrix)> {
+    let gammas = gamma_matrices();
+    let charge = charge_conjugation(&gammas);
+    let (phases, _, cartan_mismatches, lowering_actions, lowering_residuals) =
+        chevalley_basis_phases(&gammas);
+    assert_eq!(cartan_mismatches, 0);
+    assert_eq!(lowering_actions, 48);
+    assert_eq!(lowering_residuals, 0);
+
+    let mut basis = Vec::with_capacity(SPINOR_DIMENSION * SPINOR_DIMENSION);
+    for degree in 0..=5 {
+        for subset in combinations(VECTOR_DIMENSION, degree) {
+            let mut bilinear = multiply(&charge, &product_for_indices(&gammas, &subset));
+            for row in 0..SPINOR_DIMENSION {
+                for column in 0..SPINOR_DIMENSION {
+                    bilinear[row][column] *= g(phases[row] * phases[column], 0);
+                }
+            }
+            basis.push((degree, subset, bilinear));
+        }
+    }
+    assert_eq!(basis.len(), SPINOR_DIMENSION * SPINOR_DIMENSION);
+    basis
+}
+
+pub(crate) fn gauge_form_operator_basis() -> Vec<(usize, Vec<usize>, Matrix)> {
+    let charge = spinor_charge_bilinear();
+    let charge_inverse = conjugate_transpose(&charge);
+    assert_eq!(
+        multiply(&charge, &charge_inverse),
+        identity(SPINOR_DIMENSION)
+    );
+    let basis = gauge_form_bilinear_basis()
+        .into_iter()
+        .map(|(degree, indices, bilinear)| (degree, indices, multiply(&bilinear, &charge_inverse)))
+        .collect::<Vec<_>>();
+    assert_eq!(basis[0].2, identity(SPINOR_DIMENSION));
+    basis
 }
 
 pub(crate) fn translation_bilinear_basis_alignment() -> (usize, usize, usize, usize) {
@@ -642,10 +697,12 @@ mod tests {
             report.symmetric_bilinear_dimension + report.antisymmetric_bilinear_dimension,
             32 * 32
         );
-        assert!(report
-            .bilinear_symmetry_checks
-            .iter()
-            .all(|check| check.residual_products == 0));
+        assert!(
+            report
+                .bilinear_symmetry_checks
+                .iter()
+                .all(|check| check.residual_products == 0)
+        );
         assert_eq!(report.zero_momentum_channels_annihilated_by_dd, 3);
         assert_eq!(report.zero_momentum_channels_not_annihilated_by_dd, 3);
         let annihilated_degrees: Vec<_> = report

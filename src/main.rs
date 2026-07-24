@@ -27,6 +27,7 @@ mod dashing;
 mod decompose;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
+mod eleven_dimensional_gauge;
 mod eleven_dimensional_level16_couplings;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_spinor_bridge;
@@ -63,7 +64,7 @@ mod viz_export;
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{enumerate_codes, DoublyEvenCode};
+use code::{DoublyEvenCode, enumerate_codes};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -120,6 +121,11 @@ fn main() {
         "adynkrafield-operator-verify" => cmd_adynkrafield_operator_verify(),
         "adynkra-11d-prepotential-verify" => cmd_adynkra_11d_prepotential_verify(),
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
+        "adynkra-11d-gauge-intertwiner-verify" => cmd_adynkra_11d_gauge_intertwiner_verify(),
+        "adynkra-11d-gauge-composition-manifest" => cmd_adynkra_11d_gauge_composition_manifest(),
+        "adynkra-11d-gauge-zero-column" => cmd_adynkra_11d_gauge_zero_column(&args),
+        "adynkra-11d-gauge-zero-merge" => cmd_adynkra_11d_gauge_zero_merge(&args),
+        "adynkra-11d-gauge-zero-classify" => cmd_adynkra_11d_gauge_zero_classify(&args),
         "adynkra-11d-bridge-verify" => cmd_adynkra_11d_bridge_verify(),
         "adynkra-11d-level16-coupling-precheck" => cmd_adynkra_11d_level16_coupling_precheck(),
         "adynkra-11d-level16-coupling-build" => cmd_adynkra_11d_level16_coupling_build(&args),
@@ -141,6 +147,10 @@ fn main() {
         "adynkra-11d-first-momentum-target-verify" => {
             cmd_adynkra_11d_first_momentum_target_verify()
         }
+        "adynkra-11d-joint-compatibility" => cmd_adynkra_11d_joint_compatibility(),
+        "adynkra-11d-joint-column" => cmd_adynkra_11d_joint_column(&args),
+        "adynkra-11d-joint-merge" => cmd_adynkra_11d_joint_merge(&args),
+        "adynkra-11d-joint-manifest" => cmd_adynkra_11d_joint_manifest(),
         "adynkra-11d-spinor-bridge-verify" => cmd_adynkra_11d_spinor_bridge_verify(),
         "adynkra-11d-spinor-kernel-verify" => cmd_adynkra_11d_spinor_kernel_verify(),
         "export-3d-assets" => cmd_export_3d_assets(&args),
@@ -232,6 +242,12 @@ fn print_usage(prog: &str) {
         "  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories"
     );
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
+    eprintln!(
+        "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-composition-manifest Print the deterministic 336-job gauge work list"
+    );
     eprintln!("  adynkra-11d-bridge-verify Verify the 11D bridge and first lower symbol");
     eprintln!(
         "  adynkra-11d-level16-coupling-precheck Verify the fixed level-16 work list and multiplicities"
@@ -255,6 +271,23 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-11d-first-momentum-coupling-verify --all [--resume] Verify all 44 maps");
     eprintln!(
         "  adynkra-11d-first-momentum-target-verify Verify the four momentum target couplings"
+    );
+    eprintln!(
+        "  adynkra-11d-joint-compatibility Build the exact leading plus first-momentum matrix"
+    );
+    eprintln!(
+        "  adynkra-11d-joint-column <ordinal> <root> Build one durable raw joint column artifact"
+    );
+    eprintln!("  adynkra-11d-joint-merge <root> [--deep] Verify and merge all 56 column artifacts");
+    eprintln!("  adynkra-11d-joint-manifest Print the deterministic 56-column work manifest");
+    eprintln!(
+        "  adynkra-11d-gauge-zero-column <form-degree> <leading-ordinal> <root> Build one durable D17 source-variation artifact"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-zero-merge <form-degree> <root> [--deep] Compute the exact 12-column source-invariant kernel"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-zero-classify <root> Classify all 64 exact zero-momentum source-channel intersections"
     );
     eprintln!("  adynkra-11d-spinor-bridge-verify Audit the direct 11D spinor bridge");
     eprintln!("  adynkra-11d-spinor-kernel-verify Verify its 19 source kernels exactly");
@@ -473,6 +506,114 @@ fn cmd_adynkra_11d_prepotential_verify() {
 
 fn cmd_adynkra_11d_clifford_verify() {
     let report = eleven_dimensional_clifford::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_intertwiner_verify() {
+    let report = eleven_dimensional_gauge::verify();
+    let output = std::path::PathBuf::from("results/adynkra_11d_gauge_intertwiners.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_composition_manifest() {
+    let specs = eleven_dimensional_gauge::gauge_composition_specs();
+    println!("{}", serde_json::to_string_pretty(&specs).unwrap());
+}
+
+fn cmd_adynkra_11d_gauge_zero_column(args: &[String]) {
+    let usage = || {
+        eprintln!(
+            "Usage: {} adynkra-11d-gauge-zero-column <form-degree> <leading-ordinal> <root>",
+            args[0]
+        );
+        std::process::exit(1);
+    };
+    let gauge_form_degree = args
+        .get(2)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid gauge form degree: {error}");
+            std::process::exit(1);
+        });
+    let leading_ordinal = args
+        .get(3)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid leading ordinal: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(4).unwrap_or_else(|| usage()));
+    let report = eleven_dimensional_gauge::build_and_write_zero_momentum_gauge_composition_artifact(
+        gauge_form_degree,
+        leading_ordinal,
+        &root,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!(
+            "Failed to build zero-momentum gauge composition p={gauge_form_degree}, column={leading_ordinal}: {error}"
+        );
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_adynkra_11d_gauge_zero_merge(args: &[String]) {
+    let usage = || {
+        eprintln!(
+            "Usage: {} adynkra-11d-gauge-zero-merge <form-degree> <root> [--deep]",
+            args[0]
+        );
+        std::process::exit(1);
+    };
+    let gauge_form_degree = args
+        .get(2)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid gauge form degree: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(3).unwrap_or_else(|| usage()));
+    let deep = args.iter().any(|argument| argument == "--deep");
+    let report = eleven_dimensional_gauge::merge_zero_momentum_gauge_composition_artifacts(
+        gauge_form_degree,
+        &root,
+        deep,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to merge zero-momentum gauge form {gauge_form_degree}: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_zero_classify(args: &[String]) {
+    let usage = || {
+        eprintln!("Usage: {} adynkra-11d-gauge-zero-classify <root>", args[0]);
+        std::process::exit(1);
+    };
+    let root = std::path::PathBuf::from(args.get(2).unwrap_or_else(|| usage()));
+    let report = eleven_dimensional_gauge::classify_zero_momentum_gauge_channel_subsets(&root)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to classify zero-momentum gauge channel subsets: {error}");
+            std::process::exit(2);
+        });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
@@ -1060,6 +1201,90 @@ fn cmd_adynkra_11d_first_momentum_target_verify() {
             eprintln!("Failed to checkpoint {}: {error}", output.display());
             std::process::exit(2);
         });
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_joint_compatibility() {
+    let report = eleven_dimensional_level16_couplings::build_joint_compatibility_matrix();
+    let output = std::path::PathBuf::from("results/adynkra_11d_joint_compatibility_matrix.json");
+    eleven_dimensional_level16_couplings::write_atomic_json(&output, &report, report.passed)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to checkpoint {}: {error}", output.display());
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_joint_manifest() {
+    let specs = eleven_dimensional_level16_couplings::joint_column_specs();
+    println!("{}", serde_json::to_string_pretty(&specs).unwrap());
+}
+
+fn cmd_adynkra_11d_joint_column(args: &[String]) {
+    let ordinal = args
+        .get(2)
+        .unwrap_or_else(|| {
+            eprintln!(
+                "Usage: {} adynkra-11d-joint-column <ordinal> <root>",
+                args[0]
+            );
+            std::process::exit(1);
+        })
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid joint column ordinal: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(3).unwrap_or_else(|| {
+        eprintln!(
+            "Usage: {} adynkra-11d-joint-column <ordinal> <root>",
+            args[0]
+        );
+        std::process::exit(1);
+    }));
+    let report =
+        eleven_dimensional_level16_couplings::build_and_write_joint_column_artifact(ordinal, &root)
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to build joint column {ordinal}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_adynkra_11d_joint_merge(args: &[String]) {
+    use std::io::Write;
+
+    let root = std::path::PathBuf::from(args.get(2).unwrap_or_else(|| {
+        eprintln!("Usage: {} adynkra-11d-joint-merge <root> [--deep]", args[0]);
+        std::process::exit(1);
+    }));
+    let deep = args.iter().any(|argument| argument == "--deep");
+    let report = eleven_dimensional_level16_couplings::merge_joint_column_artifacts(&root, deep)
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to merge joint column artifacts: {error}");
+            std::process::exit(2);
+        });
+    let merge_root = root.join("merge");
+    std::fs::create_dir_all(&merge_root).unwrap();
+    let final_path = merge_root.join("joint-compatibility.json");
+    let temporary_path =
+        merge_root.join(format!(".joint-compatibility.{}.tmp", std::process::id()));
+    let payload = serde_json::to_vec_pretty(&report).unwrap();
+    let mut output = std::fs::File::create(&temporary_path).unwrap();
+    output.write_all(&payload).unwrap();
+    output.write_all(b"\n").unwrap();
+    output.sync_all().unwrap();
+    std::fs::rename(&temporary_path, &final_path).unwrap();
+    std::fs::File::open(&merge_root)
+        .unwrap()
+        .sync_all()
+        .unwrap();
+    println!("{}", String::from_utf8(payload).unwrap());
     if !report.passed {
         std::process::exit(2);
     }

@@ -169,9 +169,7 @@ pub fn random_valid_code(n: usize, target_k: usize, rng_seed: u64) -> Option<Dou
             continue;
         }
         // Check pairwise even overlap with all existing generators.
-        let overlap_ok = gens
-            .iter()
-            .all(|&g| (candidate & g).count_ones() % 2 == 0);
+        let overlap_ok = gens.iter().all(|&g| (candidate & g).count_ones() % 2 == 0);
         if !overlap_ok {
             continue;
         }
@@ -209,7 +207,9 @@ pub fn random_batch(n: usize, count: usize, seed: u64) -> Vec<DoublyEvenCode> {
         let sub_seed = rng.next();
         if let Some(code) = random_valid_code(n, target_k, sub_seed) {
             // Check for duplicate code spaces.
-            let is_dup = results.iter().any(|existing| same_code_space(existing, &code));
+            let is_dup = results
+                .iter()
+                .any(|existing| same_code_space(existing, &code));
             if !is_dup {
                 results.push(code);
             }
@@ -333,9 +333,7 @@ fn mutate(code: &DoublyEvenCode, target_n: usize, rng: &mut Rng) -> DoublyEvenCo
                     if candidate == 0 {
                         continue;
                     }
-                    let overlap_ok = gens
-                        .iter()
-                        .all(|&g| (candidate & g).count_ones() % 2 == 0);
+                    let overlap_ok = gens.iter().all(|&g| (candidate & g).count_ones() % 2 == 0);
                     if overlap_ok && is_independent_of(&gens, candidate) {
                         gens.push(candidate);
                         break;
@@ -562,10 +560,7 @@ mod tests {
         //   row 1: cols {1,4,6,7}
         //   row 2: cols {2,4,5,7}
         //   row 3: cols {3,4,5,6}
-        DoublyEvenCode::new(
-            8,
-            vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-        )
+        DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000])
     }
 
     /// A trivial [4,1,4] repetition-like code: single generator 0b1111.
@@ -632,7 +627,10 @@ mod tests {
     fn test_random_valid_code_produces_valid() {
         for seed in 0..10 {
             if let Some(code) = random_valid_code(8, 2, seed) {
-                assert!(code.is_doubly_even(), "seed={seed}: code is not doubly-even");
+                assert!(
+                    code.is_doubly_even(),
+                    "seed={seed}: code is not doubly-even"
+                );
                 assert_eq!(code.n, 8);
                 assert!(code.k() >= 1);
                 assert!(code.k() <= 2);
@@ -772,9 +770,7 @@ mod tests {
         }
         // The trivial extension (all zeros in new column) must always be present.
         let trivial = direct_sum_extend(&code, 9);
-        assert!(extensions
-            .iter()
-            .any(|e| same_code_space(e, &trivial)));
+        assert!(extensions.iter().any(|e| same_code_space(e, &trivial)));
     }
 
     #[test]

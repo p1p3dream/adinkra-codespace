@@ -227,11 +227,7 @@ fn permutation_sign(values: &[usize]) -> i64 {
         .flat_map(|i| ((i + 1)..values.len()).map(move |j| (i, j)))
         .filter(|&(i, j)| values[i] > values[j])
         .count();
-    if inversions % 2 == 0 {
-        1
-    } else {
-        -1
-    }
+    if inversions % 2 == 0 { 1 } else { -1 }
 }
 
 fn phi(a: usize, b: usize, c: usize) -> i64 {

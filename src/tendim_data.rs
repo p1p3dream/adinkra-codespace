@@ -716,8 +716,8 @@ fn reproduction_audit_with_benchmark(
         crate::tendim_generate::max_entrywise_difference(&rust_generated, &data);
     let rust_generator_exact_bosonic_pairs =
         crate::tendim_generate::verify_exact_bosonic(&rust_generated);
-    let rust_generator_matches = rust_generator_entrywise_max_difference == 0.0
-        && rust_generator_exact_bosonic_pairs == 136;
+    let rust_generator_matches =
+        rust_generator_entrywise_max_difference == 0.0 && rust_generator_exact_bosonic_pairs == 136;
 
     let start = Instant::now();
     let algebra = data.full_algebra_audit();

@@ -9,7 +9,7 @@ use crate::code::DoublyEvenCode;
 use crate::dashing::DashingEnumerator;
 use crate::decompose::decompose_rep;
 use crate::filters::worldsheet_all_splits;
-use crate::holoraumy::{dmin, gadget, HoloraumyData};
+use crate::holoraumy::{HoloraumyData, dmin, gadget};
 use crate::lr_matrix::AdinkraRep;
 
 use serde::{Deserialize, Serialize};
@@ -127,9 +127,7 @@ fn gadget_stratum_matrix(reps: &[HoloraumyData]) -> Vec<Vec<f64>> {
     let n = reps.len();
     let rows: Vec<Vec<f64>> = (0..n)
         .into_par_iter()
-        .map(|i| {
-            (0..n).map(|j| gadget(&reps[i], &reps[j])).collect()
-        })
+        .map(|i| (0..n).map(|j| gadget(&reps[i], &reps[j])).collect())
         .collect();
     rows
 }
@@ -148,7 +146,9 @@ fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipeline
     let data = fs::read_to_string(json_path)
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).unwrap_or_else(|e| {
-        panic!("Failed to parse JSON {json_path:?}: {e}. Expected {{n, total_classes, codes:[...]}}")
+        panic!(
+            "Failed to parse JSON {json_path:?}: {e}. Expected {{n, total_classes, codes:[...]}}"
+        )
     });
     let n = catalog.n;
 
@@ -162,7 +162,10 @@ fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipeline
     if let Some(k) = only_k {
         eprintln!(
             "Loaded {} code classes with k={} (N={}, {} total in catalog)",
-            codes.len(), k, n, catalog.codes.len()
+            codes.len(),
+            k,
+            n,
+            catalog.codes.len()
         );
     } else {
         eprintln!("Loaded {} code classes (N={})", codes.len(), n);
@@ -186,14 +189,11 @@ fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipeline
             let mut reps = Vec::new();
 
             for di in 0..dashing_enum.num_classes() {
-                let signs =
-                    dashing_enum.get_dashing_for_chromotopology(di, &boson_reps);
+                let signs = dashing_enum.get_dashing_for_chromotopology(di, &boson_reps);
                 let rep = AdinkraRep::from_parts(n, d, &color_perms, &signs);
                 if !rep.verify_garden_algebra() {
                     garden_ok = false;
-                    eprintln!(
-                        "WARNING: Garden algebra failed for code {idx} dashing {di}"
-                    );
+                    eprintln!("WARNING: Garden algebra failed for code {idx} dashing {di}");
                 }
                 let h = HoloraumyData::from_rep(&rep);
                 gadget_self_vals.push(gadget(&h, &h));
@@ -201,8 +201,7 @@ fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipeline
             }
 
             let ws = worldsheet_all_splits(&code);
-            let worldsheet_trivial =
-                ws.iter().all(|r| (r.p == 0 || r.q == 0) == r.passes);
+            let worldsheet_trivial = ws.iter().all(|r| (r.p == 0 || r.q == 0) == r.passes);
 
             let result = PipelineResult {
                 code_index: idx,
@@ -230,9 +229,7 @@ fn run_pipeline_filtered(json_path: &str, only_k: Option<usize>) -> FullPipeline
     for (&k, reps) in &reps_by_k {
         let d = reps[0].d;
         let num_reps = reps.len();
-        eprintln!(
-            "Computing {num_reps}x{num_reps} gadget matrix for k={k} stratum (d={d})..."
-        );
+        eprintln!("Computing {num_reps}x{num_reps} gadget matrix for k={k} stratum (d={d})...");
         let matrix = gadget_stratum_matrix(reps);
 
         let expected_diag = d as f64 / dmin(n) as f64;
@@ -297,7 +294,11 @@ fn build_reps_for_code(n: usize, entry: &CodeEntry) -> (usize, Vec<AdinkraRep>) 
 /// Free bytes on the filesystem containing `dir`, via `df -k` (dependency-free,
 /// works on Linux + macOS). `None` if `df` is unavailable/unparseable.
 fn available_disk_bytes(dir: &std::path::Path) -> Option<u64> {
-    let out = std::process::Command::new("df").arg("-k").arg(dir).output().ok()?;
+    let out = std::process::Command::new("df")
+        .arg("-k")
+        .arg(dir)
+        .output()
+        .ok()?;
     if !out.status.success() {
         return None;
     }
@@ -305,7 +306,10 @@ fn available_disk_bytes(dir: &std::path::Path) -> Option<u64> {
     // Last line: Filesystem 1K-blocks Used Available Capacity% ... ; the 3rd
     // pure-integer token (blocks, used, available) is Available in KiB.
     let last = s.lines().last()?;
-    let nums: Vec<u64> = last.split_whitespace().filter_map(|t| t.parse::<u64>().ok()).collect();
+    let nums: Vec<u64> = last
+        .split_whitespace()
+        .filter_map(|t| t.parse::<u64>().ok())
+        .collect();
     nums.get(2).map(|kb| kb * 1024)
 }
 
@@ -318,7 +322,7 @@ fn available_disk_bytes(dir: &std::path::Path) -> Option<u64> {
 /// f32 quantization could merge/split genuinely distinct gadget values. Returns
 /// `true` if SUSPECT. Cheap relative to the full run.
 fn disk_f32_gate(all_reps: &[&AdinkraRep], n: usize, sample: usize) -> bool {
-    use crate::decompose::{dense_gadget_matrix, decompose_rep, DenseHoloraumy};
+    use crate::decompose::{DenseHoloraumy, decompose_rep, dense_gadget_matrix};
     let take = sample.min(all_reps.len());
     if take == 0 {
         return false;
@@ -330,7 +334,10 @@ fn disk_f32_gate(all_reps: &[&AdinkraRep], n: usize, sample: usize) -> bool {
     }
     let dense: Vec<DenseHoloraumy> = summands.iter().map(DenseHoloraumy::from_summand).collect();
     let gd = dense_gadget_matrix(&dense);
-    let vecs: Vec<Vec<f32>> = summands.iter().map(crate::streamed_gadget::flatten_summand).collect();
+    let vecs: Vec<Vec<f32>> = summands
+        .iter()
+        .map(crate::streamed_gadget::flatten_summand)
+        .collect();
     let gf = crate::streamed_gadget::gram_gadget_matrix(&vecs, n);
     let m = gd.len();
     let (mut maxe, mut diagdev) = (0.0f64, 0.0f64);
@@ -346,7 +353,10 @@ fn disk_f32_gate(all_reps: &[&AdinkraRep], n: usize, sample: usize) -> bool {
     }
     off.sort_by(|a, b| a.partial_cmp(b).unwrap());
     off.dedup();
-    let min_gap = off.windows(2).map(|w| w[1] - w[0]).fold(f64::INFINITY, f64::min);
+    let min_gap = off
+        .windows(2)
+        .map(|w| w[1] - w[0])
+        .fold(f64::INFINITY, f64::min);
     // SUSPECT iff f32 error could cross half the nearest value gap.
     let suspect = maxe >= 0.5 * min_gap;
     eprintln!(
@@ -387,7 +397,9 @@ pub fn run_decompose_k_mode(
     let data = fs::read_to_string(json_path)
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).unwrap_or_else(|e| {
-        panic!("Failed to parse JSON {json_path:?}: {e}. Expected {{n, total_classes, codes:[...]}}")
+        panic!(
+            "Failed to parse JSON {json_path:?}: {e}. Expected {{n, total_classes, codes:[...]}}"
+        )
     });
     let n = catalog.n;
     let dm = dmin(n);
@@ -470,7 +482,8 @@ pub fn run_decompose_k_mode(
             if f64::from_bits(cur) >= v {
                 break;
             }
-            match bits.compare_exchange_weak(cur, v.to_bits(), Ordering::Relaxed, Ordering::Relaxed) {
+            match bits.compare_exchange_weak(cur, v.to_bits(), Ordering::Relaxed, Ordering::Relaxed)
+            {
                 Ok(_) => break,
                 Err(o) => cur = o,
             }
@@ -487,10 +500,21 @@ pub fn run_decompose_k_mode(
             results: Vec::new(),
             gadget_strata: Vec::new(),
             irrep_strata: vec![IrrepGadgetStratum {
-                k: only_k, d, dmin: dm, num_valise_reps, num_irreps,
-                decomposed: false, skip_reason: Some(reason), max_summand_residual: None,
-                diag_worst_dev: None, distinct_off_values: None, off_min: None, off_max: None,
-                off_histogram_top: None, matrix_binary_path: None, used_disk_path: None,
+                k: only_k,
+                d,
+                dmin: dm,
+                num_valise_reps,
+                num_irreps,
+                decomposed: false,
+                skip_reason: Some(reason),
+                max_summand_residual: None,
+                diag_worst_dev: None,
+                distinct_off_values: None,
+                off_min: None,
+                off_max: None,
+                off_histogram_top: None,
+                matrix_binary_path: None,
+                used_disk_path: None,
                 numeric_suspect: None,
                 matrix: Vec::new(),
             }],
@@ -509,32 +533,46 @@ pub fn run_decompose_k_mode(
         return skip(format!(
             "estimated flat holoraumy store {:.1} GiB ({num_irreps} irreps) exceeds RAM budget {:.1} GiB; \
              re-run with `decompose-k-disk` (--disk) to spill W to a scratch file.",
-            gib(est_bytes), gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES)
+            gib(est_bytes),
+            gib(crate::decompose::MAX_DECOMPOSE_GADGET_BYTES)
         ));
     }
     // ADINKRA_FORCE_DISK=1 routes a RAM-fitting stratum through the disk path too
     // (for disk-vs-RAM parity validation, e.g. k=6). Requires --disk. The exact
     // f64 build always uses the disk path (the f64 store is too large for RAM).
-    let force_disk = std::env::var("ADINKRA_FORCE_DISK").map(|v| v == "1").unwrap_or(false);
+    let force_disk = std::env::var("ADINKRA_FORCE_DISK")
+        .map(|v| v == "1")
+        .unwrap_or(false);
     let use_disk = allow_disk && (!ram_fits || force_disk || disk_f64);
 
     // Build path: in-RAM contiguous W + GEMM when it fits the RAM budget;
     // otherwise (use_disk) stream W to a scratch file and tile the Gram off disk.
     let (matrix, worst_residual, used_disk, numeric_suspect) = if !use_disk {
-        eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each), in-RAM GEMM Gram...");
+        eprintln!(
+            "decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each), in-RAM GEMM Gram..."
+        );
         let worst_bits = AtomicU64::new(0u64);
         let mut w: Vec<f32> = vec![0.0f32; num_irreps * l];
-        w.par_chunks_mut(r * l).enumerate().for_each(|(rep_i, chunk)| {
-            let decomp = decompose_rep(all_reps[rep_i])
-                .expect("d within guard, decomposition should succeed");
-            assert_eq!(decomp.summands.len(), r, "decomposition produced != r summands");
-            let mut lw = 0.0f64;
-            for (s_i, s) in decomp.summands.iter().enumerate() {
-                lw = lw.max(crate::decompose::summand_residual(s));
-                crate::streamed_gadget::flatten_summand_into(s, &mut chunk[s_i * l..(s_i + 1) * l]);
-            }
-            atomic_max(&worst_bits, lw);
-        });
+        w.par_chunks_mut(r * l)
+            .enumerate()
+            .for_each(|(rep_i, chunk)| {
+                let decomp = decompose_rep(all_reps[rep_i])
+                    .expect("d within guard, decomposition should succeed");
+                assert_eq!(
+                    decomp.summands.len(),
+                    r,
+                    "decomposition produced != r summands"
+                );
+                let mut lw = 0.0f64;
+                for (s_i, s) in decomp.summands.iter().enumerate() {
+                    lw = lw.max(crate::decompose::summand_residual(s));
+                    crate::streamed_gadget::flatten_summand_into(
+                        s,
+                        &mut chunk[s_i * l..(s_i + 1) * l],
+                    );
+                }
+                atomic_max(&worst_bits, lw);
+            });
         let wr = f64::from_bits(worst_bits.load(Ordering::Relaxed));
         eprintln!("decompose-k: computing {num_irreps}x{num_irreps} gadget matrix (GEMM Gram)...");
         let m = crate::streamed_gadget::gram_from_contiguous(&w, num_irreps, l, n);
@@ -551,7 +589,8 @@ pub fn run_decompose_k_mode(
         if flat_bytes > crate::decompose::MAX_DECOMPOSE_DISK_BYTES {
             return skip(format!(
                 "flat store {:.1} GiB exceeds MAX_DECOMPOSE_DISK_BYTES {:.1} GiB.",
-                gib(flat_bytes), gib(crate::decompose::MAX_DECOMPOSE_DISK_BYTES)
+                gib(flat_bytes),
+                gib(crate::decompose::MAX_DECOMPOSE_DISK_BYTES)
             ));
         }
         let scratch_dir = match std::env::var("ADINKRA_SCRATCH_DIR") {
@@ -562,7 +601,8 @@ pub fn run_decompose_k_mode(
                     "decompose-k: WARNING: ADINKRA_SCRATCH_DIR not set; using {} for the {:.1} GiB \
                      scratch. If that is a tmpfs/RAM-backed dir (common for /tmp on Linux), this \
                      defeats the disk path and may OOM — set ADINKRA_SCRATCH_DIR to a real disk.",
-                    d.display(), gib(flat_bytes)
+                    d.display(),
+                    gib(flat_bytes)
                 );
                 d
             }
@@ -573,11 +613,16 @@ pub fn run_decompose_k_mode(
             Some(avail) if avail < flat_bytes + (8u64 << 30) => {
                 return skip(format!(
                     "scratch dir {} has only {:.1} GiB free; need {:.1} GiB + 8 GiB margin.",
-                    scratch_dir.display(), gib(avail), gib(flat_bytes)
+                    scratch_dir.display(),
+                    gib(avail),
+                    gib(flat_bytes)
                 ));
             }
             Some(_) => {}
-            None => eprintln!("decompose-k: WARNING: could not determine free space on {}", scratch_dir.display()),
+            None => eprintln!(
+                "decompose-k: WARNING: could not determine free space on {}",
+                scratch_dir.display()
+            ),
         }
         // Unique filename (pid) so concurrent runs don't collide on one scratch file.
         let scratch_path = scratch_dir.join(format!(
@@ -586,7 +631,8 @@ pub fn run_decompose_k_mode(
         ));
         eprintln!(
             "decompose-k: DISK path ({elem} store {:.1} GiB): spilling W to {} ...",
-            gib(flat_bytes), scratch_path.display()
+            gib(flat_bytes),
+            scratch_path.display()
         );
         eprintln!(
             "decompose-k: (the scratch is removed on normal exit; if you Ctrl-C, reap it with: \
@@ -606,7 +652,9 @@ pub fn run_decompose_k_mode(
         let scratch = crate::streamed_gadget::ScratchW::create(scratch_path, flat_bytes)
             .unwrap_or_else(|e| panic!("decompose-k: failed to create scratch file: {e}"));
 
-        eprintln!("decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each) -> {elem} disk...");
+        eprintln!(
+            "decompose-k: decomposing {num_valise_reps} valise reps (d={d} -> {r} summands each) -> {elem} disk..."
+        );
         let worst_bits = AtomicU64::new(0u64);
         let write_err: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
         (0..all_reps.len()).into_par_iter().for_each(|rep_i| {
@@ -615,10 +663,22 @@ pub fn run_decompose_k_mode(
             }
             let decomp = decompose_rep(all_reps[rep_i])
                 .expect("d within guard, decomposition should succeed");
-            assert_eq!(decomp.summands.len(), r, "decomposition produced != r summands");
+            assert_eq!(
+                decomp.summands.len(),
+                r,
+                "decomposition produced != r summands"
+            );
             // f64 build stores exact entries; f32 build halves the disk footprint.
-            let mut buf32 = if disk_f64 { Vec::new() } else { vec![0.0f32; l] };
-            let mut buf64 = if disk_f64 { vec![0.0f64; l] } else { Vec::new() };
+            let mut buf32 = if disk_f64 {
+                Vec::new()
+            } else {
+                vec![0.0f32; l]
+            };
+            let mut buf64 = if disk_f64 {
+                vec![0.0f64; l]
+            } else {
+                Vec::new()
+            };
             let mut lw = 0.0f64;
             for (s_i, s) in decomp.summands.iter().enumerate() {
                 lw = lw.max(crate::decompose::summand_residual(s));
@@ -631,16 +691,23 @@ pub fn run_decompose_k_mode(
                     scratch.write_summand(g, &buf32, l)
                 };
                 if let Err(e) = res {
-                    write_err.lock().unwrap().get_or_insert_with(|| format!("write_summand g={g}: {e}"));
+                    write_err
+                        .lock()
+                        .unwrap()
+                        .get_or_insert_with(|| format!("write_summand g={g}: {e}"));
                     return;
                 }
             }
             atomic_max(&worst_bits, lw);
         });
         if let Some(msg) = write_err.into_inner().unwrap() {
-            panic!("decompose-k: disk write failed (scratch kept if ADINKRA_KEEP_SCRATCH=1): {msg}");
+            panic!(
+                "decompose-k: disk write failed (scratch kept if ADINKRA_KEEP_SCRATCH=1): {msg}"
+            );
         }
-        scratch.sync().unwrap_or_else(|e| panic!("decompose-k: scratch sync failed: {e}"));
+        scratch
+            .sync()
+            .unwrap_or_else(|e| panic!("decompose-k: scratch sync failed: {e}"));
         let wr = f64::from_bits(worst_bits.load(Ordering::Relaxed));
         // f64 tiles are double the bytes of f32 tiles, so halve the default tile to
         // keep the same peak RAM (two 512-row f64 tiles ≈ two 1024-row f32 tiles).
@@ -653,7 +720,9 @@ pub fn run_decompose_k_mode(
             .ok()
             .and_then(|s| s.parse::<usize>().ok())
             .unwrap_or(default_tile);
-        eprintln!("decompose-k: tiled {elem} GEMM Gram from disk ({num_irreps}x{num_irreps}, tile_rows={tile})...");
+        eprintln!(
+            "decompose-k: tiled {elem} GEMM Gram from disk ({num_irreps}x{num_irreps}, tile_rows={tile})..."
+        );
         let m = if disk_f64 {
             crate::streamed_gadget::gram_from_disk_f64(&scratch, num_irreps, l, n, tile)
         } else {
@@ -696,8 +765,7 @@ pub fn run_decompose_k_mode(
         }
     }
     let distinct_off = counts.len();
-    let mut hist: Vec<(f64, usize)> =
-        counts.iter().map(|(&k, &c)| (k as f64 / 1e6, c)).collect();
+    let mut hist: Vec<(f64, usize)> = counts.iter().map(|(&k, &c)| (k as f64 / 1e6, c)).collect();
     hist.sort_by(|a, b| b.1.cmp(&a.1)); // by count desc
     hist.truncate(50);
     eprintln!(
@@ -709,7 +777,11 @@ pub fn run_decompose_k_mode(
     let mut matrix_binary_path = None;
     let mut matrix_out = matrix;
     if num_irreps > MATRIX_JSON_CAP {
-        let suspect_tag = if numeric_suspect == Some(true) { "_SUSPECT" } else { "" };
+        let suspect_tag = if numeric_suspect == Some(true) {
+            "_SUSPECT"
+        } else {
+            ""
+        };
         let path = format!("decompose_k{only_k}_gadget_{num_irreps}{suspect_tag}.f64bin");
         let mut bytes = Vec::with_capacity(num_irreps * num_irreps * 8);
         for row in &matrix_out {
@@ -719,10 +791,15 @@ pub fn run_decompose_k_mode(
         }
         match fs::write(&path, &bytes) {
             Ok(_) => {
-                eprintln!("decompose-k: wrote {num_irreps}x{num_irreps} matrix to {path} ({} MiB, raw LE f64)", bytes.len() / (1 << 20));
+                eprintln!(
+                    "decompose-k: wrote {num_irreps}x{num_irreps} matrix to {path} ({} MiB, raw LE f64)",
+                    bytes.len() / (1 << 20)
+                );
                 matrix_binary_path = Some(path);
             }
-            Err(e) => eprintln!("decompose-k: WARNING: failed to write matrix binary {path}: {e}; leaving matrix out of JSON"),
+            Err(e) => eprintln!(
+                "decompose-k: WARNING: failed to write matrix binary {path}: {e}; leaving matrix out of JSON"
+            ),
         }
         matrix_out = Vec::new(); // keep JSON small regardless
     }
@@ -769,7 +846,7 @@ pub fn run_decompose_k_mode(
 /// drift, the f32-vs-f64 spread, the distinct-value gap vs the f32 error, and the
 /// antisymmetry residual — so f32-vs-f64 is decided from numbers, not asserted.
 pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
-    use crate::decompose::{dense_gadget_matrix, DenseHoloraumy, IrrepSummand};
+    use crate::decompose::{DenseHoloraumy, IrrepSummand, dense_gadget_matrix};
 
     let data = fs::read_to_string(json_path)
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
@@ -801,7 +878,9 @@ pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
     let ni = summands.len();
     let d = if ni > 0 { dm } else { 0 };
     let _ = d;
-    println!("=== decompose-audit: N={n} k={only_k} sample_reps={reps_done} summands={ni} dmin={dm} ===");
+    println!(
+        "=== decompose-audit: N={n} k={only_k} sample_reps={reps_done} summands={ni} dmin={dm} ==="
+    );
     if ni == 0 {
         println!("(no summands)");
         return;
@@ -815,8 +894,12 @@ pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
             let dh = DenseHoloraumy::from_summand(s);
             for m in &dh.vtilde {
                 let mt = m.transpose();
-                let w = m.data.iter().zip(mt.data.iter())
-                    .map(|(a, b)| (a + b).abs()).fold(0.0f64, f64::max);
+                let w = m
+                    .data
+                    .iter()
+                    .zip(mt.data.iter())
+                    .map(|(a, b)| (a + b).abs())
+                    .fold(0.0f64, f64::max);
                 worst_antisym = worst_antisym.max(w);
             }
             dh
@@ -904,14 +987,28 @@ pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
     };
     let d64 = distinct(off64);
     let d32 = distinct(off32.clone());
-    let min_gap = d64.windows(2).map(|w| w[1] - w[0]).fold(f64::INFINITY, f64::min);
+    let min_gap = d64
+        .windows(2)
+        .map(|w| w[1] - w[0])
+        .fold(f64::INFINITY, f64::min);
 
     println!("antisymmetry  : max |Vtilde + Vtilde^T| = {worst_antisym:.3e}");
-    println!("identity check: max |dense_f64 - GEMM_f64| = {max_d64:.3e}  (validates the Gram identity)");
-    println!("f32 vs dense  : max abs = {max_df:.3e}  mean abs = {:.3e}  worst diag drift = {worst_diag:.3e}", sum_df / cnt as f64);
+    println!(
+        "identity check: max |dense_f64 - GEMM_f64| = {max_d64:.3e}  (validates the Gram identity)"
+    );
+    println!(
+        "f32 vs dense  : max abs = {max_df:.3e}  mean abs = {:.3e}  worst diag drift = {worst_diag:.3e}",
+        sum_df / cnt as f64
+    );
     println!("f32 vs f64    : max abs = {max_3264:.3e}  max rel = {max_rel:.3e}");
-    println!("distinct off  : f64 = {}  f32 = {}  (rounded 1e-6)", d64.len(), d32.len());
-    println!("nearest gap   : min adjacent f64 gap = {min_gap:.3e}   vs f32 max err = {max_3264:.3e}");
+    println!(
+        "distinct off  : f64 = {}  f32 = {}  (rounded 1e-6)",
+        d64.len(),
+        d32.len()
+    );
+    println!(
+        "nearest gap   : min adjacent f64 gap = {min_gap:.3e}   vs f32 max err = {max_3264:.3e}"
+    );
     let safe = max_3264 < min_gap * 0.5;
     println!(
         "VERDICT       : f32 is {} for distinguishing values (max err {} half-gap {:.3e})",
@@ -927,7 +1024,7 @@ pub fn run_decompose_audit(json_path: &str, only_k: usize, sample_reps: usize) {
 /// num_irreps² memory). Used to test whether large-d decomposition (e.g. d=1024
 /// at k=5) is feasible before committing to it.
 pub fn run_decompose_probe(json_path: &str, only_k: usize, num_reps: usize) {
-    use crate::decompose::{dense_gadget, decompose_rep, summand_residual, DenseHoloraumy};
+    use crate::decompose::{DenseHoloraumy, decompose_rep, dense_gadget, summand_residual};
 
     let data = fs::read_to_string(json_path)
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
@@ -935,7 +1032,11 @@ pub fn run_decompose_probe(json_path: &str, only_k: usize, num_reps: usize) {
     let n = catalog.n;
     let dm = dmin(n);
     let codes: Vec<&CodeEntry> = catalog.codes.iter().filter(|e| e.k == only_k).collect();
-    let d = if only_k <= 15 { 1usize << (n - only_k - 1) } else { 0 };
+    let d = if only_k <= 15 {
+        1usize << (n - only_k - 1)
+    } else {
+        0
+    };
     println!(
         "=== decompose-probe N={n} k={only_k} d={d} dmin={dm} r={} (probing {num_reps} reps) ===",
         d / dm.max(1)
@@ -954,7 +1055,10 @@ pub fn run_decompose_probe(json_path: &str, only_k: usize, num_reps: usize) {
             let decomp = match decompose_rep(rep) {
                 Some(x) => x,
                 None => {
-                    println!("rep {done}: decompose_rep returned None — d={} exceeds MAX_DECOMPOSE_D", rep.d);
+                    println!(
+                        "rep {done}: decompose_rep returned None — d={} exceeds MAX_DECOMPOSE_D",
+                        rep.d
+                    );
                     return;
                 }
             };
@@ -1025,7 +1129,13 @@ pub struct StructureClass {
 /// irrep (real, e=1; verified at k=8) these are the candidate decompositions of a
 /// reducible rep into `Σ m_t` copies across `len()` inequivalent classes.
 fn real_multiplicity_patterns(r: usize, target: usize) -> Vec<Vec<usize>> {
-    fn rec(rem: usize, sq: usize, max_part: usize, cur: &mut Vec<usize>, out: &mut Vec<Vec<usize>>) {
+    fn rec(
+        rem: usize,
+        sq: usize,
+        max_part: usize,
+        cur: &mut Vec<usize>,
+        out: &mut Vec<Vec<usize>>,
+    ) {
         if rem == 0 {
             if sq == 0 {
                 out.push(cur.clone());
@@ -1088,8 +1198,10 @@ pub fn run_decompose_structure(json_path: &str, only_k: usize) {
     );
 
     // Build every valise rep of the stratum (parallel per code).
-    let per_code: Vec<(usize, Vec<AdinkraRep>)> =
-        codes.par_iter().map(|e| build_reps_for_code(n, e)).collect();
+    let per_code: Vec<(usize, Vec<AdinkraRep>)> = codes
+        .par_iter()
+        .map(|e| build_reps_for_code(n, e))
+        .collect();
     let d = per_code.first().map(|(d, _)| *d).unwrap_or(0);
     let all_reps: Vec<&AdinkraRep> = per_code.iter().flat_map(|(_, reps)| reps.iter()).collect();
     let num_valise_reps = all_reps.len();
@@ -1234,7 +1346,10 @@ pub fn run_decompose_structure(json_path: &str, only_k: usize) {
         stratum.elapsed_secs,
         stratum.classes.len()
     );
-    println!("{}", serde_json::to_string_pretty(&stratum).expect("serialize structure"));
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&stratum).expect("serialize structure")
+    );
 }
 
 /// One (code, dashing) record for the chromocharacter Q-scan experiment.
@@ -1277,9 +1392,16 @@ pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
     let dm = dmin(n);
 
     // Keep the GLOBAL catalog index (join key) while filtering by k.
-    let codes: Vec<(usize, &CodeEntry)> =
-        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
-    eprintln!("q-scan: {} codes with k={only_k} (N={n}, dmin={dm})", codes.len());
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
+    eprintln!(
+        "q-scan: {} codes with k={only_k} (N={n}, dmin={dm})",
+        codes.len()
+    );
 
     // Flatten to (code_index, dashing, rep).
     let per_code: Vec<(usize, usize, Vec<AdinkraRep>)> = codes
@@ -1294,24 +1416,39 @@ pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
     let r2 = r * r;
     let flat: Vec<(usize, usize, &AdinkraRep)> = per_code
         .iter()
-        .flat_map(|(idx, _, reps)| reps.iter().enumerate().map(move |(di, rep)| (*idx, di, rep)))
+        .flat_map(|(idx, _, reps)| {
+            reps.iter()
+                .enumerate()
+                .map(move |(di, rep)| (*idx, di, rep))
+        })
         .collect();
-    eprintln!("q-scan: {} (code,dashing) reps (d={d}, r={r}); Q + support + commutant...", flat.len());
+    eprintln!(
+        "q-scan: {} (code,dashing) reps (d={d}, r={r}); Q + support + commutant...",
+        flat.len()
+    );
 
     // Q + support: cheap trace arithmetic, full parallelism.
-    let qs: Vec<(usize, i128)> =
-        flat.par_iter().map(|(_, _, rep)| chromochar_support_and_q(rep)).collect();
+    let qs: Vec<(usize, i128)> = flat
+        .par_iter()
+        .map(|(_, _, rep)| chromochar_support_and_q(rep))
+        .collect();
 
     // commutant_dim: O(d²) DSU per rep, memory-bounded batches (default 24 GiB).
     // Skipped under --no-struct (Q + support alone, fast at every k).
     let cdims: Vec<usize> = if compute_struct {
         let dsu_bytes = (d as u64) * (d as u64) * 6;
         let budget_gib: u64 = std::env::var("ADINKRA_STRUCT_MEM_GIB")
-            .ok().and_then(|s| s.parse().ok()).unwrap_or(24);
-        let max_par = (((budget_gib << 30) / dsu_bytes.max(1)).max(1) as usize).min(flat.len().max(1));
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(24);
+        let max_par =
+            (((budget_gib << 30) / dsu_bytes.max(1)).max(1) as usize).min(flat.len().max(1));
         let mut out: Vec<usize> = Vec::with_capacity(flat.len());
         for chunk in flat.chunks(max_par) {
-            let part: Vec<usize> = chunk.par_iter().map(|(_, _, rep)| commutant_dim(rep)).collect();
+            let part: Vec<usize> = chunk
+                .par_iter()
+                .map(|(_, _, rep)| commutant_dim(rep))
+                .collect();
             out.extend(part);
         }
         out
@@ -1327,7 +1464,11 @@ pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
         .map(|(((code_index, dashing, _), &(support, q)), &cd)| {
             let e = if r2 > 0 && cd % r2 == 0 {
                 let e = cd / r2;
-                if e == 1 || e == 2 || e == 4 { Some(e) } else { None }
+                if e == 1 || e == 2 || e == 4 {
+                    Some(e)
+                } else {
+                    None
+                }
             } else {
                 None
             };
@@ -1351,18 +1492,27 @@ pub fn run_q_scan(json_path: &str, only_k: usize, compute_struct: bool) {
     // confirms a vanishing X is real, not a broken evaluator.
     if let Some((_, _, rep0)) = flat.first() {
         let activity = crate::chromochar::chromochar_trace_activity(rep0);
-        eprintln!("q-scan: sample raw-trace activity (Sum Tr^2) = {activity} (>0 => traces nonzero, X cancels; 0 => traces vanish)");
+        eprintln!(
+            "q-scan: sample raw-trace activity (Sum Tr^2) = {activity} (>0 => traces nonzero, X cancels; 0 => traces vanish)"
+        );
     }
 
     // Stderr summary (the headline decisive numbers).
     let q0 = records.iter().filter(|r| r.q_scaled == 0).count();
     let distinct_q: std::collections::BTreeSet<i64> = records.iter().map(|r| r.q_scaled).collect();
-    let distinct_sup: std::collections::BTreeSet<usize> = records.iter().map(|r| r.x_support).collect();
+    let distinct_sup: std::collections::BTreeSet<usize> =
+        records.iter().map(|r| r.x_support).collect();
     eprintln!(
         "q-scan: {} reps, Q=0 in {q0}, {} distinct Q, {} distinct support; done in {:.1}s",
-        records.len(), distinct_q.len(), distinct_sup.len(), t0.elapsed().as_secs_f64()
+        records.len(),
+        distinct_q.len(),
+        distinct_sup.len(),
+        t0.elapsed().as_secs_f64()
     );
-    println!("{}", serde_json::to_string(&records).expect("serialize q-scan"));
+    println!(
+        "{}",
+        serde_json::to_string(&records).expect("serialize q-scan")
+    );
 }
 
 /// One code class's result for the implemented worldsheet spin-sum obstruction.
@@ -1445,16 +1595,22 @@ pub fn verify_worldsheet_catalog_certificate(
     use crate::filters::verify_worldsheet_witness;
     use crate::ranking::Ranking;
 
-    let catalog: Catalog = serde_json::from_str(catalog_json)
-        .map_err(|e| format!("parse catalog: {e}"))?;
+    let catalog: Catalog =
+        serde_json::from_str(catalog_json).map_err(|e| format!("parse catalog: {e}"))?;
     let certificate: WorldsheetCatalogCertificate = serde_json::from_str(certificate_json)
         .map_err(|e| format!("parse worldsheet certificate: {e}"))?;
 
     if certificate.schema_version != 1 {
-        return Err(format!("unsupported schema version {}", certificate.schema_version));
+        return Err(format!(
+            "unsupported schema version {}",
+            certificate.schema_version
+        ));
     }
     if certificate.n != catalog.n {
-        return Err(format!("certificate N={} does not match catalog N={}", certificate.n, catalog.n));
+        return Err(format!(
+            "certificate N={} does not match catalog N={}",
+            certificate.n, catalog.n
+        ));
     }
     if certificate.total_code_classes != catalog.total_classes
         || certificate.records.len() != catalog.codes.len()
@@ -1471,7 +1627,10 @@ pub fn verify_worldsheet_catalog_certificate(
     let mut by_index = BTreeMap::new();
     for record in &certificate.records {
         if by_index.insert(record.code_index, record).is_some() {
-            return Err(format!("duplicate certificate record {}", record.code_index));
+            return Err(format!(
+                "duplicate certificate record {}",
+                record.code_index
+            ));
         }
     }
 
@@ -1483,20 +1642,28 @@ pub fn verify_worldsheet_catalog_certificate(
             .get(&code_index)
             .ok_or_else(|| format!("missing certificate record {code_index}"))?;
         if record.k != entry.k || record.generators_raw != entry.generators_raw {
-            return Err(format!("record {code_index} does not match the catalog code"));
+            return Err(format!(
+                "record {code_index} does not match the catalog code"
+            ));
         }
         let chromo = Chromotopology::from_code(&DoublyEvenCode::new(
             catalog.n,
             entry.generators_raw.clone(),
         ));
         if record.bosons != chromo.d() || record.fermions != chromo.d() {
-            return Err(format!("record {code_index} has incorrect field dimensions"));
+            return Err(format!(
+                "record {code_index} has incorrect field dimensions"
+            ));
         }
         if !record.verified || record.p == 0 || record.q == 0 || record.p + record.q != catalog.n {
-            return Err(format!("record {code_index} does not declare a verified nontrivial split"));
+            return Err(format!(
+                "record {code_index} does not declare a verified nontrivial split"
+            ));
         }
         if Ranking::from_heights(record.height.clone()).num_levels() != record.height_levels {
-            return Err(format!("record {code_index} has incorrect height-level metadata"));
+            return Err(format!(
+                "record {code_index} has incorrect height-level metadata"
+            ));
         }
         let checked = verify_worldsheet_witness(&chromo, &record.height, &record.chirality);
         if checked != Some((record.p, record.q)) {
@@ -1506,8 +1673,12 @@ pub fn verify_worldsheet_catalog_certificate(
             ));
         }
         nontrivial_records += 1;
-        *construction_counts.entry(record.construction.clone()).or_insert(0) += 1;
-        *split_counts.entry(format!("{},{}", record.p, record.q)).or_insert(0) += 1;
+        *construction_counts
+            .entry(record.construction.clone())
+            .or_insert(0) += 1;
+        *split_counts
+            .entry(format!("{},{}", record.p, record.q))
+            .or_insert(0) += 1;
     }
 
     Ok(WorldsheetCertificateSummary {
@@ -1526,7 +1697,10 @@ pub fn run_worldsheet_certificate_verification(catalog_path: &str, certificate_p
         .unwrap_or_else(|e| panic!("read certificate {certificate_path:?}: {e}"));
     let summary = verify_worldsheet_catalog_certificate(&catalog_json, &certificate_json)
         .unwrap_or_else(|e| panic!("worldsheet certificate verification failed: {e}"));
-    println!("{}", serde_json::to_string_pretty(&summary).expect("serialize certificate summary"));
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize certificate summary")
+    );
 }
 
 /// Worldsheet-lift oracle over a k-stratum: for each code class, generate hangings
@@ -1551,16 +1725,26 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
     use crate::ranking::Ranking;
     use rayon::prelude::*;
 
-    let chains: usize = std::env::var("ADINKRA_LIFT_CHAINS").ok().and_then(|s| s.parse().ok()).unwrap_or(32);
-    let max_rank: usize = std::env::var("ADINKRA_LIFT_MAXRANK").ok().and_then(|s| s.parse().ok()).unwrap_or(512);
+    let chains: usize = std::env::var("ADINKRA_LIFT_CHAINS")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(32);
+    let max_rank: usize = std::env::var("ADINKRA_LIFT_MAXRANK")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(512);
 
     let t0 = Instant::now();
     let data = fs::read_to_string(json_path)
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
     let n = catalog.n;
-    let codes: Vec<(usize, &CodeEntry)> =
-        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
     eprintln!(
         "lift-scan: {} codes with k={only_k} (N={n}); worldsheet (p,q) over valise + source-raised hangings",
         codes.len()
@@ -1593,7 +1777,11 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
             }
             // Independently certify the best nontrivial result (the proof step).
             let (verified, best_chirality, best_height) = match &best_witness {
-                Some((h, c)) => (verify_worldsheet_witness(&chromo, h, c) == Some(best), c.clone(), h.clone()),
+                Some((h, c)) => (
+                    verify_worldsheet_witness(&chromo, h, c) == Some(best),
+                    c.clone(),
+                    h.clone(),
+                ),
                 None => (true, Vec::new(), rankings[0].height.clone()), // trivial (N,0): valise (rankings[0])
             };
             LiftRecord {
@@ -1621,7 +1809,9 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
         *hist.entry(r.best_min).or_insert(0) += 1;
     }
     if unverified > 0 {
-        eprintln!("lift-scan: WARNING: {unverified} nontrivial results FAILED witness verification (bug!)");
+        eprintln!(
+            "lift-scan: WARNING: {unverified} nontrivial results FAILED witness verification (bug!)"
+        );
     }
     eprintln!(
         "lift-scan: nontrivial worldsheet spin-sum witness VERIFIED for {}/{} \
@@ -1629,9 +1819,16 @@ pub fn run_lift_scan(json_path: &str, only_k: usize) {
          NOTE: each best_min>0 is an achieved lower bound on the true max (the predicate is certified; \
          the maximum over ALL hangings is not claimed). best_min=0 means none found at \
          chains={chains}/max_rank={max_rank} (raise the budget), NOT a proof of none. done in {:.1}s",
-        nontrivial, recs.len(), verified_nontrivial, hist, t0.elapsed().as_secs_f64()
+        nontrivial,
+        recs.len(),
+        verified_nontrivial,
+        hist,
+        t0.elapsed().as_secs_f64()
     );
-    println!("{}", serde_json::to_string(&recs).expect("serialize lift-scan"));
+    println!(
+        "{}",
+        serde_json::to_string(&recs).expect("serialize lift-scan")
+    );
 }
 
 #[cfg(test)]
@@ -1649,13 +1846,20 @@ mod construct_tests {
         let h16 = engineered_height(&chromo16, 16, 0x00ff, 0xff00);
         let chir16: Vec<i8> = (0..16).map(|c| if c < 8 { 1 } else { -1 }).collect();
         let v16 = verify_worldsheet_witness(&chromo16, &h16, &chir16);
-        assert_eq!(v16, Some((8, 8)), "all-ones [16,1] must verify the (8,8) predicate, got {v16:?}");
+        assert_eq!(
+            v16,
+            Some((8, 8)),
+            "all-ones [16,1] must verify the (8,8) predicate, got {v16:?}"
+        );
 
         // N=4 all-ones [4,1], L = {0,1} -> (2,2).
         let chromo4 = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
         let h4 = engineered_height(&chromo4, 4, 0b0011, 0b1100);
         let chir4: Vec<i8> = vec![1, 1, -1, -1];
-        assert_eq!(verify_worldsheet_witness(&chromo4, &h4, &chir4), Some((2, 2)));
+        assert_eq!(
+            verify_worldsheet_witness(&chromo4, &h4, &chir4),
+            Some((2, 2))
+        );
     }
 
     /// The constructive factorized witness must INDEPENDENTLY VERIFY and give a
@@ -1665,20 +1869,26 @@ mod construct_tests {
     #[test]
     fn constructive_witness_verifies() {
         let cases: Vec<(usize, Vec<u32>, bool)> = vec![
-            (6, vec![0b001111], true),      // [4,1] core + 2 free
-            (8, vec![0b00001111], true),    // [4,1] core + 4 free
-            (16, vec![0xf], true),          // k=1 index 0: [4,1] core + 12 free (the hard one)
-            (16, vec![0xff], true),         // k=1 index 6: [8,1] core + 8 free
-            (16, vec![0xfff], true),        // k=1 index 23: [12,1] core + 4 free
-            (16, vec![0xffff], false),      // k=1 index 113: [16,1] fully coupled -> None
+            (6, vec![0b001111], true),   // [4,1] core + 2 free
+            (8, vec![0b00001111], true), // [4,1] core + 4 free
+            (16, vec![0xf], true),       // k=1 index 0: [4,1] core + 12 free (the hard one)
+            (16, vec![0xff], true),      // k=1 index 6: [8,1] core + 8 free
+            (16, vec![0xfff], true),     // k=1 index 23: [12,1] core + 4 free
+            (16, vec![0xffff], false),   // k=1 index 113: [16,1] fully coupled -> None
         ];
         for (n, gens, expect_some) in cases {
             let w = construct_factorized_witness(n, &gens);
-            assert_eq!(w.is_some(), expect_some, "n={n} gens={gens:?}: some={}", w.is_some());
+            assert_eq!(
+                w.is_some(),
+                expect_some,
+                "n={n} gens={gens:?}: some={}",
+                w.is_some()
+            );
             if let Some((height, chir)) = w {
                 let chromo = Chromotopology::from_code(&DoublyEvenCode::new(n, gens.clone()));
                 let v = verify_worldsheet_witness(&chromo, &height, &chir);
-                let (p, q) = v.unwrap_or_else(|| panic!("n={n} gens={gens:?}: witness FAILED to verify"));
+                let (p, q) =
+                    v.unwrap_or_else(|| panic!("n={n} gens={gens:?}: witness FAILED to verify"));
                 assert!(p > 0 && q > 0, "n={n}: trivial split ({p},{q})");
             }
         }
@@ -1748,9 +1958,16 @@ pub fn run_lift_construct(json_path: &str, only_k: usize) {
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
     let n = catalog.n;
-    let codes: Vec<(usize, &CodeEntry)> =
-        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
-    eprintln!("lift-construct: {} codes with k={only_k} (N={n}); constructive factorized witnesses", codes.len());
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
+    eprintln!(
+        "lift-construct: {} codes with k={only_k} (N={n}); constructive factorized witnesses",
+        codes.len()
+    );
 
     let (mut verified_count, mut coupled) = (0usize, 0usize);
     let mut records = Vec::new();
@@ -1761,34 +1978,44 @@ pub fn run_lift_construct(json_path: &str, only_k: usize) {
                 coupled += 1;
                 eprintln!("  code {idx}: FULLY COUPLED (no free columns) — factorized route N/A");
             }
-            Some((height, chirality)) => match verify_worldsheet_witness(&chromo, &height, &chirality) {
-                Some((p, q)) if p > 0 && q > 0 => {
-                    verified_count += 1;
-                    let levels = crate::ranking::Ranking::from_heights(height.clone()).num_levels();
-                    records.push(LiftRecord {
-                        code_index: *idx,
-                        k: only_k,
-                        d: chromo.d(),
-                        num_rankings: 1,
-                        best_p: p,
-                        best_q: q,
-                        best_min: p.min(q),
-                        best_levels: levels,
-                        best_height: height,
-                        best_chirality: chirality,
-                        verified: true,
-                    });
-                    eprintln!("  code {idx}: VERIFIED spin-sum witness ({p},{q}) via the factorized construction");
+            Some((height, chirality)) => {
+                match verify_worldsheet_witness(&chromo, &height, &chirality) {
+                    Some((p, q)) if p > 0 && q > 0 => {
+                        verified_count += 1;
+                        let levels =
+                            crate::ranking::Ranking::from_heights(height.clone()).num_levels();
+                        records.push(LiftRecord {
+                            code_index: *idx,
+                            k: only_k,
+                            d: chromo.d(),
+                            num_rankings: 1,
+                            best_p: p,
+                            best_q: q,
+                            best_min: p.min(q),
+                            best_levels: levels,
+                            best_height: height,
+                            best_chirality: chirality,
+                            verified: true,
+                        });
+                        eprintln!(
+                            "  code {idx}: VERIFIED spin-sum witness ({p},{q}) via the factorized construction"
+                        );
+                    }
+                    other => eprintln!(
+                        "  code {idx}: construction did NOT verify ({other:?}) — not claimed"
+                    ),
                 }
-                other => eprintln!("  code {idx}: construction did NOT verify ({other:?}) — not claimed"),
-            },
+            }
         }
     }
     eprintln!(
         "lift-construct: {verified_count}/{} codes have verified constructive witnesses; {coupled} fully-coupled (factorized route N/A)",
         codes.len()
     );
-    println!("{}", serde_json::to_string(&records).expect("serialize lift-construct"));
+    println!(
+        "{}",
+        serde_json::to_string(&records).expect("serialize lift-construct")
+    );
 }
 
 /// Coset-invariant "folded" seed height `h(v) = |popcount(v & L) − popcount(v & R)|`
@@ -1827,11 +2054,18 @@ pub fn run_enhance_scan(json_path: &str, only_k: usize) {
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
     let n = catalog.n;
-    let codes: Vec<(usize, &CodeEntry)> =
-        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
     let sieve = Sieve10D::new();
     let full = ((1u64 << n) - 1) as u32;
-    eprintln!("enhance-scan: {} codes with k={only_k} (N={n}); FIL 10D sieve (SPARSE, O(d))", codes.len());
+    eprintln!(
+        "enhance-scan: {} codes with k={only_k} (N={n}); FIL 10D sieve (SPARSE, O(d))",
+        codes.len()
+    );
 
     // Per-code result: (idx, d, min spatial_worst, worst mu0, worst on_lambda, fro_min, fro_max).
     let recs: Vec<(usize, usize, f64, f64, f64, f64, f64)> = codes
@@ -1847,10 +2081,18 @@ pub fn run_enhance_scan(json_path: &str, only_k: usize) {
             // codes, so it is dropped elsewhere (else it breaks the μ=0 anchor).
             let mut raw = vec![Ranking::valise(&chromo).height];
             raw.push(engineered_height(&chromo, n, 0x00ff, full & !0x00ff));
-            for r in Ranking::structured_raises(&chromo, 12, 8) { raw.push(r.height); }
+            for r in Ranking::structured_raises(&chromo, 12, 8) {
+                raw.push(r.height);
+            }
             let (mut best, mut wmu0, mut wonl, mut fmin, mut fmax) =
                 (f64::INFINITY, 0.0f64, 0.0f64, f64::INFINITY, 0.0f64);
-            for h in raw.iter().filter(|h| Ranking { height: (*h).clone() }.is_valid(&chromo).is_ok()) {
+            for h in raw.iter().filter(|h| {
+                Ranking {
+                    height: (*h).clone(),
+                }
+                .is_valid(&chromo)
+                .is_ok()
+            }) {
                 let r = sieve.omega_residuals_sparse(&chromo, h, &dashing);
                 best = best.min(r.spatial_worst);
                 wmu0 = wmu0.max(r.mu0);
@@ -1863,19 +2105,25 @@ pub fn run_enhance_scan(json_path: &str, only_k: usize) {
         .collect();
 
     let mut passing = 0usize;
-    let (mut worst_mu0, mut worst_onlam, mut fro_min, mut fro_max) = (0.0f64, 0.0f64, f64::INFINITY, 0.0f64);
+    let (mut worst_mu0, mut worst_onlam, mut fro_min, mut fro_max) =
+        (0.0f64, 0.0f64, f64::INFINITY, 0.0f64);
     for &(idx, d, best, wmu0, wonl, fmin, fmax) in &recs {
         worst_mu0 = worst_mu0.max(wmu0);
         worst_onlam = worst_onlam.max(wonl);
         fro_min = fro_min.min(fmin);
         fro_max = fro_max.max(fmax);
-        if best < 1e-9 { passing += 1; eprintln!("  code {idx} (d={d}): PASSES — a hanging enhances!"); }
+        if best < 1e-9 {
+            passing += 1;
+            eprintln!("  code {idx} (d={d}): PASSES — a hanging enhances!");
+        }
     }
     eprintln!(
         "enhance-scan k={only_k}: {passing}/{} classes pass; gates: max μ0={worst_mu0:.1e} \
          max on-Λ={worst_onlam:.1e} (both ~0); Frobenius range [{fro_min:.1},{fro_max:.1}] (varies={}); \
          done in {:.1}s",
-        recs.len(), (fro_max - fro_min) > 1e-6, t0.elapsed().as_secs_f64()
+        recs.len(),
+        (fro_max - fro_min) > 1e-6,
+        t0.elapsed().as_secs_f64()
     );
 }
 
@@ -1893,9 +2141,16 @@ pub fn run_central_charge(json_path: &str, only_k: usize) {
         .unwrap_or_else(|e| panic!("Failed to read codes JSON {json_path:?}: {e}"));
     let catalog: Catalog = serde_json::from_str(&data).expect("parse catalog");
     let n = catalog.n;
-    let codes: Vec<(usize, &CodeEntry)> =
-        catalog.codes.iter().enumerate().filter(|(_, e)| e.k == only_k).collect();
-    eprintln!("central-charge: {} codes with k={only_k} (N={n}); antisymmetric commutant = # central charges", codes.len());
+    let codes: Vec<(usize, &CodeEntry)> = catalog
+        .codes
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.k == only_k)
+        .collect();
+    eprintln!(
+        "central-charge: {} codes with k={only_k} (N={n}); antisymmetric commutant = # central charges",
+        codes.len()
+    );
 
     // One valise rep per code (commutant structure is dashing-independent).
     let recs: Vec<(usize, usize, usize, usize)> = codes
@@ -1908,7 +2163,9 @@ pub fn run_central_charge(json_path: &str, only_k: usize) {
         .collect();
 
     let mut hist: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
-    for &(_, _, _, z) in &recs { *hist.entry(z).or_insert(0) += 1; }
+    for &(_, _, _, z) in &recs {
+        *hist.entry(z).or_insert(0) += 1;
+    }
     let with_cc = recs.iter().filter(|r| r.3 > 0).count();
     for &(idx, d, cd, z) in recs.iter().take(6) {
         eprintln!("  code {idx}: d={d} commutant_dim={cd} central_charges={z}");
@@ -1916,7 +2173,9 @@ pub fn run_central_charge(json_path: &str, only_k: usize) {
     eprintln!(
         "central-charge: k={only_k}: {with_cc}/{} codes admit a nonzero central charge; \
          central-charge-count histogram {:?}; done in {:.1}s",
-        recs.len(), hist, t0.elapsed().as_secs_f64()
+        recs.len(),
+        hist,
+        t0.elapsed().as_secs_f64()
     );
 }
 
@@ -1945,7 +2204,9 @@ fn engineered_height(chromo: &Chromotopology, _n: usize, lmask: u32, rmask: u32)
     let mut height = vec![i32::MIN; chromo.num_vertices()];
     for v in 0u32..(1u32 << (lbits + rbits) as u32) {
         let idx = chromo.coset_of(v);
-        if height[idx] != i32::MIN { continue; }
+        if height[idx] != i32::MIN {
+            continue;
+        }
         let pl = (v & lmask).count_ones() as i32;
         let pr = (v & rmask).count_ones() as i32;
         height[idx] = (pl % 2) + pr.min(rbits - pr);
@@ -1973,7 +2234,9 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
     let adj = chromo.vertex_adjacency();
     eprintln!(
         "lift-search: code {code_index} (N={n}, k={}, d={}, {} vertices), {iters} anneal iters",
-        entry.k, chromo.d(), chromo.num_vertices()
+        entry.k,
+        chromo.d(),
+        chromo.num_vertices()
     );
 
     // Heuristic landscape value for guiding the search (may be garbage on a
@@ -1986,7 +2249,8 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
     // the hanging and spin-sum predicate. Thus best_min is an achieved lower bound,
     // never a value from an invalid coset construction.
     let verified_min = |h: &[i32]| -> Option<(usize, usize)> {
-        let (_, _, chir) = max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() });
+        let (_, _, chir) =
+            max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.to_vec() });
         verify_worldsheet_witness(&chromo, h, &chir).filter(|&(p, q)| p > 0 && q > 0)
     };
 
@@ -1998,53 +2262,86 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
     let mut best_h: Vec<i32> = Ranking::valise(&chromo).height;
     let mut best_chirality = Vec::new();
     for &lm in &lmasks {
-        if lm.count_ones() as usize != n / 2 { continue; }
+        if lm.count_ones() as usize != n / 2 {
+            continue;
+        }
         let h = engineered_height(&chromo, n, lm, full & !lm);
         match verified_min(&h) {
             Some((p, q)) => {
-                eprintln!("  engineered L={lm:#06x}: VERIFIED ({p},{q}) [min={}]", p.min(q));
+                eprintln!(
+                    "  engineered L={lm:#06x}: VERIFIED ({p},{q}) [min={}]",
+                    p.min(q)
+                );
                 if p.min(q) > best_min {
-                    let (_, _, chirality) = max_balanced_worldsheet_witness(
-                        &chromo,
-                        &Ranking { height: h.clone() },
-                    );
+                    let (_, _, chirality) =
+                        max_balanced_worldsheet_witness(&chromo, &Ranking { height: h.clone() });
                     best_min = p.min(q);
                     best = (p, q);
                     best_h = h;
                     best_chirality = chirality;
                 }
             }
-            None => eprintln!("  engineered L={lm:#06x}: not a valid witness for this code (skipped)"),
+            None => {
+                eprintln!("  engineered L={lm:#06x}: not a valid witness for this code (skipped)")
+            }
         }
     }
 
     // --- Method 2: poset-move search seeded from the best verified height (or the
     // valise). Uses the heuristic eval to steer; commits to best only on verify. ---
     let mut st = seed | 1;
-    let mut rng = move || { st ^= st << 13; st ^= st >> 7; st ^= st << 17; st };
+    let mut rng = move || {
+        st ^= st << 13;
+        st ^= st >> 7;
+        st ^= st << 17;
+        st
+    };
     let sinks = |h: &[i32]| -> Vec<usize> {
-        (0..h.len()).filter(|&v| !adj[v].is_empty() && adj[v].iter().all(|&w| h[w] < h[v])).collect()
+        (0..h.len())
+            .filter(|&v| !adj[v].is_empty() && adj[v].iter().all(|&w| h[w] < h[v]))
+            .collect()
     };
     let mut cur = best_h.clone();
     let mut cur_min = eval(&cur).0.min(eval(&cur).1);
     for _ in 0..iters {
         let raise = rng() & 1 == 0;
-        let pts = if raise { Ranking { height: cur.clone() }.sources(&adj) } else { sinks(&cur) };
-        if pts.is_empty() { continue; }
+        let pts = if raise {
+            Ranking {
+                height: cur.clone(),
+            }
+            .sources(&adj)
+        } else {
+            sinks(&cur)
+        };
+        if pts.is_empty() {
+            continue;
+        }
         let mut cand = cur.clone();
         let frac = 2 + (rng() % 5);
         let mut moved = false;
-        for &v in &pts { if rng() % frac == 0 { cand[v] += if raise { 2 } else { -2 }; moved = true; } }
-        if !moved { cand[pts[(rng() as usize) % pts.len()]] += if raise { 2 } else { -2 }; }
+        for &v in &pts {
+            if rng() % frac == 0 {
+                cand[v] += if raise { 2 } else { -2 };
+                moved = true;
+            }
+        }
+        if !moved {
+            cand[pts[(rng() as usize) % pts.len()]] += if raise { 2 } else { -2 };
+        }
         cand = Ranking::from_heights(cand).height;
         let (np, nq) = eval(&cand);
         let nm = np.min(nq);
-        if nm >= cur_min || rng() % 20 == 0 { cur = cand.clone(); cur_min = nm; }
+        if nm >= cur_min || rng() % 20 == 0 {
+            cur = cand.clone();
+            cur_min = nm;
+        }
         if nm > best_min {
             if let Some((p, q)) = verified_min(&cand) {
                 let (_, _, chirality) = max_balanced_worldsheet_witness(
                     &chromo,
-                    &Ranking { height: cand.clone() },
+                    &Ranking {
+                        height: cand.clone(),
+                    },
                 );
                 best_min = p.min(q);
                 best = (p, q);
@@ -2072,7 +2369,10 @@ pub fn run_lift_attack(json_path: &str, code_index: usize, iters: usize, seed: u
             verified: true,
         };
         eprintln!("lift-search: code {code_index}: verified spin-sum witness {best:?}");
-        println!("{}", serde_json::to_string(&record).expect("serialize lift-search"));
+        println!(
+            "{}",
+            serde_json::to_string(&record).expect("serialize lift-search")
+        );
     } else {
         eprintln!(
             "lift-search: code {code_index}: no verified witness from these constructions at iters={iters} \
@@ -2101,10 +2401,9 @@ mod tests {
     fn catalog_worldsheet_spin_sum_certificate_verifies_all_145_records() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
         let catalog = fs::read_to_string(root.join("adinkra_codes_n16.json")).unwrap();
-        let certificate = fs::read_to_string(
-            root.join("results/worldsheet_spin_sum_witnesses_n16.json"),
-        )
-        .unwrap();
+        let certificate =
+            fs::read_to_string(root.join("results/worldsheet_spin_sum_witnesses_n16.json"))
+                .unwrap();
         let summary = verify_worldsheet_catalog_certificate(&catalog, &certificate).unwrap();
         assert_eq!(summary.n, 16);
         assert_eq!(summary.verified_records, 145);
@@ -2117,7 +2416,7 @@ mod integration_tests {
     use crate::chromotopology::Chromotopology;
     use crate::code::DoublyEvenCode;
     use crate::dashing::DashingEnumerator;
-    use crate::holoraumy::{gadget, HoloraumyData};
+    use crate::holoraumy::{HoloraumyData, gadget};
     use crate::lr_matrix::AdinkraRep;
 
     fn assert_real_construction_invariants(label: &str, code: &DoublyEvenCode) {
@@ -2156,20 +2455,14 @@ mod integration_tests {
 
     #[test]
     fn n4_code_4_1_4_real_construction() {
-        assert_real_construction_invariants(
-            "[4,1,4]",
-            &DoublyEvenCode::new(4, vec![0b1111]),
-        );
+        assert_real_construction_invariants("[4,1,4]", &DoublyEvenCode::new(4, vec![0b1111]));
     }
 
     #[test]
     fn n8_hamming_8_4_4_real_construction() {
         assert_real_construction_invariants(
             "[8,4,4]",
-            &DoublyEvenCode::new(
-                8,
-                vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-            ),
+            &DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000]),
         );
     }
 }

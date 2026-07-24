@@ -345,11 +345,7 @@ mod tests {
             .flat_map(|i| ((i + 1)..values.len()).map(move |j| (i, j)))
             .filter(|&(i, j)| values[i] > values[j])
             .count();
-        if inversions % 2 == 0 {
-            1
-        } else {
-            -1
-        }
+        if inversions % 2 == 0 { 1 } else { -1 }
     }
 
     fn omega(indices: [usize; 4]) -> i64 {
@@ -433,13 +429,17 @@ mod tests {
             .collect();
 
         assert_eq!(sourced.len(), BBBM_PARAMETERS);
-        assert!(sourced
-            .iter()
-            .all(|parameter| !matches!(parameter, Spin7Parameter::AntiSelfDualTensor(_))));
+        assert!(
+            sourced
+                .iter()
+                .all(|parameter| !matches!(parameter, Spin7Parameter::AntiSelfDualTensor(_)))
+        );
         assert_eq!(omitted.len(), TENSOR_PARAMETERS);
-        assert!(omitted
-            .iter()
-            .all(|parameter| matches!(parameter, Spin7Parameter::AntiSelfDualTensor(_))));
+        assert!(
+            omitted
+                .iter()
+                .all(|parameter| matches!(parameter, Spin7Parameter::AntiSelfDualTensor(_)))
+        );
     }
 
     #[test]

@@ -3,10 +3,9 @@
 /// The experiment: enumerate all valid doubly-even codes for N=1..10, hold out one
 /// value of N, and test whether baseline generators can recover the held-out codes
 /// using only knowledge of codes at other values of N.
-
 use crate::baselines;
 use crate::canonical::{canonical_form, deduplicate, is_decomposable};
-use crate::code::{enumerate_codes, DoublyEvenCode};
+use crate::code::{DoublyEvenCode, enumerate_codes};
 
 use std::collections::HashSet;
 use std::time::Instant;
@@ -148,10 +147,7 @@ pub fn evaluate_held_out(held_out_n: usize, max_candidates_per_baseline: usize) 
     );
 
     // Build canonical form set for fast lookup
-    let gt_canonical: HashSet<Vec<u32>> = nontrivial_gt
-        .iter()
-        .map(|c| canonical_form(c))
-        .collect();
+    let gt_canonical: HashSet<Vec<u32>> = nontrivial_gt.iter().map(|c| canonical_form(c)).collect();
 
     // Step 2: Gather training codes
     eprintln!("Gathering training codes (all N != {})...", held_out_n);
@@ -326,7 +322,8 @@ pub fn print_results(results: &[EvalResult]) {
     if ns.len() > 1 || results.len() > 1 {
         println!("=== Per-N Summary ===");
         for n in &ns {
-            let n_results: Vec<&EvalResult> = results.iter().filter(|r| r.held_out_n == *n).collect();
+            let n_results: Vec<&EvalResult> =
+                results.iter().filter(|r| r.held_out_n == *n).collect();
             let best = n_results
                 .iter()
                 .max_by(|a, b| {

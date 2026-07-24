@@ -190,7 +190,11 @@ pub struct GardenValidation {
 impl From<&CompleteGardenScan> for GardenValidation {
     fn from(scan: &CompleteGardenScan) -> Self {
         assert_eq!(scan.rank_histogram.len(), 1, "Garden rank must be uniform");
-        assert_eq!(scan.nullity_histogram.len(), 1, "Garden nullity must be uniform");
+        assert_eq!(
+            scan.nullity_histogram.len(),
+            1,
+            "Garden nullity must be uniform"
+        );
         Self {
             cosets_scanned: scan.cosets_scanned,
             signable_cosets: scan.signable_cosets,

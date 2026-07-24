@@ -6,8 +6,8 @@
 //! arithmetic.
 
 use crate::eleven_dimensional_bridge::{
-    verify_exterior_highest_weight_kernel_fixtures, ExteriorHighestWeightKernelFixture,
-    HighestWeightSystemReport,
+    ExteriorHighestWeightKernelFixture, HighestWeightSystemReport,
+    verify_exterior_highest_weight_kernel_fixtures,
 };
 use serde::Serialize;
 
@@ -872,10 +872,12 @@ mod tests {
         assert_eq!(report.integer_kernel_vectors_verified, 19);
         assert_eq!(report.nonzero_raising_residual_rows, 0);
         assert!(report.second_leading_source_target_coupling.passed);
-        assert!(report
-            .additional_leading_source_target_couplings
-            .iter()
-            .all(|coupling| coupling.passed));
+        assert!(
+            report
+                .additional_leading_source_target_couplings
+                .iter()
+                .all(|coupling| coupling.passed)
+        );
         assert_eq!(
             report.additional_leading_source_target_couplings[0].primitive_domain_coefficients,
             [4, -3, 2, -1, -2, 2, -4, -2, 4, -4, 2, -4, 4, -4]

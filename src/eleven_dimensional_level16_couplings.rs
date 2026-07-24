@@ -5,11 +5,13 @@ use num_bigint::BigInt;
 use num_rational::Ratio;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, File};
-use std::io::{self, Write};
+use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 const TARGET_DYNKIN_LABEL: &str = "10001";
 const GOLDEN_COMMIT: &str = "89f20fc";
@@ -408,6 +410,112 @@ struct CoupledSparseState {
     components: BTreeMap<usize, Vec<(u32, i128)>>,
 }
 
+#[derive(Debug, Clone)]
+struct MomentumCoupledDenseState {
+    total_weight: Weight,
+    components: BTreeMap<(usize, usize), DenseState>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MomentumHookEntry {
+    pub momentum_vector_index: usize,
+    pub free_spinor_index: usize,
+    pub exterior_mask: u32,
+    pub real: i128,
+    pub imaginary: i128,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ZeroMomentumGaugeCompositionEntry {
+    pub parameter_component_index: usize,
+    pub exterior_mask: u32,
+    pub real: i128,
+    pub imaginary: i128,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct JointColumnSpec {
+    pub ordinal: usize,
+    pub label: String,
+    pub kind: String,
+    pub source_dynkin_label: String,
+    pub source_copy: usize,
+    pub intermediate_dynkin_label: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JointColumnFunctionalFile {
+    pub schema_version: String,
+    pub ordinal: usize,
+    pub label: String,
+    pub values: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JointColumnArtifactManifest {
+    pub schema_version: String,
+    pub passed: bool,
+    pub spec: JointColumnSpec,
+    pub nonzero_residual_entries: u64,
+    pub maximum_absolute_residual_coefficient: String,
+    pub exact_functional_values: usize,
+    pub raw_record_bytes: usize,
+    pub raw_uncompressed_bytes: u64,
+    pub raw_compressed_bytes: u64,
+    pub raw_uncompressed_sha256: String,
+    pub raw_compressed_sha256: String,
+    pub functional_file_sha256: String,
+    pub fixture_sha256: String,
+    pub source_revision: String,
+    pub executable_sha256: String,
+    pub host: String,
+    pub process_id: u32,
+    pub started_unix_seconds: u64,
+    pub finished_unix_seconds: u64,
+    pub elapsed_milliseconds: u128,
+    pub raw_file: String,
+    pub functional_file: String,
+    pub convention: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JointCompatibilityMatrixReport {
+    pub schema_version: String,
+    pub role: String,
+    pub leading_basis: Vec<String>,
+    pub first_momentum_basis: Vec<String>,
+    pub hook_rows: usize,
+    pub momentum_coordinate_rows: usize,
+    pub coefficient_columns: usize,
+    pub leading_columns: usize,
+    pub first_momentum_columns: usize,
+    pub reciprocal_couplings_verified: usize,
+    pub reciprocal_coupling_intermediates: Vec<String>,
+    pub reciprocal_coupling_domain_dimensions: Vec<usize>,
+    pub reciprocal_coupling_kernel_dimensions: Vec<usize>,
+    pub reciprocal_coupling_raising_residuals: Vec<usize>,
+    pub exact_functional_rows: usize,
+    pub exact_functional_matrix_rank: usize,
+    pub exact_functional_nullity: usize,
+    pub full_rank_certified_by_functional_minor: bool,
+    pub exact_joint_nullity: Option<usize>,
+    pub functional_kernel_leading_projection_rank: usize,
+    pub leading_extension_excluded: bool,
+    pub previous_hook_kernel_dimension: usize,
+    pub previous_hook_kernel_subspace_dimension_extended: Option<usize>,
+    pub scalar_factorizing_direction_extends: Option<bool>,
+    pub direct_spinor_quotient_dimension_extended: Option<usize>,
+    pub functional_primitive_integer_kernel_basis: Vec<Vec<String>>,
+    pub functional_kernel_residuals_exactly_zero: bool,
+    pub exact_functional_normal_matrix: Vec<Vec<RationalMatrixEntry>>,
+    pub maximum_absolute_residual_coefficient: i128,
+    pub maximum_absolute_normal_matrix_numerator: String,
+    pub convention: String,
+    pub interpretation: String,
+    pub boundary: String,
+    pub passed: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RationalMatrixEntry {
     pub numerator: String,
@@ -738,6 +846,23 @@ fn exterior_replacement_sign(mask: u32, first: usize, second: usize) -> i64 {
     } else {
         -1
     }
+}
+
+fn right_wedge_sign(mask: u32, spinor_index: usize) -> Option<i128> {
+    let bit = 1_u32 << spinor_index;
+    if mask & bit != 0 {
+        return None;
+    }
+    let greater_bits = if spinor_index == 31 {
+        0
+    } else {
+        !((1_u32 << (spinor_index + 1)) - 1)
+    };
+    Some(if (mask & greater_bits).count_ones() % 2 == 0 {
+        1
+    } else {
+        -1
+    })
 }
 
 fn lowering_coordinates(upper: Weight, lower: Weight) -> Option<[i16; 5]> {
@@ -1282,6 +1407,7 @@ fn materialize_coupled_highest(
     problem: CouplingProblem,
     abstract_certificate: &AbstractCouplingCertificate,
     fixture_bytes: &[u8],
+    coefficient_width_bytes: usize,
 ) -> (ExteriorModel, CoupledDenseState, i128) {
     assert_eq!(
         abstract_certificate.target_dynkin_label,
@@ -1289,7 +1415,11 @@ fn materialize_coupled_highest(
     );
     assert!(abstract_certificate.passed);
     let mut model = ExteriorModel::new(problem.exterior_degree);
-    let highest = model.fixture_state(&abstract_certificate.source_dynkin_label, fixture_bytes, 2);
+    let highest = model.fixture_state(
+        &abstract_certificate.source_dynkin_label,
+        fixture_bytes,
+        coefficient_width_bytes,
+    );
     let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
     let mut components = BTreeMap::new();
     let mut maximum = 0_i128;
@@ -1368,6 +1498,143 @@ fn coupled_state_for_word(
     state
 }
 
+fn momentum_vector_weights() -> [Weight; 11] {
+    let mut weights = [[0_i8; 5]; 11];
+    for axis in 0..5 {
+        weights[2 * axis][axis] = 2;
+        weights[2 * axis + 1][axis] = -2;
+    }
+    weights
+}
+
+fn lowered_momentum_vector_index(vector_index: usize, root: usize) -> Option<(usize, i64)> {
+    let weights = momentum_vector_weights();
+    let weight = weights[vector_index];
+    let mut target = weight;
+    if root < 4 {
+        if weight[root] == 2 {
+            target[root] = 0;
+            target[root + 1] = 2;
+        } else if weight[root + 1] == -2 {
+            target[root] = -2;
+            target[root + 1] = 0;
+        } else {
+            return None;
+        }
+        Some((weights.iter().position(|item| *item == target).unwrap(), 1))
+    } else if weight[4] == 2 {
+        Some((10, 1))
+    } else if weight == [0; 5] {
+        target[4] = -2;
+        Some((weights.iter().position(|item| *item == target).unwrap(), 2))
+    } else {
+        None
+    }
+}
+
+fn add_scaled_momentum_dense_component(
+    components: &mut BTreeMap<(usize, usize), DenseState>,
+    momentum_vector_index: usize,
+    free_spinor_index: usize,
+    source: &DenseState,
+    scale: i64,
+    maximum: &mut i128,
+) {
+    if scale == 0 {
+        return;
+    }
+    let destination = components
+        .entry((momentum_vector_index, free_spinor_index))
+        .or_insert_with(|| DenseState {
+            weight: source.weight,
+            pbw_word: Vec::new(),
+            coefficients: vec![0; source.coefficients.len()],
+        });
+    assert_eq!(destination.weight, source.weight);
+    assert_eq!(destination.coefficients.len(), source.coefficients.len());
+    for (output, input) in destination
+        .coefficients
+        .iter_mut()
+        .zip(&source.coefficients)
+    {
+        let value = i128::from(*output)
+            .checked_add(i128::from(scale) * i128::from(*input))
+            .expect("i128 overflow while assembling a momentum-coupled state");
+        *maximum = (*maximum).max(value.abs());
+        *output = i64::try_from(value).expect("momentum-coupled coefficient exceeds i64 storage");
+    }
+}
+
+fn lower_momentum_coupled_state(
+    model: &mut ExteriorModel,
+    source: &MomentumCoupledDenseState,
+    root: usize,
+    maximum: &mut i128,
+) -> MomentumCoupledDenseState {
+    let spinors = model.spinors;
+    let mut components = BTreeMap::new();
+    for (&(momentum_vector, free_spinor), exterior) in &source.components {
+        if let Some((lowered_vector, factor)) = lowered_momentum_vector_index(momentum_vector, root)
+        {
+            add_scaled_momentum_dense_component(
+                &mut components,
+                lowered_vector,
+                free_spinor,
+                exterior,
+                factor,
+                maximum,
+            );
+        }
+        if let Some(lowered_free_spinor) = lowered_spinor_index(free_spinor, root, &spinors) {
+            add_scaled_momentum_dense_component(
+                &mut components,
+                momentum_vector,
+                lowered_free_spinor,
+                exterior,
+                1,
+                maximum,
+            );
+        }
+        let lowered_exterior = model.lower(exterior, root);
+        if lowered_exterior
+            .coefficients
+            .iter()
+            .any(|coefficient| *coefficient != 0)
+        {
+            add_scaled_momentum_dense_component(
+                &mut components,
+                momentum_vector,
+                free_spinor,
+                &lowered_exterior,
+                1,
+                maximum,
+            );
+        }
+    }
+    MomentumCoupledDenseState {
+        total_weight: subtract(source.total_weight, SIMPLE_ROOTS[root]),
+        components,
+    }
+}
+
+fn momentum_coupled_state_for_word(
+    model: &mut ExteriorModel,
+    highest: &MomentumCoupledDenseState,
+    word: &[u8],
+    cache: &mut BTreeMap<Vec<u8>, MomentumCoupledDenseState>,
+    maximum: &mut i128,
+) -> MomentumCoupledDenseState {
+    if let Some(state) = cache.get(word) {
+        return state.clone();
+    }
+    let prefix = &word[..word.len() - 1];
+    let parent = momentum_coupled_state_for_word(model, highest, prefix, cache, maximum);
+    let root = usize::from(word[word.len() - 1] - 1);
+    let state = lower_momentum_coupled_state(model, &parent, root, maximum);
+    cache.insert(word.to_vec(), state.clone());
+    state
+}
+
 fn dense_coupled_to_sparse(
     model: &mut ExteriorModel,
     source: &CoupledDenseState,
@@ -1396,7 +1663,7 @@ fn build_derivative_candidate(
     target_terms: &[crate::eleven_dimensional_bridge::DirectHookTargetCouplingTerm],
 ) -> (CoupledSparseState, CoupledSparseState, i128) {
     let (mut level16, highest, mut maximum) =
-        materialize_coupled_highest(LEVEL16_PROBLEM, abstract_certificate, fixture_bytes);
+        materialize_coupled_highest(LEVEL16_PROBLEM, abstract_certificate, fixture_bytes, 2);
     let leading = dense_coupled_to_sparse(&mut level16, &highest);
     let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
     let mut level17 = ExteriorModel::new(17);
@@ -1458,6 +1725,252 @@ fn build_derivative_candidate(
         })
         .collect();
     (CoupledSparseState { components }, leading, maximum)
+}
+
+fn build_first_momentum_correction_highest(
+    problem: CouplingProblem,
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_bytes: &[u8],
+    coefficient_width_bytes: usize,
+    recoupling: &crate::eleven_dimensional_bridge::FirstMomentumRecouplingAudit,
+) -> (ExteriorModel, MomentumCoupledDenseState, i128) {
+    assert_eq!(
+        recoupling.intermediate_dynkin_label,
+        abstract_certificate.target_dynkin_label
+    );
+    assert!(recoupling.passed);
+    let (mut model, intermediate_highest, mut maximum) = materialize_coupled_highest(
+        problem,
+        abstract_certificate,
+        fixture_bytes,
+        coefficient_width_bytes,
+    );
+    let mut intermediate_cache = BTreeMap::from([(Vec::new(), intermediate_highest.clone())]);
+    let mut components = BTreeMap::new();
+    for term in &recoupling.terms {
+        let state = coupled_state_for_word(
+            &mut model,
+            &intermediate_highest,
+            &term.intermediate_pbw_word_simple_roots,
+            &mut intermediate_cache,
+            &mut maximum,
+        );
+        assert_eq!(state.total_weight, term.intermediate_weight);
+        for (&free_spinor, exterior) in &state.components {
+            assert_eq!(
+                add(
+                    momentum_vector_weights()[term.momentum_vector_index],
+                    add(model.spinors[free_spinor], exterior.weight),
+                ),
+                TARGET_WEIGHT
+            );
+            add_scaled_momentum_dense_component(
+                &mut components,
+                term.momentum_vector_index,
+                free_spinor,
+                exterior,
+                term.primitive_coefficient,
+                &mut maximum,
+            );
+        }
+    }
+    (
+        model,
+        MomentumCoupledDenseState {
+            total_weight: TARGET_WEIGHT,
+            components,
+        },
+        maximum,
+    )
+}
+
+fn accumulate_momentum_hook_entry(
+    entries: &mut HashMap<(usize, usize, u32), (i128, i128)>,
+    key: (usize, usize, u32),
+    real: i128,
+    imaginary: i128,
+    maximum: &mut i128,
+) {
+    if real == 0 && imaginary == 0 {
+        return;
+    }
+    let value = entries.entry(key).or_insert((0, 0));
+    value.0 = value
+        .0
+        .checked_add(real)
+        .expect("real pD15 residual coefficient overflow");
+    value.1 = value
+        .1
+        .checked_add(imaginary)
+        .expect("imaginary pD15 residual coefficient overflow");
+    *maximum = (*maximum).max(value.0.abs()).max(value.1.abs());
+}
+
+fn finalize_momentum_hook_entries(
+    entries: HashMap<(usize, usize, u32), (i128, i128)>,
+) -> Vec<MomentumHookEntry> {
+    entries
+        .into_iter()
+        .filter_map(
+            |((momentum_vector_index, free_spinor_index, exterior_mask), (real, imaginary))| {
+                (real != 0 || imaginary != 0).then_some(MomentumHookEntry {
+                    momentum_vector_index,
+                    free_spinor_index,
+                    exterior_mask,
+                    real,
+                    imaginary,
+                })
+            },
+        )
+        .collect()
+}
+
+fn build_first_momentum_correction_residual(
+    problem: CouplingProblem,
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_bytes: &[u8],
+    coefficient_width_bytes: usize,
+    recoupling: &crate::eleven_dimensional_bridge::FirstMomentumRecouplingAudit,
+    hook_terms: &[crate::eleven_dimensional_bridge::DirectHookTargetCouplingTerm],
+) -> (Vec<MomentumHookEntry>, i128) {
+    let (mut model, highest, mut maximum) = build_first_momentum_correction_highest(
+        problem,
+        abstract_certificate,
+        fixture_bytes,
+        coefficient_width_bytes,
+        recoupling,
+    );
+    let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
+    let mut entries = HashMap::new();
+    for term in hook_terms {
+        let state = momentum_coupled_state_for_word(
+            &mut model,
+            &highest,
+            &term.pbw_word_simple_roots,
+            &mut cache,
+            &mut maximum,
+        );
+        assert_eq!(state.total_weight, term.vector_spinor_weight);
+        let outer_bit = 1_u32 << term.outer_spinor_index;
+        let lower_bits = outer_bit - 1;
+        for (&(momentum_vector, free_spinor), exterior) in &state.components {
+            let source_masks = model.space(exterior.weight).masks.clone();
+            for (mask, source_coefficient) in source_masks.into_iter().zip(&exterior.coefficients) {
+                if *source_coefficient == 0 || mask & outer_bit != 0 {
+                    continue;
+                }
+                let wedge_sign = if (mask & lower_bits).count_ones() % 2 == 0 {
+                    1_i128
+                } else {
+                    -1_i128
+                };
+                let coefficient = i128::from(term.primitive_coefficient)
+                    * i128::from(*source_coefficient)
+                    * wedge_sign;
+                accumulate_momentum_hook_entry(
+                    &mut entries,
+                    (momentum_vector, free_spinor, mask | outer_bit),
+                    coefficient,
+                    0,
+                    &mut maximum,
+                );
+            }
+        }
+    }
+    (finalize_momentum_hook_entries(entries), maximum)
+}
+
+fn translation_weight_basis_coefficients() -> Vec<Vec<[(i64, i64); 11]>> {
+    let bilinears = crate::eleven_dimensional_clifford::translation_bilinears();
+    let mut coefficients = vec![vec![[(0_i64, 0_i64); 11]; 32]; 32];
+    for outer in 0..32 {
+        for contracted in 0..32 {
+            for axis in 0..5 {
+                let even = &bilinears[2 * axis][outer][contracted];
+                let odd = &bilinears[2 * axis + 1][outer][contracted];
+                assert_eq!(*even.re.denom(), 1);
+                assert_eq!(*even.im.denom(), 1);
+                assert_eq!(*odd.re.denom(), 1);
+                assert_eq!(*odd.im.denom(), 1);
+                let even_real = *even.re.numer();
+                let even_imaginary = *even.im.numer();
+                let odd_real = *odd.re.numer();
+                let odd_imaginary = *odd.im.numer();
+                coefficients[outer][contracted][2 * axis] =
+                    (even_real + odd_imaginary, even_imaginary - odd_real);
+                coefficients[outer][contracted][2 * axis + 1] =
+                    (even_real - odd_imaginary, even_imaginary + odd_real);
+            }
+            let zero = &bilinears[10][outer][contracted];
+            assert_eq!(*zero.re.denom(), 1);
+            assert_eq!(*zero.im.denom(), 1);
+            coefficients[outer][contracted][10] = (*zero.re.numer(), *zero.im.numer());
+        }
+    }
+    coefficients
+}
+
+fn build_leading_anticommutator_residual(
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_bytes: &[u8],
+    hook_terms: &[crate::eleven_dimensional_bridge::DirectHookTargetCouplingTerm],
+    translation_coefficients: &[Vec<[(i64, i64); 11]>],
+) -> (Vec<MomentumHookEntry>, i128) {
+    let (mut model, highest, mut maximum) =
+        materialize_coupled_highest(LEVEL16_PROBLEM, abstract_certificate, fixture_bytes, 2);
+    let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
+    let mut entries = HashMap::new();
+    for term in hook_terms {
+        let state = coupled_state_for_word(
+            &mut model,
+            &highest,
+            &term.pbw_word_simple_roots,
+            &mut cache,
+            &mut maximum,
+        );
+        assert_eq!(state.total_weight, term.vector_spinor_weight);
+        for (&free_spinor, exterior) in &state.components {
+            let source_masks = model.space(exterior.weight).masks.clone();
+            for (mask, source_coefficient) in source_masks.into_iter().zip(&exterior.coefficients) {
+                if *source_coefficient == 0 {
+                    continue;
+                }
+                let mut remaining = mask;
+                let mut position = 0_u32;
+                while remaining != 0 {
+                    let contracted_spinor = remaining.trailing_zeros() as usize;
+                    remaining &= remaining - 1;
+                    let contraction_sign = if position % 2 == 0 { 1_i128 } else { -1_i128 };
+                    position += 1;
+                    let output_mask = mask ^ (1_u32 << contracted_spinor);
+                    let common = i128::from(term.primitive_coefficient)
+                        * i128::from(*source_coefficient)
+                        * contraction_sign;
+                    for momentum_vector in 0..11 {
+                        let (real, imaginary) = translation_coefficients[term.outer_spinor_index]
+                            [contracted_spinor][momentum_vector];
+                        if real != 0 || imaginary != 0 {
+                            assert_eq!(
+                                momentum_vector_weights()[momentum_vector],
+                                add(
+                                    model.spinors[term.outer_spinor_index],
+                                    model.spinors[contracted_spinor],
+                                )
+                            );
+                        }
+                        accumulate_momentum_hook_entry(
+                            &mut entries,
+                            (momentum_vector, free_spinor, output_mask),
+                            common * i128::from(real),
+                            common * i128::from(imaginary),
+                            &mut maximum,
+                        );
+                    }
+                }
+            }
+        }
+    }
+    (finalize_momentum_hook_entries(entries), maximum)
 }
 
 fn build_scalar_factorizing_candidate() -> (CoupledSparseState, i128) {
@@ -1608,7 +2121,7 @@ fn solve_bigint_system(
     )
 }
 
-fn rational_matrix_rank(matrix: &[Vec<Ratio<BigInt>>]) -> usize {
+pub(crate) fn rational_matrix_rank(matrix: &[Vec<Ratio<BigInt>>]) -> usize {
     if matrix.is_empty() {
         return 0;
     }
@@ -1643,7 +2156,7 @@ fn rational_matrix_rank(matrix: &[Vec<Ratio<BigInt>>]) -> usize {
     rank
 }
 
-fn rational_nullspace(matrix: &[Vec<Ratio<BigInt>>]) -> Vec<Vec<Ratio<BigInt>>> {
+pub(crate) fn rational_nullspace(matrix: &[Vec<Ratio<BigInt>>]) -> Vec<Vec<Ratio<BigInt>>> {
     if matrix.is_empty() {
         return Vec::new();
     }
@@ -1690,7 +2203,7 @@ fn rational_nullspace(matrix: &[Vec<Ratio<BigInt>>]) -> Vec<Vec<Ratio<BigInt>>> 
         .collect()
 }
 
-fn primitive_bigint_vector(vector: &[Ratio<BigInt>]) -> Vec<BigInt> {
+pub(crate) fn primitive_bigint_vector(vector: &[Ratio<BigInt>]) -> Vec<BigInt> {
     let denominator = vector.iter().fold(BigInt::one(), |common, coefficient| {
         bigint_lcm(common, coefficient.denom().clone())
     });
@@ -1738,6 +2251,1079 @@ fn rational_entry(value: &Ratio<BigInt>) -> RationalMatrixEntry {
     }
 }
 
+fn parse_rational_entry(value: &RationalMatrixEntry) -> Ratio<BigInt> {
+    Ratio::new(
+        BigInt::parse_bytes(value.numerator.as_bytes(), 10).unwrap(),
+        BigInt::parse_bytes(value.denominator.as_bytes(), 10).unwrap(),
+    )
+}
+
+const JOINT_FUNCTIONAL_BUCKETS: usize = 64;
+const JOINT_FUNCTIONAL_SEEDS: [u64; 4] = [
+    0x243f_6a88_85a3_08d3,
+    0x1319_8a2e_0370_7344,
+    0xa409_3822_299f_31d0,
+    0x082e_fa98_ec4e_6c89,
+];
+
+fn splitmix64_local(mut value: u64) -> u64 {
+    value = value.wrapping_add(0x9e37_79b9_7f4a_7c15);
+    value = (value ^ (value >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+    value = (value ^ (value >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+    value ^ (value >> 31)
+}
+
+fn momentum_hook_functionals(entries: &[MomentumHookEntry]) -> Vec<i128> {
+    let rows_per_seed = 2 * JOINT_FUNCTIONAL_BUCKETS;
+    let mut output = vec![0_i128; JOINT_FUNCTIONAL_SEEDS.len() * rows_per_seed];
+    for entry in entries {
+        let key = u64::from(entry.exterior_mask)
+            | (u64::try_from(entry.free_spinor_index).unwrap() << 32)
+            | (u64::try_from(entry.momentum_vector_index).unwrap() << 37);
+        for (seed_index, seed) in JOINT_FUNCTIONAL_SEEDS.iter().enumerate() {
+            let hash = splitmix64_local(key ^ seed);
+            let bucket = (hash as usize) % JOINT_FUNCTIONAL_BUCKETS;
+            let sign = if hash >> 63 == 0 { 1_i128 } else { -1_i128 };
+            let base = seed_index * rows_per_seed;
+            output[base + bucket] = output[base + bucket]
+                .checked_add(sign * entry.real)
+                .expect("i128 overflow in exact real residual functional");
+            output[base + JOINT_FUNCTIONAL_BUCKETS + bucket] = output
+                [base + JOINT_FUNCTIONAL_BUCKETS + bucket]
+                .checked_add(sign * entry.imaginary)
+                .expect("i128 overflow in exact imaginary residual functional");
+        }
+    }
+    output
+}
+
+fn rational_row_span_contains(rows: &[Vec<Ratio<BigInt>>], candidate: &[Ratio<BigInt>]) -> bool {
+    if rows.is_empty() {
+        return candidate.iter().all(Ratio::is_zero);
+    }
+    let rank = rational_matrix_rank(rows);
+    let mut augmented = rows.to_vec();
+    augmented.push(candidate.to_vec());
+    rational_matrix_rank(&augmented) == rank
+}
+
+fn binomial_u128(n: u128, k: u128) -> u128 {
+    let k = k.min(n - k);
+    (1..=k).fold(1_u128, |value, index| value * (n - k + index) / index)
+}
+
+fn sha256_bytes(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
+}
+
+fn sha256_file(path: &Path) -> io::Result<String> {
+    let mut reader = BufReader::new(File::open(path)?);
+    let mut hasher = Sha256::new();
+    let mut buffer = vec![0_u8; 1024 * 1024];
+    loop {
+        let count = reader.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        hasher.update(&buffer[..count]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
+fn unix_seconds() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock precedes the Unix epoch")
+        .as_secs()
+}
+
+pub fn joint_column_specs() -> Vec<JointColumnSpec> {
+    let mut specs = Vec::new();
+    for fixture in crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures() {
+        specs.push(JointColumnSpec {
+            ordinal: specs.len(),
+            label: format!("{}#{}", fixture.dynkin_label, fixture.copy),
+            kind: "leading".to_string(),
+            source_dynkin_label: fixture.dynkin_label.to_string(),
+            source_copy: fixture.copy,
+            intermediate_dynkin_label: None,
+        });
+    }
+    let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+    let fixtures_by_source =
+        fixtures
+            .iter()
+            .fold(BTreeMap::<&str, Vec<_>>::new(), |mut grouped, fixture| {
+                grouped
+                    .entry(fixture.dynkin_label)
+                    .or_default()
+                    .push(*fixture);
+                grouped
+            });
+    for ((source, intermediate), copies) in first_momentum_copy_manifest() {
+        for copy in copies {
+            assert!(
+                fixtures_by_source[&source.as_str()]
+                    .iter()
+                    .any(|fixture| fixture.copy == copy)
+            );
+            specs.push(JointColumnSpec {
+                ordinal: specs.len(),
+                label: format!("{source}#{copy}->{intermediate}"),
+                kind: "first-momentum".to_string(),
+                source_dynkin_label: source.clone(),
+                source_copy: copy,
+                intermediate_dynkin_label: Some(intermediate.clone()),
+            });
+        }
+    }
+    assert_eq!(specs.len(), 56);
+    specs
+}
+
+pub fn build_joint_column(
+    ordinal: usize,
+) -> (JointColumnSpec, Vec<MomentumHookEntry>, i128, String) {
+    let specs = joint_column_specs();
+    let spec = specs
+        .get(ordinal)
+        .unwrap_or_else(|| panic!("joint column ordinal {ordinal} is outside 0..56"))
+        .clone();
+    let hook_terms = crate::eleven_dimensional_bridge::direct_hook_target_coupling_terms();
+    if spec.kind == "leading" {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let abstract_certificate = build_abstract_from_fixture(
+            LEVEL16_PROBLEM,
+            first.dynkin_label,
+            first.copy,
+            2,
+            first.bytes,
+        )
+        .0;
+        let translation_coefficients = translation_weight_basis_coefficients();
+        let (residual, maximum) = build_leading_anticommutator_residual(
+            &abstract_certificate,
+            fixture.bytes,
+            &hook_terms,
+            &translation_coefficients,
+        );
+        (spec, residual, maximum, sha256_bytes(fixture.bytes))
+    } else {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let intermediate = spec.intermediate_dynkin_label.as_deref().unwrap();
+        let problem = first_momentum_problem(intermediate);
+        let abstract_certificate = build_abstract_from_fixture(
+            problem,
+            first.dynkin_label,
+            first.copy,
+            fixture_coefficient_width(first.artifact),
+            first.bytes,
+        )
+        .0;
+        let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+        let recoupling = recouplings
+            .iter()
+            .find(|audit| audit.intermediate_dynkin_label == intermediate)
+            .unwrap();
+        let (residual, maximum) = build_first_momentum_correction_residual(
+            problem,
+            &abstract_certificate,
+            fixture.bytes,
+            fixture_coefficient_width(fixture.artifact),
+            recoupling,
+            &hook_terms,
+        );
+        (spec, residual, maximum, sha256_bytes(fixture.bytes))
+    }
+}
+
+pub fn visit_zero_momentum_gauge_composition_components<F>(
+    gauge_form_degree: usize,
+    leading_ordinal: usize,
+    mut visit: F,
+) -> io::Result<(JointColumnSpec, Vec<Vec<usize>>, i128, String)>
+where
+    F: FnMut(usize, &[usize], &[ZeroMomentumGaugeCompositionEntry]) -> io::Result<()>,
+{
+    assert!(gauge_form_degree <= 5);
+    let spec = joint_column_specs()
+        .get(leading_ordinal)
+        .unwrap_or_else(|| panic!("leading column ordinal {leading_ordinal} is outside 0..12"))
+        .clone();
+    assert_eq!(
+        spec.kind, "leading",
+        "zero-momentum gauge composition requires a leading operator"
+    );
+
+    let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+    let fixture = fixtures
+        .iter()
+        .find(|fixture| {
+            fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+        })
+        .unwrap();
+    let first = fixtures
+        .iter()
+        .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+        .unwrap();
+    let abstract_certificate = build_abstract_from_fixture(
+        LEVEL16_PROBLEM,
+        first.dynkin_label,
+        first.copy,
+        2,
+        first.bytes,
+    )
+    .0;
+    let (mut model, highest, mut maximum) =
+        materialize_coupled_highest(LEVEL16_PROBLEM, &abstract_certificate, fixture.bytes, 2);
+
+    let gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+        .into_iter()
+        .filter(|(degree, _, _)| *degree == gauge_form_degree)
+        .collect::<Vec<_>>();
+    let parameter_basis = gauge_basis
+        .iter()
+        .map(|(_, indices, _)| indices.clone())
+        .collect::<Vec<_>>();
+    for (parameter_component_index, (_, component_indices, matrix)) in
+        gauge_basis.iter().enumerate()
+    {
+        let mut accumulated = HashMap::<u32, (i128, i128)>::new();
+        for (&free_spinor, exterior) in &highest.components {
+            let source_masks = model.space(exterior.weight).masks.clone();
+            for derivative_spinor in 0..32 {
+                let bilinear = &matrix[free_spinor][derivative_spinor];
+                if bilinear.re.is_zero() && bilinear.im.is_zero() {
+                    continue;
+                }
+                assert_eq!(*bilinear.re.denom(), 1);
+                assert_eq!(*bilinear.im.denom(), 1);
+                let bilinear_real = i128::from(*bilinear.re.numer());
+                let bilinear_imaginary = i128::from(*bilinear.im.numer());
+                let derivative_bit = 1_u32 << derivative_spinor;
+                for (mask, source_coefficient) in
+                    source_masks.iter().copied().zip(&exterior.coefficients)
+                {
+                    if *source_coefficient == 0 {
+                        continue;
+                    }
+                    // The gauge derivative acts on Lambda after the sixteen
+                    // derivatives in A. Moving it left into ascending exterior
+                    // normal order crosses the occupied indices greater than beta.
+                    let Some(wedge_sign) = right_wedge_sign(mask, derivative_spinor) else {
+                        continue;
+                    };
+                    let scale = i128::from(*source_coefficient) * wedge_sign;
+                    let value = accumulated.entry(mask | derivative_bit).or_insert((0, 0));
+                    value.0 = value
+                        .0
+                        .checked_add(scale * bilinear_real)
+                        .expect("i128 overflow in zero-momentum gauge composition");
+                    value.1 = value
+                        .1
+                        .checked_add(scale * bilinear_imaginary)
+                        .expect("i128 overflow in zero-momentum gauge composition");
+                    maximum = maximum.max(value.0.abs()).max(value.1.abs());
+                }
+            }
+        }
+        let mut component_residual = accumulated
+            .into_iter()
+            .filter_map(|(exterior_mask, (real, imaginary))| {
+                (real != 0 || imaginary != 0).then_some(ZeroMomentumGaugeCompositionEntry {
+                    parameter_component_index,
+                    exterior_mask,
+                    real,
+                    imaginary,
+                })
+            })
+            .collect::<Vec<_>>();
+        component_residual.sort_by_key(|entry| entry.exterior_mask);
+        visit(
+            parameter_component_index,
+            component_indices,
+            &component_residual,
+        )?;
+    }
+    Ok((spec, parameter_basis, maximum, sha256_bytes(fixture.bytes)))
+}
+
+fn write_hashed<W: Write>(
+    writer: &mut W,
+    hasher: &mut Sha256,
+    byte_count: &mut u64,
+    bytes: &[u8],
+) -> io::Result<()> {
+    writer.write_all(bytes)?;
+    hasher.update(bytes);
+    *byte_count = byte_count
+        .checked_add(u64::try_from(bytes.len()).unwrap())
+        .expect("raw artifact byte count overflow");
+    Ok(())
+}
+
+fn write_json_durable<T: Serialize>(path: &Path, value: &T) -> io::Result<()> {
+    let bytes = serde_json::to_vec_pretty(value)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    let mut file = File::create(path)?;
+    file.write_all(&bytes)?;
+    file.write_all(b"\n")?;
+    file.sync_all()
+}
+
+pub fn verify_joint_column_artifact(
+    directory: &Path,
+    expected_spec: &JointColumnSpec,
+    verify_uncompressed_stream: bool,
+) -> io::Result<JointColumnArtifactManifest> {
+    let manifest_path = directory.join("manifest.json");
+    let manifest: JointColumnArtifactManifest =
+        serde_json::from_reader(BufReader::new(File::open(&manifest_path)?))
+            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    if !manifest.passed || manifest.spec != *expected_spec {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "column manifest is not a passing artifact for the expected column",
+        ));
+    }
+    let raw_path = directory.join(&manifest.raw_file);
+    let functional_path = directory.join(&manifest.functional_file);
+    if sha256_file(&raw_path)? != manifest.raw_compressed_sha256 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "compressed residual hash mismatch",
+        ));
+    }
+    if sha256_file(&functional_path)? != manifest.functional_file_sha256 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "functional file hash mismatch",
+        ));
+    }
+    let functional: JointColumnFunctionalFile =
+        serde_json::from_reader(BufReader::new(File::open(functional_path)?))
+            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    if functional.ordinal != expected_spec.ordinal
+        || functional.label != expected_spec.label
+        || functional.values.len() != manifest.exact_functional_values
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "functional file does not match the column manifest",
+        ));
+    }
+    if verify_uncompressed_stream {
+        let mut decoder = zstd::stream::read::Decoder::new(BufReader::new(File::open(raw_path)?))?;
+        let mut hasher = Sha256::new();
+        let mut count = 0_u64;
+        let mut buffer = vec![0_u8; 1024 * 1024];
+        loop {
+            let read = decoder.read(&mut buffer)?;
+            if read == 0 {
+                break;
+            }
+            hasher.update(&buffer[..read]);
+            count += u64::try_from(read).unwrap();
+        }
+        if count != manifest.raw_uncompressed_bytes
+            || format!("{:x}", hasher.finalize()) != manifest.raw_uncompressed_sha256
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "uncompressed residual stream failed verification",
+            ));
+        }
+    }
+    Ok(manifest)
+}
+
+pub fn build_and_write_joint_column_artifact(
+    ordinal: usize,
+    output_root: &Path,
+) -> io::Result<JointColumnArtifactManifest> {
+    let spec = joint_column_specs()
+        .get(ordinal)
+        .unwrap_or_else(|| panic!("joint column ordinal {ordinal} is outside 0..56"))
+        .clone();
+    let completed_root = output_root.join("complete");
+    let incomplete_root = output_root.join("incomplete");
+    fs::create_dir_all(&completed_root)?;
+    fs::create_dir_all(&incomplete_root)?;
+    let final_directory = completed_root.join(format!("column-{ordinal:03}"));
+    if final_directory.exists() {
+        return verify_joint_column_artifact(&final_directory, &spec, false);
+    }
+
+    let started_unix_seconds = unix_seconds();
+    let timer = Instant::now();
+    let temporary_directory = incomplete_root.join(format!(
+        "column-{ordinal:03}-{}-{started_unix_seconds}",
+        std::process::id()
+    ));
+    fs::create_dir(&temporary_directory)?;
+    let (actual_spec, residual, maximum, fixture_sha256) = build_joint_column(ordinal);
+    assert_eq!(actual_spec, spec);
+    let functional_values = momentum_hook_functionals(&residual);
+
+    let raw_name = "residual.i128le.zst";
+    let raw_path = temporary_directory.join(raw_name);
+    let raw_file = File::create(&raw_path)?;
+    let buffered = BufWriter::new(raw_file);
+    let mut encoder = zstd::stream::write::Encoder::new(buffered, 1)?;
+    let mut uncompressed_hasher = Sha256::new();
+    let mut uncompressed_bytes = 0_u64;
+    write_hashed(
+        &mut encoder,
+        &mut uncompressed_hasher,
+        &mut uncompressed_bytes,
+        b"AJPD15V1",
+    )?;
+    write_hashed(
+        &mut encoder,
+        &mut uncompressed_hasher,
+        &mut uncompressed_bytes,
+        &u32::try_from(ordinal).unwrap().to_le_bytes(),
+    )?;
+    write_hashed(
+        &mut encoder,
+        &mut uncompressed_hasher,
+        &mut uncompressed_bytes,
+        &u64::try_from(residual.len()).unwrap().to_le_bytes(),
+    )?;
+    for entry in &residual {
+        write_hashed(
+            &mut encoder,
+            &mut uncompressed_hasher,
+            &mut uncompressed_bytes,
+            &[u8::try_from(entry.momentum_vector_index).unwrap()],
+        )?;
+        write_hashed(
+            &mut encoder,
+            &mut uncompressed_hasher,
+            &mut uncompressed_bytes,
+            &[u8::try_from(entry.free_spinor_index).unwrap()],
+        )?;
+        write_hashed(
+            &mut encoder,
+            &mut uncompressed_hasher,
+            &mut uncompressed_bytes,
+            &entry.exterior_mask.to_le_bytes(),
+        )?;
+        write_hashed(
+            &mut encoder,
+            &mut uncompressed_hasher,
+            &mut uncompressed_bytes,
+            &entry.real.to_le_bytes(),
+        )?;
+        write_hashed(
+            &mut encoder,
+            &mut uncompressed_hasher,
+            &mut uncompressed_bytes,
+            &entry.imaginary.to_le_bytes(),
+        )?;
+    }
+    let mut buffered = encoder.finish()?;
+    buffered.flush()?;
+    buffered.get_ref().sync_all()?;
+    let raw_uncompressed_sha256 = format!("{:x}", uncompressed_hasher.finalize());
+    let raw_compressed_sha256 = sha256_file(&raw_path)?;
+    let raw_compressed_bytes = fs::metadata(&raw_path)?.len();
+
+    let functional_name = "functional.json";
+    let functional_path = temporary_directory.join(functional_name);
+    let functional_file = JointColumnFunctionalFile {
+        schema_version: "adynkra-11d-joint-column-functional-v1".to_string(),
+        ordinal,
+        label: spec.label.clone(),
+        values: functional_values.iter().map(ToString::to_string).collect(),
+    };
+    write_json_durable(&functional_path, &functional_file)?;
+    let functional_file_sha256 = sha256_file(&functional_path)?;
+
+    let finished_unix_seconds = unix_seconds();
+    let manifest = JointColumnArtifactManifest {
+        schema_version: "adynkra-11d-joint-column-artifact-v1".to_string(),
+        passed: true,
+        spec,
+        nonzero_residual_entries: u64::try_from(residual.len()).unwrap(),
+        maximum_absolute_residual_coefficient: maximum.to_string(),
+        exact_functional_values: functional_values.len(),
+        raw_record_bytes: 38,
+        raw_uncompressed_bytes: uncompressed_bytes,
+        raw_compressed_bytes,
+        raw_uncompressed_sha256,
+        raw_compressed_sha256,
+        functional_file_sha256,
+        fixture_sha256,
+        source_revision: std::env::var("ADINKRA_SOURCE_REVISION")
+            .unwrap_or_else(|_| "unrecorded".to_string()),
+        executable_sha256: std::env::var("ADINKRA_EXECUTABLE_SHA256")
+            .unwrap_or_else(|_| "unrecorded".to_string()),
+        host: std::env::var("HOSTNAME").unwrap_or_else(|_| "unknown".to_string()),
+        process_id: std::process::id(),
+        started_unix_seconds,
+        finished_unix_seconds,
+        elapsed_milliseconds: timer.elapsed().as_millis(),
+        raw_file: raw_name.to_string(),
+        functional_file: functional_name.to_string(),
+        convention: "AJPD15V1 little-endian stream: 8-byte magic, u32 ordinal, u64 record count, then 38-byte records (u8 momentum index, u8 free-spinor index, u32 exterior mask, i128 real, i128 imaginary); zstd level 1".to_string(),
+    };
+    write_json_durable(&temporary_directory.join("manifest.json"), &manifest)?;
+    File::open(&temporary_directory)?.sync_all()?;
+    fs::rename(&temporary_directory, &final_directory)?;
+    File::open(&completed_root)?.sync_all()?;
+    verify_joint_column_artifact(&final_directory, &manifest.spec, false)
+}
+
+pub fn build_joint_compatibility_matrix() -> JointCompatibilityMatrixReport {
+    let hook_report = build_level17_derivative_matrix();
+    assert!(hook_report.passed);
+    let hook_terms = crate::eleven_dimensional_bridge::direct_hook_target_coupling_terms();
+    let translation_coefficients = translation_weight_basis_coefficients();
+    let mut maximum = 0_i128;
+    let mut functional_columns = Vec::<Vec<i128>>::new();
+    let mut leading_basis = Vec::new();
+
+    let level16_fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+    let mut level16_abstract = BTreeMap::new();
+    for fixture in &level16_fixtures {
+        if fixture.copy == 1 {
+            level16_abstract.insert(
+                fixture.dynkin_label,
+                build_abstract_from_fixture(
+                    LEVEL16_PROBLEM,
+                    fixture.dynkin_label,
+                    fixture.copy,
+                    2,
+                    fixture.bytes,
+                )
+                .0,
+            );
+        }
+    }
+    for fixture in &level16_fixtures {
+        let (residual, local_maximum) = build_leading_anticommutator_residual(
+            &level16_abstract[fixture.dynkin_label],
+            fixture.bytes,
+            &hook_terms,
+            &translation_coefficients,
+        );
+        maximum = maximum.max(local_maximum);
+        leading_basis.push(format!("{}#{}", fixture.dynkin_label, fixture.copy));
+        eprintln!(
+            "built leading pD15 residual {}#{} with {} nonzero Gaussian coordinates ({}/12)",
+            fixture.dynkin_label,
+            fixture.copy,
+            residual.len(),
+            leading_basis.len()
+        );
+        functional_columns.push(momentum_hook_functionals(&residual));
+    }
+
+    let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+    assert_eq!(recouplings.len(), 4);
+    assert!(recouplings.iter().all(|audit| audit.passed));
+    let level14_fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+    let fixtures_by_source =
+        level14_fixtures
+            .iter()
+            .fold(BTreeMap::<&str, Vec<_>>::new(), |mut fixtures, fixture| {
+                fixtures
+                    .entry(fixture.dynkin_label)
+                    .or_default()
+                    .push(*fixture);
+                fixtures
+            });
+    let manifest = first_momentum_copy_manifest();
+    let mut first_momentum_basis = Vec::new();
+    for ((source_dynkin_label, intermediate_dynkin_label), copies) in manifest {
+        let first_fixture = fixtures_by_source[&source_dynkin_label.as_str()]
+            .iter()
+            .find(|fixture| fixture.copy == 1)
+            .unwrap();
+        let problem = first_momentum_problem(&intermediate_dynkin_label);
+        let abstract_certificate = build_abstract_from_fixture(
+            problem,
+            &source_dynkin_label,
+            1,
+            fixture_coefficient_width(first_fixture.artifact),
+            first_fixture.bytes,
+        )
+        .0;
+        let recoupling = recouplings
+            .iter()
+            .find(|audit| audit.intermediate_dynkin_label == intermediate_dynkin_label)
+            .unwrap();
+        for copy in copies {
+            let fixture = fixtures_by_source[&source_dynkin_label.as_str()]
+                .iter()
+                .find(|fixture| fixture.copy == copy)
+                .unwrap();
+            let (residual, local_maximum) = build_first_momentum_correction_residual(
+                problem,
+                &abstract_certificate,
+                fixture.bytes,
+                fixture_coefficient_width(fixture.artifact),
+                recoupling,
+                &hook_terms,
+            );
+            maximum = maximum.max(local_maximum);
+            first_momentum_basis.push(format!(
+                "{}#{}->{}",
+                source_dynkin_label, copy, intermediate_dynkin_label
+            ));
+            eprintln!(
+                "built correction pD15 residual {}#{}->{} with {} nonzero Gaussian coordinates ({}/44)",
+                source_dynkin_label,
+                copy,
+                intermediate_dynkin_label,
+                residual.len(),
+                first_momentum_basis.len()
+            );
+            functional_columns.push(momentum_hook_functionals(&residual));
+        }
+    }
+    assert_eq!(leading_basis, hook_report.source_basis);
+    assert_eq!(leading_basis.len(), 12);
+    assert_eq!(first_momentum_basis.len(), 44);
+    assert_eq!(functional_columns.len(), 56);
+
+    let coefficient_columns = functional_columns.len();
+    let mut normal_matrix =
+        vec![vec![Ratio::from_integer(BigInt::zero()); coefficient_columns]; coefficient_columns];
+    for left in 0..coefficient_columns {
+        for right in left..coefficient_columns {
+            let value = Ratio::from_integer(BigInt::from(
+                functional_columns[left]
+                    .iter()
+                    .zip(&functional_columns[right])
+                    .fold(0_i128, |sum, (left_value, right_value)| {
+                        sum.checked_add(
+                            left_value
+                                .checked_mul(*right_value)
+                                .expect("i128 overflow in functional product"),
+                        )
+                        .expect("i128 overflow in functional dot product")
+                    }),
+            ));
+            normal_matrix[left][right] = value.clone();
+            normal_matrix[right][left] = value;
+        }
+        eprintln!(
+            "completed exact-functional normal-matrix row {}/{}",
+            left + 1,
+            coefficient_columns
+        );
+    }
+    let hook_matrix = hook_report
+        .matrix_rows_by_hook_columns_by_source
+        .iter()
+        .map(|row| row.iter().map(parse_rational_entry).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+    for left in 0..leading_basis.len() {
+        for right in 0..leading_basis.len() {
+            let hook_dot = hook_matrix
+                .iter()
+                .fold(Ratio::from_integer(BigInt::zero()), |sum, row| {
+                    sum + row[left].clone() * row[right].clone()
+                });
+            normal_matrix[left][right] += hook_dot;
+        }
+    }
+
+    let exact_functional_matrix_rank = rational_matrix_rank(&normal_matrix);
+    let exact_functional_nullity = coefficient_columns - exact_functional_matrix_rank;
+    let full_rank_certified_by_functional_minor =
+        exact_functional_matrix_rank == coefficient_columns;
+    let kernel = rational_nullspace(&normal_matrix);
+    assert_eq!(kernel.len(), exact_functional_nullity);
+    let primitive_integer_kernel_basis = kernel
+        .iter()
+        .map(|vector| primitive_bigint_vector(vector))
+        .collect::<Vec<_>>();
+    let functional_kernel_residuals_exactly_zero = primitive_integer_kernel_basis
+        .iter()
+        .all(|vector| matrix_times_integer_vector_is_zero(&normal_matrix, vector));
+    let leading_projections = kernel
+        .iter()
+        .map(|vector| vector[..leading_basis.len()].to_vec())
+        .filter(|projection| projection.iter().any(|value| !value.is_zero()))
+        .collect::<Vec<_>>();
+    let functional_kernel_leading_projection_rank = rational_matrix_rank(&leading_projections);
+
+    let previous_hook_kernel = hook_report
+        .primitive_integer_kernel_basis
+        .iter()
+        .map(|vector| {
+            vector
+                .iter()
+                .map(|value| {
+                    Ratio::from_integer(BigInt::parse_bytes(value.as_bytes(), 10).unwrap())
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let previous_hook_kernel_dimension = rational_matrix_rank(&previous_hook_kernel);
+    assert_eq!(previous_hook_kernel_dimension, 5);
+    let scalar_factorizing = hook_report
+        .scalar_factorizing_coordinates
+        .iter()
+        .map(parse_rational_entry)
+        .collect::<Vec<_>>();
+    let exact_joint_nullity = full_rank_certified_by_functional_minor.then_some(0);
+    let leading_extension_excluded = functional_kernel_leading_projection_rank == 0;
+    let previous_hook_kernel_subspace_dimension_extended = leading_extension_excluded.then_some(0);
+    let scalar_in_functional_kernel_projection =
+        rational_row_span_contains(&leading_projections, &scalar_factorizing);
+    let scalar_factorizing_direction_extends =
+        (!scalar_in_functional_kernel_projection).then_some(false);
+    let direct_spinor_quotient_dimension_extended = leading_extension_excluded.then_some(0);
+    let maximum_absolute_normal_matrix_numerator = normal_matrix
+        .iter()
+        .flatten()
+        .map(|value| value.numer().abs())
+        .max()
+        .unwrap_or_else(BigInt::zero);
+    let momentum_coordinate_rows =
+        usize::try_from(2_u128 * 11 * 32 * binomial_u128(32, 15)).unwrap();
+    let passed = coefficient_columns == 56
+        && previous_hook_kernel_dimension == 5
+        && leading_extension_excluded
+        && functional_kernel_residuals_exactly_zero;
+    JointCompatibilityMatrixReport {
+        schema_version: "adynkra-11d-joint-leading-first-momentum-v2".to_string(),
+        role: "exact joint zero-momentum hook and first-momentum pD15 compatibility certificate"
+            .to_string(),
+        leading_basis,
+        first_momentum_basis,
+        hook_rows: hook_matrix.len(),
+        momentum_coordinate_rows,
+        coefficient_columns,
+        leading_columns: 12,
+        first_momentum_columns: 44,
+        reciprocal_couplings_verified: recouplings.iter().filter(|audit| audit.passed).count(),
+        reciprocal_coupling_intermediates: recouplings
+            .iter()
+            .map(|audit| audit.intermediate_dynkin_label.clone())
+            .collect(),
+        reciprocal_coupling_domain_dimensions: recouplings
+            .iter()
+            .map(|audit| audit.highest_weight_domain_dimension)
+            .collect(),
+        reciprocal_coupling_kernel_dimensions: recouplings
+            .iter()
+            .map(|audit| audit.highest_weight_kernel_dimension)
+            .collect(),
+        reciprocal_coupling_raising_residuals: recouplings
+            .iter()
+            .map(|audit| audit.raising_residual_terms)
+            .collect(),
+        exact_functional_rows: JOINT_FUNCTIONAL_SEEDS.len()
+            * 2
+            * JOINT_FUNCTIONAL_BUCKETS
+            + hook_matrix.len(),
+        exact_functional_matrix_rank,
+        exact_functional_nullity,
+        full_rank_certified_by_functional_minor,
+        exact_joint_nullity,
+        functional_kernel_leading_projection_rank,
+        leading_extension_excluded,
+        previous_hook_kernel_dimension,
+        previous_hook_kernel_subspace_dimension_extended,
+        scalar_factorizing_direction_extends,
+        direct_spinor_quotient_dimension_extended,
+        functional_primitive_integer_kernel_basis: primitive_integer_kernel_basis
+            .iter()
+            .map(|vector| vector.iter().map(ToString::to_string).collect())
+            .collect(),
+        functional_kernel_residuals_exactly_zero,
+        exact_functional_normal_matrix: normal_matrix
+            .iter()
+            .map(|row| row.iter().map(rational_entry).collect())
+            .collect(),
+        maximum_absolute_residual_coefficient: maximum,
+        maximum_absolute_normal_matrix_numerator: maximum_absolute_normal_matrix_numerator
+            .to_string(),
+        convention: "canonical sorted spinor-mask basis; complex B5 vector-weight basis split into exact real and imaginary coordinates; {D,D}=2 Gamma.p; primitive integer source, target, hook, and reciprocal couplings".to_string(),
+        interpretation: if full_rank_certified_by_functional_minor {
+            "the exact functional image has full column rank 56; because it is obtained by exact linear functionals of the full coordinate residual, the full joint system also has rank 56 and nullity zero, so none of the previous five leading hook-kernel dimensions extends".to_string()
+        } else if leading_extension_excluded {
+            format!(
+                "the exact functional image has rank {exact_functional_matrix_rank} and nullity {exact_functional_nullity}, and its kernel has zero projection onto the twelve leading coefficients; every full-coordinate null vector lies in this functional kernel, so no nonzero leading hook-kernel vector extends, while the exact full-coordinate nullity remains between zero and {exact_functional_nullity}"
+            )
+        } else {
+            format!(
+                "the exact functional image has rank {exact_functional_matrix_rank} and nullity {exact_functional_nullity}; this is a rigorous lower bound on the full coordinate rank but does not certify the full kernel"
+            )
+        },
+        boundary: "this is the direct spinor-prepotential compatibility calculation through first momentum order; it does not impose the six possible gauge-parameter maps, construct a curvature, supply an action, or derive a field equation".to_string(),
+        passed,
+    }
+}
+
+fn finalize_joint_functional_columns(
+    leading_basis: Vec<String>,
+    first_momentum_basis: Vec<String>,
+    functional_columns: Vec<Vec<i128>>,
+    maximum: i128,
+) -> JointCompatibilityMatrixReport {
+    assert_eq!(leading_basis.len(), 12);
+    assert_eq!(first_momentum_basis.len(), 44);
+    assert_eq!(functional_columns.len(), 56);
+    assert!(
+        functional_columns
+            .iter()
+            .all(|column| column.len()
+                == JOINT_FUNCTIONAL_SEEDS.len() * 2 * JOINT_FUNCTIONAL_BUCKETS)
+    );
+
+    let coefficient_columns = functional_columns.len();
+    let mut normal_matrix =
+        vec![vec![Ratio::from_integer(BigInt::zero()); coefficient_columns]; coefficient_columns];
+    for left in 0..coefficient_columns {
+        for right in left..coefficient_columns {
+            let value = Ratio::from_integer(BigInt::from(
+                functional_columns[left]
+                    .iter()
+                    .zip(&functional_columns[right])
+                    .fold(0_i128, |sum, (left_value, right_value)| {
+                        sum.checked_add(
+                            left_value
+                                .checked_mul(*right_value)
+                                .expect("i128 overflow in functional product"),
+                        )
+                        .expect("i128 overflow in functional dot product")
+                    }),
+            ));
+            normal_matrix[left][right] = value.clone();
+            normal_matrix[right][left] = value;
+        }
+    }
+
+    let hook_report = build_level17_derivative_matrix();
+    assert!(hook_report.passed);
+    assert_eq!(leading_basis, hook_report.source_basis);
+    let hook_matrix = hook_report
+        .matrix_rows_by_hook_columns_by_source
+        .iter()
+        .map(|row| row.iter().map(parse_rational_entry).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+    for left in 0..leading_basis.len() {
+        for right in 0..leading_basis.len() {
+            let hook_dot = hook_matrix
+                .iter()
+                .fold(Ratio::from_integer(BigInt::zero()), |sum, row| {
+                    sum + row[left].clone() * row[right].clone()
+                });
+            normal_matrix[left][right] += hook_dot;
+        }
+    }
+
+    let exact_functional_matrix_rank = rational_matrix_rank(&normal_matrix);
+    let exact_functional_nullity = coefficient_columns - exact_functional_matrix_rank;
+    let full_rank_certified_by_functional_minor =
+        exact_functional_matrix_rank == coefficient_columns;
+    let kernel = rational_nullspace(&normal_matrix);
+    assert_eq!(kernel.len(), exact_functional_nullity);
+    let primitive_integer_kernel_basis = kernel
+        .iter()
+        .map(|vector| primitive_bigint_vector(vector))
+        .collect::<Vec<_>>();
+    let functional_kernel_residuals_exactly_zero = primitive_integer_kernel_basis
+        .iter()
+        .all(|vector| matrix_times_integer_vector_is_zero(&normal_matrix, vector));
+    let leading_projections = kernel
+        .iter()
+        .map(|vector| vector[..leading_basis.len()].to_vec())
+        .filter(|projection| projection.iter().any(|value| !value.is_zero()))
+        .collect::<Vec<_>>();
+    let functional_kernel_leading_projection_rank = rational_matrix_rank(&leading_projections);
+
+    let previous_hook_kernel = hook_report
+        .primitive_integer_kernel_basis
+        .iter()
+        .map(|vector| {
+            vector
+                .iter()
+                .map(|value| {
+                    Ratio::from_integer(BigInt::parse_bytes(value.as_bytes(), 10).unwrap())
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let previous_hook_kernel_dimension = rational_matrix_rank(&previous_hook_kernel);
+    assert_eq!(previous_hook_kernel_dimension, 5);
+    let scalar_factorizing = hook_report
+        .scalar_factorizing_coordinates
+        .iter()
+        .map(parse_rational_entry)
+        .collect::<Vec<_>>();
+    let exact_joint_nullity = full_rank_certified_by_functional_minor.then_some(0);
+    let leading_extension_excluded = functional_kernel_leading_projection_rank == 0;
+    let previous_hook_kernel_subspace_dimension_extended = leading_extension_excluded.then_some(0);
+    let scalar_in_functional_kernel_projection =
+        rational_row_span_contains(&leading_projections, &scalar_factorizing);
+    let scalar_factorizing_direction_extends =
+        (!scalar_in_functional_kernel_projection).then_some(false);
+    let direct_spinor_quotient_dimension_extended = leading_extension_excluded.then_some(0);
+    let maximum_absolute_normal_matrix_numerator = normal_matrix
+        .iter()
+        .flatten()
+        .map(|value| value.numer().abs())
+        .max()
+        .unwrap_or_else(BigInt::zero);
+    let momentum_coordinate_rows =
+        usize::try_from(2_u128 * 11 * 32 * binomial_u128(32, 15)).unwrap();
+    let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+    assert_eq!(recouplings.len(), 4);
+    assert!(recouplings.iter().all(|audit| audit.passed));
+    let passed = coefficient_columns == 56
+        && previous_hook_kernel_dimension == 5
+        && leading_extension_excluded
+        && functional_kernel_residuals_exactly_zero;
+    JointCompatibilityMatrixReport {
+        schema_version: "adynkra-11d-joint-leading-first-momentum-v2".to_string(),
+        role: "exact joint zero-momentum hook and first-momentum pD15 compatibility certificate"
+            .to_string(),
+        leading_basis,
+        first_momentum_basis,
+        hook_rows: hook_matrix.len(),
+        momentum_coordinate_rows,
+        coefficient_columns,
+        leading_columns: 12,
+        first_momentum_columns: 44,
+        reciprocal_couplings_verified: recouplings.iter().filter(|audit| audit.passed).count(),
+        reciprocal_coupling_intermediates: recouplings
+            .iter()
+            .map(|audit| audit.intermediate_dynkin_label.clone())
+            .collect(),
+        reciprocal_coupling_domain_dimensions: recouplings
+            .iter()
+            .map(|audit| audit.highest_weight_domain_dimension)
+            .collect(),
+        reciprocal_coupling_kernel_dimensions: recouplings
+            .iter()
+            .map(|audit| audit.highest_weight_kernel_dimension)
+            .collect(),
+        reciprocal_coupling_raising_residuals: recouplings
+            .iter()
+            .map(|audit| audit.raising_residual_terms)
+            .collect(),
+        exact_functional_rows: JOINT_FUNCTIONAL_SEEDS.len()
+            * 2
+            * JOINT_FUNCTIONAL_BUCKETS
+            + hook_matrix.len(),
+        exact_functional_matrix_rank,
+        exact_functional_nullity,
+        full_rank_certified_by_functional_minor,
+        exact_joint_nullity,
+        functional_kernel_leading_projection_rank,
+        leading_extension_excluded,
+        previous_hook_kernel_dimension,
+        previous_hook_kernel_subspace_dimension_extended,
+        scalar_factorizing_direction_extends,
+        direct_spinor_quotient_dimension_extended,
+        functional_primitive_integer_kernel_basis: primitive_integer_kernel_basis
+            .iter()
+            .map(|vector| vector.iter().map(ToString::to_string).collect())
+            .collect(),
+        functional_kernel_residuals_exactly_zero,
+        exact_functional_normal_matrix: normal_matrix
+            .iter()
+            .map(|row| row.iter().map(rational_entry).collect())
+            .collect(),
+        maximum_absolute_residual_coefficient: maximum,
+        maximum_absolute_normal_matrix_numerator: maximum_absolute_normal_matrix_numerator
+            .to_string(),
+        convention: "canonical sorted spinor-mask basis; complex B5 vector-weight basis split into exact real and imaginary coordinates; {D,D}=2 Gamma.p; primitive integer source, target, hook, and reciprocal couplings".to_string(),
+        interpretation: if full_rank_certified_by_functional_minor {
+            "the exact functional image has full column rank 56; because it is obtained by exact linear functionals of the full coordinate residual, the full joint system also has rank 56 and nullity zero, so none of the previous five leading hook-kernel dimensions extends".to_string()
+        } else if leading_extension_excluded {
+            format!(
+                "the exact functional image has rank {exact_functional_matrix_rank} and nullity {exact_functional_nullity}, and its kernel has zero projection onto the twelve leading coefficients; every full-coordinate null vector lies in this functional kernel, so no nonzero leading hook-kernel vector extends, while the exact full-coordinate nullity remains between zero and {exact_functional_nullity}"
+            )
+        } else {
+            format!(
+                "the exact functional image has rank {exact_functional_matrix_rank} and nullity {exact_functional_nullity}; this is a rigorous lower bound on the full coordinate rank but does not certify the full kernel"
+            )
+        },
+        boundary: "this is the direct spinor-prepotential compatibility calculation through first momentum order; it does not impose the six possible gauge-parameter maps, construct a curvature, supply an action, or derive a field equation".to_string(),
+        passed,
+    }
+}
+
+pub fn merge_joint_column_artifacts(
+    output_root: &Path,
+    verify_uncompressed_streams: bool,
+) -> io::Result<JointCompatibilityMatrixReport> {
+    let specs = joint_column_specs();
+    let mut leading_basis = Vec::new();
+    let mut first_momentum_basis = Vec::new();
+    let mut functional_columns = Vec::new();
+    let mut maximum = 0_i128;
+    for spec in &specs {
+        let directory = output_root
+            .join("complete")
+            .join(format!("column-{:03}", spec.ordinal));
+        let manifest = verify_joint_column_artifact(&directory, spec, verify_uncompressed_streams)?;
+        let functional: JointColumnFunctionalFile = serde_json::from_reader(BufReader::new(
+            File::open(directory.join(&manifest.functional_file))?,
+        ))
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+        functional_columns.push(
+            functional
+                .values
+                .iter()
+                .map(|value| {
+                    value.parse::<i128>().map_err(|error| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!("invalid i128 functional value: {error}"),
+                        )
+                    })
+                })
+                .collect::<io::Result<Vec<_>>>()?,
+        );
+        maximum = maximum.max(
+            manifest
+                .maximum_absolute_residual_coefficient
+                .parse::<i128>()
+                .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?,
+        );
+        if spec.kind == "leading" {
+            leading_basis.push(spec.label.clone());
+        } else {
+            first_momentum_basis.push(spec.label.clone());
+        }
+    }
+    Ok(finalize_joint_functional_columns(
+        leading_basis,
+        first_momentum_basis,
+        functional_columns,
+        maximum,
+    ))
+}
+
 pub fn build_level17_derivative_matrix() -> Level17DerivativeMatrixReport {
     let target_terms = crate::eleven_dimensional_bridge::direct_hook_target_coupling_terms();
     assert_eq!(target_terms.len(), 8);
@@ -1769,8 +3355,12 @@ pub fn build_level17_derivative_matrix() -> Level17DerivativeMatrixReport {
     let mut hook_labels = Vec::new();
     for fixture in &hook_fixtures {
         let certificate = &hook_abstract[fixture.dynkin_label];
-        let (mut model, dense, local_maximum) =
-            materialize_coupled_highest(LEVEL17_HOOK_PROBLEM, certificate, fixture.bytes);
+        let (mut model, dense, local_maximum) = materialize_coupled_highest(
+            LEVEL17_HOOK_PROBLEM,
+            certificate,
+            fixture.bytes,
+            fixture_coefficient_width(fixture.artifact),
+        );
         maximum = maximum.max(local_maximum);
         hook_basis.push(dense_coupled_to_sparse(&mut model, &dense));
         hook_labels.push(format!("{}#{}", fixture.dynkin_label, fixture.copy));
@@ -2485,6 +4075,35 @@ mod tests {
     use super::*;
 
     #[test]
+    fn joint_column_manifest_is_complete_and_unique() {
+        let specs = joint_column_specs();
+        assert_eq!(specs.len(), 56);
+        assert_eq!(
+            specs.iter().map(|spec| spec.ordinal).collect::<Vec<_>>(),
+            (0..56).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            specs.iter().filter(|spec| spec.kind == "leading").count(),
+            12
+        );
+        assert_eq!(
+            specs
+                .iter()
+                .filter(|spec| spec.kind == "first-momentum")
+                .count(),
+            44
+        );
+        assert_eq!(
+            specs
+                .iter()
+                .map(|spec| spec.label.as_str())
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            56
+        );
+    }
+
+    #[test]
     fn fixed_work_list_and_multiplicity_gate_pass() {
         let report = verify();
         assert!(report.passed);
@@ -2542,10 +4161,12 @@ mod tests {
             fixture.bytes,
         );
         assert!(!report.passed);
-        assert!(report
-            .exact_raising_residual_terms_by_simple_root
-            .iter()
-            .any(|terms| *terms != 0));
+        assert!(
+            report
+                .exact_raising_residual_terms_by_simple_root
+                .iter()
+                .any(|terms| *terms != 0)
+        );
     }
 
     #[test]
@@ -2601,10 +4222,12 @@ mod tests {
             fixture.bytes,
         );
         assert!(!report.passed);
-        assert!(report
-            .exact_raising_residual_terms_by_simple_root
-            .iter()
-            .any(|terms| *terms != 0));
+        assert!(
+            report
+                .exact_raising_residual_terms_by_simple_root
+                .iter()
+                .any(|terms| *terms != 0)
+        );
     }
 
     #[test]
@@ -2612,9 +4235,11 @@ mod tests {
         let manifest = first_momentum_copy_manifest();
         assert_eq!(manifest.len(), 23);
         assert_eq!(manifest.values().map(Vec::len).sum::<usize>(), 44);
-        assert!(manifest
-            .keys()
-            .all(|(_, target)| ["00001", "01001", "10001", "20001"].contains(&target.as_str())));
+        assert!(
+            manifest
+                .keys()
+                .all(|(_, target)| ["00001", "01001", "10001", "20001"].contains(&target.as_str()))
+        );
     }
 
     #[test]
@@ -2633,10 +4258,12 @@ mod tests {
         abstract_certificate.primitive_domain_coefficients[0] += 1;
         let embedded = verify_first_momentum_copy_with_abstract(&abstract_certificate, 1);
         assert!(!embedded.passed);
-        assert!(embedded
-            .exact_raising_residual_terms_by_simple_root
-            .iter()
-            .any(|terms| *terms != 0));
+        assert!(
+            embedded
+                .exact_raising_residual_terms_by_simple_root
+                .iter()
+                .any(|terms| *terms != 0)
+        );
     }
 
     #[test]
@@ -2661,10 +4288,121 @@ mod tests {
         let (candidate, maximum) = build_scalar_factorizing_candidate();
         assert!(maximum > 0);
         assert_eq!(candidate.components.len(), 32);
-        assert!(candidate
-            .components
-            .values()
-            .all(|component| !component.is_empty()));
+        assert!(
+            candidate
+                .components
+                .values()
+                .all(|component| !component.is_empty())
+        );
+    }
+
+    #[test]
+    fn golden_leading_anticommutator_residual_is_nonzero() {
+        let fixture = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures()
+            .into_iter()
+            .find(|fixture| fixture.dynkin_label == "20000" && fixture.copy == 1)
+            .unwrap();
+        let abstract_certificate = build_abstract("20000");
+        let hook_terms = crate::eleven_dimensional_bridge::direct_hook_target_coupling_terms();
+        let translation = translation_weight_basis_coefficients();
+        let (residual, maximum) = build_leading_anticommutator_residual(
+            &abstract_certificate,
+            fixture.bytes,
+            &hook_terms,
+            &translation,
+        );
+        assert!(!residual.is_empty());
+        assert!(maximum > 0);
+        assert!(
+            residual
+                .iter()
+                .all(|entry| entry.exterior_mask.count_ones() == 15)
+        );
+    }
+
+    #[test]
+    fn golden_first_momentum_correction_residual_is_nonzero() {
+        let fixture = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures()
+            .into_iter()
+            .find(|fixture| fixture.dynkin_label == "00000" && fixture.copy == 1)
+            .unwrap();
+        let abstract_certificate = build_first_momentum_abstract("00000", "00001");
+        let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+        let recoupling = recouplings
+            .iter()
+            .find(|audit| audit.intermediate_dynkin_label == "00001")
+            .unwrap();
+        let hook_terms = crate::eleven_dimensional_bridge::direct_hook_target_coupling_terms();
+        let (residual, maximum) = build_first_momentum_correction_residual(
+            FIRST_MOMENTUM_00001_PROBLEM,
+            &abstract_certificate,
+            fixture.bytes,
+            fixture_coefficient_width(fixture.artifact),
+            recoupling,
+            &hook_terms,
+        );
+        assert!(!residual.is_empty());
+        assert!(maximum > 0);
+        assert!(
+            residual
+                .iter()
+                .all(|entry| entry.exterior_mask.count_ones() == 15)
+        );
+    }
+
+    #[test]
+    fn joint_residual_functionals_are_exactly_linear() {
+        let left = vec![
+            MomentumHookEntry {
+                momentum_vector_index: 0,
+                free_spinor_index: 3,
+                exterior_mask: 0x0000_7fff,
+                real: 7,
+                imaginary: -11,
+            },
+            MomentumHookEntry {
+                momentum_vector_index: 10,
+                free_spinor_index: 31,
+                exterior_mask: 0xffff_0001,
+                real: -13,
+                imaginary: 17,
+            },
+        ];
+        let right = vec![
+            MomentumHookEntry {
+                real: 5,
+                imaginary: 19,
+                ..left[0]
+            },
+            MomentumHookEntry {
+                real: 23,
+                imaginary: -29,
+                ..left[1]
+            },
+        ];
+        let sum = vec![
+            MomentumHookEntry {
+                real: 12,
+                imaginary: 8,
+                ..left[0]
+            },
+            MomentumHookEntry {
+                real: 10,
+                imaginary: -12,
+                ..left[1]
+            },
+        ];
+        let left_functionals = momentum_hook_functionals(&left);
+        let right_functionals = momentum_hook_functionals(&right);
+        let sum_functionals = momentum_hook_functionals(&sum);
+        assert_eq!(
+            sum_functionals,
+            left_functionals
+                .iter()
+                .zip(right_functionals)
+                .map(|(left, right)| left + right)
+                .collect::<Vec<_>>()
+        );
     }
 
     #[test]
@@ -2705,5 +4443,16 @@ mod tests {
         let mut mutated = primitive;
         mutated[0] += BigInt::one();
         assert!(!matrix_times_integer_vector_is_zero(&matrix, &mutated));
+    }
+
+    #[test]
+    fn right_exterior_composition_uses_greater_index_crossings() {
+        let mask = (1_u32 << 1) | (1_u32 << 4) | (1_u32 << 7);
+        assert_eq!(right_wedge_sign(mask, 0), Some(-1));
+        assert_eq!(right_wedge_sign(mask, 2), Some(1));
+        assert_eq!(right_wedge_sign(mask, 6), Some(-1));
+        assert_eq!(right_wedge_sign(mask, 8), Some(1));
+        assert_eq!(right_wedge_sign(mask, 4), None);
+        assert_eq!(right_wedge_sign(1_u32 << 0, 31), Some(1));
     }
 }

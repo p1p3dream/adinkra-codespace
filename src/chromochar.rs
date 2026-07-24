@@ -57,12 +57,30 @@ fn tr_lrlr(rep: &AdinkraRep, i: usize, j: usize, k: usize, l: usize) -> i64 {
 
 /// All 24 permutations of `[0,1,2,3]` with parity (+1 even, −1 odd).
 const ALL_S4: [([usize; 4], i64); 24] = [
-    ([0, 1, 2, 3], 1), ([0, 1, 3, 2], -1), ([0, 2, 1, 3], -1), ([0, 2, 3, 1], 1),
-    ([0, 3, 1, 2], 1), ([0, 3, 2, 1], -1), ([1, 0, 2, 3], -1), ([1, 0, 3, 2], 1),
-    ([1, 2, 0, 3], 1), ([1, 2, 3, 0], -1), ([1, 3, 0, 2], -1), ([1, 3, 2, 0], 1),
-    ([2, 0, 1, 3], 1), ([2, 0, 3, 1], -1), ([2, 1, 0, 3], -1), ([2, 1, 3, 0], 1),
-    ([2, 3, 0, 1], 1), ([2, 3, 1, 0], -1), ([3, 0, 1, 2], -1), ([3, 0, 2, 1], 1),
-    ([3, 1, 0, 2], 1), ([3, 1, 2, 0], -1), ([3, 2, 0, 1], -1), ([3, 2, 1, 0], 1),
+    ([0, 1, 2, 3], 1),
+    ([0, 1, 3, 2], -1),
+    ([0, 2, 1, 3], -1),
+    ([0, 2, 3, 1], 1),
+    ([0, 3, 1, 2], 1),
+    ([0, 3, 2, 1], -1),
+    ([1, 0, 2, 3], -1),
+    ([1, 0, 3, 2], 1),
+    ([1, 2, 0, 3], 1),
+    ([1, 2, 3, 0], -1),
+    ([1, 3, 0, 2], -1),
+    ([1, 3, 2, 0], 1),
+    ([2, 0, 1, 3], 1),
+    ([2, 0, 3, 1], -1),
+    ([2, 1, 0, 3], -1),
+    ([2, 1, 3, 0], 1),
+    ([2, 3, 0, 1], 1),
+    ([2, 3, 1, 0], -1),
+    ([3, 0, 1, 2], -1),
+    ([3, 0, 2, 1], 1),
+    ([3, 1, 0, 2], 1),
+    ([3, 1, 2, 0], -1),
+    ([3, 2, 0, 1], -1),
+    ([3, 2, 1, 0], 1),
 ];
 
 /// Un-normalized totally-antisymmetric chromocharacter for the quadruple
@@ -186,7 +204,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, -1, -1, 1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, 1, -1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     fn vs_n4() -> AdinkraRep {
@@ -196,7 +218,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, 1, -1, -1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, -1, 1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     #[test]
@@ -205,8 +231,14 @@ mod tests {
         let chi_vs = chi0_n4(&vs_n4());
         // Exact literature convention (arXiv:1405.0048: chiral = +1, vector = −1),
         // independently confirmed by hand (CS accumulator = +96, VS = −96).
-        assert!((chi_cs - 1.0).abs() < 1e-9, "χ₀(CS) should be +1 (chiral), got {chi_cs}");
-        assert!((chi_vs + 1.0).abs() < 1e-9, "χ₀(VS) should be −1 (vector), got {chi_vs}");
+        assert!(
+            (chi_cs - 1.0).abs() < 1e-9,
+            "χ₀(CS) should be +1 (chiral), got {chi_cs}"
+        );
+        assert!(
+            (chi_vs + 1.0).abs() < 1e-9,
+            "χ₀(VS) should be −1 (vector), got {chi_vs}"
+        );
     }
 
     #[test]
@@ -236,7 +268,10 @@ mod tests {
     /// evaluator.
     #[test]
     fn trace_activity_nonzero_at_n4() {
-        assert!(chromochar_trace_activity(&cs_n4()) > 0, "N=4 raw-trace activity must be > 0");
+        assert!(
+            chromochar_trace_activity(&cs_n4()) > 0,
+            "N=4 raw-trace activity must be > 0"
+        );
         assert!(chromochar_trace_activity(&vs_n4()) > 0);
     }
 
@@ -256,7 +291,11 @@ mod tests {
                 .iter()
                 .map(|l| pinv.compose(l).compose(&p))
                 .collect();
-            let conj = AdinkraRep { n: rep.n, d: rep.d, l_matrices: conj_l };
+            let conj = AdinkraRep {
+                n: rep.n,
+                d: rep.d,
+                l_matrices: conj_l,
+            };
             assert_eq!(
                 chromochar_support_and_q(&rep),
                 chromochar_support_and_q(&conj),

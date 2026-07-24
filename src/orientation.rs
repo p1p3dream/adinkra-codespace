@@ -54,7 +54,7 @@
 // module's own #[cfg(test)] tests, so the non-test binary sees it as dead.
 #![allow(dead_code)]
 
-use crate::decompose::{commutant_orbits, DenseMat, IrrepSummand};
+use crate::decompose::{DenseMat, IrrepSummand, commutant_orbits};
 use crate::lr_matrix::AdinkraRep;
 
 /// Local deterministic xorshift64* PRNG (kept private so this module does not
@@ -96,7 +96,10 @@ pub fn random_orthogonal(dim: usize, seed: u64) -> DenseMat {
                 cols[i][k] -= dot * cj[k];
             }
         }
-        let norm: f64 = (0..dim).map(|k| cols[i][k] * cols[i][k]).sum::<f64>().sqrt();
+        let norm: f64 = (0..dim)
+            .map(|k| cols[i][k] * cols[i][k])
+            .sum::<f64>()
+            .sqrt();
         for k in 0..dim {
             cols[i][k] /= norm;
         }
@@ -211,7 +214,10 @@ pub fn intertwiner_orthogonal(
 ) -> Option<DenseMat> {
     const TRIES: usize = 8;
     for t_i in 0..TRIES as u64 {
-        let s = seed ^ t_i.wrapping_mul(0x9E37_79B9_7F4A_7C15).wrapping_add(0x1234_5678);
+        let s = seed
+            ^ t_i
+                .wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                .wrapping_add(0x1234_5678);
         let m = generic_commutant_element(rep, s);
         // T = B_bᵀ M B_a  (dmin×dmin); intertwines the restricted reps a -> b.
         let t = b.basis.transpose().matmul(&m).matmul(&a.basis);
@@ -239,9 +245,7 @@ pub fn intertwiner_residual(a: &IrrepSummand, b: &IrrepSummand, u: &DenseMat) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::decompose::{
-        dense_gadget, decompose_rep, DenseHoloraumy,
-    };
+    use crate::decompose::{DenseHoloraumy, decompose_rep, dense_gadget};
     use crate::signed_perm::SignedPerm;
 
     fn cs_n4() -> AdinkraRep {
@@ -251,7 +255,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, -1, -1, 1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, 1, -1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
     fn vs_n4() -> AdinkraRep {
         let l = vec![
@@ -260,7 +268,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, 1, -1, -1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, -1, 1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
     /// Block-diagonal direct sum (d = da+db) to build a genuinely reducible rep.
     fn block_diag(a: &AdinkraRep, b: &AdinkraRep) -> AdinkraRep {
@@ -281,7 +293,11 @@ mod tests {
             }
             l_matrices.push(SignedPerm::from_parts(perm, sign).unwrap());
         }
-        AdinkraRep { n, d: da + db, l_matrices }
+        AdinkraRep {
+            n,
+            d: da + db,
+            l_matrices,
+        }
     }
 
     fn self_gadget(s: &IrrepSummand) -> f64 {
@@ -289,7 +305,10 @@ mod tests {
         dense_gadget(&dh, &dh)
     }
     fn cross_gadget(a: &IrrepSummand, b: &IrrepSummand) -> f64 {
-        dense_gadget(&DenseHoloraumy::from_summand(a), &DenseHoloraumy::from_summand(b))
+        dense_gadget(
+            &DenseHoloraumy::from_summand(a),
+            &DenseHoloraumy::from_summand(b),
+        )
     }
 
     /// The raw cross gadget between two equivalent summands is GAUGE-DEPENDENT
@@ -311,13 +330,22 @@ mod tests {
         for seed in 1..8u64 {
             let q = random_orthogonal(b.dmin, seed);
             let bq = gauge_conjugate(b, &q);
-            assert!((self_gadget(&bq) - self_before).abs() < 1e-9, "self gadget not gauge-invariant");
-            assert!((self_before - 1.0).abs() < 1e-9, "self gadget should be 1.0");
+            assert!(
+                (self_gadget(&bq) - self_before).abs() < 1e-9,
+                "self gadget not gauge-invariant"
+            );
+            assert!(
+                (self_before - 1.0).abs() < 1e-9,
+                "self gadget should be 1.0"
+            );
             if (cross_gadget(a, &bq) - raw_before).abs() > 1e-3 {
                 moved = true;
             }
         }
-        assert!(moved, "cross gadget never moved under gauge -> not actually gauge-dependent");
+        assert!(
+            moved,
+            "cross gadget never moved under gauge -> not actually gauge-dependent"
+        );
     }
 
     /// The canonical intertwiner exists for equivalent summands, exactly aligns
@@ -338,7 +366,10 @@ mod tests {
         // Canonical cross gadget = gadget(a, U-transported b) = self gadget = 1.0.
         let b_aligned = gauge_conjugate(b, &u);
         let canon = cross_gadget(a, &b_aligned);
-        assert!((canon - 1.0).abs() < 1e-9, "canonical cross gadget {canon} != 1.0");
+        assert!(
+            (canon - 1.0).abs() < 1e-9,
+            "canonical cross gadget {canon} != 1.0"
+        );
     }
 
     /// The canonical cross gadget is INVARIANT under independent random gauges on
@@ -362,9 +393,15 @@ mod tests {
             let b = gauge_conjugate(&b0, &random_orthogonal(b0.dmin, sb));
             // Intertwiner recomputed in the regauged frames.
             let u = intertwiner_orthogonal(&rep, &a, &b, 999).unwrap();
-            assert!(intertwiner_residual(&a, &b, &u) < 1e-8, "regauged U misaligned");
+            assert!(
+                intertwiner_residual(&a, &b, &u) < 1e-8,
+                "regauged U misaligned"
+            );
             let canon = cross_gadget(&a, &gauge_conjugate(&b, &u));
-            assert!((canon - base).abs() < 1e-7, "canonical value moved under gauge: {canon} vs {base}");
+            assert!(
+                (canon - base).abs() < 1e-7,
+                "canonical value moved under gauge: {canon} vs {base}"
+            );
         }
     }
 
@@ -381,14 +418,23 @@ mod tests {
             for j in (i + 1)..3 {
                 let (si, sj) = (&dec.summands[i], &dec.summands[j]);
                 if let Some(u) = intertwiner_orthogonal(&rep, si, sj, 7) {
-                    assert!(intertwiner_residual(si, sj, &u) < 1e-8, "misaligned intertwiner");
+                    assert!(
+                        intertwiner_residual(si, sj, &u) < 1e-8,
+                        "misaligned intertwiner"
+                    );
                     let canon = cross_gadget(si, &gauge_conjugate(sj, &u));
-                    assert!((canon - 1.0).abs() < 1e-8, "equivalent canonical cross {canon} != 1.0");
+                    assert!(
+                        (canon - 1.0).abs() < 1e-8,
+                        "equivalent canonical cross {canon} != 1.0"
+                    );
                     equiv_pairs += 1;
                 }
             }
         }
-        assert_eq!(equiv_pairs, 1, "CS⊕CS⊕VS must have exactly one equivalent (CS,CS) pair");
+        assert_eq!(
+            equiv_pairs, 1,
+            "CS⊕CS⊕VS must have exactly one equivalent (CS,CS) pair"
+        );
     }
 
     /// Isotypic multiplicity 3 (CS ⊕ CS ⊕ CS): all three pairs align to 1.0, and
@@ -416,7 +462,10 @@ mod tests {
         let ub = intertwiner_orthogonal(&rep, s0, s1, 999_999).unwrap();
         let va = cross_gadget(s0, &gauge_conjugate(s1, &ua));
         let vb = cross_gadget(s0, &gauge_conjugate(s1, &ub));
-        assert!((va - vb).abs() < 1e-8, "aligned value depends on seed: {va} vs {vb}");
+        assert!(
+            (va - vb).abs() < 1e-8,
+            "aligned value depends on seed: {va} vs {vb}"
+        );
     }
 
     /// Inequivalent irreducibles (CS vs VS) carry NO intertwiner: the commutant
@@ -438,6 +487,9 @@ mod tests {
                 found = true;
             }
         }
-        assert!(!found, "inequivalent CS/VS summands should have no intertwiner");
+        assert!(
+            !found,
+            "inequivalent CS/VS summands should have no intertwiner"
+        );
     }
 }

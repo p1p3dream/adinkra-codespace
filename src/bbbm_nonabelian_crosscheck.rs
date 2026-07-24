@@ -178,11 +178,7 @@ fn permutation_sign(indices: &[usize]) -> i64 {
                 .count()
         })
         .sum::<usize>();
-    if inversions % 2 == 0 {
-        1
-    } else {
-        -1
-    }
+    if inversions % 2 == 0 { 1 } else { -1 }
 }
 
 fn associative_form(a: usize, b: usize, c: usize) -> i64 {

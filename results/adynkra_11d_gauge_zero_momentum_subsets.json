@@ -1,0 +1,1709 @@
+{
+  "schema_version": "adynkra-11d-zero-momentum-gauge-subsets-v1",
+  "passed": true,
+  "leading_basis": [
+    "10000#1",
+    "20000#1",
+    "00100#1",
+    "00100#2",
+    "00010#1",
+    "00010#2",
+    "00002#1",
+    "10100#1",
+    "10010#1",
+    "10002#1",
+    "10002#2",
+    "10002#3"
+  ],
+  "channel_dynkin_labels": [
+    "00000",
+    "10000",
+    "01000",
+    "00100",
+    "00010",
+    "00002"
+  ],
+  "source_kernel_report_sha256": [
+    "184c3a683e47e4c8ec3763e1318fb2d200fe3f1c44e2d4eae6273da317064d40",
+    "b2cdb3733d4ca6eb156ba70a399fa0d4a05be8704d65e843ca97627c1c9babf9",
+    "606f919a164049ffcd7bed03afb791abf3644c1395172bad45b25ab0500d8807",
+    "c9f5ddf4372e43519e480ef6ddb986b347a208859171372e445b813f9c21479e",
+    "1ca023a678261b648deed824f3c6c3249a8ba96f0deb0dc98574fd23a6e5f841",
+    "a5bc727926fe9509aa72858fff151b15a6f26ef36f32cd403d828b7b8d31ddaa"
+  ],
+  "all_source_streams_deep_verified": true,
+  "scalar_factorizing_primitive_coordinates": [
+    "70560",
+    "10080",
+    "-3780",
+    "-15120",
+    "7560",
+    "-498960",
+    "-5040",
+    "-35",
+    "63",
+    "0",
+    "-120",
+    "0"
+  ],
+  "subset_count": 64,
+  "nonempty_subset_count": 63,
+  "individual_channel_dimensions": [
+    11,
+    1,
+    1,
+    0,
+    0,
+    1
+  ],
+  "all_channel_intersection_dimension": 0,
+  "subsets_with_nonzero_leading_operator": 9,
+  "subsets_preserving_scalar_factorizing_direction": 8,
+  "subset_reports": [
+    {
+      "channel_mask": 0,
+      "selected_form_degrees": [],
+      "selected_dynkin_labels": [],
+      "exact_constraint_rank": 0,
+      "exact_intersection_dimension": 12,
+      "primitive_integer_kernel_basis": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 1,
+      "selected_form_degrees": [
+        0
+      ],
+      "selected_dynkin_labels": [
+        "00000"
+      ],
+      "exact_constraint_rank": 1,
+      "exact_intersection_dimension": 11,
+      "primitive_integer_kernel_basis": [
+        [
+          "19",
+          "-1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "18",
+          "0",
+          "-1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "30",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "54",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "14256",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "-1",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "6600",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0",
+          "0"
+        ],
+        [
+          "8316",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1",
+          "0"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "0",
+          "1"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 2,
+      "selected_form_degrees": [
+        1
+      ],
+      "selected_dynkin_labels": [
+        "10000"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 3,
+      "selected_form_degrees": [
+        0,
+        1
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 4,
+      "selected_form_degrees": [
+        2
+      ],
+      "selected_dynkin_labels": [
+        "01000"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 5,
+      "selected_form_degrees": [
+        0,
+        2
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 6,
+      "selected_form_degrees": [
+        1,
+        2
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 7,
+      "selected_form_degrees": [
+        0,
+        1,
+        2
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 8,
+      "selected_form_degrees": [
+        3
+      ],
+      "selected_dynkin_labels": [
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 9,
+      "selected_form_degrees": [
+        0,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 10,
+      "selected_form_degrees": [
+        1,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 11,
+      "selected_form_degrees": [
+        0,
+        1,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 12,
+      "selected_form_degrees": [
+        2,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 13,
+      "selected_form_degrees": [
+        0,
+        2,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 14,
+      "selected_form_degrees": [
+        1,
+        2,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 15,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00100"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 16,
+      "selected_form_degrees": [
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 17,
+      "selected_form_degrees": [
+        0,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 18,
+      "selected_form_degrees": [
+        1,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 19,
+      "selected_form_degrees": [
+        0,
+        1,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 20,
+      "selected_form_degrees": [
+        2,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 21,
+      "selected_form_degrees": [
+        0,
+        2,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 22,
+      "selected_form_degrees": [
+        1,
+        2,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 23,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 24,
+      "selected_form_degrees": [
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 25,
+      "selected_form_degrees": [
+        0,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 26,
+      "selected_form_degrees": [
+        1,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 27,
+      "selected_form_degrees": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 28,
+      "selected_form_degrees": [
+        2,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 29,
+      "selected_form_degrees": [
+        0,
+        2,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 30,
+      "selected_form_degrees": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 31,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00100",
+        "00010"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 32,
+      "selected_form_degrees": [
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00002"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 33,
+      "selected_form_degrees": [
+        0,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 34,
+      "selected_form_degrees": [
+        1,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00002"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 35,
+      "selected_form_degrees": [
+        0,
+        1,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 36,
+      "selected_form_degrees": [
+        2,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00002"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 37,
+      "selected_form_degrees": [
+        0,
+        2,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 38,
+      "selected_form_degrees": [
+        1,
+        2,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00002"
+      ],
+      "exact_constraint_rank": 11,
+      "exact_intersection_dimension": 1,
+      "primitive_integer_kernel_basis": [
+        [
+          "70560",
+          "10080",
+          "-3780",
+          "-15120",
+          "7560",
+          "-498960",
+          "-5040",
+          "-35",
+          "63",
+          "0",
+          "-120",
+          "0"
+        ]
+      ],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": true,
+      "scalar_factorizing_direction_survives": true
+    },
+    {
+      "channel_mask": 39,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 40,
+      "selected_form_degrees": [
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 41,
+      "selected_form_degrees": [
+        0,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 42,
+      "selected_form_degrees": [
+        1,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 43,
+      "selected_form_degrees": [
+        0,
+        1,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 44,
+      "selected_form_degrees": [
+        2,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 45,
+      "selected_form_degrees": [
+        0,
+        2,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 46,
+      "selected_form_degrees": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 47,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        3,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00100",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 48,
+      "selected_form_degrees": [
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 49,
+      "selected_form_degrees": [
+        0,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 50,
+      "selected_form_degrees": [
+        1,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 51,
+      "selected_form_degrees": [
+        0,
+        1,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 52,
+      "selected_form_degrees": [
+        2,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 53,
+      "selected_form_degrees": [
+        0,
+        2,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 54,
+      "selected_form_degrees": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 55,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 56,
+      "selected_form_degrees": [
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 57,
+      "selected_form_degrees": [
+        0,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 58,
+      "selected_form_degrees": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 59,
+      "selected_form_degrees": [
+        0,
+        1,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 60,
+      "selected_form_degrees": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "01000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 61,
+      "selected_form_degrees": [
+        0,
+        2,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "01000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 62,
+      "selected_form_degrees": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "10000",
+        "01000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    },
+    {
+      "channel_mask": 63,
+      "selected_form_degrees": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "selected_dynkin_labels": [
+        "00000",
+        "10000",
+        "01000",
+        "00100",
+        "00010",
+        "00002"
+      ],
+      "exact_constraint_rank": 12,
+      "exact_intersection_dimension": 0,
+      "primitive_integer_kernel_basis": [],
+      "kernel_residuals_exactly_zero": true,
+      "has_nonzero_leading_operator": false,
+      "scalar_factorizing_direction_survives": false
+    }
+  ],
+  "interpretation": "Each subset entry is the exact intersection of the selected source-channel kernels on the twelve leading operators.",
+  "boundary": "This report classifies zero-momentum source invariance only. It does not supply a target gauge transformation or decide first-momentum compatibility."
+}

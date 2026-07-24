@@ -111,12 +111,11 @@ pub fn run() -> BbbmValiseReport {
         dashing_classes_checked: num_classes,
         garden_algebra_verified_all_dashings: all_ok,
         is_minimal_n9_valise: n == 9 && d == 16,
-        interpretation:
-            "Generic minimal N=9 valise scaffold GR(16,9). Garden algebra \
+        interpretation: "Generic minimal N=9 valise scaffold GR(16,9). Garden algebra \
              L_I R_J + L_J R_I = 2 delta_IJ I_16 is verified exactly for every \
              dashing class. The formally node-lowered BBBM reduction has this [9,4] \
              chromotopology after an explicit color permutation."
-                .to_string(),
+            .to_string(),
         scope_caveat:
             "The local BBBM object is the (9,16,7) hanging. Reaching the formal valise requires \
              D^{-1}, temporal gauge fixing, and deletion or separate treatment of zero modes. \
@@ -267,11 +266,7 @@ mod crosscheck {
             for i in 0..n {
                 for j in i..n {
                     let sum = add(&matmul(&ls[i], &rs[j]), &matmul(&ls[j], &rs[i]));
-                    let expected = if i == j {
-                        scaled_ident(d, 2)
-                    } else {
-                        zeros(d)
-                    };
+                    let expected = if i == j { scaled_ident(d, 2) } else { zeros(d) };
                     assert_eq!(
                         sum, expected,
                         "class {class}: Garden algebra failed at (I,J)=({i},{j})"
@@ -401,14 +396,14 @@ mod crosscheck {
 
         // Relation to Hamming[8,4]: projecting away coordinate 8 gives exactly
         // the [8,4] extended Hamming code (same 16 codewords).
-        let hamming = DoublyEvenCode::new(8, vec![0b1110_0001, 0b1101_0010, 0b1011_0100, 0b0111_1000]);
-        let proj: HashSet<u32> = code
-            .codewords()
-            .iter()
-            .map(|&w| w & 0xFF)
-            .collect();
+        let hamming =
+            DoublyEvenCode::new(8, vec![0b1110_0001, 0b1101_0010, 0b1011_0100, 0b0111_1000]);
+        let proj: HashSet<u32> = code.codewords().iter().map(|&w| w & 0xFF).collect();
         let ham_set: HashSet<u32> = hamming.codewords().into_iter().collect();
-        assert_eq!(proj, ham_set, "projection to first 8 coords must equal Hamming[8,4]");
+        assert_eq!(
+            proj, ham_set,
+            "projection to first 8 coords must equal Hamming[8,4]"
+        );
     }
 
     /// Automorphism group of the [9,4] code, recomputed by brute force over all
@@ -519,7 +514,10 @@ mod tests {
     #[test]
     fn bbbm_n9_valise_closes_garden_algebra() {
         let r = run();
-        assert_eq!(r.supercharges_n, 9, "BBBM off-shell sector has 9 supercharges");
+        assert_eq!(
+            r.supercharges_n, 9,
+            "BBBM off-shell sector has 9 supercharges"
+        );
         assert_eq!(r.module_dimension_d, 16, "d_min(9) = 16");
         assert_eq!(
             r.gauge_invariant_gauge_bosons + r.auxiliary_bosons,
@@ -540,7 +538,10 @@ mod tests {
     #[test]
     fn n9_minimal_code_invariants() {
         let code = n9_minimal_code();
-        assert!(code.is_valid(), "[9,4] code must be a valid doubly-even code");
+        assert!(
+            code.is_valid(),
+            "[9,4] code must be a valid doubly-even code"
+        );
         assert_eq!(code.n, 9);
         assert_eq!(code.k(), 4, "k must be 4 (maximal doubly-even for n=9)");
         assert_eq!(code.num_codewords(), 16);

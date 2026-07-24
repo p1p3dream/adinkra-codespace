@@ -68,11 +68,7 @@ pub fn exact_canonical_key(code: &DoublyEvenCode) -> Vec<u64> {
         .map(|e| {
             let a = e.source().index();
             let b = e.target().index();
-            if a <= b {
-                (a, b)
-            } else {
-                (b, a)
-            }
+            if a <= b { (a, b) } else { (b, a) }
         })
         .collect();
     edges.sort();

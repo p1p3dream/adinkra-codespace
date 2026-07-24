@@ -16,7 +16,7 @@
 
 use crate::lr_matrix::AdinkraRep;
 use crate::permutahedron::{
-    abnormal_slices, coset_partition, factorial, permutations, rana_r8, CosetSide, Permutation,
+    CosetSide, Permutation, abnormal_slices, coset_partition, factorial, permutations, rana_r8,
 };
 use crate::permutahedron_fixtures::{R8_DIADEM_OCTET, S8_REPRESENTATION_OCTETS};
 use serde::Serialize;
@@ -636,9 +636,11 @@ mod tests {
         assert_eq!(report.contingency.ordinary_and_signable, 4_872);
         assert_eq!(report.dense_residual_entries, 0);
         assert_eq!(report.named_octets.len(), 7);
-        assert!(report
-            .named_octets
-            .iter()
-            .all(|item| item.garden_signing_exists));
+        assert!(
+            report
+                .named_octets
+                .iter()
+                .all(|item| item.garden_signing_exists)
+        );
     }
 }

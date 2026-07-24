@@ -32,27 +32,41 @@ use crate::ranking::Ranking;
 
 type M4 = [[f64; 4]; 4];
 
-fn zero4() -> M4 { [[0.0; 4]; 4] }
+fn zero4() -> M4 {
+    [[0.0; 4]; 4]
+}
 
 fn matmul4(a: &M4, b: &M4) -> M4 {
     let mut c = zero4();
     for i in 0..4 {
         for k in 0..4 {
             let aik = a[i][k];
-            if aik == 0.0 { continue; }
-            for j in 0..4 { c[i][j] += aik * b[k][j]; }
+            if aik == 0.0 {
+                continue;
+            }
+            for j in 0..4 {
+                c[i][j] += aik * b[k][j];
+            }
         }
     }
     c
 }
 fn transpose4(a: &M4) -> M4 {
     let mut t = zero4();
-    for i in 0..4 { for j in 0..4 { t[j][i] = a[i][j]; } }
+    for i in 0..4 {
+        for j in 0..4 {
+            t[j][i] = a[i][j];
+        }
+    }
     t
 }
 fn max_abs4(a: &M4) -> f64 {
     let mut m = 0.0f64;
-    for i in 0..4 { for j in 0..4 { m = m.max(a[i][j].abs()); } }
+    for i in 0..4 {
+        for j in 0..4 {
+            m = m.max(a[i][j].abs());
+        }
+    }
     m
 }
 
@@ -60,9 +74,24 @@ fn max_abs4(a: &M4) -> f64 {
 /// spec: these equal 2·B^a (twice the boost generator).
 fn gamma0_gamma_a(a: usize) -> M4 {
     match a {
-        1 => [[0.0,0.0,-1.0,0.0],[0.0,0.0,0.0,-1.0],[-1.0,0.0,0.0,0.0],[0.0,-1.0,0.0,0.0]],
-        2 => [[0.0,0.0,0.0,-1.0],[0.0,0.0,1.0,0.0],[0.0,1.0,0.0,0.0],[-1.0,0.0,0.0,0.0]],
-        3 => [[-1.0,0.0,0.0,0.0],[0.0,-1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]],
+        1 => [
+            [0.0, 0.0, -1.0, 0.0],
+            [0.0, 0.0, 0.0, -1.0],
+            [-1.0, 0.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0, 0.0],
+        ],
+        2 => [
+            [0.0, 0.0, 0.0, -1.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [-1.0, 0.0, 0.0, 0.0],
+        ],
+        3 => [
+            [-1.0, 0.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
         _ => panic!("spatial index a must be 1,2,3 for the 4D N=1 sieve"),
     }
 }
@@ -75,9 +104,26 @@ fn gamma0_gamma_a(a: usize) -> M4 {
 /// G^a = −(Γ^a C⁻¹) from the spec (Appendix E).
 fn lambda_a(a: usize) -> M4 {
     match a {
-        1 => [[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0],[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0]],
-        2 => [[0.0,0.0,0.0,1.0],[0.0,0.0,-1.0,0.0],[0.0,-1.0,0.0,0.0],[1.0,0.0,0.0,0.0]],
-        3 => { let mut m = zero4(); m[0][0]=1.0; m[1][1]=1.0; m[2][2]=-1.0; m[3][3]=-1.0; m }
+        1 => [
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+        ],
+        2 => [
+            [0.0, 0.0, 0.0, 1.0],
+            [0.0, 0.0, -1.0, 0.0],
+            [0.0, -1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0],
+        ],
+        3 => {
+            let mut m = zero4();
+            m[0][0] = 1.0;
+            m[1][1] = 1.0;
+            m[2][2] = -1.0;
+            m[3][3] = -1.0;
+            m
+        }
         _ => panic!("a must be 1,2,3"),
     }
 }
@@ -123,11 +169,15 @@ fn passes_enhancement(chromo: &Chromotopology, height: &[i32], dashing: &[i8], t
         for aa in 0..4 {
             for b in 0..4 {
                 let c = gg[aa][b];
-                if c == 0.0 { continue; }
-                for i in 0..4 { for j in 0..4 {
-                    delta[aa][i][j] -= c * dn[b][i][j];
-                    deltat[aa][i][j] -= c * dtilde[b][i][j];
-                }}
+                if c == 0.0 {
+                    continue;
+                }
+                for i in 0..4 {
+                    for j in 0..4 {
+                        delta[aa][i][j] -= c * dn[b][i][j];
+                        deltat[aa][i][j] -= c * dtilde[b][i][j];
+                    }
+                }
             }
         }
         // Ω^a_AB (boson block) and Ω̃^a_AB (fermion block), symmetrized ½(A,B).
@@ -139,22 +189,34 @@ fn passes_enhancement(chromo: &Chromotopology, height: &[i32], dashing: &[i8], t
                 let t3 = matmul4(&delta[aa], &utilde[bb]);
                 let t4 = matmul4(&delta[bb], &utilde[aa]);
                 let mut ob = zero4();
-                for i in 0..4 { for j in 0..4 {
-                    ob[i][j] = 0.5 * (t1[i][j] + t2[i][j] + t3[i][j] + t4[i][j]);
-                    if i == j { ob[i][j] -= lam[aa][bb]; }
-                }}
-                if max_abs4(&ob) > tol { return false; }
+                for i in 0..4 {
+                    for j in 0..4 {
+                        ob[i][j] = 0.5 * (t1[i][j] + t2[i][j] + t3[i][j] + t4[i][j]);
+                        if i == j {
+                            ob[i][j] -= lam[aa][bb];
+                        }
+                    }
+                }
+                if max_abs4(&ob) > tol {
+                    return false;
+                }
                 // fermion: ½(ũ_A Δ_B + ũ_B Δ_A + Δ̃_A u_B + Δ̃_B u_A) − Λ_AB I
                 let s1 = matmul4(&utilde[aa], &delta[bb]);
                 let s2 = matmul4(&utilde[bb], &delta[aa]);
                 let s3 = matmul4(&deltat[aa], &u[bb]);
                 let s4 = matmul4(&deltat[bb], &u[aa]);
                 let mut of = zero4();
-                for i in 0..4 { for j in 0..4 {
-                    of[i][j] = 0.5 * (s1[i][j] + s2[i][j] + s3[i][j] + s4[i][j]);
-                    if i == j { of[i][j] -= lam[aa][bb]; }
-                }}
-                if max_abs4(&of) > tol { return false; }
+                for i in 0..4 {
+                    for j in 0..4 {
+                        of[i][j] = 0.5 * (s1[i][j] + s2[i][j] + s3[i][j] + s4[i][j]);
+                        if i == j {
+                            of[i][j] -= lam[aa][bb];
+                        }
+                    }
+                }
+                if max_abs4(&of) > tol {
+                    return false;
+                }
             }
         }
     }
@@ -177,8 +239,12 @@ pub fn count_enhancing_n4() -> (usize, usize, usize) {
             let dashing = de.get_dashing_for_chromotopology(di, &boson_reps);
             total += 1;
             let ok = passes_enhancement(&chromo, &r.height, &dashing, 1e-9);
-            if ok { passed += 1; }
-            if r.height == valise && ok { valise_pass += 1; }
+            if ok {
+                passed += 1;
+            }
+            if r.height == valise && ok {
+                valise_pass += 1;
+            }
         }
     }
     (total, passed, valise_pass)
@@ -245,7 +311,12 @@ impl Sieve10D {
             let st = &c.sigma_tilde[a];
             let mut gm = [[0.0; 16]; 16];
             let mut lm = [[0.0; 16]; 16];
-            for i in 0..16 { for j in 0..16 { gm[i][j] = g.get(i, j); lm[i][j] = -st.get(i, j); } }
+            for i in 0..16 {
+                for j in 0..16 {
+                    gm[i][j] = g.get(i, j);
+                    lm[i][j] = -st.get(i, j);
+                }
+            }
             gg.push(gm);
             lam.push(lm);
         }
@@ -256,7 +327,12 @@ impl Sieve10D {
     /// Λ-support max-abs (consistency gate, must be exactly 0), spatial Frobenius
     /// (the graded metric), and the μ=0 Garden anchor. See the struct docs and the
     /// RESIDUAL ANATOMY note on [`Sieve10D`].
-    pub fn omega_residuals(&self, chromo: &Chromotopology, height: &[i32], dashing: &[i8]) -> OmegaResiduals {
+    pub fn omega_residuals(
+        &self,
+        chromo: &Chromotopology,
+        height: &[i32],
+        dashing: &[i8],
+    ) -> OmegaResiduals {
         let n = chromo.n();
         let d = chromo.d();
         let mut u = vec![Mat::zeros(d, d); n];
@@ -267,58 +343,79 @@ impl Sieve10D {
                 let fj = fwd[i];
                 let (bv, fv) = chromo.edge_vertices(a, i);
                 let s = dashing[a * d + i] as f64;
-                if height[fv] > height[bv] { u[a].set(i, fj, s); } else { dn[a].set(i, fj, s); }
+                if height[fv] > height[bv] {
+                    u[a].set(i, fj, s);
+                } else {
+                    dn[a].set(i, fj, s);
+                }
             }
         }
         let utilde: Vec<Mat> = dn.iter().map(|m| m.transpose()).collect(); // ũ = dᵀ
-        let dtilde: Vec<Mat> = u.iter().map(|m| m.transpose()).collect();  // d̃ = uᵀ
+        let dtilde: Vec<Mat> = u.iter().map(|m| m.transpose()).collect(); // d̃ = uᵀ
         let idn = Mat::identity(d);
 
         // μ=0 anchor: Ω⁰_AB = ½(u_A d̃_B + u_B d̃_A + d_A ũ_B + d_B ũ_A) − δ_AB I.
         let mut mu0 = 0.0f64;
-        for aa in 0..n { for bb in 0..n {
-            let t = u[aa].matmul(&dtilde[bb])
-                .add(&u[bb].matmul(&dtilde[aa]))
-                .add(&dn[aa].matmul(&utilde[bb]))
-                .add(&dn[bb].matmul(&utilde[aa]))
-                .scale(0.5);
-            let om = if aa == bb { t.add(&idn.scale(-1.0)) } else { t };
-            mu0 = mu0.max(om.max_abs());
-        }}
+        for aa in 0..n {
+            for bb in 0..n {
+                let t = u[aa]
+                    .matmul(&dtilde[bb])
+                    .add(&u[bb].matmul(&dtilde[aa]))
+                    .add(&dn[aa].matmul(&utilde[bb]))
+                    .add(&dn[bb].matmul(&utilde[aa]))
+                    .scale(0.5);
+                let om = if aa == bb { t.add(&idn.scale(-1.0)) } else { t };
+                mu0 = mu0.max(om.max_abs());
+            }
+        }
 
         // Spatial a=1..9.
         let (mut worst, mut worst_lam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
         for ai in 0..9usize {
             let mut delta = vec![Mat::zeros(d, d); n];
             let mut deltat = vec![Mat::zeros(d, d); n];
-            for aa in 0..n { for b in 0..n {
-                let c = self.gg[ai][aa][b];
-                if c == 0.0 { continue; }
-                delta[aa] = delta[aa].add(&dn[b].scale(-c));       // Δ^a_A = −Σ_B gg d_B
-                deltat[aa] = deltat[aa].add(&dtilde[b].scale(-c)); // Δ̃^a_A = −Σ_B gg d̃_B
-            }}
-            for aa in 0..n { for bb in 0..n {
-                let lam = self.lam[ai][aa][bb];
-                let mut ob = u[aa].matmul(&deltat[bb])
-                    .add(&u[bb].matmul(&deltat[aa]))
-                    .add(&delta[aa].matmul(&utilde[bb]))
-                    .add(&delta[bb].matmul(&utilde[aa]))
-                    .scale(0.5);
-                if lam != 0.0 { ob = ob.add(&idn.scale(-lam)); }
-                let mut of = utilde[aa].matmul(&delta[bb])
-                    .add(&utilde[bb].matmul(&delta[aa]))
-                    .add(&deltat[aa].matmul(&u[bb]))
-                    .add(&deltat[bb].matmul(&u[aa]))
-                    .scale(0.5);
-                if lam != 0.0 { of = of.add(&idn.scale(-lam)); }
-                for m in [&ob, &of] {
-                    let ma = m.max_abs();
-                    worst = worst.max(ma);
-                    if lam != 0.0 { worst_lam = worst_lam.max(ma); }
-                    let f = m.frobenius();
-                    fro2 += f * f;
+            for aa in 0..n {
+                for b in 0..n {
+                    let c = self.gg[ai][aa][b];
+                    if c == 0.0 {
+                        continue;
+                    }
+                    delta[aa] = delta[aa].add(&dn[b].scale(-c)); // Δ^a_A = −Σ_B gg d_B
+                    deltat[aa] = deltat[aa].add(&dtilde[b].scale(-c)); // Δ̃^a_A = −Σ_B gg d̃_B
                 }
-            }}
+            }
+            for aa in 0..n {
+                for bb in 0..n {
+                    let lam = self.lam[ai][aa][bb];
+                    let mut ob = u[aa]
+                        .matmul(&deltat[bb])
+                        .add(&u[bb].matmul(&deltat[aa]))
+                        .add(&delta[aa].matmul(&utilde[bb]))
+                        .add(&delta[bb].matmul(&utilde[aa]))
+                        .scale(0.5);
+                    if lam != 0.0 {
+                        ob = ob.add(&idn.scale(-lam));
+                    }
+                    let mut of = utilde[aa]
+                        .matmul(&delta[bb])
+                        .add(&utilde[bb].matmul(&delta[aa]))
+                        .add(&deltat[aa].matmul(&u[bb]))
+                        .add(&deltat[bb].matmul(&u[aa]))
+                        .scale(0.5);
+                    if lam != 0.0 {
+                        of = of.add(&idn.scale(-lam));
+                    }
+                    for m in [&ob, &of] {
+                        let ma = m.max_abs();
+                        worst = worst.max(ma);
+                        if lam != 0.0 {
+                            worst_lam = worst_lam.max(ma);
+                        }
+                        let f = m.frobenius();
+                        fro2 += f * f;
+                    }
+                }
+            }
         }
         OmegaResiduals {
             spatial_worst: worst,
@@ -329,7 +426,12 @@ impl Sieve10D {
     }
 
     /// Back-compat wrapper: (spatial max-abs, μ=0 anchor).
-    pub fn worst_omega(&self, chromo: &Chromotopology, height: &[i32], dashing: &[i8]) -> (f64, f64) {
+    pub fn worst_omega(
+        &self,
+        chromo: &Chromotopology,
+        height: &[i32],
+        dashing: &[i8],
+    ) -> (f64, f64) {
         let r = self.omega_residuals(chromo, height, dashing);
         (r.spatial_worst, r.mu0)
     }
@@ -340,7 +442,12 @@ impl Sieve10D {
     /// nonzeros/row), so this scales to the largest strata (k=1, d=16384) on CPU
     /// where the dense path is infeasible. No GPU needed: the problem is O(d), not
     /// O(d³). Validated against the dense path (test sparse_matches_dense_e16).
-    pub fn omega_residuals_sparse(&self, chromo: &Chromotopology, height: &[i32], dashing: &[i8]) -> OmegaResiduals {
+    pub fn omega_residuals_sparse(
+        &self,
+        chromo: &Chromotopology,
+        height: &[i32],
+        dashing: &[i8],
+    ) -> OmegaResiduals {
         type Sp = Vec<Vec<(usize, f64)>>; // row-sparse: rows[i] = [(col, val), ...]
         let n = chromo.n();
         let d = chromo.d();
@@ -354,25 +461,39 @@ impl Sieve10D {
                 let fj = fwd[i];
                 let (bv, fv) = chromo.edge_vertices(a, i);
                 let s = dashing[a * d + i] as f64;
-                if height[fv] > height[bv] { u[a][i].push((fj, s)); } else { dn[a][i].push((fj, s)); }
+                if height[fv] > height[bv] {
+                    u[a][i].push((fj, s));
+                } else {
+                    dn[a][i].push((fj, s));
+                }
             }
         }
         let transpose = |m: &Sp| -> Sp {
             let mut t = vec![Vec::new(); d];
-            for (i, row) in m.iter().enumerate() { for &(j, v) in row { t[j].push((i, v)); } }
+            for (i, row) in m.iter().enumerate() {
+                for &(j, v) in row {
+                    t[j].push((i, v));
+                }
+            }
             t
         };
         let utilde: Vec<Sp> = dn.iter().map(&transpose).collect(); // ũ = dᵀ
-        let dtilde: Vec<Sp> = u.iter().map(&transpose).collect();  // d̃ = uᵀ
+        let dtilde: Vec<Sp> = u.iter().map(&transpose).collect(); // d̃ = uᵀ
 
         // Reusable dense accumulator (size d) with a dirty-list to keep it O(nnz).
         let mut acc = vec![0.0f64; d];
         let mut dirty: Vec<usize> = Vec::new();
         // Accumulate  scale*(A·B)[row_i][*]  into acc, using B row-oriented.
-        let accum = |a_row: &[(usize, f64)], b: &Sp, scale: f64, acc: &mut [f64], dirty: &mut Vec<usize>| {
+        let accum = |a_row: &[(usize, f64)],
+                     b: &Sp,
+                     scale: f64,
+                     acc: &mut [f64],
+                     dirty: &mut Vec<usize>| {
             for &(k, av) in a_row {
                 for &(j, bv) in &b[k] {
-                    if acc[j] == 0.0 { dirty.push(j); }
+                    if acc[j] == 0.0 {
+                        dirty.push(j);
+                    }
                     acc[j] += scale * av * bv;
                 }
             }
@@ -380,17 +501,26 @@ impl Sieve10D {
 
         // Merge a scratch list of (col,val) into a deduped sparse row.
         let merge = |raw: &[(usize, f64)]| -> Vec<(usize, f64)> {
-            if raw.len() <= 1 { return raw.to_vec(); }
+            if raw.len() <= 1 {
+                return raw.to_vec();
+            }
             let mut m: std::collections::HashMap<usize, f64> = std::collections::HashMap::new();
-            for &(j, v) in raw { *m.entry(j).or_insert(0.0) += v; }
+            for &(j, v) in raw {
+                *m.entry(j).or_insert(0.0) += v;
+            }
             m.into_iter().filter(|&(_, v)| v != 0.0).collect()
         };
 
         // One (Ω, Ω̃) block sweep over all A,B with given (delta, deltat, lam).
         // Returns (worst, on_lambda_worst, fro_sq).
-        let sweep = |delta: &[Sp], deltat: &[Sp], lam: &dyn Fn(usize, usize) -> f64,
-                     u: &[Sp], utilde: &[Sp],
-                     acc: &mut Vec<f64>, dirty: &mut Vec<usize>| -> (f64, f64, f64) {
+        let sweep = |delta: &[Sp],
+                     deltat: &[Sp],
+                     lam: &dyn Fn(usize, usize) -> f64,
+                     u: &[Sp],
+                     utilde: &[Sp],
+                     acc: &mut Vec<f64>,
+                     dirty: &mut Vec<usize>|
+         -> (f64, f64, f64) {
             let (mut worst, mut onlam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
             for aa in 0..n {
                 for bb in 0..n {
@@ -413,13 +543,19 @@ impl Sieve10D {
                                 accum(&deltat[bb][i], &u[aa], 0.5, acc, dirty);
                             }
                             if l != 0.0 {
-                                if acc[i] == 0.0 { dirty.push(i); }
+                                if acc[i] == 0.0 {
+                                    dirty.push(i);
+                                }
                                 acc[i] -= l; // − Λ^a_AB I on the diagonal
                             }
                             for &j in dirty.iter() {
                                 let v = acc[j].abs();
-                                if v > worst { worst = v; }
-                                if l != 0.0 && v > onlam { onlam = v; }
+                                if v > worst {
+                                    worst = v;
+                                }
+                                if l != 0.0 && v > onlam {
+                                    onlam = v;
+                                }
                                 fro2 += acc[j] * acc[j];
                                 acc[j] = 0.0;
                             }
@@ -431,8 +567,15 @@ impl Sieve10D {
         };
 
         // μ=0 anchor: Δ^0 = d, Δ̃^0 = d̃, Λ^0 = δ_AB.
-        let (mu0, _, _) = sweep(&dn, &dtilde, &|a, b| if a == b { 1.0 } else { 0.0 },
-                                &u, &utilde, &mut acc, &mut dirty);
+        let (mu0, _, _) = sweep(
+            &dn,
+            &dtilde,
+            &|a, b| if a == b { 1.0 } else { 0.0 },
+            &u,
+            &utilde,
+            &mut acc,
+            &mut dirty,
+        );
 
         // Spatial a=1..9.
         let (mut worst, mut onlam, mut fro2) = (0.0f64, 0.0f64, 0.0f64);
@@ -442,25 +585,44 @@ impl Sieve10D {
             let mut deltat: Vec<Sp> = vec![vec![Vec::new(); d]; n];
             for aa in 0..n {
                 for i in 0..d {
-                    let (mut rd, mut rt): (Vec<(usize, f64)>, Vec<(usize, f64)>) = (Vec::new(), Vec::new());
+                    let (mut rd, mut rt): (Vec<(usize, f64)>, Vec<(usize, f64)>) =
+                        (Vec::new(), Vec::new());
                     for b in 0..n {
                         let c = self.gg[ai][aa][b];
-                        if c == 0.0 { continue; }
-                        for &(j, v) in &dn[b][i] { rd.push((j, -c * v)); }
-                        for &(j, v) in &dtilde[b][i] { rt.push((j, -c * v)); }
+                        if c == 0.0 {
+                            continue;
+                        }
+                        for &(j, v) in &dn[b][i] {
+                            rd.push((j, -c * v));
+                        }
+                        for &(j, v) in &dtilde[b][i] {
+                            rt.push((j, -c * v));
+                        }
                     }
                     delta[aa][i] = merge(&rd);
                     deltat[aa][i] = merge(&rt);
                 }
             }
             let lam = self.lam[ai];
-            let (w, ol, f2) = sweep(&delta, &deltat, &|a, b| lam[a][b],
-                                    &u, &utilde, &mut acc, &mut dirty);
+            let (w, ol, f2) = sweep(
+                &delta,
+                &deltat,
+                &|a, b| lam[a][b],
+                &u,
+                &utilde,
+                &mut acc,
+                &mut dirty,
+            );
             worst = worst.max(w);
             onlam = onlam.max(ol);
             fro2 += f2;
         }
-        OmegaResiduals { spatial_worst: worst, spatial_on_lambda: onlam, spatial_frobenius: fro2.sqrt(), mu0 }
+        OmegaResiduals {
+            spatial_worst: worst,
+            spatial_on_lambda: onlam,
+            spatial_frobenius: fro2.sqrt(),
+            mu0,
+        }
     }
 }
 
@@ -476,27 +638,39 @@ fn n4_residuals(chromo: &Chromotopology, height: &[i32], dashing: &[i8]) -> (f64
         let lam = lambda_a(a);
         let mut delta = [zero4(); 4];
         let mut deltat = [zero4(); 4];
-        for aa in 0..4 { for b in 0..4 {
-            let c = gg[aa][b];
-            if c == 0.0 { continue; }
-            for i in 0..4 { for j in 0..4 {
-                delta[aa][i][j] -= c * dn[b][i][j];
-                deltat[aa][i][j] -= c * dtilde[b][i][j];
-            }}
-        }}
-        for aa in 0..4 { for bb in 0..4 {
-            let t1 = matmul4(&u[aa], &deltat[bb]);
-            let t2 = matmul4(&u[bb], &deltat[aa]);
-            let t3 = matmul4(&delta[aa], &utilde[bb]);
-            let t4 = matmul4(&delta[bb], &utilde[aa]);
-            let mut ob = zero4();
-            for i in 0..4 { for j in 0..4 {
-                ob[i][j] = 0.5 * (t1[i][j] + t2[i][j] + t3[i][j] + t4[i][j]);
-                if i == j { ob[i][j] -= lam[aa][bb]; }
-                fro2 += ob[i][j] * ob[i][j];
-            }}
-            worst = worst.max(max_abs4(&ob));
-        }}
+        for aa in 0..4 {
+            for b in 0..4 {
+                let c = gg[aa][b];
+                if c == 0.0 {
+                    continue;
+                }
+                for i in 0..4 {
+                    for j in 0..4 {
+                        delta[aa][i][j] -= c * dn[b][i][j];
+                        deltat[aa][i][j] -= c * dtilde[b][i][j];
+                    }
+                }
+            }
+        }
+        for aa in 0..4 {
+            for bb in 0..4 {
+                let t1 = matmul4(&u[aa], &deltat[bb]);
+                let t2 = matmul4(&u[bb], &deltat[aa]);
+                let t3 = matmul4(&delta[aa], &utilde[bb]);
+                let t4 = matmul4(&delta[bb], &utilde[aa]);
+                let mut ob = zero4();
+                for i in 0..4 {
+                    for j in 0..4 {
+                        ob[i][j] = 0.5 * (t1[i][j] + t2[i][j] + t3[i][j] + t4[i][j]);
+                        if i == j {
+                            ob[i][j] -= lam[aa][bb];
+                        }
+                        fro2 += ob[i][j] * ob[i][j];
+                    }
+                }
+                worst = worst.max(max_abs4(&ob));
+            }
+        }
     }
     (worst, fro2.sqrt())
 }
@@ -514,9 +688,11 @@ mod tests {
         for a in 1..=3usize {
             let gg = gamma0_gamma_a(a);
             let lam = lambda_a(a);
-            for i in 0..4 { for j in 0..4 {
-                assert_eq!(lam[i][j], -gg[i][j], "Λ^{a} != -Γ⁰Γ^{a} at ({i},{j})");
-            }}
+            for i in 0..4 {
+                for j in 0..4 {
+                    assert_eq!(lam[i][j], -gg[i][j], "Λ^{a} != -Γ⁰Γ^{a} at ({i},{j})");
+                }
+            }
         }
     }
 
@@ -546,7 +722,9 @@ mod tests {
             }
         }
         eprintln!("=== 4D control: residual distribution over 60 adinkras ===");
-        for (k, v) in &dist { eprintln!("  {k}  x{v}"); }
+        for (k, v) in &dist {
+            eprintln!("  {k}  x{v}");
+        }
 
         // ---- k=7 anatomy + gauge invariance ----
         let gens = vec![0x262, 0x1980, 0x2901, 0x3c00, 0x4064, 0x4230, 0x4248];
@@ -558,35 +736,53 @@ mod tests {
         let n = chromo.n();
         let d = chromo.d();
         let mut hs: Vec<Vec<i32>> = vec![Ranking::valise(&chromo).height];
-        for r in Ranking::structured_raises(&chromo, 12, 8).into_iter().take(7) { hs.push(r.height); }
+        for r in Ranking::structured_raises(&chromo, 12, 8)
+            .into_iter()
+            .take(7)
+        {
+            hs.push(r.height);
+        }
         eprintln!("=== k=7 anatomy ===");
         for (i, h) in hs.iter().enumerate() {
             let r = sieve.omega_residuals(&chromo, h, &dashing);
-            eprintln!("k7 h{i}: worst={:.4}  onΛ={:.4}  fro={:.4}  mu0={:.1e}",
-                      r.spatial_worst, r.spatial_on_lambda, r.spatial_frobenius, r.mu0);
-            assert!(r.spatial_on_lambda < 1e-12,
-                    "Λ-support residual must cancel exactly (index-convention gate)");
+            eprintln!(
+                "k7 h{i}: worst={:.4}  onΛ={:.4}  fro={:.4}  mu0={:.1e}",
+                r.spatial_worst, r.spatial_on_lambda, r.spatial_frobenius, r.mu0
+            );
+            assert!(
+                r.spatial_on_lambda < 1e-12,
+                "Λ-support residual must cancel exactly (index-convention gate)"
+            );
         }
 
         // Gauge check on hanging h1: flip signs at a few vertices (both boson and
         // fermion), i.e. conjugate the rep by a diagonal signed permutation.
         let base = sieve.omega_residuals(&chromo, &hs[1], &dashing);
         let mut flip = vec![false; 2 * d];
-        flip[3] = true; flip[17] = true; flip[d + 5] = true; flip[2 * d - 1] = true;
+        flip[3] = true;
+        flip[17] = true;
+        flip[d + 5] = true;
+        flip[2 * d - 1] = true;
         let mut gdash = dashing.clone();
         for a in 0..n {
             for i in 0..d {
                 let (bv, fv) = chromo.edge_vertices(a, i);
-                if flip[bv] ^ flip[fv] { gdash[a * d + i] = -gdash[a * d + i]; }
+                if flip[bv] ^ flip[fv] {
+                    gdash[a * d + i] = -gdash[a * d + i];
+                }
             }
         }
         let gr = sieve.omega_residuals(&chromo, &hs[1], &gdash);
-        eprintln!("gauge check: base(worst={:.6},fro={:.6}) flipped(worst={:.6},fro={:.6})",
-                  base.spatial_worst, base.spatial_frobenius, gr.spatial_worst, gr.spatial_frobenius);
-        assert!((base.spatial_worst - gr.spatial_worst).abs() < 1e-12
+        eprintln!(
+            "gauge check: base(worst={:.6},fro={:.6}) flipped(worst={:.6},fro={:.6})",
+            base.spatial_worst, base.spatial_frobenius, gr.spatial_worst, gr.spatial_frobenius
+        );
+        assert!(
+            (base.spatial_worst - gr.spatial_worst).abs() < 1e-12
                 && (base.spatial_frobenius - gr.spatial_frobenius).abs() < 1e-9
                 && (base.mu0 - gr.mu0).abs() < 1e-12,
-                "residuals must be invariant under vertex sign flips (gauge)");
+            "residuals must be invariant under vertex sign flips (gauge)"
+        );
     }
 
     /// VALIDATION GATE against FIL arXiv:0907.3605: of the 60 minimal N=4 adinkras
@@ -596,9 +792,18 @@ mod tests {
     #[test]
     fn fil_n4_reproduces_four_of_sixty() {
         let (total, passed, valise_pass) = count_enhancing_n4();
-        assert_eq!(total, 60, "expected 60 minimal N=4 adinkras (30 rankings x 2 dashings), got {total}");
-        assert_eq!(passed, 4, "FIL: exactly 4 of 60 must pass the enhancement sieve, got {passed}");
-        assert_eq!(valise_pass, 0, "both valises must FAIL the sieve, got {valise_pass} passing");
+        assert_eq!(
+            total, 60,
+            "expected 60 minimal N=4 adinkras (30 rankings x 2 dashings), got {total}"
+        );
+        assert_eq!(
+            passed, 4,
+            "FIL: exactly 4 of 60 must pass the enhancement sieve, got {passed}"
+        );
+        assert_eq!(
+            valise_pass, 0,
+            "both valises must FAIL the sieve, got {valise_pass} passing"
+        );
     }
 
     /// The O(d) sparse sieve must EXACTLY match the O(d³) dense one (this is the
@@ -608,21 +813,43 @@ mod tests {
     #[ignore] // builds a d=128 rep; fast but exercises the heavy path
     fn sparse_matches_dense_e16() {
         use crate::code::DoublyEvenCode;
-        let gens = vec![0xb01, 0x3440, 0x5410, 0x6408, 0x7020, 0x8302, 0x8980, 0x8a04];
+        let gens = vec![
+            0xb01, 0x3440, 0x5410, 0x6408, 0x7020, 0x8302, 0x8980, 0x8a04,
+        ];
         let code = DoublyEvenCode::new(16, gens);
         let chromo = Chromotopology::from_code(&code);
         let de = DashingEnumerator::new(&code);
         let dashing = de.get_dashing_for_chromotopology(0, &chromo.boson_reps());
         let sieve = Sieve10D::new();
         let mut hs = vec![Ranking::valise(&chromo).height];
-        if let Some(r) = Ranking::structured_raises(&chromo, 4, 2).into_iter().next() { hs.push(r.height); }
+        if let Some(r) = Ranking::structured_raises(&chromo, 4, 2).into_iter().next() {
+            hs.push(r.height);
+        }
         for h in &hs {
             let dsr = sieve.omega_residuals(&chromo, h, &dashing);
             let spr = sieve.omega_residuals_sparse(&chromo, h, &dashing);
-            assert!((dsr.spatial_worst - spr.spatial_worst).abs() < 1e-9, "worst: {} vs {}", dsr.spatial_worst, spr.spatial_worst);
-            assert!((dsr.mu0 - spr.mu0).abs() < 1e-9, "mu0: {} vs {}", dsr.mu0, spr.mu0);
-            assert!((dsr.spatial_on_lambda - spr.spatial_on_lambda).abs() < 1e-9, "onlam");
-            assert!((dsr.spatial_frobenius - spr.spatial_frobenius).abs() < 1e-6, "fro: {} vs {}", dsr.spatial_frobenius, spr.spatial_frobenius);
+            assert!(
+                (dsr.spatial_worst - spr.spatial_worst).abs() < 1e-9,
+                "worst: {} vs {}",
+                dsr.spatial_worst,
+                spr.spatial_worst
+            );
+            assert!(
+                (dsr.mu0 - spr.mu0).abs() < 1e-9,
+                "mu0: {} vs {}",
+                dsr.mu0,
+                spr.mu0
+            );
+            assert!(
+                (dsr.spatial_on_lambda - spr.spatial_on_lambda).abs() < 1e-9,
+                "onlam"
+            );
+            assert!(
+                (dsr.spatial_frobenius - spr.spatial_frobenius).abs() < 1e-6,
+                "fro: {} vs {}",
+                dsr.spatial_frobenius,
+                spr.spatial_frobenius
+            );
         }
     }
 
@@ -636,7 +863,9 @@ mod tests {
     fn n16_prevalidate_e16() {
         use crate::code::DoublyEvenCode;
         // E16 (catalog idx 75).
-        let gens = vec![0xb01, 0x3440, 0x5410, 0x6408, 0x7020, 0x8302, 0x8980, 0x8a04];
+        let gens = vec![
+            0xb01, 0x3440, 0x5410, 0x6408, 0x7020, 0x8302, 0x8980, 0x8a04,
+        ];
         let code = DoublyEvenCode::new(16, gens);
         let chromo = Chromotopology::from_code(&code);
         let de = DashingEnumerator::new(&code);
@@ -645,8 +874,12 @@ mod tests {
 
         // Genuinely DIVERSE/deep hangings (undersampling near the valise is the
         // known trap): valise + deep structured multi-level raises + varied levels.
-        let mut hangings: Vec<(String, Vec<i32>)> = vec![("valise".into(), Ranking::valise(&chromo).height)];
-        for (i, r) in Ranking::structured_raises(&chromo, 40, 40).into_iter().enumerate() {
+        let mut hangings: Vec<(String, Vec<i32>)> =
+            vec![("valise".into(), Ranking::valise(&chromo).height)];
+        for (i, r) in Ranking::structured_raises(&chromo, 40, 40)
+            .into_iter()
+            .enumerate()
+        {
             hangings.push((format!("s{i}(lvls={})", r.num_levels()), r.height));
         }
 
@@ -656,26 +889,45 @@ mod tests {
             let r = sieve.omega_residuals(&chromo, h, &dashing);
             worst_mu0 = worst_mu0.max(r.mu0);
             fros.push(r.spatial_frobenius);
-            eprintln!("E16 {name}: worst|Ω|={:.4}  onΛ={:.4}  fro={:.4}  mu0={:.1e}",
-                      r.spatial_worst, r.spatial_on_lambda, r.spatial_frobenius, r.mu0);
+            eprintln!(
+                "E16 {name}: worst|Ω|={:.4}  onΛ={:.4}  fro={:.4}  mu0={:.1e}",
+                r.spatial_worst, r.spatial_on_lambda, r.spatial_frobenius, r.mu0
+            );
             // Gate 0: the Λ-support residual cancels EXACTLY (index conventions
             // consistent — the linkage's symmetric part equals −Λ on its support).
-            assert!(r.spatial_on_lambda < 1e-12,
-                    "GATE FAIL: Λ-support residual {} != 0 -> linkage/Λ index mismatch", r.spatial_on_lambda);
+            assert!(
+                r.spatial_on_lambda < 1e-12,
+                "GATE FAIL: Λ-support residual {} != 0 -> linkage/Λ index mismatch",
+                r.spatial_on_lambda
+            );
         }
         // Gate 1: μ=0 anchor holds (fixes Λ scale/sign).
-        assert!(worst_mu0 < 1e-9, "GATE FAIL: μ=0 residual {worst_mu0:.2e} != 0 -> Λ normalization wrong");
+        assert!(
+            worst_mu0 < 1e-9,
+            "GATE FAIL: μ=0 residual {worst_mu0:.2e} != 0 -> Λ normalization wrong"
+        );
         // Gate 3: valise nonzero (fails the sieve, as in 4D).
-        assert!(fros[0] > 1e-6, "GATE FAIL: valise spatial residual ~0 (expected nonzero obstruction)");
+        assert!(
+            fros[0] > 1e-6,
+            "GATE FAIL: valise spatial residual ~0 (expected nonzero obstruction)"
+        );
         // Gate 2: the GRADED spatial residual (Frobenius) VARIES across hangings.
         // NOTE: max|Ω| is provably quantized (quarter-integer entries) and
         // saturates at exactly 1.0 for generic failers — the 4D control shows the
         // same (all 56 failers = 1.0) — so variation must be gated on Frobenius,
         // which has the same zero set (0 iff enhancement passes).
-        let (mn, mx) = (fros.iter().cloned().fold(f64::INFINITY, f64::min),
-                        fros.iter().cloned().fold(0.0, f64::max));
-        eprintln!("E16 spatial ‖Ω‖_F range [{mn:.4}, {mx:.4}] over {} hangings", fros.len());
-        assert!((mx - mn) > 1e-6, "GATE FAIL: spatial ‖Ω‖_F constant across hangings -> sieve VACUOUS");
+        let (mn, mx) = (
+            fros.iter().cloned().fold(f64::INFINITY, f64::min),
+            fros.iter().cloned().fold(0.0, f64::max),
+        );
+        eprintln!(
+            "E16 spatial ‖Ω‖_F range [{mn:.4}, {mx:.4}] over {} hangings",
+            fros.len()
+        );
+        assert!(
+            (mx - mn) > 1e-6,
+            "GATE FAIL: spatial ‖Ω‖_F constant across hangings -> sieve VACUOUS"
+        );
     }
 
     /// DISCRIMINATOR: does the sieve respond to hangings on a REDUCIBLE stratum
@@ -696,21 +948,47 @@ mod tests {
         let dashing = de.get_dashing_for_chromotopology(0, &chromo.boson_reps());
         let sieve = Sieve10D::new();
         let mut hs: Vec<Vec<i32>> = vec![Ranking::valise(&chromo).height];
-        for r in Ranking::structured_raises(&chromo, 12, 8).into_iter().take(7) { hs.push(r.height); }
+        for r in Ranking::structured_raises(&chromo, 12, 8)
+            .into_iter()
+            .take(7)
+        {
+            hs.push(r.height);
+        }
         let mut fros = vec![];
         for (i, h) in hs.iter().enumerate() {
             let r = sieve.omega_residuals(&chromo, h, &dashing);
-            eprintln!("k7 h{i}: worst|Ω|={:.4} onΛ={:.4} fro={:.4} mu0={:.1e} levels={}",
-                      r.spatial_worst, r.spatial_on_lambda, r.spatial_frobenius, r.mu0,
-                      Ranking { height: h.clone() }.num_levels());
-            assert!(r.spatial_on_lambda < 1e-12, "Λ-support residual must cancel exactly");
+            eprintln!(
+                "k7 h{i}: worst|Ω|={:.4} onΛ={:.4} fro={:.4} mu0={:.1e} levels={}",
+                r.spatial_worst,
+                r.spatial_on_lambda,
+                r.spatial_frobenius,
+                r.mu0,
+                Ranking { height: h.clone() }.num_levels()
+            );
+            assert!(
+                r.spatial_on_lambda < 1e-12,
+                "Λ-support residual must cancel exactly"
+            );
             assert!(r.mu0 < 1e-9, "μ=0 anchor must hold");
             fros.push(r.spatial_frobenius);
         }
         // The graded residual (Frobenius; same zero set as max|Ω|) must VARY on
         // this reducible stratum — max|Ω| itself is quantized and saturates at 1.
-        let (mn, mx) = (fros.iter().cloned().fold(f64::INFINITY, f64::min), fros.iter().cloned().fold(0.0, f64::max));
-        eprintln!("k7 spatial ‖Ω‖_F range [{mn:.4}, {mx:.4}] -> {}", if mx-mn>1e-6 {"VARIES (sieve responds to hangings)"} else {"CONSTANT (sieve hanging-insensitive!)"});
-        assert!(mx - mn > 1e-6, "GATE FAIL: graded spatial residual constant across hangings");
+        let (mn, mx) = (
+            fros.iter().cloned().fold(f64::INFINITY, f64::min),
+            fros.iter().cloned().fold(0.0, f64::max),
+        );
+        eprintln!(
+            "k7 spatial ‖Ω‖_F range [{mn:.4}, {mx:.4}] -> {}",
+            if mx - mn > 1e-6 {
+                "VARIES (sieve responds to hangings)"
+            } else {
+                "CONSTANT (sieve hanging-insensitive!)"
+            }
+        );
+        assert!(
+            mx - mn > 1e-6,
+            "GATE FAIL: graded spatial residual constant across hangings"
+        );
     }
 }

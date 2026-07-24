@@ -2,7 +2,7 @@
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use crate::code::{rref, DoublyEvenCode};
+use crate::code::{DoublyEvenCode, rref};
 
 fn reduce(u: u32, rref_gens: &[u32], pivot_positions: &[usize]) -> u32 {
     let mut v = u;
@@ -132,7 +132,11 @@ impl DashingEnumerator {
         for (edge_idx, &(v_idx, _w_idx, color)) in edge_list.iter().enumerate() {
             if is_tree_edge[edge_idx] {
                 let lv = lift[v_idx];
-                let src = if lv & (1 << color) == 0 { lv } else { lv ^ (1 << color) };
+                let src = if lv & (1 << color) == 0 {
+                    lv
+                } else {
+                    lv ^ (1 << color)
+                };
                 let mask = if color == 0 { 0 } else { (1u32 << color) - 1 };
                 edge_constant[edge_idx] = ((src & mask).count_ones() % 2) as u8;
                 edge_determined[edge_idx] = true;

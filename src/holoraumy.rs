@@ -5,7 +5,6 @@
 /// Computes the bosonic holoraumy matrices V_IJ = L_I * R_J and the fermionic
 /// holoraumy matrices Vtilde_IJ = R_I * L_J for all color pairs I > J, then
 /// evaluates the gadget inner product G[R, R'] between representations.
-
 use crate::lr_matrix::AdinkraRep;
 use crate::signed_perm::SignedPerm;
 
@@ -134,7 +133,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, -1, -1, 1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, 1, -1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     fn vs_n4() -> AdinkraRep {
@@ -144,7 +147,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, 1, -1, -1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, -1, 1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     // -- dmin ------------------------------------------------------------------
@@ -226,22 +233,14 @@ mod tests {
     fn gadget_self_cs() {
         let holo = HoloraumyData::from_rep(&cs_n4());
         let g = gadget(&holo, &holo);
-        assert!(
-            (g - 1.0).abs() < 1e-10,
-            "G[CS,CS] should be 1.0, got {}",
-            g
-        );
+        assert!((g - 1.0).abs() < 1e-10, "G[CS,CS] should be 1.0, got {}", g);
     }
 
     #[test]
     fn gadget_self_vs() {
         let holo = HoloraumyData::from_rep(&vs_n4());
         let g = gadget(&holo, &holo);
-        assert!(
-            (g - 1.0).abs() < 1e-10,
-            "G[VS,VS] should be 1.0, got {}",
-            g
-        );
+        assert!((g - 1.0).abs() < 1e-10, "G[VS,VS] should be 1.0, got {}", g);
     }
 
     // -- gadget cross-values (known N=4 results) --------------------------------
@@ -251,11 +250,7 @@ mod tests {
         let cs = HoloraumyData::from_rep(&cs_n4());
         let vs = HoloraumyData::from_rep(&vs_n4());
         let g = gadget(&cs, &vs);
-        assert!(
-            g.abs() < 1e-10,
-            "G[CS,VS] should be 0.0, got {}",
-            g
-        );
+        assert!(g.abs() < 1e-10, "G[CS,VS] should be 0.0, got {}", g);
     }
 
     // -- gadget symmetry -------------------------------------------------------

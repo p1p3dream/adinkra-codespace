@@ -337,7 +337,9 @@ pub fn run(catalog_path: &str) -> HoleAttackReport {
         "the explicitly reported dashing budget"
     };
     HoleAttackReport {
-        scope: format!("Minimal m=1, d=128 kinematic test over both self-dual chromotopologies and {coverage}, with a fixed SO(9) seed and coordinate identification of the 16 supercharges. The auxiliary-projection gate stops after its first signed witness because existence, not dashing classification, is the question. No action, Lorentz oxidation, or gauge-covariant 10D closure is claimed."),
+        scope: format!(
+            "Minimal m=1, d=128 kinematic test over both self-dual chromotopologies and {coverage}, with a fixed SO(9) seed and coordinate identification of the 16 supercharges. The auxiliary-projection gate stops after its first signed witness because existence, not dashing classification, is the question. No action, Lorentz oxidation, or gauge-covariant 10D closure is claimed."
+        ),
         arithmetic,
         sym_seed,
         topologies,

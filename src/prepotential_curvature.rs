@@ -2,7 +2,7 @@
 //! prepotential.  The formula is Eq. (5.2.5) of *Superspace* and its gauge map
 //! is Eq. (5.2.7), reproduced as Eq. (2.21) of arXiv:2407.09334.
 
-use crate::supercovariant_derivative::{apply, Derivative, GaussianRational, Polynomial};
+use crate::supercovariant_derivative::{Derivative, GaussianRational, Polynomial, apply};
 use num_complex::Complex;
 use num_rational::Ratio;
 use serde::Serialize;

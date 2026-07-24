@@ -168,7 +168,14 @@ fn permutation_sign(perm: &[usize]) -> i32 {
 
 /// Set Omega totally antisymmetric on the four given (distinct) slots to value v
 /// on the sorted arrangement, filling all 24 permutations with the correct sign.
-fn set_antisym4(omega: &mut [[[[i32; 8]; 8]; 8]; 8], i: usize, j: usize, k: usize, l: usize, v: i32) {
+fn set_antisym4(
+    omega: &mut [[[[i32; 8]; 8]; 8]; 8],
+    i: usize,
+    j: usize,
+    k: usize,
+    l: usize,
+    v: i32,
+) {
     let base = [i, j, k, l];
     // generate all permutations of 4 elements with sign
     let idx = [0usize, 1, 2, 3];
@@ -337,18 +344,10 @@ fn row_gcd(row: &[i128]) -> i128 {
     for &x in row {
         g = gcd(g, x.abs());
     }
-    if g == 0 {
-        1
-    } else {
-        g
-    }
+    if g == 0 { 1 } else { g }
 }
 fn gcd(a: i128, b: i128) -> i128 {
-    if b == 0 {
-        a
-    } else {
-        gcd(b, a % b)
-    }
+    if b == 0 { a } else { gcd(b, a % b) }
 }
 
 // ===========================================================================
@@ -385,7 +384,7 @@ fn d_spatial(i: usize) -> usize {
 /// central derivative symbols (exponent vector).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct Term {
-    mask: u16,        // which of the 9 thetas are present (ascending order)
+    mask: u16,         // which of the 9 thetas are present (ascending order)
     dsym: [u8; NDSYM], // central derivative symbol exponents
     coeff: i64,
 }
@@ -403,7 +402,8 @@ impl Poly {
     }
     fn canonicalize(&mut self) {
         self.terms.retain(|t| t.coeff != 0);
-        self.terms.sort_by(|a, b| (a.mask, a.dsym).cmp(&(b.mask, b.dsym)));
+        self.terms
+            .sort_by(|a, b| (a.mask, a.dsym).cmp(&(b.mask, b.dsym)));
         let mut out: Vec<Term> = vec![];
         for t in self.terms.drain(..) {
             if let Some(last) = out.last_mut() {
@@ -669,7 +669,7 @@ pub fn superspace_certificate() -> SuperspaceCertificate {
 /// A field label in the component multiplet.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Field {
-    A(usize),  // A_i, i in 0..8
+    A(usize), // A_i, i in 0..8
     APlus,
     AMinus,
     Psi(usize), // psi_i
@@ -704,7 +704,11 @@ struct CVar {
 impl CVar {
     fn one(coeff: i32, deriv: Deriv, field: Field) -> Self {
         CVar {
-            terms: vec![CTerm { coeff, deriv, field }],
+            terms: vec![CTerm {
+                coeff,
+                deriv,
+                field,
+            }],
         }
     }
     fn canon(&mut self) {
@@ -716,9 +720,14 @@ impl CVar {
         self.terms = map
             .into_iter()
             .filter(|(_, c)| *c != 0)
-            .map(|((deriv, field), coeff)| CTerm { coeff, deriv, field })
+            .map(|((deriv, field), coeff)| CTerm {
+                coeff,
+                deriv,
+                field,
+            })
             .collect();
-        self.terms.sort_by_key(|t| (format!("{:?}", t.field), format!("{:?}", t.deriv)));
+        self.terms
+            .sort_by_key(|t| (format!("{:?}", t.field), format!("{:?}", t.deriv)));
     }
 }
 
@@ -731,15 +740,31 @@ fn delta0_field(f: Field) -> CVar {
         // delta_0 psi_i = -F_{i+} = -(d_i A_+ - d_+ A_i) = -d_i A_+ + d_+ A_i
         Field::Psi(i) => CVar {
             terms: vec![
-                CTerm { coeff: -1, deriv: Deriv::DSpatial(i), field: Field::APlus },
-                CTerm { coeff: 1, deriv: Deriv::DPlus, field: Field::A(i) },
+                CTerm {
+                    coeff: -1,
+                    deriv: Deriv::DSpatial(i),
+                    field: Field::APlus,
+                },
+                CTerm {
+                    coeff: 1,
+                    deriv: Deriv::DPlus,
+                    field: Field::A(i),
+                },
             ],
         },
         // delta_0 eta = F_{+-} = d_+ A_- - d_- A_+
         Field::Eta => CVar {
             terms: vec![
-                CTerm { coeff: 1, deriv: Deriv::DPlus, field: Field::AMinus },
-                CTerm { coeff: -1, deriv: Deriv::DMinus, field: Field::APlus },
+                CTerm {
+                    coeff: 1,
+                    deriv: Deriv::DPlus,
+                    field: Field::AMinus,
+                },
+                CTerm {
+                    coeff: -1,
+                    deriv: Deriv::DMinus,
+                    field: Field::APlus,
+                },
             ],
         },
         Field::Chi(a) => CVar::one(1, Deriv::None, Field::G(a)),
@@ -757,10 +782,7 @@ fn delta0_field(f: Field) -> CVar {
 /// record it as a distinct second-order tag so nothing is silently dropped.
 fn compose_deriv(outer: Deriv, v: &CVar) -> Vec<(Deriv, Deriv, CTerm)> {
     // returns (outer, inner, term) so the caller can classify second-order terms.
-    v.terms
-        .iter()
-        .map(|t| (outer, t.deriv, *t))
-        .collect()
+    v.terms.iter().map(|t| (outer, t.deriv, *t)).collect()
 }
 
 /// Result of the delta_0^2 closure check.
@@ -815,10 +837,9 @@ pub fn delta0_squared_check() -> Delta0SquaredCheck {
         let mut eom = 0usize;
         let mut desc = vec![];
         for (outer, inner, fld, c) in &second {
-            let is_translation = matches!(inner, Deriv::DPlus)
-                && matches!(outer, Deriv::None)
-                && *fld == f
-                || matches!(outer, Deriv::DPlus) && matches!(inner, Deriv::None) && *fld == f;
+            let is_translation =
+                matches!(inner, Deriv::DPlus) && matches!(outer, Deriv::None) && *fld == f
+                    || matches!(outer, Deriv::DPlus) && matches!(inner, Deriv::None) && *fld == f;
             let is_gauge = matches!(fld, Field::APlus);
             if is_translation {
                 translation += *c;
@@ -959,8 +980,7 @@ pub fn run() -> BbbmClosureReport {
         worldline_reduction: worldline,
         nine_close_offshell_no_nonclosure: nine_ok,
         seven_onshell: seven,
-        headline:
-            "The nine reduced-superspace operators satisfy BBBM Eq. (34) exactly. All 1,485 \
+        headline: "The nine reduced-superspace operators satisfy BBBM Eq. (34) exactly. All 1,485 \
              scalar, mixed, and vector component relations in Eq. (24), derived from Eqs. \
              (22)-(23), close in the full nonabelian free differential superalgebra on all 33 \
              raw fields modulo gauge, with no EOM, integration by parts, or trace identities. \
@@ -972,7 +992,7 @@ pub fn run() -> BbbmClosureReport {
              the gaugino Dirac equation. BBBM's linear auxiliary-spinor constraints have no \
              nonzero tensor-parameter extension, so this on-shell result is not a sixteen-charge \
              extension of the 33-field auxiliary multiplet."
-                .to_string(),
+            .to_string(),
     }
 }
 
@@ -987,7 +1007,10 @@ mod tests {
     #[test]
     fn superspace_nine_charges_close_offshell_exactly() {
         let sc = superspace_certificate();
-        assert_eq!(sc.basis_dim, 512, "reduced superspace has 2^9 = 512 monomials");
+        assert_eq!(
+            sc.basis_dim, 512,
+            "reduced superspace has 2^9 = 512 monomials"
+        );
         assert!(
             sc.dhat_sq_closes,
             "Dhat^2 = -d_+ must hold exactly (Eq 34): delta_0^2 is a pure translation"
@@ -1022,9 +1045,15 @@ mod tests {
     #[test]
     fn complete_linearized_component_and_worldline_reports_pass() {
         let report = run();
-        assert_eq!(report.full_linearized_component.exact_relations_checked, 1_485);
+        assert_eq!(
+            report.full_linearized_component.exact_relations_checked,
+            1_485
+        );
         assert_eq!(report.full_linearized_component.residual_relations, 0);
-        assert_eq!(report.full_nonabelian_component.exact_relations_checked, 1_485);
+        assert_eq!(
+            report.full_nonabelian_component.exact_relations_checked,
+            1_485
+        );
         assert_eq!(report.full_nonabelian_component.residual_relations, 0);
         assert!(
             report
