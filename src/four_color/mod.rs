@@ -1,0 +1,115 @@
+#![allow(dead_code)]
+//! Four-color hopper and G-matrix apparatus for Gates and Lee, arXiv:2408.09342.
+//!
+//! Goal: reproduce Tables 7 to 13 exactly (the X/Y/Z/W hopper recursion for the
+//! minimal 4D N=1 chiral, vector, and tensor supermultiplets and the complex
+//! linear system), and build an exact signed-permutation p-th-root solver that
+//! replaces the paper's brute-force `Select[Tuples[{-1,0,1}, n^2], ...]` search.
+//!
+//! Shared conventions (locked by the `cm_l_matrices_satisfy_garden_algebra`
+//! test below, do NOT change without re-running it):
+//!   - A signed address like [1,-4,2,-3] is the bracket <1 -4 2 -3>. Row i has
+//!     its nonzero at column |addr[i]|-1 with sign(addr[i]). This is
+//!     `SignedPerm`'s native row-form.
+//!   - `matmul(a, b)` returns the matrix product matrix(a) * matrix(b).
+//!   - Garden algebra with R_I = L_I^T: L_I L_J^T + L_J L_I^T = 2 delta_IJ I.
+
+use crate::signed_perm::SignedPerm;
+
+pub mod cls;
+pub mod cm;
+pub mod roots;
+pub mod tm;
+pub mod vm;
+
+/// Build a signed permutation from a signed address, e.g. sp(&[1,-4,2,-3]).
+/// Row i has its nonzero at column |addr[i]|-1 with sign(addr[i]).
+pub fn sp(addr: &[i32]) -> SignedPerm {
+    let perm = addr.iter().map(|&a| (a.abs() - 1) as u16).collect();
+    let sign = addr.iter().map(|&a| a.signum() as i8).collect();
+    SignedPerm::from_parts(perm, sign).expect("valid signed address")
+}
+
+/// Matrix product matrix(a) * matrix(b).
+///
+/// `SignedPerm::compose(self, other)` yields matrix(other) * matrix(self),
+/// so matrix(a) * matrix(b) == b.compose(a).
+pub fn matmul(a: &SignedPerm, b: &SignedPerm) -> SignedPerm {
+    b.compose(a)
+}
+
+/// p-th matrix power (p >= 0), pow(a, 0) = identity.
+pub fn pow(a: &SignedPerm, p: u32) -> SignedPerm {
+    let mut acc = SignedPerm::identity(a.dim());
+    for _ in 0..p {
+        acc = matmul(&acc, a);
+    }
+    acc
+}
+
+/// -M^T for a signed permutation M (used in the antisymmetry test).
+pub fn neg_transpose(m: &SignedPerm) -> SignedPerm {
+    m.transpose().negate()
+}
+
+/// Garden algebra check for a set of 4-color L-matrices with R_I = L_I^T:
+/// requires L_I L_I^T = I and, for I != J, M = L_I L_J^T satisfies M = -M^T.
+pub fn garden_ok(ls: &[SignedPerm]) -> bool {
+    let n = ls.len();
+    for i in 0..n {
+        for j in 0..n {
+            let m = matmul(&ls[i], &ls[j].transpose());
+            if i == j {
+                if !m.is_identity() {
+                    return false;
+                }
+            } else if m != neg_transpose(&m) {
+                return false;
+            }
+        }
+    }
+    true
+}
+
+/// Chiral L-matrices, Table 1 (CM row): <1 -4 2 -3>, <2 3 -1 -4>, <3 -2 -4 1>, <4 1 3 2>.
+/// Kept here because the convention lock (Garden algebra) is calibrated on them.
+pub fn cm_l_matrices() -> Vec<SignedPerm> {
+    vec![
+        sp(&[1, -4, 2, -3]),
+        sp(&[2, 3, -1, -4]),
+        sp(&[3, -2, -4, 1]),
+        sp(&[4, 1, 3, 2]),
+    ]
+}
+
+/// Run every submodule's report (called by the CLI or a smoke test).
+pub fn verify_all() {
+    for line in [cm::report(), vm::report(), tm::report(), roots::report(), cls::report()] {
+        println!("{line}");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cm_l_matrices_satisfy_garden_algebra() {
+        // This is the convention lock. If it fails, sp() or matmul() is wrong.
+        assert!(
+            garden_ok(&cm_l_matrices()),
+            "CM L-matrices must satisfy the Garden algebra under the chosen convention"
+        );
+    }
+
+    #[test]
+    fn matmul_and_pow_basics() {
+        let a = cm_l_matrices()[0].clone();
+        assert!(pow(&a, 0).is_identity());
+        assert_eq!(pow(&a, 1), a);
+        // L_I L_I^T = I for an orthogonal signed permutation.
+        assert!(matmul(&a, &a.transpose()).is_identity());
+        // matmul agrees with repeated compose orientation.
+        assert_eq!(pow(&a, 2), matmul(&a, &a));
+    }
+}

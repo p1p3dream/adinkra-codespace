@@ -27,6 +27,7 @@ mod dashing;
 mod decompose;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
+mod four_color;
 mod eleven_dimensional_level16_couplings;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_spinor_bridge;
