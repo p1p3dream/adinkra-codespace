@@ -185,7 +185,7 @@ fn col_dfs(j: usize, n: usize, a: &IntMat, g: &mut Vec<Vec<i32>>, out: &mut Vec<
         }
         return;
     }
-    let total = 3usize.pow(n as u32);
+    let total = 3usize.checked_pow(n as u32).expect("column search space 3^n overflowed usize");
     for mut code in 0..total {
         for k in 0..n {
             g[k][j] = (code % 3) as i32 - 1;
@@ -577,7 +577,11 @@ mod tests {
             val.as_array()
                 .unwrap()
                 .iter()
-                .map(|row| row.as_array().unwrap().iter().map(|x| x.as_i64().unwrap() as i32).collect())
+                .map(|row| row.as_array().unwrap().iter().map(|x| {
+                    let n = x.as_i64().unwrap();
+                    assert!((i32::MIN as i64..=i32::MAX as i64).contains(&n), "artifact cell {n} out of i32 range");
+                    n as i32
+                }).collect())
                 .collect()
         };
         assert_eq!(parse_mat(&v["A_L"]), a_l, "artifact A_L matrix != independent A_L");

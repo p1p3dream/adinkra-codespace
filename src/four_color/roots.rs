@@ -94,6 +94,12 @@ fn orbits(a: &SignedPerm) -> Vec<Orbit> {
 /// deterministic sorted order (by (perm, sign)).
 pub fn pth_roots(a: &SignedPerm, p: u32) -> Vec<SignedPerm> {
     assert!(p >= 1, "p must be >= 1");
+    // p == 1: the unique first root of a is a itself. Fast path so large or
+    // long-cycle inputs (e.g. d=32, or a 63-cycle) return immediately instead
+    // of enumerating set partitions and 2^m sign vectors.
+    if p == 1 {
+        return vec![a.clone()];
+    }
     let d = a.dim();
     if d == 0 {
         return vec![SignedPerm::identity(0)];
@@ -414,6 +420,7 @@ fn gcd(a: u32, b: u32) -> u32 {
 pub fn brute_pth_roots(a: &SignedPerm, p: u32) -> Vec<SignedPerm> {
     assert!(p >= 1, "p must be >= 1");
     let d = a.dim();
+    assert!(d < 63, "brute enumeration needs d < 63 (2^d sign vectors)");
     let mut roots: BTreeSet<(Vec<u16>, Vec<i8>)> = BTreeSet::new();
     for perm in permutations(&(0..d).collect::<Vec<_>>()) {
         let perm16: Vec<u16> = perm.iter().map(|&x| x as u16).collect();

@@ -66,7 +66,7 @@ pub fn dsum(mats: &[IntMat]) -> IntMat {
     for m in mats {
         for i in 0..n {
             for j in 0..n {
-                s[i][j] += m[i][j];
+                s[i][j] = s[i][j].checked_add(m[i][j]).expect("dsum i32 overflow");
             }
         }
     }

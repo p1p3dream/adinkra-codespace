@@ -211,7 +211,7 @@ mod tests {
         );
     }
 
-    // (b) Recursion structural asserts from Table 13.
+    // (b) Recursion structural asserts: Z_n = +-I (Eq 4.11), W_n = -I4 (Table 13).
     #[test]
     fn vm_l_recursion_z_and_w_shape() {
         let (_x, _y, z, w) = recursion(&vm_l());
