@@ -18,9 +18,57 @@ use crate::signed_perm::SignedPerm;
 
 pub mod cls;
 pub mod cm;
+pub mod gmatrix;
+pub mod gmatrix_oracle;
+pub mod gmatrix_verify;
 pub mod roots;
 pub mod tm;
 pub mod vm;
+
+/// A general {-1,0,1} integer matrix (row-major), the domain of the G-matrix.
+/// The G-matrix is NOT a signed permutation: it can have several nonzeros per row.
+pub type IntMat = Vec<Vec<i32>>;
+
+/// Dense integer matrix product.
+pub fn imm(a: &IntMat, b: &IntMat) -> IntMat {
+    let n = a.len();
+    let mut c = vec![vec![0i32; n]; n];
+    for i in 0..n {
+        for k in 0..n {
+            if a[i][k] == 0 {
+                continue;
+            }
+            for j in 0..n {
+                c[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+    c
+}
+
+/// Dense matrix of a signed permutation (for building A = (sum L) * L1^{-1}).
+pub fn dense(sp: &crate::signed_perm::SignedPerm) -> IntMat {
+    let d = sp.dim();
+    let mut m = vec![vec![0i32; d]; d];
+    for i in 0..d {
+        m[i][sp.perm[i] as usize] = sp.sign[i] as i32;
+    }
+    m
+}
+
+/// Sum a list of dense matrices.
+pub fn dsum(mats: &[IntMat]) -> IntMat {
+    let n = mats[0].len();
+    let mut s = vec![vec![0i32; n]; n];
+    for m in mats {
+        for i in 0..n {
+            for j in 0..n {
+                s[i][j] += m[i][j];
+            }
+        }
+    }
+    s
+}
 
 /// Build a signed permutation from a signed address, e.g. sp(&[1,-4,2,-3]).
 /// Row i has its nonzero at column |addr[i]|-1 with sign(addr[i]).
