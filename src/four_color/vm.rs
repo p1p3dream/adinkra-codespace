@@ -14,7 +14,8 @@
 //!   Y_n = X_{n+1} X_n^{-1}      (Eq 4.7)
 //!   Z_n = Y_{n+1} Y_n^{-1}      (Eq 4.10)
 //!   W_n = Z_{n+1} Z_n^{-1}      (Eq 4.12)
-//! Table 13 asserts each Z_n is +-I and each W_n = -I4.
+//! Each Z_n is +-I (Eq 4.11, the individual tables); Table 13 (the W-matrix
+//! summary) gives each W_n = -I4.
 
 use crate::signed_perm::SignedPerm;
 

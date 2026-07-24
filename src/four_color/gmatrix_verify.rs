@@ -33,8 +33,8 @@
 //!      Cartesian product). Every returned G is checked to square to A. Whether
 //!      NON-block-diagonal {-1,0,1} roots also exist for a block-diagonal A is a
 //!      separate and genuinely hard question: the naive 3^(n^2) enumeration is
-//!      intractable for n >= 6 (confirmed empirically here, and exactly the
-//!      bottleneck the paper reports), and interval constraint propagation does
+//!      intractable for n >= 6 (exactly the bottleneck the paper reports), and
+//!      interval constraint propagation does
 //!      not tame it because the quadratic G^2 = A constraints do not prune until
 //!      the matrix is nearly complete. This module therefore does NOT claim to
 //!      have exhausted the cross-block space at n = 12; it reports the count of
@@ -493,8 +493,9 @@ mod tests {
     }
 
     /// CLS headline case. `g_matrices_alt` on the 12x12 A_(L) and A_(R) returns
-    /// the same COUNT as an independent direct recompute (per-block product),
-    /// and every returned G squares to A. Reports the counts.
+    /// a count equal to the product of the per-block root counts (a
+    /// Cartesian-assembly consistency check using the same per-block solver, not
+    /// an independent recount), and every returned G squares to A.
     #[test]
     fn cls_alt_counts_match_direct_recompute() {
         let a_l = a_matrix(&super::super::cls::cls_l_matrices());

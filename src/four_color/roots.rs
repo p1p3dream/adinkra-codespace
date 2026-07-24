@@ -214,7 +214,8 @@ fn solve_signs(a: &SignedPerm, d: usize, layout: &[Vec<usize>], p: u32) -> Vec<S
         let m = cyc.len();
         let target: Vec<i8> = cyc.iter().map(|&idx| a.sign[idx]).collect();
         let mut valid = Vec::new();
-        for bits in 0u32..(1u32 << m) {
+        assert!(m < 63, "sign-cycle length {m} exceeds the 2^m enumeration range");
+        for bits in 0u64..(1u64 << m) {
             let g: Vec<i8> = (0..m)
                 .map(|k| if (bits >> k) & 1 == 1 { -1 } else { 1 })
                 .collect();
@@ -416,7 +417,7 @@ pub fn brute_pth_roots(a: &SignedPerm, p: u32) -> Vec<SignedPerm> {
     let mut roots: BTreeSet<(Vec<u16>, Vec<i8>)> = BTreeSet::new();
     for perm in permutations(&(0..d).collect::<Vec<_>>()) {
         let perm16: Vec<u16> = perm.iter().map(|&x| x as u16).collect();
-        for sign_bits in 0u32..(1u32 << d) {
+        for sign_bits in 0u64..(1u64 << d) {
             let sign: Vec<i8> = (0..d)
                 .map(|i| if (sign_bits >> i) & 1 == 1 { -1 } else { 1 })
                 .collect();
@@ -465,7 +466,7 @@ mod tests {
         let mut out = Vec::new();
         for perm in permutations(&(0..d).collect::<Vec<_>>()) {
             let perm16: Vec<u16> = perm.iter().map(|&x| x as u16).collect();
-            for sign_bits in 0u32..(1u32 << d) {
+            for sign_bits in 0u64..(1u64 << d) {
                 let sign: Vec<i8> = (0..d)
                     .map(|i| if (sign_bits >> i) & 1 == 1 { -1 } else { 1 })
                     .collect();

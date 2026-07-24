@@ -760,13 +760,16 @@ pub fn report() -> String {
     let cm_ln = g_matrices(&a_of(&cm_l())).len();
     let vm_ln = g_matrices(&a_of(&vm_l())).len();
     let tm_ln = g_matrices(&a_of(&tm_l())).len();
+    let cm_rn = g_matrices(&a_of(&cm_r())).len();
+    let vm_rn = g_matrices(&a_of(&vm_r())).len();
+    let tm_rn = g_matrices(&a_of(&tm_r())).len();
 
     let l = analyze_cls_side(&cls_l_dense());
     let r = analyze_cls_side(&cls_r_dense());
 
     format!(
-        "gmatrix: minimal G-counts (L side) CM={cm_ln} VM={vm_ln} TM={tm_ln} \
-         (paper: 12 each; R side also 12). Solver = commutation + quadratic \
+        "gmatrix: minimal G-counts L/R CM={cm_ln}/{cm_rn} VM={vm_ln}/{vm_rn} \
+         TM={tm_ln}/{tm_rn} (paper: 12 each). Solver = commutation + quadratic \
          bracket backtracking with unit propagation (complete; verified against \
          3^16 brute force at n=4). CLS dim=12: A is block diagonal (three 4x4 \
          blocks, shared spectrum). Block-diagonal G-counts A_(L)={} A_(R)={} \

@@ -14,8 +14,8 @@
 //!   Z_n = Y_{n+1} Y_n^{-1}    (Eq 4.10)
 //!   W_n = Z_{n+1} Z_n^{-1}    (Eq 4.12)
 //!
-//! Convergence (paper Eqs 4.11 and Table 13): each Z_n is +I or -I, and every
-//! W_n = -I4. The same recursion applied to the R-matrices gives the primed
+//! Convergence: each Z_n is +I or -I (Eq 4.11), and every W_n = -I4 (Table 13,
+//! the W-matrix summary). The same recursion applied to the R-matrices gives the primed
 //! quantities of Table 8.
 //!
 //! Table 7 [Ln] n=1 typo in arXiv:2408.09342. The published paper (verified
