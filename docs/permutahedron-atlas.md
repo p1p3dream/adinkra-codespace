@@ -17,6 +17,8 @@ eight-color supersymmetry program described in Refs. [1-3]. It contains:
 - the complete `56 x 56` Bruhat-distance matrix for those seven named octets.
 - the six signed `S4` sectors, all 96 published fiducial Boolean-factor
   quartets, and all 96 corresponding Adinkras;
+- the six published signed `S8` systems, all 51 height-sign branches, and their
+  Garden, HYMN, graph, Bruhat, coset, chromocharacter, and gadget records;
 - a Garden-sign feasibility calculation for every one of the 5,040 right
   `R8` cosets.
 
@@ -97,9 +99,28 @@ description. A right coset `R8 g` equals `g R8` precisely when `g` normalizes
 168 distinct automorphisms, identifying the quotient with `GL(3,2)` and the
 normalizer with `AGL(3,2)`.
 
-This closes the unsigned feasibility question: ab-normality does not distinguish
-whether an `R8` coset admits Garden signs. All 168 ab-normal cosets and all 4,872
-other cosets admit them.
+This closes the unsigned feasibility question: left-right coset coincidence
+does not distinguish whether an `R8` coset admits Garden signs. All 168
+left-right coincident cosets and all 4,872 other cosets admit them.
+
+## Six signed eight-color systems
+
+The six signed systems in Ref. [2] are reconstructed from the printed
+permutations and Boolean factors. All 16 residue classes
+`(m mod 4, n mod 4)` are evaluated for `TT`, `TV`, and `VV`, producing 51
+branches in total. Both Garden relations are checked on 417,792 dense matrix
+entries.
+
+Only `CT` and `CV` close. Their graphs satisfy all 112 two-color odd-dashing
+conditions and are stored as valise Adinkras. The other 49 branches retain the
+published nonclosure and are stored as signed colored graphs.
+
+The HYMN calculation reproduces Eq. (3.3) on all 51 branches:
+`sigma_3 tensor I_8` for `CT` and `CV`, and `I_16` for the other four systems.
+Unsigned left-right coset coincidence does not reproduce this separation
+because `TV` is not left-right coincident but does not close. Full method and
+boundary details are in
+[`permutahedron-s8-supersymmetry.md`](permutahedron-s8-supersymmetry.md).
 
 ## Reproduction
 
@@ -111,6 +132,8 @@ cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
 cargo run --release -- perm-s4-susy-build
 cargo run --release -- perm-s4-susy-verify
+cargo run --release -- perm-s8-susy-build
+cargo run --release -- perm-s8-susy-verify
 ```
 
 Generated data:
@@ -119,8 +142,10 @@ Generated data:
 - `data/permutahedron_s8_atlas.json`
 - `data/permutahedron_s8_garden.json`
 - `data/permutahedron_s4_supersymmetry.json`
+- `data/permutahedron_s8_supersymmetry.json`
 - `results/permutahedron_validation.json`
 - `results/permutahedron_s4_supersymmetry_validation.json`
+- `results/permutahedron_s8_supersymmetry_validation.json`
 
 Validated artifact hashes:
 
@@ -129,7 +154,9 @@ Validated artifact hashes:
 | `data/permutahedron_s4_atlas.json` | `0738927f723ffd16b310ff7a7bcbafa8629b791583524a165a9c1635c008be2c` |
 | `data/permutahedron_s8_atlas.json` | `b178d1642d05f1b7e0b9b5b5befdf3fb3c412717b80202c9836fe1bf061f4ba3` |
 | `data/permutahedron_s8_garden.json` | `9e0d983f678ee89704809008ea5fdeea993fbb5d535f53564477b9a313056a67` |
+| `data/permutahedron_s8_supersymmetry.json` | `3df539d4d82472566cc4ab90dc5dbf5f8ab1035ee9708cd1d7c26a51a550d241` |
 | `results/permutahedron_validation.json` | `feb3d95a19a525dd538e53baa2b56018988629fe8576ce6cbc29d39174973cc1` |
+| `results/permutahedron_s8_supersymmetry_validation.json` | `a6fb4d1ec4e6571d55d9780db81906f589aa1fc354bc9c6b19d00048f41002b4` |
 
 The validation report records zero mismatches in the 576 entries determined by
 the published `S4` blocks. It checks all 40,320 `R8` intra-coset rows at magic
@@ -148,11 +175,16 @@ Open `visualizer/permutahedron_s4_supersymmetry.html` for the signed four-color
 sector viewer. It displays all 16 published fiducial sign choices within each
 of the six sectors.
 
+Open `visualizer/permutahedron_s8_supersymmetry.html` for the six signed
+eight-color systems. It displays all 51 height-sign branches and distinguishes
+the two Garden-closing Adinkras from the 49 signed graphs with nonclosure.
+
 Validate the browser datasets and their Garden-scan join with:
 
 ```sh
 node scripts/test_permutahedron_atlas.mjs
 node scripts/test_permutahedron_s4_supersymmetry.mjs
+node scripts/test_permutahedron_s8_supersymmetry.mjs
 ```
 
 ## Boundaries

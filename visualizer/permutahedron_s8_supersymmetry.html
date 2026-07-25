@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Six Signed Eight-Color Systems</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050b11;
+      --panel: #0b1720;
+      --panel2: #102532;
+      --line: #284450;
+      --ink: #ecf3f6;
+      --muted: #91a8b3;
+      --good: #77e7bd;
+      --warn: #ffbe66;
+      --bad: #ff7474;
+      --cyan: #43d6c9;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    header { position: sticky; top: 0; z-index: 5; display: flex; gap: 18px; align-items: center; padding: 14px 20px; background: #07121bf2; border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+    h1 { margin: 0; font: 700 19px/1.1 system-ui, sans-serif; }
+    h2 { margin: 0 0 10px; color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    #status { margin-left: auto; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; }
+    #status.ok, .pass { color: var(--good); }
+    #status.bad, .fail { color: var(--bad); }
+    .warn { color: var(--warn); }
+    main { max-width: 1580px; margin: auto; padding: 18px; }
+    .sectors { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; margin-bottom: 16px; }
+    button, select { color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 9px; font: inherit; }
+    button { cursor: pointer; text-align: left; }
+    button:hover, button.active { border-color: var(--cyan); background: var(--panel2); }
+    .sector-head { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 5px; }
+    .sector-detail { color: var(--muted); font-size: 11px; }
+    .workspace { display: grid; grid-template-columns: minmax(600px, 1.35fr) minmax(390px, .8fr); gap: 16px; }
+    .column { display: grid; gap: 16px; align-content: start; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow: auto; }
+    .controls { display: flex; gap: 16px; align-items: end; flex-wrap: wrap; }
+    label { display: grid; gap: 4px; color: var(--muted); }
+    select { min-width: 200px; background: var(--panel2); }
+    .metrics { display: grid; grid-template-columns: repeat(5, minmax(90px, 1fr)); gap: 10px; flex: 1; }
+    .metric { border-left: 2px solid var(--cyan); padding-left: 8px; }
+    .metric span { display: block; color: var(--muted); font-size: 11px; }
+    .metric strong { font-size: 15px; }
+    #graph { width: 100%; min-height: 460px; background: radial-gradient(circle at center, #112a37, #050b11 73%); border: 1px solid #1c3442; border-radius: 6px; }
+    .edge { fill: none; stroke-width: 2.5; opacity: .82; }
+    .edge.dashed { stroke-dasharray: 7 6; }
+    .node { fill: #e9f0f4; stroke: #061018; stroke-width: 3; }
+    .node.boson { fill: var(--cyan); }
+    .node-label { fill: var(--ink); font-size: 11px; text-anchor: middle; }
+    .legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px 12px; color: var(--muted); margin-top: 10px; font-size: 11px; }
+    .swatch { display: inline-block; width: 22px; border-top: 3px solid; vertical-align: middle; margin-right: 5px; }
+    .matrix-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+    .matrix-title { color: var(--warn); font-size: 11px; margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 3px 4px; border: 1px solid #203744; text-align: center; }
+    th { color: var(--muted); background: var(--panel2); }
+    td.nonzero { color: #fff; font-weight: 700; background: #173240; }
+    .kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 0; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; overflow-wrap: anywhere; }
+    .source, .note { color: var(--muted); font-size: 12px; }
+    a { color: var(--cyan); }
+    @media (max-width: 1150px) { .sectors { grid-template-columns: repeat(3, 1fr); } .workspace { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { header { flex-wrap: wrap; } #status { margin-left: 0; } .sectors { grid-template-columns: repeat(2, 1fr); } .metrics, .matrix-grid { grid-template-columns: repeat(2, 1fr); } main { padding: 10px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Six Signed Eight-Color Systems</h1>
+    <span>6 published systems · 51 parameter branches · 16 nodes each</span>
+    <span id="status">loading</span>
+  </header>
+  <main>
+    <section id="sectors" class="sectors" aria-label="Six signed S8 systems"></section>
+    <div class="workspace">
+      <div class="column">
+        <section class="panel">
+          <div class="controls">
+            <label>Height-sign branch
+              <select id="branch"></select>
+            </label>
+            <div class="metrics">
+              <div class="metric"><span>system</span><strong id="metricSystem"></strong></div>
+              <div class="metric"><span>Garden</span><strong id="metricGarden"></strong></div>
+              <div class="metric"><span>HYMN trace</span><strong id="metricHymn"></strong></div>
+              <div class="metric"><span>nonclosing pairs</span><strong id="metricPairs"></strong></div>
+              <div class="metric"><span>nearest Garden</span><strong id="metricDistance"></strong></div>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Signed eight-color valise graph</h2>
+          <svg id="graph" viewBox="0 0 900 460" role="img" aria-label="Signed eight-color bipartite graph"></svg>
+          <div id="legend" class="legend"></div>
+          <p id="graphBoundary" class="note"></p>
+        </section>
+        <section class="panel">
+          <h2>Signed L-matrices</h2>
+          <div id="matrices" class="matrix-grid"></div>
+        </section>
+      </div>
+      <div class="column">
+        <section class="panel">
+          <h2>Closure and graph checks</h2>
+          <dl id="checks" class="kv"></dl>
+        </section>
+        <section class="panel">
+          <h2>Sector recognition</h2>
+          <dl id="invariants" class="kv"></dl>
+        </section>
+        <section class="panel">
+          <h2>Separation result</h2>
+          <p id="separation"></p>
+          <p class="note">HYMN is the published separator. Garden distance is an equivalent closure-defect check. Unsigned abnormality is not a separator. Gadget values for nonclosing systems are formal diagnostics only.</p>
+        </section>
+        <section class="panel">
+          <h2>Sources</h2>
+          <div id="sources" class="source"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script type="module">
+    const dataUrl = "../data/permutahedron_s8_supersymmetry.json";
+    const colors = ["#ff6262", "#4ec7f3", "#f2c94c", "#a988ff", "#5ae08c", "#ff8bd1", "#ff9e57", "#61e0da"];
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    let data;
+    let sectorIndex = 0;
+
+    function renderCards() {
+      $("sectors").innerHTML = data.sectors.map((sector, index) => {
+        const canonical = sector.parameter_branches[0];
+        const closing = canonical.closure.sparse_garden_passed;
+        return `<button data-sector="${index}" class="${sectorIndex === index ? "active" : ""}">
+          <div class="sector-head"><span>${esc(sector.id)}</span><span class="${closing ? "pass" : "fail"}">${closing ? "closes" : "nonclosure"}</span></div>
+          <div class="sector-detail">${esc(sector.label)}<br>R8 coset ${sector.unsigned_coordinates.right_r8_coset_id} · HYMN tr ${canonical.hymn.trace}</div>
+        </button>`;
+      }).join("");
+      $("sectors").querySelectorAll("button").forEach(button => {
+        button.onclick = () => {
+          sectorIndex = Number(button.dataset.sector);
+          renderSector();
+        };
+      });
+    }
+
+    function renderGraph(branch) {
+      const x = [80, 185, 290, 395, 505, 610, 715, 820];
+      const top = 70;
+      const bottom = 385;
+      const paths = branch.graph.edges.map(edge => {
+        const bx = x[edge.boson - 1];
+        const fx = x[edge.fermion - 1];
+        const bend = (edge.color - 4.5) * 10 + (edge.boson - edge.fermion) * 2;
+        return `<path class="edge ${edge.sign < 0 ? "dashed" : ""}" stroke="${colors[edge.color - 1]}" d="M ${bx} ${bottom} C ${bx + bend} 285, ${fx - bend} 170, ${fx} ${top}"><title>color ${edge.color}: B${edge.boson} to F${edge.fermion}, sign ${edge.sign > 0 ? "+1" : "-1"}</title></path>`;
+      });
+      const fermions = x.map((value, index) => `<circle class="node" cx="${value}" cy="${top}" r="12"/><text class="node-label" x="${value}" y="${top - 22}">F${index + 1}</text>`);
+      const bosons = x.map((value, index) => `<circle class="node boson" cx="${value}" cy="${bottom}" r="12"/><text class="node-label" x="${value}" y="${bottom + 31}">B${index + 1}</text>`);
+      $("graph").innerHTML = [...paths, ...fermions, ...bosons].join("");
+      $("graphBoundary").textContent = branch.graph.valid_garden_adinkra
+        ? "All 112 two-color squares have odd dashing. This graph is a Garden-closing valise Adinkra."
+        : `${branch.graph.odd_dashing_failures} of 112 two-color squares fail odd dashing. This is retained as the published signed colored graph with nonclosure, not relabeled as an off-shell Adinkra.`;
+    }
+
+    function table(matrix) {
+      return `<table><tbody>${matrix.map(row => `<tr>${row.map(value => `<td class="${value ? "nonzero" : ""}">${value || ""}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    }
+
+    function renderMatrices(branch) {
+      $("matrices").innerHTML = branch.matrices.map(record =>
+        `<div><div class="matrix-title">L${record.color} · b=${record.effective_boolean_factor} · P=${record.permutation.join("")}</div>${table(record.l)}</div>`
+      ).join("");
+    }
+
+    function branchLabel(branch) {
+      return branch.m_mod_4 === null
+        ? "printed factors"
+        : `m mod 4 = ${branch.m_mod_4}, n mod 4 = ${branch.n_mod_4} · (m+,m-) = (${branch.m_plus},${branch.m_minus}) · (n+,n-) = (${branch.n_plus},${branch.n_minus})`;
+    }
+
+    function renderBranch() {
+      const sector = data.sectors[sectorIndex];
+      const branch = sector.parameter_branches[Number($("branch").value)];
+      const closure = branch.closure;
+      $("metricSystem").textContent = sector.id;
+      $("metricGarden").textContent = closure.sparse_garden_passed ? "pass" : "nonclosure";
+      $("metricGarden").className = closure.sparse_garden_passed ? "pass" : "fail";
+      $("metricHymn").textContent = branch.hymn.trace;
+      $("metricPairs").textContent = closure.nonclosing_color_pairs;
+      $("metricDistance").textContent = `${branch.garden_distance.minimum_edge_sign_flips} flips`;
+      renderGraph(branch);
+      renderMatrices(branch);
+      $("checks").innerHTML = `
+        <dt>bosonic entries</dt><dd>${closure.bosonic_entries_checked.toLocaleString()}</dd>
+        <dt>bosonic residuals</dt><dd class="${closure.bosonic_residual_entries ? "fail" : "pass"}">${closure.bosonic_residual_entries}</dd>
+        <dt>fermionic entries</dt><dd>${closure.fermionic_entries_checked.toLocaleString()}</dd>
+        <dt>fermionic residuals</dt><dd class="${closure.fermionic_residual_entries ? "fail" : "pass"}">${closure.fermionic_residual_entries}</dd>
+        <dt>nonclosing color pairs</dt><dd>${closure.nonclosing_color_pairs}</dd>
+        <dt>residual L1 norm</dt><dd>${closure.residual_l1_norm}</dd>
+        <dt>maximum residual</dt><dd>${closure.maximum_absolute_residual}</dd>
+        <dt>graph</dt><dd>${esc(branch.graph.graph_type)}</dd>
+        <dt>edges / squares</dt><dd>${branch.graph.edge_count} / ${branch.graph.square_count}</dd>
+        <dt>odd-dashing failures</dt><dd>${branch.graph.odd_dashing_failures}</dd>
+        <dt>Garden signings</dt><dd>${branch.garden_distance.total_garden_signings.toLocaleString()}</dd>
+        <dt>minimum edge flips</dt><dd>${branch.garden_distance.minimum_edge_sign_flips}</dd>
+        <dt>nearest signings</dt><dd>${branch.garden_distance.nearest_signings_at_minimum}</dd>
+      `;
+      const coordinates = sector.unsigned_coordinates;
+      $("invariants").innerHTML = `
+        <dt>HYMN class</dt><dd>${esc(branch.hymn.class)}</dd>
+        <dt>HYMN diagonal</dt><dd>${branch.hymn.diagonal_entries.join(", ")}</dd>
+        <dt>Eq. (3.3)</dt><dd class="${branch.hymn.equation_3_3_matched ? "pass" : "fail"}">${branch.hymn.equation_3_3_matched ? "match" : "mismatch"}</dd>
+        <dt>right R8 coset</dt><dd>${coordinates.right_r8_coset_id}</dd>
+        <dt>abnormal</dt><dd>${coordinates.abnormal_left_right_coincident}</dd>
+        <dt>normalizer action</dt><dd>${coordinates.normalizer_gl_3_2_action?.join("") ?? "not applicable"}</dd>
+        <dt>Bruhat row sums</dt><dd>${coordinates.bruhat_row_sums.join(", ")}</dd>
+        <dt>Bruhat characteristic polynomial</dt><dd>${coordinates.bruhat_characteristic_polynomial.join(", ")}</dd>
+        <dt>chromocharacter Q, scaled</dt><dd>${sector.canonical_chromochar_q_scaled}</dd>
+        <dt>formal gadget row</dt><dd>${sector.canonical_formal_gadget_row.join(", ")}</dd>
+      `;
+    }
+
+    function renderSector() {
+      renderCards();
+      const sector = data.sectors[sectorIndex];
+      $("branch").innerHTML = sector.parameter_branches.map((branch, index) =>
+        `<option value="${index}">${esc(branchLabel(branch))}</option>`
+      ).join("");
+      $("branch").value = "0";
+      renderBranch();
+    }
+
+    async function init() {
+      try {
+        const response = await fetch(dataUrl);
+        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+        data = await response.json();
+        if (!data.validation?.passed) throw new Error("validation record did not pass");
+        $("status").textContent = "51 / 51 branches reproduced";
+        $("status").className = "ok";
+        $("legend").innerHTML = colors.map((color, index) =>
+          `<span><i class="swatch" style="border-color:${color}"></i>color ${index + 1}</span>`
+        ).join("") + `<span><i class="swatch" style="border-color:#e9f0f4;border-top-style:dashed"></i>negative edge</span>`;
+        $("separation").textContent = data.separation.conclusion;
+        $("sources").innerHTML = data.sources.map(source =>
+          `<p><a href="https://arxiv.org/abs/${esc(source.arxiv_id)}">arXiv:${esc(source.arxiv_id)}v${source.version}</a><br>${esc(source.locator)}<br>${esc(source.role)}</p>`
+        ).join("");
+        renderSector();
+      } catch (error) {
+        $("status").textContent = `unavailable: ${error.message}`;
+        $("status").className = "bad";
+      }
+    }
+
+    $("branch").onchange = renderBranch;
+    init();
+  </script>
+</body>
+</html>

@@ -221,6 +221,70 @@ fn solve_affine(mut equations: Vec<Equation>) -> Option<(usize, Vec<bool>)> {
     Some((rank, solution))
 }
 
+/// Enumerate every Garden signing for one support-compatible unsigned octet.
+///
+/// Each signing is returned as a 64-bit mask in color-major, row-minor order.
+/// A set bit means a negative matrix entry.  The S8/R8 systems used here have
+/// nullity 19, so this returns 524,288 masks per octet.
+pub fn garden_solution_masks(octet: &[Permutation]) -> Option<Vec<u64>> {
+    let mut equations = affine_equations(octet)?;
+    let mut pivot_row = 0usize;
+    let mut pivot_columns = Vec::new();
+    for column in 0..VARIABLE_COUNT {
+        let Some(found) = (pivot_row..equations.len())
+            .find(|&row| ((equations[row].coefficients >> column) & 1) == 1)
+        else {
+            continue;
+        };
+        equations.swap(pivot_row, found);
+        let pivot = equations[pivot_row];
+        for row in 0..equations.len() {
+            if row != pivot_row && ((equations[row].coefficients >> column) & 1) == 1 {
+                equations[row].coefficients ^= pivot.coefficients;
+                equations[row].rhs ^= pivot.rhs;
+            }
+        }
+        pivot_columns.push(column);
+        pivot_row += 1;
+    }
+    if equations
+        .iter()
+        .any(|equation| equation.coefficients == 0 && equation.rhs)
+    {
+        return None;
+    }
+
+    let pivot_set: BTreeSet<usize> = pivot_columns.iter().copied().collect();
+    let free_columns: Vec<usize> = (0..VARIABLE_COUNT)
+        .filter(|column| !pivot_set.contains(column))
+        .collect();
+    let solution_count = 1usize << free_columns.len();
+    let mut solutions = Vec::with_capacity(solution_count);
+    for free_assignment in 0..solution_count {
+        let mut mask = 0u64;
+        for (bit, &column) in free_columns.iter().enumerate() {
+            if (free_assignment >> bit) & 1 == 1 {
+                mask |= 1u64 << column;
+            }
+        }
+        for (row, &pivot_column) in pivot_columns.iter().enumerate() {
+            let free_parity = (equations[row].coefficients & mask).count_ones() % 2 == 1;
+            let pivot_value = equations[row].rhs ^ free_parity;
+            if pivot_value {
+                mask |= 1u64 << pivot_column;
+            }
+        }
+        if free_assignment == 0 || free_assignment + 1 == solution_count {
+            debug_assert!(equations.iter().all(|equation| {
+                let lhs = (equation.coefficients & mask).count_ones() % 2 == 1;
+                lhs == equation.rhs
+            }));
+        }
+        solutions.push(mask);
+    }
+    Some(solutions)
+}
+
 fn dense_residual(octet: &[Permutation], signs: &[i8]) -> (usize, usize) {
     let perms: Vec<Vec<usize>> = octet.iter().copied().map(zero_based).collect();
     let mut checked = 0usize;
@@ -583,6 +647,18 @@ mod tests {
         let representation = AdinkraRep::from_parts(N, D, &color_perms, &mutated);
         assert!(!representation.verify_garden_algebra());
         assert!(dense_residual(&octet, &mutated).1 > 0);
+
+        let solution_masks = garden_solution_masks(&octet).expect("Diadem solution space");
+        assert_eq!(solution_masks.len(), 1 << 19);
+        assert_eq!(
+            solution_masks.iter().copied().collect::<HashSet<_>>().len(),
+            1 << 19
+        );
+        assert!(
+            solution_masks.contains(
+                &u64::from_str_radix(&canonical_mask(&result.canonical_signs), 16).unwrap()
+            )
+        );
     }
 
     #[test]

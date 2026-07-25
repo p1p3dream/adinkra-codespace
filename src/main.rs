@@ -48,6 +48,7 @@ mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
 mod permutahedron_s4_supersymmetry;
+mod permutahedron_s8_supersymmetry;
 mod pipeline;
 mod prepotential_curvature;
 mod prepotential_gauge;
@@ -111,6 +112,8 @@ fn main() {
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
         "perm-s4-susy-build" => cmd_perm_s4_susy_build(&args),
         "perm-s4-susy-verify" => cmd_perm_s4_susy_verify(),
+        "perm-s8-susy-build" => cmd_perm_s8_susy_build(&args),
+        "perm-s8-susy-verify" => cmd_perm_s8_susy_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -238,6 +241,9 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-s4-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six signed S4 sectors and their Adinkras");
     eprintln!("  perm-s4-susy-verify     Verify all 96 published fiducial signings");
+    eprintln!("  perm-s8-susy-build [data-json] [validation-json]");
+    eprintln!("                          Build the six published signed S8 representations");
+    eprintln!("  perm-s8-susy-verify     Verify closure, nonclosure, HYMN, and all m/n branches");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -449,6 +455,40 @@ fn cmd_perm_s4_susy_verify() {
     println!(
         "{}",
         serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_susy_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_supersymmetry.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_supersymmetry_validation.json");
+    let report = permutahedron_s8_supersymmetry::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_susy_verify() {
+    let artifact = permutahedron_s8_supersymmetry::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.separation).unwrap()
     );
     if !artifact.validation.passed {
         std::process::exit(2);

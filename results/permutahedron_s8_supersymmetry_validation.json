@@ -1,0 +1,19 @@
+{
+  "sectors": 6,
+  "source_permutation_entries_checked": 384,
+  "source_boolean_factors_checked": 48,
+  "parameter_branches_checked": 51,
+  "closing_branches": 2,
+  "nonclosing_branches": 49,
+  "dense_closure_entries_checked": 417792,
+  "dense_closure_residual_entries": 12416,
+  "hymn_records_checked": 51,
+  "equation_3_3_matches": 51,
+  "graphs_constructed": 51,
+  "graph_edges_checked": 3264,
+  "graph_squares_checked": 5712,
+  "valid_garden_adinkras": 2,
+  "signed_graphs_with_nonclosure": 49,
+  "nearest_garden_solution_spaces_scanned": 6,
+  "passed": true
+}
