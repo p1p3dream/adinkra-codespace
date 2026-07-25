@@ -433,6 +433,15 @@ pub struct ZeroMomentumGaugeCompositionEntry {
     pub imaginary: i128,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FirstMomentumGaugeCompositionEntry {
+    pub parameter_component_index: usize,
+    pub momentum_vector_index: usize,
+    pub exterior_mask: u32,
+    pub real: i128,
+    pub imaginary: i128,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JointColumnSpec {
     pub ordinal: usize,
@@ -851,6 +860,23 @@ fn exterior_replacement_sign(mask: u32, first: usize, second: usize) -> i64 {
 fn right_wedge_sign(mask: u32, spinor_index: usize) -> Option<i128> {
     let bit = 1_u32 << spinor_index;
     if mask & bit != 0 {
+        return None;
+    }
+    let greater_bits = if spinor_index == 31 {
+        0
+    } else {
+        !((1_u32 << (spinor_index + 1)) - 1)
+    };
+    Some(if (mask & greater_bits).count_ones() % 2 == 0 {
+        1
+    } else {
+        -1
+    })
+}
+
+fn right_contraction_sign(mask: u32, spinor_index: usize) -> Option<i128> {
+    let bit = 1_u32 << spinor_index;
+    if mask & bit == 0 {
         return None;
     }
     let greater_bits = if spinor_index == 31 {
@@ -2566,6 +2592,512 @@ where
         )?;
     }
     Ok((spec, parameter_basis, maximum, sha256_bytes(fixture.bytes)))
+}
+
+fn multiply_gaussian_integers(
+    left_real: i128,
+    left_imaginary: i128,
+    right_real: i128,
+    right_imaginary: i128,
+) -> (i128, i128) {
+    let real = left_real
+        .checked_mul(right_real)
+        .and_then(|value| {
+            left_imaginary
+                .checked_mul(right_imaginary)
+                .and_then(|other| value.checked_sub(other))
+        })
+        .expect("i128 overflow in Gaussian-integer real product");
+    let imaginary = left_real
+        .checked_mul(right_imaginary)
+        .and_then(|value| {
+            left_imaginary
+                .checked_mul(right_real)
+                .and_then(|other| value.checked_add(other))
+        })
+        .expect("i128 overflow in Gaussian-integer imaginary product");
+    (real, imaginary)
+}
+
+fn accumulate_first_momentum_gauge_entry(
+    accumulated: &mut HashMap<(usize, u32), (i128, i128)>,
+    momentum_vector_index: usize,
+    exterior_mask: u32,
+    real: i128,
+    imaginary: i128,
+    maximum: &mut i128,
+) {
+    if real == 0 && imaginary == 0 {
+        return;
+    }
+    let value = accumulated
+        .entry((momentum_vector_index, exterior_mask))
+        .or_insert((0, 0));
+    value.0 = value
+        .0
+        .checked_add(real)
+        .expect("i128 overflow in first-momentum gauge real accumulation");
+    value.1 = value
+        .1
+        .checked_add(imaginary)
+        .expect("i128 overflow in first-momentum gauge imaginary accumulation");
+    *maximum = (*maximum).max(value.0.abs()).max(value.1.abs());
+}
+
+pub fn visit_first_momentum_gauge_composition_components<F>(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    mut visit: F,
+) -> io::Result<(JointColumnSpec, Vec<Vec<usize>>, i128, String)>
+where
+    F: FnMut(usize, &[usize], &[FirstMomentumGaugeCompositionEntry]) -> io::Result<()>,
+{
+    assert!(gauge_form_degree <= 5);
+    let spec = joint_column_specs()
+        .get(operator_ordinal)
+        .unwrap_or_else(|| panic!("operator column ordinal {operator_ordinal} is outside 0..56"))
+        .clone();
+    let gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+        .into_iter()
+        .filter(|(degree, _, _)| *degree == gauge_form_degree)
+        .collect::<Vec<_>>();
+    let parameter_basis = gauge_basis
+        .iter()
+        .map(|(_, indices, _)| indices.clone())
+        .collect::<Vec<_>>();
+
+    if spec.kind == "leading" {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let abstract_certificate = build_abstract_from_fixture(
+            LEVEL16_PROBLEM,
+            first.dynkin_label,
+            first.copy,
+            2,
+            first.bytes,
+        )
+        .0;
+        let (mut model, highest, mut maximum) =
+            materialize_coupled_highest(LEVEL16_PROBLEM, &abstract_certificate, fixture.bytes, 2);
+        let translation_coefficients = translation_weight_basis_coefficients();
+        for (parameter_component_index, (_, component_indices, matrix)) in
+            gauge_basis.iter().enumerate()
+        {
+            let mut accumulated = HashMap::<(usize, u32), (i128, i128)>::new();
+            for (&free_spinor, exterior) in &highest.components {
+                let source_masks = model.space(exterior.weight).masks.clone();
+                for derivative_spinor in 0..32 {
+                    let gauge = &matrix[free_spinor][derivative_spinor];
+                    if gauge.re.is_zero() && gauge.im.is_zero() {
+                        continue;
+                    }
+                    assert_eq!(*gauge.re.denom(), 1);
+                    assert_eq!(*gauge.im.denom(), 1);
+                    let gauge_real = i128::from(*gauge.re.numer());
+                    let gauge_imaginary = i128::from(*gauge.im.numer());
+                    for (mask, source_coefficient) in
+                        source_masks.iter().copied().zip(&exterior.coefficients)
+                    {
+                        if *source_coefficient == 0 {
+                            continue;
+                        }
+                        let mut occupied = mask;
+                        while occupied != 0 {
+                            let contracted_spinor = occupied.trailing_zeros() as usize;
+                            occupied &= occupied - 1;
+                            let contraction_sign =
+                                right_contraction_sign(mask, contracted_spinor).unwrap();
+                            let output_mask = mask ^ (1_u32 << contracted_spinor);
+                            assert_eq!(output_mask.count_ones(), 15);
+                            let source_scale = i128::from(*source_coefficient) * contraction_sign;
+                            for momentum_vector_index in 0..11 {
+                                let (translation_real, translation_imaginary) =
+                                    translation_coefficients[contracted_spinor][derivative_spinor]
+                                        [momentum_vector_index];
+                                if translation_real == 0 && translation_imaginary == 0 {
+                                    continue;
+                                }
+                                let (real, imaginary) = multiply_gaussian_integers(
+                                    gauge_real,
+                                    gauge_imaginary,
+                                    i128::from(translation_real),
+                                    i128::from(translation_imaginary),
+                                );
+                                accumulate_first_momentum_gauge_entry(
+                                    &mut accumulated,
+                                    momentum_vector_index,
+                                    output_mask,
+                                    source_scale
+                                        .checked_mul(real)
+                                        .expect("i128 overflow in leading gauge real coefficient"),
+                                    source_scale.checked_mul(imaginary).expect(
+                                        "i128 overflow in leading gauge imaginary coefficient",
+                                    ),
+                                    &mut maximum,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            let mut component_residual = accumulated
+                .into_iter()
+                .filter_map(
+                    |((momentum_vector_index, exterior_mask), (real, imaginary))| {
+                        (real != 0 || imaginary != 0).then_some(
+                            FirstMomentumGaugeCompositionEntry {
+                                parameter_component_index,
+                                momentum_vector_index,
+                                exterior_mask,
+                                real,
+                                imaginary,
+                            },
+                        )
+                    },
+                )
+                .collect::<Vec<_>>();
+            component_residual
+                .sort_by_key(|entry| (entry.momentum_vector_index, entry.exterior_mask));
+            visit(
+                parameter_component_index,
+                component_indices,
+                &component_residual,
+            )?;
+        }
+        Ok((spec, parameter_basis, maximum, sha256_bytes(fixture.bytes)))
+    } else {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let intermediate = spec.intermediate_dynkin_label.as_deref().unwrap();
+        let problem = first_momentum_problem(intermediate);
+        let abstract_certificate = build_abstract_from_fixture(
+            problem,
+            first.dynkin_label,
+            first.copy,
+            fixture_coefficient_width(first.artifact),
+            first.bytes,
+        )
+        .0;
+        let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+        let recoupling = recouplings
+            .iter()
+            .find(|audit| audit.intermediate_dynkin_label == intermediate)
+            .unwrap();
+        let (mut model, highest, mut maximum) = build_first_momentum_correction_highest(
+            problem,
+            &abstract_certificate,
+            fixture.bytes,
+            fixture_coefficient_width(fixture.artifact),
+            recoupling,
+        );
+        for (parameter_component_index, (_, component_indices, matrix)) in
+            gauge_basis.iter().enumerate()
+        {
+            let mut accumulated = HashMap::<(usize, u32), (i128, i128)>::new();
+            for (&(momentum_vector_index, free_spinor), exterior) in &highest.components {
+                let source_masks = model.space(exterior.weight).masks.clone();
+                for derivative_spinor in 0..32 {
+                    let gauge = &matrix[free_spinor][derivative_spinor];
+                    if gauge.re.is_zero() && gauge.im.is_zero() {
+                        continue;
+                    }
+                    assert_eq!(*gauge.re.denom(), 1);
+                    assert_eq!(*gauge.im.denom(), 1);
+                    let gauge_real = i128::from(*gauge.re.numer());
+                    let gauge_imaginary = i128::from(*gauge.im.numer());
+                    for (mask, source_coefficient) in
+                        source_masks.iter().copied().zip(&exterior.coefficients)
+                    {
+                        if *source_coefficient == 0 {
+                            continue;
+                        }
+                        let Some(wedge_sign) = right_wedge_sign(mask, derivative_spinor) else {
+                            continue;
+                        };
+                        let output_mask = mask | (1_u32 << derivative_spinor);
+                        assert_eq!(output_mask.count_ones(), 15);
+                        let scale = i128::from(*source_coefficient) * wedge_sign;
+                        accumulate_first_momentum_gauge_entry(
+                            &mut accumulated,
+                            momentum_vector_index,
+                            output_mask,
+                            scale
+                                .checked_mul(gauge_real)
+                                .expect("i128 overflow in correction gauge real coefficient"),
+                            scale
+                                .checked_mul(gauge_imaginary)
+                                .expect("i128 overflow in correction gauge imaginary coefficient"),
+                            &mut maximum,
+                        );
+                    }
+                }
+            }
+            let mut component_residual = accumulated
+                .into_iter()
+                .filter_map(
+                    |((momentum_vector_index, exterior_mask), (real, imaginary))| {
+                        (real != 0 || imaginary != 0).then_some(
+                            FirstMomentumGaugeCompositionEntry {
+                                parameter_component_index,
+                                momentum_vector_index,
+                                exterior_mask,
+                                real,
+                                imaginary,
+                            },
+                        )
+                    },
+                )
+                .collect::<Vec<_>>();
+            component_residual
+                .sort_by_key(|entry| (entry.momentum_vector_index, entry.exterior_mask));
+            visit(
+                parameter_component_index,
+                component_indices,
+                &component_residual,
+            )?;
+        }
+        Ok((spec, parameter_basis, maximum, sha256_bytes(fixture.bytes)))
+    }
+}
+
+pub fn visit_first_momentum_gauge_composition_terms<F>(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    selected_parameter_components: Option<&[usize]>,
+    mut visit: F,
+) -> io::Result<(JointColumnSpec, Vec<Vec<usize>>, i128, String, u64)>
+where
+    F: FnMut(FirstMomentumGaugeCompositionEntry) -> io::Result<()>,
+{
+    assert!(gauge_form_degree <= 5);
+    let spec = joint_column_specs()
+        .get(operator_ordinal)
+        .unwrap_or_else(|| panic!("operator column ordinal {operator_ordinal} is outside 0..56"))
+        .clone();
+    let gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+        .into_iter()
+        .filter(|(degree, _, _)| *degree == gauge_form_degree)
+        .collect::<Vec<_>>();
+    let parameter_basis = gauge_basis
+        .iter()
+        .map(|(_, indices, _)| indices.clone())
+        .collect::<Vec<_>>();
+    let mut emitted_nonzero_terms = 0_u64;
+
+    if spec.kind == "leading" {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let abstract_certificate = build_abstract_from_fixture(
+            LEVEL16_PROBLEM,
+            first.dynkin_label,
+            first.copy,
+            2,
+            first.bytes,
+        )
+        .0;
+        let (mut model, highest, mut maximum) =
+            materialize_coupled_highest(LEVEL16_PROBLEM, &abstract_certificate, fixture.bytes, 2);
+        let translation_coefficients = translation_weight_basis_coefficients();
+        for (parameter_component_index, (_, _, matrix)) in gauge_basis.iter().enumerate() {
+            if selected_parameter_components
+                .is_some_and(|selected| !selected.contains(&parameter_component_index))
+            {
+                continue;
+            }
+            for (&free_spinor, exterior) in &highest.components {
+                let source_masks = model.space(exterior.weight).masks.clone();
+                for derivative_spinor in 0..32 {
+                    let gauge = &matrix[free_spinor][derivative_spinor];
+                    if gauge.re.is_zero() && gauge.im.is_zero() {
+                        continue;
+                    }
+                    assert_eq!(*gauge.re.denom(), 1);
+                    assert_eq!(*gauge.im.denom(), 1);
+                    let gauge_real = i128::from(*gauge.re.numer());
+                    let gauge_imaginary = i128::from(*gauge.im.numer());
+                    for (mask, source_coefficient) in
+                        source_masks.iter().copied().zip(&exterior.coefficients)
+                    {
+                        if *source_coefficient == 0 {
+                            continue;
+                        }
+                        let mut occupied = mask;
+                        while occupied != 0 {
+                            let contracted_spinor = occupied.trailing_zeros() as usize;
+                            occupied &= occupied - 1;
+                            let contraction_sign =
+                                right_contraction_sign(mask, contracted_spinor).unwrap();
+                            let output_mask = mask ^ (1_u32 << contracted_spinor);
+                            assert_eq!(output_mask.count_ones(), 15);
+                            let source_scale = i128::from(*source_coefficient) * contraction_sign;
+                            for momentum_vector_index in 0..11 {
+                                let (translation_real, translation_imaginary) =
+                                    translation_coefficients[contracted_spinor][derivative_spinor]
+                                        [momentum_vector_index];
+                                if translation_real == 0 && translation_imaginary == 0 {
+                                    continue;
+                                }
+                                let (product_real, product_imaginary) = multiply_gaussian_integers(
+                                    gauge_real,
+                                    gauge_imaginary,
+                                    i128::from(translation_real),
+                                    i128::from(translation_imaginary),
+                                );
+                                let real = source_scale.checked_mul(product_real).expect(
+                                    "i128 overflow in streamed leading gauge real coefficient",
+                                );
+                                let imaginary = source_scale.checked_mul(product_imaginary).expect(
+                                    "i128 overflow in streamed leading gauge imaginary coefficient",
+                                );
+                                if real == 0 && imaginary == 0 {
+                                    continue;
+                                }
+                                maximum = maximum.max(real.abs()).max(imaginary.abs());
+                                emitted_nonzero_terms = emitted_nonzero_terms
+                                    .checked_add(1)
+                                    .expect("first-momentum emitted-term count overflow");
+                                visit(FirstMomentumGaugeCompositionEntry {
+                                    parameter_component_index,
+                                    momentum_vector_index,
+                                    exterior_mask: output_mask,
+                                    real,
+                                    imaginary,
+                                })?;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok((
+            spec,
+            parameter_basis,
+            maximum,
+            sha256_bytes(fixture.bytes),
+            emitted_nonzero_terms,
+        ))
+    } else {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let intermediate = spec.intermediate_dynkin_label.as_deref().unwrap();
+        let problem = first_momentum_problem(intermediate);
+        let abstract_certificate = build_abstract_from_fixture(
+            problem,
+            first.dynkin_label,
+            first.copy,
+            fixture_coefficient_width(first.artifact),
+            first.bytes,
+        )
+        .0;
+        let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+        let recoupling = recouplings
+            .iter()
+            .find(|audit| audit.intermediate_dynkin_label == intermediate)
+            .unwrap();
+        let (mut model, highest, mut maximum) = build_first_momentum_correction_highest(
+            problem,
+            &abstract_certificate,
+            fixture.bytes,
+            fixture_coefficient_width(fixture.artifact),
+            recoupling,
+        );
+        for (parameter_component_index, (_, _, matrix)) in gauge_basis.iter().enumerate() {
+            if selected_parameter_components
+                .is_some_and(|selected| !selected.contains(&parameter_component_index))
+            {
+                continue;
+            }
+            for (&(momentum_vector_index, free_spinor), exterior) in &highest.components {
+                let source_masks = model.space(exterior.weight).masks.clone();
+                for derivative_spinor in 0..32 {
+                    let gauge = &matrix[free_spinor][derivative_spinor];
+                    if gauge.re.is_zero() && gauge.im.is_zero() {
+                        continue;
+                    }
+                    assert_eq!(*gauge.re.denom(), 1);
+                    assert_eq!(*gauge.im.denom(), 1);
+                    let gauge_real = i128::from(*gauge.re.numer());
+                    let gauge_imaginary = i128::from(*gauge.im.numer());
+                    for (mask, source_coefficient) in
+                        source_masks.iter().copied().zip(&exterior.coefficients)
+                    {
+                        if *source_coefficient == 0 {
+                            continue;
+                        }
+                        let Some(wedge_sign) = right_wedge_sign(mask, derivative_spinor) else {
+                            continue;
+                        };
+                        let output_mask = mask | (1_u32 << derivative_spinor);
+                        assert_eq!(output_mask.count_ones(), 15);
+                        let scale = i128::from(*source_coefficient) * wedge_sign;
+                        let real = scale
+                            .checked_mul(gauge_real)
+                            .expect("i128 overflow in streamed correction gauge real coefficient");
+                        let imaginary = scale.checked_mul(gauge_imaginary).expect(
+                            "i128 overflow in streamed correction gauge imaginary coefficient",
+                        );
+                        if real == 0 && imaginary == 0 {
+                            continue;
+                        }
+                        maximum = maximum.max(real.abs()).max(imaginary.abs());
+                        emitted_nonzero_terms = emitted_nonzero_terms
+                            .checked_add(1)
+                            .expect("first-momentum emitted-term count overflow");
+                        visit(FirstMomentumGaugeCompositionEntry {
+                            parameter_component_index,
+                            momentum_vector_index,
+                            exterior_mask: output_mask,
+                            real,
+                            imaginary,
+                        })?;
+                    }
+                }
+            }
+        }
+        Ok((
+            spec,
+            parameter_basis,
+            maximum,
+            sha256_bytes(fixture.bytes),
+            emitted_nonzero_terms,
+        ))
+    }
 }
 
 fn write_hashed<W: Write>(
@@ -4454,5 +4986,19 @@ mod tests {
         assert_eq!(right_wedge_sign(mask, 8), Some(1));
         assert_eq!(right_wedge_sign(mask, 4), None);
         assert_eq!(right_wedge_sign(1_u32 << 0, 31), Some(1));
+    }
+
+    #[test]
+    fn right_contraction_uses_the_indices_to_the_right() {
+        let mask = (1_u32 << 1) | (1_u32 << 4) | (1_u32 << 7);
+        assert_eq!(right_contraction_sign(mask, 1), Some(1));
+        assert_eq!(right_contraction_sign(mask, 4), Some(-1));
+        assert_eq!(right_contraction_sign(mask, 7), Some(1));
+        assert_eq!(right_contraction_sign(mask, 2), None);
+    }
+
+    #[test]
+    fn gaussian_integer_product_keeps_real_and_imaginary_parts_exact() {
+        assert_eq!(multiply_gaussian_integers(2, 3, 5, -7), (31, 1));
     }
 }

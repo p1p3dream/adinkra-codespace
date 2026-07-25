@@ -110,34 +110,49 @@ convention cross-check. It is not used for the source-quotient conclusion.
 
 ### Current status
 
-Not started. Phase 1 is complete. The first-momentum calculation must report
-both the full solution dimension and whether any solution has a nonzero
-leading component. In particular, degrees three and four already exclude a
-nonzero leading component, but pure first-momentum solutions have not been
-classified.
+The nonzero-leading question is complete for all six source channels.
+Degrees three and four have no leading kernel at zero momentum. Degrees zero,
+one, two, and five were tested at first momentum by exact linear functionals
+of the complete residual stream.
+
+Each functional screen has 512 integer rows: four fixed signed-hash
+functionals, each with 64 real and 64 imaginary buckets. Degree zero uses its
+only gauge-parameter component. Degrees one, two, and five use parameter
+component zero. A restricted parameter projection cannot certify a surviving
+operator. It can exclude one: the kernel of the full residual is contained in
+the kernel of every linear projection of that residual.
+
+| Form degree | Zero-momentum kernel | Parameterized columns | Functional rank | Functional nullity | Leading projection rank |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 11 | 55 | 17 | 38 | 0 |
+| 1 | 1 | 45 | 42 | 3 | 0 |
+| 2 | 1 | 45 | 33 | 12 | 0 |
+| 3 | 0 | not needed | not needed | not needed | 0 |
+| 4 | 0 | not needed | not needed | not needed | 0 |
+| 5 | 1 | 45 | 41 | 4 | 0 |
+
+The functional nullities are dimensions of projected kernels, not dimensions
+of the full residual kernels. In every tested channel, the projected kernel
+has zero projection onto the leading space. Therefore no nonzero leading
+operator can be completed through first momentum under source invariance.
 
 At order \(pD^{15}\Lambda\), include:
 
 1. anticommutator terms from the twelve leading operators;
 2. exterior-derivative terms from the forty-four first-momentum operators.
 
-For each gauge degree, solve the exact compatibility system on all 56
-operator coefficients, subject to the corresponding Phase 1 kernel.
-
-This stage contains 336 gauge-operator jobs. As in the joint run, every job
-must preserve:
-
-- the exact raw residual stream;
-- the fixed exact functional image;
-- a manifest with source, executable, and fixture hashes;
-- execution and resource logs;
-- a transfer receipt.
+For each relevant gauge degree, the calculation combines all 56 operator
+columns subject to the corresponding Phase 1 kernel. The four screens used
+224 column artifacts. Every artifact records the fixed functional image and
+source, executable, and fixture hashes. The full residual was not
+materialized for degrees one, two, and five because the restricted functional
+screens already excluded a nonzero leading completion.
 
 ## Phase 3: classify source gauge choices
 
-The papers do not select the six channel coefficients. A nonzero coefficient
-only selects a channel because its scale can be absorbed into its independent
-parameter.
+The nonzero-leading classification is complete. The papers do not select the
+six channel coefficients. A nonzero coefficient only selects a channel
+because its scale can be absorbed into its independent parameter.
 
 Classify all 64 channel subsets:
 
@@ -145,12 +160,18 @@ Classify all 64 channel subsets:
 - each of the six individual channels;
 - every nonempty intersection of their exact invariant spaces.
 
-For each subset, report:
+At first momentum:
 
-- leading invariant dimension;
-- first-momentum completion dimension;
-- whether any solution has a nonzero leading component;
-- whether the scalar-factorizing direction survives.
+- the empty subset imposes no source-invariance condition;
+- every nonempty subset has zero nonzero-leading completion;
+- the scalar-factorizing line left by degrees one, two, and five at zero
+  momentum fails the first-momentum screen for each of those channels.
+
+This follows without running all 64 subsets separately. Any subset containing
+degree three or four has zero leading space at zero momentum. Degree zero
+fails its first-momentum screen. Every remaining nonempty subset contains at
+least one of degrees one, two, or five, each of which fails its individual
+first-momentum screen.
 
 Gauge-for-gauge reducibility may identify parameter descriptions, but it does
 not change the condition \(A G_p=0\). It becomes necessary when the parameter
@@ -189,14 +210,21 @@ A\,G_p=K_p.
 This is a separate calculation. The cited sources do not print \(K_p\), so it
 must not be inferred from the source intertwiners.
 
-## Completion criterion
+## Completion status
 
-The gauge-composition stage is complete only when:
+The source-invariant nonzero-leading decision is complete:
 
 1. all 72 zero-momentum compositions are exact;
-2. all 336 first-momentum compositions are exact;
-3. all 64 source-channel subsets are classified;
-4. every surviving operator is substituted into the complete raw residual;
-5. source invariance is separated from conditional target covariance;
-6. the hook is either retained with its Bianchi map or excluded by an
-   explicitly stated constraint.
+2. first-momentum functional screens exclude every channel that retained a
+   zero-momentum leading kernel;
+3. all 64 source-channel subsets are classified for the existence of a
+   nonzero leading completion;
+4. no surviving source-invariant leading operator requires a full-residual
+   substitution;
+5. source invariance remains separate from conditional target covariance.
+
+An exhaustive classification of pure first-momentum solutions would require
+the full residual systems and is not claimed. The source-invariance result
+does not exclude an independently supplied target gauge transformation, nor
+does it decide whether the hook should be retained and followed through its
+Bianchi map.

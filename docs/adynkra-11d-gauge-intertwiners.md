@@ -102,24 +102,25 @@ Mx\in\operatorname{Im}G
 
 is not justified if \(G\) denotes only the six source maps.
 
-The next exact calculation is to compose each \(G_p\) with the twelve leading
-and forty-four first-momentum operators. This will determine which candidate
-operators descend to a source quotient. Cases requiring a nonzero target
-transformation must remain conditional until that transformation is supplied.
+The zero-momentum compositions and the first-momentum exclusion screens are
+complete. No nonzero leading operator descends through first momentum under
+any nonempty selection of the six candidate source channels. Cases requiring
+a nonzero target transformation remain conditional until that transformation
+is supplied.
 
 The verifier fixes a deterministic work list of 336 gauge-operator
-compositions:
+compositions. Within that list:
 
 - 72 zero-momentum \(D^{17}\) jobs from six gauge channels and twelve leading
   operators;
 - 336 first-momentum \(pD^{15}\) jobs from six gauge channels and all 56
   operators.
 
-The completed joint calculation already excludes a nonzero leading solution
-whose hook residual vanishes. Adding source-gauge invariance can only restrict
-that solution space. It can reopen the route only if the target has its own
-gauge equivalence or if the nonzero hook is retained as an allowed torsion or
-curvature component.
+The completed joint calculation excludes a nonzero leading solution whose
+hook residual vanishes. The source-invariance screens now also exclude a
+nonzero leading completion for every nonempty source-channel selection. This
+does not test an induced target gauge transformation or the route that retains
+the hook as a torsion or curvature component.
 
 ## Index convention
 
@@ -189,7 +190,33 @@ The degree-zero channel does not leave \(V=D^\alpha\Psi_\alpha\) invariant.
 It remains relevant only if \(V\) is allowed an induced transformation or is
 not required to define the source quotient. The degree-two and degree-five
 channels leave the scalar-factorizing leading direction invariant at zero
-momentum. First-momentum compatibility remains to be computed.
+momentum, but that direction does not survive their first-momentum screens.
+
+## First-momentum exclusion result
+
+Degrees three and four need no first-momentum calculation because their
+zero-momentum leading kernels vanish. Degrees zero, one, two, and five were
+combined with all forty-four first-momentum correction columns.
+
+| Form degree | Parameter components evaluated | Functional rank | Functional nullity | Leading projection rank |
+|---:|:---:|---:|---:|---:|
+| 0 | all, component 0 of 1 | 17 | 38 | 0 |
+| 1 | component 0 of 11 | 42 | 3 | 0 |
+| 2 | component 0 of 55 | 33 | 12 | 0 |
+| 5 | component 0 of 462 | 41 | 4 | 0 |
+
+The screens use exact integer linear functionals of the complete
+first-momentum term stream. For degrees one, two, and five, one parameter
+component is sufficient for exclusion: satisfying the full source variation
+would require satisfying that component. The zero leading projection in each
+functional kernel therefore excludes a nonzero leading completion. The
+reported functional nullities do not classify pure first-momentum solutions.
+
+Together with the zero-momentum results, every nonempty subset of candidate
+source channels is excluded from carrying a nonzero leading operator through
+first momentum. This is a result about the source-invariance equation
+\(A G_p=0\). It does not exclude target covariance \(A G_p=K_p\), and it does
+not decide the retained-hook and Bianchi route.
 
 Corrected mixed-index run:
 
@@ -216,6 +243,8 @@ cargo run --release -- adynkra-11d-gauge-intertwiner-verify
 cargo run --release -- adynkra-11d-gauge-zero-column 0 0 RUN_ROOT
 cargo run --release -- adynkra-11d-gauge-zero-merge 0 RUN_ROOT --deep
 cargo run --release -- adynkra-11d-gauge-zero-classify RUN_ROOT
+cargo run --release -- adynkra-11d-gauge-first-functional-stream-prefix 1 0 1 RUN_ROOT
+cargo run --release -- adynkra-11d-gauge-first-functional-merge 1 RUN_ROOT ZERO_ROOT
 cargo test --release eleven_dimensional_gauge
 ```
 
@@ -227,6 +256,10 @@ results/adynkra_11d_gauge_zero_momentum_form_0.json
 ...
 results/adynkra_11d_gauge_zero_momentum_form_5.json
 results/adynkra_11d_gauge_zero_momentum_subsets.json
+results/adynkra_11d_gauge_first_momentum_functional_form_0.json
+results/adynkra_11d_gauge_first_momentum_functional_form_1.json
+results/adynkra_11d_gauge_first_momentum_functional_form_2.json
+results/adynkra_11d_gauge_first_momentum_functional_form_5.json
 ```
 
 SHA-256:

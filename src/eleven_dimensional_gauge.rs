@@ -259,6 +259,100 @@ pub struct ZeroMomentumGaugeSubsetClassificationReport {
     pub boundary: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirstMomentumGaugeFunctionalArtifact {
+    pub schema_version: String,
+    pub passed: bool,
+    pub gauge_form_degree: usize,
+    pub parameter_dynkin_label: String,
+    pub parameter_components: usize,
+    pub operator: crate::eleven_dimensional_level16_couplings::JointColumnSpec,
+    pub exterior_degree: usize,
+    pub nonzero_residual_entries: u64,
+    pub exact_squared_norm: String,
+    pub maximum_absolute_residual_coefficient: String,
+    pub functional_seeds: Vec<String>,
+    pub functional_buckets_per_real_part: usize,
+    pub exact_functional_values: Vec<String>,
+    pub functional_image_is_nonzero: bool,
+    pub fixture_sha256: String,
+    pub source_revision: String,
+    pub executable_sha256: String,
+    pub host: String,
+    pub process_id: u32,
+    pub started_unix_seconds: u64,
+    pub finished_unix_seconds: u64,
+    pub elapsed_milliseconds: u128,
+    pub convention: String,
+    pub interpretation: String,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirstMomentumGaugeStreamFunctionalArtifact {
+    pub schema_version: String,
+    pub passed: bool,
+    pub gauge_form_degree: usize,
+    pub parameter_dynkin_label: String,
+    pub parameter_components: usize,
+    #[serde(default)]
+    pub evaluated_parameter_components: Vec<usize>,
+    pub operator: crate::eleven_dimensional_level16_couplings::JointColumnSpec,
+    pub exterior_degree: usize,
+    pub emitted_nonzero_terms: u64,
+    pub maximum_absolute_emitted_term_coefficient: String,
+    pub functional_seeds: Vec<String>,
+    pub functional_buckets_per_real_part: usize,
+    pub exact_functional_values: Vec<String>,
+    pub functional_image_is_nonzero: bool,
+    pub fixture_sha256: String,
+    pub source_revision: String,
+    pub executable_sha256: String,
+    pub host: String,
+    pub process_id: u32,
+    pub started_unix_seconds: u64,
+    pub finished_unix_seconds: u64,
+    pub elapsed_milliseconds: u128,
+    pub convention: String,
+    pub interpretation: String,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirstMomentumGaugeFunctionalMergeReport {
+    pub schema_version: String,
+    pub passed: bool,
+    pub gauge_form_degree: usize,
+    pub parameter_dynkin_label: String,
+    pub parameter_components: usize,
+    pub evaluated_parameter_components: Vec<usize>,
+    pub parameter_projection_is_complete: bool,
+    pub leading_basis: Vec<String>,
+    pub first_momentum_basis: Vec<String>,
+    pub zero_momentum_kernel_dimension: usize,
+    pub zero_momentum_kernel_basis: Vec<Vec<String>>,
+    pub parameterized_columns: usize,
+    pub functional_rows: usize,
+    pub exact_functional_rank: usize,
+    pub exact_functional_nullity: usize,
+    pub functional_kernel_leading_projection_rank: usize,
+    pub nonzero_leading_extension_excluded_by_functionals: bool,
+    pub functional_primitive_integer_kernel_basis: Vec<Vec<String>>,
+    pub functional_kernel_residuals_exactly_zero: bool,
+    pub source_artifact_sha256: Vec<String>,
+    pub zero_momentum_kernel_report_sha256: String,
+    pub interpretation: String,
+    pub boundary: String,
+}
+
+const FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS: usize = 64;
+const FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS: [u64; 4] = [
+    0x243f_6a88_85a3_08d3,
+    0x1319_8a2e_0370_7344,
+    0xa409_3822_299f_31d0,
+    0x082e_fa98_ec4e_6c89,
+];
+
 fn sha256_file(path: &Path) -> io::Result<String> {
     let mut reader = BufReader::new(File::open(path)?);
     let mut hasher = Sha256::new();
@@ -1049,6 +1143,714 @@ pub fn classify_zero_momentum_gauge_channel_subsets(
     Ok(report)
 }
 
+fn splitmix64_gauge(mut value: u64) -> u64 {
+    value = value.wrapping_add(0x9e37_79b9_7f4a_7c15);
+    value = (value ^ (value >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+    value = (value ^ (value >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+    value ^ (value >> 31)
+}
+
+fn first_momentum_functional_directory(
+    output_root: &Path,
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+) -> std::path::PathBuf {
+    output_root
+        .join("functional")
+        .join("complete")
+        .join(format!("form-{gauge_form_degree}"))
+        .join(format!("column-{operator_ordinal:03}"))
+}
+
+pub fn verify_first_momentum_gauge_functional_artifact(
+    directory: &Path,
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+) -> io::Result<FirstMomentumGaugeFunctionalArtifact> {
+    let path = directory.join("manifest.json");
+    let artifact: FirstMomentumGaugeFunctionalArtifact =
+        serde_json::from_reader(BufReader::new(File::open(&path)?))
+            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    let expected_spec = crate::eleven_dimensional_level16_couplings::joint_column_specs()
+        .get(operator_ordinal)
+        .cloned()
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "first-momentum operator ordinal must lie in 0..56",
+            )
+        })?;
+    if !artifact.passed
+        || artifact.gauge_form_degree != gauge_form_degree
+        || artifact.operator != expected_spec
+        || artifact.exterior_degree != 15
+        || artifact.functional_buckets_per_real_part != FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS
+        || artifact.functional_seeds
+            != FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS
+                .iter()
+                .map(|seed| format!("{seed:016x}"))
+                .collect::<Vec<_>>()
+        || artifact.exact_functional_values.len()
+            != FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len()
+                * 2
+                * FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "invalid first-momentum functional artifact {}",
+                path.display()
+            ),
+        ));
+    }
+    Ok(artifact)
+}
+
+fn verify_first_momentum_gauge_functional_column(
+    directory: &Path,
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+) -> io::Result<(usize, Vec<usize>, Vec<String>)> {
+    let path = directory.join("manifest.json");
+    let payload = fs::read(&path)?;
+    let schema_version = serde_json::from_slice::<serde_json::Value>(&payload)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?
+        .get("schema_version")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    if schema_version == "adynkra-11d-first-momentum-gauge-functional-v1" {
+        let artifact = verify_first_momentum_gauge_functional_artifact(
+            directory,
+            gauge_form_degree,
+            operator_ordinal,
+        )?;
+        return Ok((
+            artifact.parameter_components,
+            (0..artifact.parameter_components).collect(),
+            artifact.exact_functional_values,
+        ));
+    }
+    if schema_version != "adynkra-11d-first-momentum-gauge-stream-functional-v2" {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "unsupported first-momentum functional schema in {}",
+                path.display()
+            ),
+        ));
+    }
+    let artifact: FirstMomentumGaugeStreamFunctionalArtifact = serde_json::from_slice(&payload)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    let expected_spec = crate::eleven_dimensional_level16_couplings::joint_column_specs()
+        .get(operator_ordinal)
+        .cloned()
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "first-momentum operator ordinal must lie in 0..56",
+            )
+        })?;
+    let expected_parameter_components = [1, 11, 55, 165, 330, 462]
+        .get(gauge_form_degree)
+        .copied()
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "gauge form degree must lie in 0..5",
+            )
+        })?;
+    let evaluated_parameter_components = if artifact.evaluated_parameter_components.is_empty() {
+        (0..artifact.parameter_components).collect::<Vec<_>>()
+    } else {
+        artifact.evaluated_parameter_components.clone()
+    };
+    let mut normalized_evaluated_parameter_components = evaluated_parameter_components.clone();
+    normalized_evaluated_parameter_components.sort_unstable();
+    normalized_evaluated_parameter_components.dedup();
+    if !artifact.passed
+        || artifact.gauge_form_degree != gauge_form_degree
+        || artifact.parameter_components != expected_parameter_components
+        || evaluated_parameter_components.is_empty()
+        || normalized_evaluated_parameter_components != evaluated_parameter_components
+        || evaluated_parameter_components
+            .iter()
+            .any(|&index| index >= expected_parameter_components)
+        || artifact.operator != expected_spec
+        || artifact.exterior_degree != 15
+        || artifact.functional_buckets_per_real_part != FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS
+        || artifact.functional_seeds
+            != FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS
+                .iter()
+                .map(|seed| format!("{seed:016x}"))
+                .collect::<Vec<_>>()
+        || artifact.exact_functional_values.len()
+            != FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len()
+                * 2
+                * FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS
+        || artifact
+            .exact_functional_values
+            .iter()
+            .any(|value| value.parse::<BigInt>().is_err())
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "invalid streamed first-momentum functional artifact {}",
+                path.display()
+            ),
+        ));
+    }
+    Ok((
+        artifact.parameter_components,
+        evaluated_parameter_components,
+        artifact.exact_functional_values,
+    ))
+}
+
+pub fn build_and_write_first_momentum_gauge_functional_artifact(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    output_root: &Path,
+) -> io::Result<FirstMomentumGaugeFunctionalArtifact> {
+    if gauge_form_degree > 5 || operator_ordinal >= 56 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "first-momentum functional job requires form degree 0..5 and operator ordinal 0..55",
+        ));
+    }
+    let final_directory =
+        first_momentum_functional_directory(output_root, gauge_form_degree, operator_ordinal);
+    if final_directory.exists() {
+        return verify_first_momentum_gauge_functional_artifact(
+            &final_directory,
+            gauge_form_degree,
+            operator_ordinal,
+        );
+    }
+    let incomplete_root = output_root
+        .join("functional")
+        .join("incomplete")
+        .join(format!("form-{gauge_form_degree}"));
+    let completed_root = output_root
+        .join("functional")
+        .join("complete")
+        .join(format!("form-{gauge_form_degree}"));
+    fs::create_dir_all(&incomplete_root)?;
+    fs::create_dir_all(&completed_root)?;
+    let started_unix_seconds = unix_seconds();
+    let timer = Instant::now();
+    let temporary_directory = incomplete_root.join(format!(
+        "column-{operator_ordinal:03}-{}-{started_unix_seconds}",
+        std::process::id()
+    ));
+    fs::create_dir(&temporary_directory)?;
+
+    let rows_per_seed = 2 * FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS;
+    let mut exact_functional_values =
+        vec![BigInt::from(0); FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len() * rows_per_seed];
+    let mut exact_squared_norm = BigInt::from(0);
+    let mut nonzero_residual_entries = 0_u64;
+    let (operator, parameter_basis, maximum, fixture_sha256) =
+        crate::eleven_dimensional_level16_couplings::visit_first_momentum_gauge_composition_components(
+            gauge_form_degree,
+            operator_ordinal,
+            |_, _, component_residual| {
+                for entry in component_residual {
+                    nonzero_residual_entries = nonzero_residual_entries
+                        .checked_add(1)
+                        .expect("first-momentum residual record count overflow");
+                    let real = BigInt::from(entry.real);
+                    let imaginary = BigInt::from(entry.imaginary);
+                    exact_squared_norm += &real * &real + &imaginary * &imaginary;
+                    let key = u64::from(entry.exterior_mask)
+                        | (u64::try_from(entry.momentum_vector_index).unwrap() << 32)
+                        | (u64::try_from(entry.parameter_component_index).unwrap() << 36);
+                    for (seed_index, seed) in
+                        FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.iter().enumerate()
+                    {
+                        let hash = splitmix64_gauge(key ^ seed);
+                        let bucket =
+                            (hash as usize) % FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS;
+                        let base = seed_index * rows_per_seed;
+                        if hash >> 63 == 0 {
+                            exact_functional_values[base + bucket] += &real;
+                            exact_functional_values
+                                [base + FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS + bucket] +=
+                                &imaginary;
+                        } else {
+                            exact_functional_values[base + bucket] -= &real;
+                            exact_functional_values
+                                [base + FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS + bucket] -=
+                                &imaginary;
+                        }
+                    }
+                }
+                Ok(())
+            },
+        )?;
+    let labels = ["00000", "10000", "01000", "00100", "00010", "00002"];
+    let finished_unix_seconds = unix_seconds();
+    let functional_image_is_nonzero = exact_functional_values.iter().any(|value| !value.is_zero());
+    let artifact = FirstMomentumGaugeFunctionalArtifact {
+        schema_version: "adynkra-11d-first-momentum-gauge-functional-v1".to_string(),
+        passed: parameter_basis.len() == [1, 11, 55, 165, 330, 462][gauge_form_degree]
+            && operator.ordinal == operator_ordinal
+            && exact_functional_values.len()
+                == FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len() * rows_per_seed,
+        gauge_form_degree,
+        parameter_dynkin_label: labels[gauge_form_degree].to_string(),
+        parameter_components: parameter_basis.len(),
+        operator,
+        exterior_degree: 15,
+        nonzero_residual_entries,
+        exact_squared_norm: exact_squared_norm.to_string(),
+        maximum_absolute_residual_coefficient: maximum.to_string(),
+        functional_seeds: FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS
+            .iter()
+            .map(|seed| format!("{seed:016x}"))
+            .collect(),
+        functional_buckets_per_real_part: FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS,
+        exact_functional_values: exact_functional_values
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+        functional_image_is_nonzero,
+        fixture_sha256,
+        source_revision: std::env::var("ADINKRA_SOURCE_REVISION")
+            .unwrap_or_else(|_| "unrecorded".to_string()),
+        executable_sha256: std::env::var("ADINKRA_EXECUTABLE_SHA256")
+            .unwrap_or_else(|_| "unrecorded".to_string()),
+        host: std::env::var("HOSTNAME").unwrap_or_else(|_| "unknown".to_string()),
+        process_id: std::process::id(),
+        started_unix_seconds,
+        finished_unix_seconds,
+        elapsed_milliseconds: timer.elapsed().as_millis(),
+        convention: "exact signed-hash linear image of p D^15 Lambda coordinates; key packs the 15-derivative exterior mask, momentum-vector index, and gauge-parameter component; four fixed splitmix64 seeds, 64 real and 64 imaginary buckets per seed".to_string(),
+        interpretation: "This artifact evaluates one of the 56 operator columns after one candidate source-gauge map and records an exact linear image of its complete first-momentum residual.".to_string(),
+        boundary: "A nonzero functional value certifies a nonzero full residual. A functional kernel may be larger than the full residual kernel and cannot by itself certify a surviving operator.".to_string(),
+    };
+    write_json_durable(&temporary_directory.join("manifest.json"), &artifact)?;
+    File::open(&temporary_directory)?.sync_all()?;
+    fs::rename(&temporary_directory, &final_directory)?;
+    File::open(&completed_root)?.sync_all()?;
+    verify_first_momentum_gauge_functional_artifact(
+        &final_directory,
+        gauge_form_degree,
+        operator_ordinal,
+    )
+}
+
+fn build_and_write_first_momentum_gauge_stream_functional_artifact_selected(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    evaluated_parameter_components: Vec<usize>,
+    output_root: &Path,
+) -> io::Result<FirstMomentumGaugeStreamFunctionalArtifact> {
+    if gauge_form_degree > 5 || operator_ordinal >= 56 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "streamed first-momentum functional job requires form degree 0..5 and operator ordinal 0..55",
+        ));
+    }
+    let parameter_components = [1, 11, 55, 165, 330, 462][gauge_form_degree];
+    if evaluated_parameter_components.is_empty()
+        || evaluated_parameter_components
+            .windows(2)
+            .any(|window| window[0] >= window[1])
+        || evaluated_parameter_components
+            .iter()
+            .any(|&index| index >= parameter_components)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "evaluated gauge-parameter components must be a nonempty sorted unique subset",
+        ));
+    }
+    let final_directory =
+        first_momentum_functional_directory(output_root, gauge_form_degree, operator_ordinal);
+    if final_directory.exists() {
+        verify_first_momentum_gauge_functional_column(
+            &final_directory,
+            gauge_form_degree,
+            operator_ordinal,
+        )?;
+        let artifact: FirstMomentumGaugeStreamFunctionalArtifact = serde_json::from_reader(
+            BufReader::new(File::open(final_directory.join("manifest.json"))?),
+        )
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+        let recorded_components = if artifact.evaluated_parameter_components.is_empty() {
+            (0..artifact.parameter_components).collect::<Vec<_>>()
+        } else {
+            artifact.evaluated_parameter_components.clone()
+        };
+        if recorded_components != evaluated_parameter_components {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "existing streamed artifact uses a different parameter projection",
+            ));
+        }
+        return Ok(artifact);
+    }
+    let incomplete_root = output_root
+        .join("functional")
+        .join("incomplete")
+        .join(format!("form-{gauge_form_degree}"));
+    let completed_root = output_root
+        .join("functional")
+        .join("complete")
+        .join(format!("form-{gauge_form_degree}"));
+    fs::create_dir_all(&incomplete_root)?;
+    fs::create_dir_all(&completed_root)?;
+    let started_unix_seconds = unix_seconds();
+    let timer = Instant::now();
+    let temporary_directory = incomplete_root.join(format!(
+        "column-{operator_ordinal:03}-{}-{started_unix_seconds}",
+        std::process::id()
+    ));
+    fs::create_dir(&temporary_directory)?;
+
+    let rows_per_seed = 2 * FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS;
+    let mut exact_functional_values =
+        vec![0_i128; FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len() * rows_per_seed];
+    let (operator, parameter_basis, maximum, fixture_sha256, emitted_nonzero_terms) =
+        crate::eleven_dimensional_level16_couplings::visit_first_momentum_gauge_composition_terms(
+            gauge_form_degree,
+            operator_ordinal,
+            Some(&evaluated_parameter_components),
+            |entry| {
+                let key = u64::from(entry.exterior_mask)
+                    | (u64::try_from(entry.momentum_vector_index).unwrap() << 32)
+                    | (u64::try_from(entry.parameter_component_index).unwrap() << 36);
+                for (seed_index, seed) in FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.iter().enumerate() {
+                    let hash = splitmix64_gauge(key ^ seed);
+                    let bucket = (hash as usize) % FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS;
+                    let base = seed_index * rows_per_seed;
+                    if hash >> 63 == 0 {
+                        exact_functional_values[base + bucket] = exact_functional_values
+                            [base + bucket]
+                            .checked_add(entry.real)
+                            .expect("i128 overflow in streamed real functional bucket");
+                        exact_functional_values
+                            [base + FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS + bucket] =
+                            exact_functional_values
+                                [base + FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS + bucket]
+                                .checked_add(entry.imaginary)
+                                .expect("i128 overflow in streamed imaginary functional bucket");
+                    } else {
+                        exact_functional_values[base + bucket] = exact_functional_values
+                            [base + bucket]
+                            .checked_sub(entry.real)
+                            .expect("i128 overflow in streamed real functional bucket");
+                        exact_functional_values
+                            [base + FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS + bucket] =
+                            exact_functional_values
+                                [base + FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS + bucket]
+                                .checked_sub(entry.imaginary)
+                                .expect("i128 overflow in streamed imaginary functional bucket");
+                    }
+                }
+                Ok(())
+            },
+        )?;
+    let labels = ["00000", "10000", "01000", "00100", "00010", "00002"];
+    let finished_unix_seconds = unix_seconds();
+    let functional_image_is_nonzero = exact_functional_values.iter().any(|&value| value != 0);
+    let artifact = FirstMomentumGaugeStreamFunctionalArtifact {
+        schema_version: "adynkra-11d-first-momentum-gauge-stream-functional-v2".to_string(),
+        passed: parameter_basis.len() == [1, 11, 55, 165, 330, 462][gauge_form_degree]
+            && operator.ordinal == operator_ordinal
+            && exact_functional_values.len()
+                == FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len() * rows_per_seed,
+        gauge_form_degree,
+        parameter_dynkin_label: labels[gauge_form_degree].to_string(),
+        parameter_components: parameter_basis.len(),
+        evaluated_parameter_components,
+        operator,
+        exterior_degree: 15,
+        emitted_nonzero_terms,
+        maximum_absolute_emitted_term_coefficient: maximum.to_string(),
+        functional_seeds: FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS
+            .iter()
+            .map(|seed| format!("{seed:016x}"))
+            .collect(),
+        functional_buckets_per_real_part: FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS,
+        exact_functional_values: exact_functional_values
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+        functional_image_is_nonzero,
+        fixture_sha256,
+        source_revision: std::env::var("ADINKRA_SOURCE_REVISION")
+            .unwrap_or_else(|_| "unrecorded".to_string()),
+        executable_sha256: std::env::var("ADINKRA_EXECUTABLE_SHA256")
+            .unwrap_or_else(|_| "unrecorded".to_string()),
+        host: std::env::var("HOSTNAME").unwrap_or_else(|_| "unknown".to_string()),
+        process_id: std::process::id(),
+        started_unix_seconds,
+        finished_unix_seconds,
+        elapsed_milliseconds: timer.elapsed().as_millis(),
+        convention: "exact signed-hash linear image of the uncombined term stream for p D^15 Lambda coordinates; linearity makes it identical to hashing the fully accumulated residual; the key packs the 15-derivative exterior mask, momentum-vector index, and gauge-parameter component; four fixed splitmix64 seeds, 64 real and 64 imaginary buckets per seed".to_string(),
+        interpretation: "This artifact evaluates one of the 56 operator columns after one candidate source-gauge map and records an exact linear image of the first-momentum residual on the recorded gauge-parameter components without materializing the full residual coordinate map.".to_string(),
+        boundary: "A zero leading projection in the merged functional kernel excludes a full source-invariant extension even when only a subset of gauge-parameter components was evaluated. A nonzero projection remains inconclusive. Emitted-term counts and maximum term coefficients are not residual support counts or residual norms.".to_string(),
+    };
+    write_json_durable(&temporary_directory.join("manifest.json"), &artifact)?;
+    File::open(&temporary_directory)?.sync_all()?;
+    fs::rename(&temporary_directory, &final_directory)?;
+    File::open(&completed_root)?.sync_all()?;
+    verify_first_momentum_gauge_functional_column(
+        &final_directory,
+        gauge_form_degree,
+        operator_ordinal,
+    )?;
+    Ok(artifact)
+}
+
+pub fn build_and_write_first_momentum_gauge_stream_functional_artifact(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    output_root: &Path,
+) -> io::Result<FirstMomentumGaugeStreamFunctionalArtifact> {
+    let parameter_components = [1, 11, 55, 165, 330, 462]
+        .get(gauge_form_degree)
+        .copied()
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "gauge form degree must lie in 0..5",
+            )
+        })?;
+    build_and_write_first_momentum_gauge_stream_functional_artifact_selected(
+        gauge_form_degree,
+        operator_ordinal,
+        (0..parameter_components).collect(),
+        output_root,
+    )
+}
+
+pub fn build_and_write_first_momentum_gauge_stream_prefix_functional_artifact(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    parameter_component_count: usize,
+    output_root: &Path,
+) -> io::Result<FirstMomentumGaugeStreamFunctionalArtifact> {
+    build_and_write_first_momentum_gauge_stream_functional_artifact_selected(
+        gauge_form_degree,
+        operator_ordinal,
+        (0..parameter_component_count).collect(),
+        output_root,
+    )
+}
+
+pub fn merge_first_momentum_gauge_functional_artifacts(
+    gauge_form_degree: usize,
+    output_root: &Path,
+    zero_momentum_root: &Path,
+) -> io::Result<FirstMomentumGaugeFunctionalMergeReport> {
+    if gauge_form_degree > 5 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "gauge form degree must lie in 0..5",
+        ));
+    }
+    let specs = crate::eleven_dimensional_level16_couplings::joint_column_specs();
+    let mut functional_columns = Vec::with_capacity(56);
+    let mut parameter_component_counts = Vec::with_capacity(56);
+    let mut evaluated_parameter_component_sets = Vec::with_capacity(56);
+    let mut source_artifact_sha256 = Vec::with_capacity(56);
+    for spec in &specs {
+        let directory =
+            first_momentum_functional_directory(output_root, gauge_form_degree, spec.ordinal);
+        let path = directory.join("manifest.json");
+        let (parameter_components, evaluated_parameter_components, exact_functional_values) =
+            verify_first_momentum_gauge_functional_column(
+                &directory,
+                gauge_form_degree,
+                spec.ordinal,
+            )?;
+        parameter_component_counts.push(parameter_components);
+        evaluated_parameter_component_sets.push(evaluated_parameter_components);
+        functional_columns.push(
+            exact_functional_values
+                .iter()
+                .map(|value| {
+                    value.parse::<BigInt>().map_err(|error| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!("invalid functional integer: {error}"),
+                        )
+                    })
+                })
+                .collect::<io::Result<Vec<_>>>()?,
+        );
+        source_artifact_sha256.push(sha256_file(&path)?);
+    }
+    let parameter_components = parameter_component_counts[0];
+    if parameter_component_counts
+        .iter()
+        .any(|&count| count != parameter_components)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "first-momentum functional artifacts use different parameter dimensions",
+        ));
+    }
+    let evaluated_parameter_components = evaluated_parameter_component_sets[0].clone();
+    if evaluated_parameter_component_sets
+        .iter()
+        .any(|components| *components != evaluated_parameter_components)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "first-momentum functional artifacts use different parameter projections",
+        ));
+    }
+    let functional_rows = functional_columns[0].len();
+    if functional_columns
+        .iter()
+        .any(|column| column.len() != functional_rows)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "first-momentum functional columns have different lengths",
+        ));
+    }
+
+    let zero_path = zero_momentum_root
+        .join("merge")
+        .join(format!("zero-momentum-form-{gauge_form_degree}.json"));
+    let zero_payload = fs::read(&zero_path)?;
+    let zero_report: ZeroMomentumGaugeKernelReport = serde_json::from_slice(&zero_payload)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    if !zero_report.passed
+        || zero_report.gauge_form_degree != gauge_form_degree
+        || zero_report.leading_basis
+            != specs[..12]
+                .iter()
+                .map(|spec| spec.label.clone())
+                .collect::<Vec<_>>()
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "zero-momentum kernel report does not match the first-momentum operator basis",
+        ));
+    }
+    let zero_kernel = zero_report
+        .primitive_integer_kernel_basis
+        .iter()
+        .map(|vector| {
+            vector
+                .iter()
+                .map(|value| {
+                    value.parse::<BigInt>().map_err(|error| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!("invalid zero-momentum kernel integer: {error}"),
+                        )
+                    })
+                })
+                .collect::<io::Result<Vec<_>>>()
+        })
+        .collect::<io::Result<Vec<_>>>()?;
+
+    let mut parameterized_columns = Vec::<Vec<BigInt>>::new();
+    for kernel_vector in &zero_kernel {
+        let mut column = vec![BigInt::from(0); functional_rows];
+        for (coefficient, source_column) in kernel_vector.iter().zip(&functional_columns[..12]) {
+            for (destination, source) in column.iter_mut().zip(source_column) {
+                *destination += coefficient * source;
+            }
+        }
+        parameterized_columns.push(column);
+    }
+    parameterized_columns.extend(functional_columns[12..].iter().cloned());
+    let matrix = (0..functional_rows)
+        .map(|row| {
+            parameterized_columns
+                .iter()
+                .map(|column| Ratio::from_integer(column[row].clone()))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let exact_functional_rank =
+        crate::eleven_dimensional_level16_couplings::rational_matrix_rank(&matrix);
+    let rational_kernel = crate::eleven_dimensional_level16_couplings::rational_nullspace(&matrix);
+    let primitive_kernel = rational_kernel
+        .iter()
+        .map(|vector| crate::eleven_dimensional_level16_couplings::primitive_bigint_vector(vector))
+        .collect::<Vec<_>>();
+    let functional_kernel_residuals_exactly_zero = rational_kernel
+        .iter()
+        .all(|vector| matrix.iter().all(|row| rational_dot(row, vector).is_zero()));
+    let leading_projections = rational_kernel
+        .iter()
+        .map(|vector| vector[..zero_kernel.len()].to_vec())
+        .filter(|projection| projection.iter().any(|value| !value.is_zero()))
+        .collect::<Vec<_>>();
+    let functional_kernel_leading_projection_rank =
+        crate::eleven_dimensional_level16_couplings::rational_matrix_rank(&leading_projections);
+    let nonzero_leading_extension_excluded_by_functionals =
+        functional_kernel_leading_projection_rank == 0;
+    let exact_functional_nullity = parameterized_columns.len() - exact_functional_rank;
+    let passed = functional_columns.len() == 56
+        && zero_kernel.len() == zero_report.exact_nullity
+        && parameterized_columns.len() == zero_kernel.len() + 44
+        && exact_functional_rank + exact_functional_nullity == parameterized_columns.len()
+        && functional_kernel_residuals_exactly_zero;
+    let report = FirstMomentumGaugeFunctionalMergeReport {
+        schema_version: "adynkra-11d-first-momentum-gauge-functional-merge-v1".to_string(),
+        passed,
+        gauge_form_degree,
+        parameter_dynkin_label: zero_report.parameter_dynkin_label,
+        parameter_components,
+        parameter_projection_is_complete: evaluated_parameter_components.len()
+            == parameter_components,
+        evaluated_parameter_components,
+        leading_basis: specs[..12]
+            .iter()
+            .map(|spec| spec.label.clone())
+            .collect(),
+        first_momentum_basis: specs[12..]
+            .iter()
+            .map(|spec| spec.label.clone())
+            .collect(),
+        zero_momentum_kernel_dimension: zero_kernel.len(),
+        zero_momentum_kernel_basis: zero_report.primitive_integer_kernel_basis,
+        parameterized_columns: parameterized_columns.len(),
+        functional_rows,
+        exact_functional_rank,
+        exact_functional_nullity,
+        functional_kernel_leading_projection_rank,
+        nonzero_leading_extension_excluded_by_functionals,
+        functional_primitive_integer_kernel_basis: primitive_kernel
+            .iter()
+            .map(|vector| vector.iter().map(ToString::to_string).collect())
+            .collect(),
+        functional_kernel_residuals_exactly_zero,
+        source_artifact_sha256,
+        zero_momentum_kernel_report_sha256: sha256_file(&zero_path)?,
+        interpretation: if nonzero_leading_extension_excluded_by_functionals {
+            "The exact functional kernel has zero projection onto the zero-momentum leading kernel. Because the full residual kernel is contained in every exact functional kernel, no nonzero leading operator extends through first momentum for this source channel.".to_string()
+        } else {
+            "The exact functional kernel has a nonzero leading projection. This screen is inconclusive; additional exact functionals or the full residual are required to determine whether a leading operator extends.".to_string()
+        },
+        boundary: "This is an exact linear-image screen of the first-momentum source variation on the recorded gauge-parameter components. It can exclude a leading extension, but it cannot certify one unless every parameter component and the full residual are checked.".to_string(),
+    };
+    let merge_root = output_root.join("functional").join("merge");
+    fs::create_dir_all(&merge_root)?;
+    let output = merge_root.join(format!(
+        "first-momentum-functional-form-{gauge_form_degree}.json"
+    ));
+    let temporary = merge_root.join(format!(
+        ".first-momentum-functional-form-{gauge_form_degree}.json.{}.tmp",
+        std::process::id()
+    ));
+    write_json_durable(&temporary, &report)?;
+    fs::rename(temporary, output)?;
+    File::open(&merge_root)?.sync_all()?;
+    Ok(report)
+}
+
 pub fn gauge_composition_specs() -> Vec<GaugeCompositionSpec> {
     let labels = ["00000", "10000", "01000", "00100", "00010", "00002"];
     let operators = crate::eleven_dimensional_level16_couplings::joint_column_specs();
@@ -1257,7 +2059,7 @@ pub fn verify() -> ElevenDimensionalGaugeIntertwinerReport {
         gauge_for_gauge_reducibility_supplied: false,
         source_quotient_condition: "a target operator A is defined on Psi modulo the candidate source gauge image only if A composed with G is zero",
         target_quotient_condition: "allowing A composed with G to equal a target gauge map requires that target map as additional input; it is not determined by the six source intertwiners",
-        next_exact_step: "compose each candidate G_p with the twelve leading and forty-four first-momentum operators, compute A composed with G_p exactly, and separate source-invariant maps from cases requiring an externally specified target gauge law",
+        next_exact_step: "after the separately recorded source-invariance screens, either supply an independently derived target gauge law for A composed with G_p equals K_p or retain the hook and compute its next Bianchi map",
         boundary: "the six intertwiners are a complete Lorentz-compatible ansatz. The cited sources do not establish that any chosen linear combination is a physical gauge symmetry, provide its gauge-for-gauge complex, or justify quotienting the hook residual by its image",
         passed,
     }
@@ -1314,5 +2116,68 @@ mod tests {
         let (rank, kernel) = exact_constraint_kernel(&rows, 3);
         assert_eq!(rank, 2);
         assert_eq!(kernel, vec![vec![zero.clone(), zero, one]]);
+    }
+
+    #[test]
+    fn streamed_functional_artifact_requires_a_valid_component_subset() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = std::env::temp_dir().join(format!(
+            "adinkra-gauge-functional-test-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        let path = directory.join("manifest.json");
+        let mut artifact = FirstMomentumGaugeStreamFunctionalArtifact {
+            schema_version: "adynkra-11d-first-momentum-gauge-stream-functional-v2".to_string(),
+            passed: true,
+            gauge_form_degree: 1,
+            parameter_dynkin_label: "10000".to_string(),
+            parameter_components: 11,
+            evaluated_parameter_components: vec![0, 3],
+            operator: crate::eleven_dimensional_level16_couplings::joint_column_specs()[0].clone(),
+            exterior_degree: 15,
+            emitted_nonzero_terms: 0,
+            maximum_absolute_emitted_term_coefficient: "0".to_string(),
+            functional_seeds: FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS
+                .iter()
+                .map(|seed| format!("{seed:016x}"))
+                .collect(),
+            functional_buckets_per_real_part: FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS,
+            exact_functional_values: vec![
+                "0".to_string();
+                FIRST_MOMENTUM_GAUGE_FUNCTIONAL_SEEDS.len()
+                    * 2
+                    * FIRST_MOMENTUM_GAUGE_FUNCTIONAL_BUCKETS
+            ],
+            functional_image_is_nonzero: false,
+            fixture_sha256: "fixture".to_string(),
+            source_revision: "test".to_string(),
+            executable_sha256: "test".to_string(),
+            host: "test".to_string(),
+            process_id: std::process::id(),
+            started_unix_seconds: 0,
+            finished_unix_seconds: 0,
+            elapsed_milliseconds: 0,
+            convention: "test".to_string(),
+            interpretation: "test".to_string(),
+            boundary: "test".to_string(),
+        };
+        write_json_durable(&path, &artifact).unwrap();
+        let (_, components, values) =
+            verify_first_momentum_gauge_functional_column(&directory, 1, 0).unwrap();
+        assert_eq!(components, vec![0, 3]);
+        assert_eq!(values.len(), 512);
+
+        artifact.evaluated_parameter_components = vec![3, 3];
+        write_json_durable(&path, &artifact).unwrap();
+        assert!(verify_first_momentum_gauge_functional_column(&directory, 1, 0).is_err());
+
+        artifact.evaluated_parameter_components = vec![11];
+        write_json_durable(&path, &artifact).unwrap();
+        assert!(verify_first_momentum_gauge_functional_column(&directory, 1, 0).is_err());
+        fs::remove_dir_all(directory).unwrap();
     }
 }

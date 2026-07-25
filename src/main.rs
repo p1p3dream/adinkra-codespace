@@ -126,6 +126,16 @@ fn main() {
         "adynkra-11d-gauge-zero-column" => cmd_adynkra_11d_gauge_zero_column(&args),
         "adynkra-11d-gauge-zero-merge" => cmd_adynkra_11d_gauge_zero_merge(&args),
         "adynkra-11d-gauge-zero-classify" => cmd_adynkra_11d_gauge_zero_classify(&args),
+        "adynkra-11d-gauge-first-functional" => cmd_adynkra_11d_gauge_first_functional(&args),
+        "adynkra-11d-gauge-first-functional-stream" => {
+            cmd_adynkra_11d_gauge_first_functional_stream(&args)
+        }
+        "adynkra-11d-gauge-first-functional-stream-prefix" => {
+            cmd_adynkra_11d_gauge_first_functional_stream_prefix(&args)
+        }
+        "adynkra-11d-gauge-first-functional-merge" => {
+            cmd_adynkra_11d_gauge_first_functional_merge(&args)
+        }
         "adynkra-11d-bridge-verify" => cmd_adynkra_11d_bridge_verify(),
         "adynkra-11d-level16-coupling-precheck" => cmd_adynkra_11d_level16_coupling_precheck(),
         "adynkra-11d-level16-coupling-build" => cmd_adynkra_11d_level16_coupling_build(&args),
@@ -288,6 +298,18 @@ fn print_usage(prog: &str) {
     );
     eprintln!(
         "  adynkra-11d-gauge-zero-classify <root> Classify all 64 exact zero-momentum source-channel intersections"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-first-functional <form-degree> <operator-ordinal> <root> Build one exact first-momentum functional column"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-first-functional-stream <form-degree> <operator-ordinal> <root> Build the same exact functional without materializing residual coordinates"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-first-functional-stream-prefix <form-degree> <operator-ordinal> <parameter-component-count> <root> Build an exact exclusion screen on a parameter-component prefix"
+    );
+    eprintln!(
+        "  adynkra-11d-gauge-first-functional-merge <form-degree> <root> <zero-root> Screen the zero-momentum kernel against 44 corrections"
     );
     eprintln!("  adynkra-11d-spinor-bridge-verify Audit the direct 11D spinor bridge");
     eprintln!("  adynkra-11d-spinor-kernel-verify Verify its 19 source kernels exactly");
@@ -614,6 +636,179 @@ fn cmd_adynkra_11d_gauge_zero_classify(args: &[String]) {
             eprintln!("Failed to classify zero-momentum gauge channel subsets: {error}");
             std::process::exit(2);
         });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_first_functional(args: &[String]) {
+    let usage = || {
+        eprintln!(
+            "Usage: {} adynkra-11d-gauge-first-functional <form-degree> <operator-ordinal> <root>",
+            args[0]
+        );
+        std::process::exit(1);
+    };
+    let gauge_form_degree = args
+        .get(2)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid gauge form degree: {error}");
+            std::process::exit(1);
+        });
+    let operator_ordinal = args
+        .get(3)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid operator ordinal: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(4).unwrap_or_else(|| usage()));
+    let report =
+        eleven_dimensional_gauge::build_and_write_first_momentum_gauge_functional_artifact(
+            gauge_form_degree,
+            operator_ordinal,
+            &root,
+        )
+        .unwrap_or_else(|error| {
+            eprintln!(
+                "Failed to build first-momentum gauge functional p={gauge_form_degree}, column={operator_ordinal}: {error}"
+            );
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_first_functional_stream(args: &[String]) {
+    let usage = || {
+        eprintln!(
+            "Usage: {} adynkra-11d-gauge-first-functional-stream <form-degree> <operator-ordinal> <root>",
+            args[0]
+        );
+        std::process::exit(1);
+    };
+    let gauge_form_degree = args
+        .get(2)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid gauge form degree: {error}");
+            std::process::exit(1);
+        });
+    let operator_ordinal = args
+        .get(3)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid operator ordinal: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(4).unwrap_or_else(|| usage()));
+    let report =
+        eleven_dimensional_gauge::build_and_write_first_momentum_gauge_stream_functional_artifact(
+            gauge_form_degree,
+            operator_ordinal,
+            &root,
+        )
+        .unwrap_or_else(|error| {
+            eprintln!(
+                "Failed to stream first-momentum gauge functional p={gauge_form_degree}, column={operator_ordinal}: {error}"
+            );
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_first_functional_stream_prefix(args: &[String]) {
+    let usage = || {
+        eprintln!(
+            "Usage: {} adynkra-11d-gauge-first-functional-stream-prefix <form-degree> <operator-ordinal> <parameter-component-count> <root>",
+            args[0]
+        );
+        std::process::exit(1);
+    };
+    let gauge_form_degree = args
+        .get(2)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid gauge form degree: {error}");
+            std::process::exit(1);
+        });
+    let operator_ordinal = args
+        .get(3)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid operator ordinal: {error}");
+            std::process::exit(1);
+        });
+    let parameter_component_count = args
+        .get(4)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid parameter component count: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(5).unwrap_or_else(|| usage()));
+    let report = eleven_dimensional_gauge::
+        build_and_write_first_momentum_gauge_stream_prefix_functional_artifact(
+            gauge_form_degree,
+            operator_ordinal,
+            parameter_component_count,
+            &root,
+        )
+        .unwrap_or_else(|error| {
+            eprintln!(
+                "Failed to stream first-momentum gauge functional prefix p={gauge_form_degree}, column={operator_ordinal}: {error}"
+            );
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_gauge_first_functional_merge(args: &[String]) {
+    let usage = || {
+        eprintln!(
+            "Usage: {} adynkra-11d-gauge-first-functional-merge <form-degree> <root> <zero-root>",
+            args[0]
+        );
+        std::process::exit(1);
+    };
+    let gauge_form_degree = args
+        .get(2)
+        .unwrap_or_else(|| usage())
+        .parse::<usize>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid gauge form degree: {error}");
+            std::process::exit(1);
+        });
+    let root = std::path::PathBuf::from(args.get(3).unwrap_or_else(|| usage()));
+    let zero_root = std::path::PathBuf::from(args.get(4).unwrap_or_else(|| usage()));
+    let report = eleven_dimensional_gauge::merge_first_momentum_gauge_functional_artifacts(
+        gauge_form_degree,
+        &root,
+        &zero_root,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!(
+            "Failed to merge first-momentum gauge functionals p={gauge_form_degree}: {error}"
+        );
+        std::process::exit(2);
+    });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
