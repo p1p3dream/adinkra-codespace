@@ -15,6 +15,8 @@ eight-color supersymmetry program described in Refs. [1-3]. It contains:
 - the six published `N=2` permutation octets `CC`, `CT`, `CV`, `TT`, `TV`, and
   `VV`, together with the `R8` or Diadem octet;
 - the complete `56 x 56` Bruhat-distance matrix for those seven named octets.
+- the six signed `S4` sectors, all 96 published fiducial Boolean-factor
+  quartets, and all 96 corresponding Adinkras;
 - a Garden-sign feasibility calculation for every one of the 5,040 right
   `R8` cosets.
 
@@ -107,6 +109,8 @@ The atlas is generated in Rust. From the repository root, run:
 cargo run --release -- perm-atlas-build
 cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
+cargo run --release -- perm-s4-susy-build
+cargo run --release -- perm-s4-susy-verify
 ```
 
 Generated data:
@@ -114,7 +118,9 @@ Generated data:
 - `data/permutahedron_s4_atlas.json`
 - `data/permutahedron_s8_atlas.json`
 - `data/permutahedron_s8_garden.json`
+- `data/permutahedron_s4_supersymmetry.json`
 - `results/permutahedron_validation.json`
+- `results/permutahedron_s4_supersymmetry_validation.json`
 
 Validated artifact hashes:
 
@@ -138,10 +144,15 @@ matrix is stored because it is the calculation requested in Ref. [2].
 Serve the repository root with a local static-file server and open
 `visualizer/permutahedron_atlas.html` to use the browser atlas.
 
+Open `visualizer/permutahedron_s4_supersymmetry.html` for the signed four-color
+sector viewer. It displays all 16 published fiducial sign choices within each
+of the six sectors.
+
 Validate the browser datasets and their Garden-scan join with:
 
 ```sh
 node scripts/test_permutahedron_atlas.mjs
+node scripts/test_permutahedron_s4_supersymmetry.mjs
 ```
 
 ## Boundaries

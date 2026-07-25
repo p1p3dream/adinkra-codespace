@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Six Four-Color Supersymmetry Sectors</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071018;
+      --panel: #0d1a24;
+      --panel2: #102431;
+      --line: #284150;
+      --ink: #e9f0f4;
+      --muted: #91a6b3;
+      --cyan: #48d5ca;
+      --gold: #ffbf69;
+      --red: #ff7070;
+      --green: #77e7bd;
+      --colors: #ff6b6b, #5bc0eb, #f5c451, #9b7ede;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    header { position: sticky; top: 0; z-index: 5; display: flex; gap: 18px; align-items: center; padding: 14px 20px; background: #09141df2; border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+    h1 { margin: 0; font: 700 19px/1.1 system-ui, sans-serif; letter-spacing: .02em; }
+    h2 { margin: 0 0 10px; color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    #status { margin-left: auto; border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; color: var(--muted); }
+    #status.ok { color: var(--green); border-color: #27715e; }
+    #status.bad { color: #ff9494; border-color: #793a3a; }
+    main { max-width: 1500px; margin: 0 auto; padding: 18px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    .summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; margin-bottom: 16px; }
+    .summary button { background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 7px; padding: 10px; cursor: pointer; text-align: left; font: inherit; }
+    .summary button:hover, .summary button.active { border-color: var(--cyan); background: var(--panel2); }
+    .sector-title { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 7px; }
+    .perm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; color: var(--muted); font-size: 11px; }
+    .workspace { display: grid; grid-template-columns: minmax(430px, 1.35fr) minmax(360px, .9fr); gap: 16px; }
+    .left, .right { display: grid; gap: 16px; align-content: start; }
+    .controls { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+    label { display: grid; gap: 4px; color: var(--muted); }
+    select { min-width: 190px; color: var(--ink); background: var(--panel2); border: 1px solid var(--line); border-radius: 5px; padding: 8px; font: inherit; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; flex: 1; }
+    .metric { border-left: 2px solid var(--cyan); padding-left: 8px; }
+    .metric span { display: block; color: var(--muted); font-size: 11px; }
+    .metric strong { font-size: 15px; }
+    #graph { width: 100%; min-height: 400px; background: radial-gradient(circle at center, #132b39, #071018 72%); border: 1px solid #1c3442; border-radius: 6px; }
+    .node { fill: #e9f0f4; stroke: #071018; stroke-width: 3; }
+    .node.boson { fill: var(--cyan); }
+    .node-label { fill: #dfeaf0; font-size: 12px; text-anchor: middle; }
+    .edge { fill: none; stroke-width: 3; opacity: .88; }
+    .edge.dashed { stroke-dasharray: 8 6; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 6px 7px; border: 1px solid #203744; text-align: center; }
+    th { color: var(--muted); background: #102431; }
+    td.nonzero { color: #fff; font-weight: 700; background: #183342; }
+    .matrix-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .matrix-title { color: var(--gold); margin-bottom: 5px; }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; overflow-wrap: anywhere; }
+    .pass { color: var(--green); }
+    .warn { color: var(--gold); }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); margin-top: 9px; }
+    .swatch { display: inline-block; width: 24px; border-top: 3px solid; vertical-align: middle; margin-right: 5px; }
+    .dash { border-top-style: dashed; }
+    .source { color: var(--muted); font-size: 12px; }
+    @media (max-width: 1050px) { .summary { grid-template-columns: repeat(3, 1fr); } .workspace { grid-template-columns: 1fr; } }
+    @media (max-width: 650px) { header { align-items: flex-start; } #status { margin-left: 0; } .summary { grid-template-columns: repeat(2, 1fr); } .metrics, .matrix-grid { grid-template-columns: repeat(2, 1fr); } main { padding: 10px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Six Four-Color Supersymmetry Sectors</h1>
+    <span>24 permutation vertices · 6 quartets · 96 signed seeds</span>
+    <span id="status">loading</span>
+  </header>
+  <main>
+    <section id="sectors" class="summary" aria-label="Six S4 sectors"></section>
+    <div class="workspace">
+      <div class="left">
+        <section class="panel">
+          <div class="controls">
+            <label>Boolean-factor quartet
+              <select id="signing"></select>
+            </label>
+            <div class="metrics">
+              <div class="metric"><span>sector</span><strong id="metricSector"></strong></div>
+              <div class="metric"><span>S4/V4 action</span><strong id="metricQuotient"></strong></div>
+              <div class="metric"><span>chi0</span><strong id="metricChi"></strong></div>
+              <div class="metric"><span>Garden</span><strong id="metricGarden"></strong></div>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Valise Adinkra</h2>
+          <svg id="graph" viewBox="0 0 660 400" role="img" aria-label="Signed four-color Adinkra"></svg>
+          <div class="legend">
+            <span><i class="swatch" style="border-color:#ff6b6b"></i>color 1</span>
+            <span><i class="swatch" style="border-color:#5bc0eb"></i>color 2</span>
+            <span><i class="swatch" style="border-color:#f5c451"></i>color 3</span>
+            <span><i class="swatch" style="border-color:#9b7ede"></i>color 4</span>
+            <span><i class="swatch dash" style="border-color:#e9f0f4"></i>negative</span>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Signed L-matrices</h2>
+          <div id="matrices" class="matrix-grid"></div>
+        </section>
+      </div>
+      <div class="right">
+        <section class="panel">
+          <h2>Sector recognition</h2>
+          <dl id="invariants" class="kv"></dl>
+        </section>
+        <section class="panel">
+          <h2>Exact checks</h2>
+          <dl id="checks" class="kv"></dl>
+        </section>
+        <section class="panel">
+          <h2>Interpretation</h2>
+          <p id="interpretation"></p>
+          <p class="source">The V4 coset is the unsigned sector. The quotient action is its six-way coordinate in the stored convention. The spectral norm recognizes the six valid quartets collectively. chi0 and the gadget row describe the selected signing. The ordered Bruhat word preserves the paper's L1,L2,L3,L4 order.</p>
+        </section>
+        <section class="panel">
+          <h2>Sources</h2>
+          <div id="sources" class="source"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script type="module">
+    const dataUrl = "../data/permutahedron_s4_supersymmetry.json";
+    const colors = ["#ff6b6b", "#5bc0eb", "#f5c451", "#9b7ede"];
+    const $ = id => document.getElementById(id);
+    let data, sectorIndex = 0;
+
+    const signs = factor => Array.from({length: 4}, (_, row) => factor & (1 << row) ? -1 : 1);
+    const matrix = (permutation, factor) => {
+      const diagonal = signs(factor);
+      return Array.from({length: 4}, (_, row) =>
+        Array.from({length: 4}, (_, column) => column === permutation[row] - 1 ? diagonal[row] : 0)
+      );
+    };
+    const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const formatNumber = value => Object.is(value, -0) ? "0" : String(value);
+
+    function sectorCards() {
+      $("sectors").innerHTML = data.sectors.map((sector, index) => `
+        <button data-sector="${index}" class="${index === sectorIndex ? "active" : ""}">
+          <div class="sector-title"><span>${esc(sector.id)}</span><span>${esc(sector.invariants.quotient_s3_cycle)}</span></div>
+          <div class="perm-grid">${sector.ordered_permutations.map(p => `<span>${p.join("")}</span>`).join("")}</div>
+        </button>
+      `).join("");
+      $("sectors").querySelectorAll("button").forEach(button => button.onclick = () => {
+        sectorIndex = Number(button.dataset.sector);
+        renderSector();
+      });
+    }
+
+    function renderGraph(sector, signing) {
+      const permutations = sector.ordered_permutations;
+      const factors = signing.boolean_factors;
+      const x = [95, 250, 410, 565], top = 72, bottom = 320;
+      const curves = [];
+      for (let color = 0; color < 4; color++) {
+        const diagonal = signs(factors[color]);
+        for (let boson = 0; boson < 4; boson++) {
+          const fermion = permutations[color][boson] - 1;
+          const bend = (color - 1.5) * 14 + (boson - fermion) * 3;
+          const path = `M ${x[boson]} ${bottom} C ${x[boson] + bend} 235, ${x[fermion] - bend} 158, ${x[fermion]} ${top}`;
+          curves.push(`<path class="edge ${diagonal[boson] < 0 ? "dashed" : ""}" d="${path}" stroke="${colors[color]}"><title>color ${color + 1}: B${boson + 1} to F${fermion + 1}, sign ${diagonal[boson] > 0 ? "+1" : "-1"}</title></path>`);
+        }
+      }
+      const fermions = x.map((px, index) => `<circle class="node" cx="${px}" cy="${top}" r="13"/><text class="node-label" x="${px}" y="${top - 24}">F${index + 1}</text>`);
+      const bosons = x.map((px, index) => `<circle class="node boson" cx="${px}" cy="${bottom}" r="13"/><text class="node-label" x="${px}" y="${bottom + 34}">B${index + 1}</text>`);
+      $("graph").innerHTML = [...curves, ...fermions, ...bosons].join("");
+    }
+
+    function matrixTable(values) {
+      return `<table><tbody>${values.map(row => `<tr>${row.map(value => `<td class="${value ? "nonzero" : ""}">${value || ""}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    }
+
+    function renderMatrices(sector, signing) {
+      $("matrices").innerHTML = sector.ordered_permutations.map((permutation, color) => `
+        <div>
+          <div class="matrix-title">L${color + 1} · b=${signing.boolean_factors[color]} · P=${permutation.join("")}</div>
+          ${matrixTable(matrix(permutation, signing.boolean_factors[color]))}
+        </div>
+      `).join("");
+    }
+
+    function renderSector() {
+      const sector = data.sectors[sectorIndex];
+      sectorCards();
+      $("signing").innerHTML = sector.published_fiducial_signings.map(signing =>
+        `<option value="${signing.appendix_b_index - 1}">Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`
+      ).join("");
+      $("signing").value = "0";
+      renderSigning();
+    }
+
+    function renderSigning() {
+      const sector = data.sectors[sectorIndex];
+      const signing = sector.published_fiducial_signings[Number($("signing").value)];
+      $("metricSector").textContent = sector.id;
+      $("metricQuotient").textContent = sector.invariants.quotient_s3_cycle;
+      $("metricChi").textContent = signing.chi0 > 0 ? "+1" : "-1";
+      $("metricGarden").textContent = signing.garden_sparse_passed && signing.dense_residual_entries === 0 ? "pass" : "fail";
+      $("metricGarden").className = signing.garden_sparse_passed ? "pass" : "warn";
+      renderGraph(sector, signing);
+      renderMatrices(sector, signing);
+      $("invariants").innerHTML = `
+        <dt>V4 coset ranks</dt><dd>${sector.invariants.canonical_coset_ranks.join(", ")}</dd>
+        <dt>S3 one-line</dt><dd>${sector.invariants.quotient_s3_one_line.join("")}</dd>
+        <dt>S3 cycle</dt><dd>${esc(sector.invariants.quotient_s3_cycle)}</dd>
+        <dt>Bruhat word</dt><dd>${sector.invariants.ordered_bruhat_upper_triangle.join(", ")}</dd>
+        <dt>Bruhat row sums</dt><dd>${sector.invariants.bruhat_row_sums.join(", ")}</dd>
+        <dt>Bruhat eigenvalues</dt><dd>${sector.invariants.bruhat_eigenvalues.join(", ")}</dd>
+        <dt>eigenvalue norm squared</dt><dd>${sector.invariants.bruhat_eigenvalue_norm_squared}</dd>
+        <dt>chi0</dt><dd>${signing.chi0 > 0 ? "+1" : "-1"}</dd>
+        <dt>canonical gadget row</dt><dd>${sector.invariants.canonical_gadget_row.map(formatNumber).join(", ")}</dd>
+      `;
+      $("checks").innerHTML = `
+        <dt>Garden sparse</dt><dd class="${signing.garden_sparse_passed ? "pass" : "warn"}">${signing.garden_sparse_passed ? "pass" : "fail"}</dd>
+        <dt>dense entries</dt><dd>${signing.dense_entries_checked}</dd>
+        <dt>dense residuals</dt><dd class="${signing.dense_residual_entries === 0 ? "pass" : "warn"}">${signing.dense_residual_entries}</dd>
+        <dt>stored Adinkra edges</dt><dd>${signing.adinkra.edge_count}</dd>
+        <dt>two-color squares</dt><dd>${signing.adinkra.square_count}</dd>
+        <dt>odd dashing</dt><dd class="${signing.adinkra.all_squares_odd ? "pass" : "warn"}">${signing.adinkra.all_squares_odd ? "all pass" : "failure"}</dd>
+      `;
+      $("interpretation").textContent = sector.invariants.interpretation;
+    }
+
+    async function init() {
+      try {
+        const response = await fetch(dataUrl);
+        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+        data = await response.json();
+        if (!data.validation?.passed) throw new Error("validation record did not pass");
+        $("status").textContent = "96 / 96 Garden checks pass";
+        $("status").className = "ok";
+        $("sources").innerHTML = data.sources.map(source =>
+          `<p><a href="https://arxiv.org/abs/${esc(source.arxiv_id)}" style="color:#48d5ca">arXiv:${esc(source.arxiv_id)}</a><br>${esc(source.locator)}<br>${esc(source.role)}</p>`
+        ).join("");
+        renderSector();
+      } catch (error) {
+        $("status").textContent = `unavailable: ${error.message}`;
+        $("status").className = "bad";
+      }
+    }
+    $("signing").onchange = renderSigning;
+    init();
+  </script>
+</body>
+</html>

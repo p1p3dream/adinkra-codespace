@@ -1,0 +1,23 @@
+{
+  "permutation_vertices": 24,
+  "quartet_count": 6,
+  "quartet_size": 4,
+  "vertices_covered_once": true,
+  "v4_cosets_verified": 6,
+  "published_boolean_factor_quartets": 96,
+  "equation_5_10_matrices_matched": true,
+  "garden_representations_checked": 96,
+  "garden_representations_passed": 96,
+  "dense_garden_entries_checked": 24576,
+  "dense_garden_residual_entries": 0,
+  "adinkras_constructed": 96,
+  "adinkra_edges_checked": 1536,
+  "adinkra_squares_checked": 1152,
+  "odd_dashing_failures": 0,
+  "distinct_quotient_s3_labels": 6,
+  "intra_bruhat_spectra_verified": 6,
+  "intra_bruhat_norm_squared": 224,
+  "maximum_inter_bruhat_norm_squared": 208,
+  "intra_norm_exceeds_every_inter_quartet": true,
+  "passed": true
+}
