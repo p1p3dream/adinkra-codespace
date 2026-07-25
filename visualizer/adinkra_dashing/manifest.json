@@ -1,0 +1,1314 @@
+{
+  "schema": "adinkra-3d-dashing-assets",
+  "version": 1,
+  "n": 16,
+  "code_count": 145,
+  "total_dashing_classes": 5128,
+  "assets": [
+    {
+      "code_index": 0,
+      "k": 1,
+      "vertices": 32768,
+      "edges": 262144,
+      "dashing_classes": 2,
+      "file": "000.ad3d",
+      "bytes": 524308
+    },
+    {
+      "code_index": 1,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "001.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 2,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "002.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 3,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "003.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 4,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "004.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 5,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "005.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 6,
+      "k": 1,
+      "vertices": 32768,
+      "edges": 262144,
+      "dashing_classes": 2,
+      "file": "006.ad3d",
+      "bytes": 524308
+    },
+    {
+      "code_index": 7,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "007.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 8,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "008.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 9,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "009.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 10,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "010.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 11,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "011.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 12,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "012.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 13,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "013.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 14,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "014.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 15,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "015.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 16,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "016.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 17,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "017.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 18,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "018.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 19,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "019.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 20,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "020.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 21,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "021.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 22,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "022.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 23,
+      "k": 1,
+      "vertices": 32768,
+      "edges": 262144,
+      "dashing_classes": 2,
+      "file": "023.ad3d",
+      "bytes": 524308
+    },
+    {
+      "code_index": 24,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "024.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 25,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "025.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 26,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "026.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 27,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "027.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 28,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "028.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 29,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "029.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 30,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "030.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 31,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "031.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 32,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "032.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 33,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "033.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 34,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "034.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 35,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "035.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 36,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "036.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 37,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "037.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 38,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "038.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 39,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "039.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 40,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "040.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 41,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "041.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 42,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "042.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 43,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "043.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 44,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "044.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 45,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "045.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 46,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "046.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 47,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "047.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 48,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "048.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 49,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "049.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 50,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "050.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 51,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "051.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 52,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "052.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 53,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "053.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 54,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "054.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 55,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "055.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 56,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "056.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 57,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "057.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 58,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "058.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 59,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "059.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 60,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "060.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 61,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "061.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 62,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "062.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 63,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "063.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 64,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "064.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 65,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "065.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 66,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "066.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 67,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "067.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 68,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "068.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 69,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "069.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 70,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "070.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 71,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "071.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 72,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "072.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 73,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "073.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 74,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "074.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 75,
+      "k": 8,
+      "vertices": 256,
+      "edges": 2048,
+      "dashing_classes": 256,
+      "file": "075.ad3d",
+      "bytes": 4116
+    },
+    {
+      "code_index": 76,
+      "k": 8,
+      "vertices": 256,
+      "edges": 2048,
+      "dashing_classes": 256,
+      "file": "076.ad3d",
+      "bytes": 4116
+    },
+    {
+      "code_index": 77,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "077.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 78,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "078.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 79,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "079.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 80,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "080.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 81,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "081.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 82,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "082.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 83,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "083.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 84,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "084.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 85,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "085.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 86,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "086.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 87,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "087.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 88,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "088.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 89,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "089.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 90,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "090.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 91,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "091.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 92,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "092.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 93,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "093.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 94,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "094.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 95,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "095.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 96,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "096.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 97,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "097.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 98,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "098.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 99,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "099.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 100,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "100.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 101,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "101.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 102,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "102.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 103,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "103.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 104,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "104.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 105,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "105.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 106,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "106.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 107,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "107.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 108,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "108.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 109,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "109.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 110,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "110.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 111,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "111.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 112,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "112.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 113,
+      "k": 1,
+      "vertices": 32768,
+      "edges": 262144,
+      "dashing_classes": 2,
+      "file": "113.ad3d",
+      "bytes": 524308
+    },
+    {
+      "code_index": 114,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "114.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 115,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "115.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 116,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "116.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 117,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "117.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 118,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "118.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 119,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "119.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 120,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "120.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 121,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "121.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 122,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "122.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 123,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "123.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 124,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "124.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 125,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "125.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 126,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "126.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 127,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "127.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 128,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "128.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 129,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "129.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 130,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "130.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 131,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "131.ad3d",
+      "bytes": 32788
+    },
+    {
+      "code_index": 132,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "132.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 133,
+      "k": 7,
+      "vertices": 512,
+      "edges": 4096,
+      "dashing_classes": 128,
+      "file": "133.ad3d",
+      "bytes": 8212
+    },
+    {
+      "code_index": 134,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "134.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 135,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "135.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 136,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "136.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 137,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "137.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 138,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "138.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 139,
+      "k": 6,
+      "vertices": 1024,
+      "edges": 8192,
+      "dashing_classes": 64,
+      "file": "139.ad3d",
+      "bytes": 16404
+    },
+    {
+      "code_index": 140,
+      "k": 3,
+      "vertices": 8192,
+      "edges": 65536,
+      "dashing_classes": 8,
+      "file": "140.ad3d",
+      "bytes": 131092
+    },
+    {
+      "code_index": 141,
+      "k": 2,
+      "vertices": 16384,
+      "edges": 131072,
+      "dashing_classes": 4,
+      "file": "141.ad3d",
+      "bytes": 262164
+    },
+    {
+      "code_index": 142,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "142.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 143,
+      "k": 4,
+      "vertices": 4096,
+      "edges": 32768,
+      "dashing_classes": 16,
+      "file": "143.ad3d",
+      "bytes": 65556
+    },
+    {
+      "code_index": 144,
+      "k": 5,
+      "vertices": 2048,
+      "edges": 16384,
+      "dashing_classes": 32,
+      "file": "144.ad3d",
+      "bytes": 32788
+    }
+  ]
+}

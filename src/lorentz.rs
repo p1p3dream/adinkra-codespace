@@ -115,7 +115,11 @@ pub struct Mat {
 
 impl Mat {
     pub fn zeros(rows: usize, cols: usize) -> Self {
-        Mat { rows, cols, data: vec![0.0; rows * cols] }
+        Mat {
+            rows,
+            cols,
+            data: vec![0.0; rows * cols],
+        }
     }
 
     /// The `d`x`d` identity.
@@ -418,7 +422,11 @@ impl Clifford10D {
         let mut eta = [1.0f64; 10];
         eta[0] = -1.0;
 
-        Clifford10D { sigma, sigma_tilde, eta }
+        Clifford10D {
+            sigma,
+            sigma_tilde,
+            eta,
+        }
     }
 
     /// Maximum residual of the defining split-Clifford relation
@@ -536,7 +544,11 @@ pub fn assemble_and_check(l: &[Mat]) -> NonClosureReport {
     let mut max_fer = 0.0f64;
     for ii in 0..n {
         for jj in 0..n {
-            let target = if ii == jj { id.scale(2.0) } else { Mat::zeros(dim, dim) };
+            let target = if ii == jj {
+                id.scale(2.0)
+            } else {
+                Mat::zeros(dim, dim)
+            };
             let bos = l[ii].matmul(&r[jj]).add(&l[jj].matmul(&r[ii]));
             max_bos = max_bos.max(bos.max_abs_diff(&target));
             let fer = r[ii].matmul(&l[jj]).add(&r[jj].matmul(&l[ii]));
@@ -624,7 +636,10 @@ mod tests {
         let id = Mat::identity(16);
         for (a, ga) in g.iter().enumerate() {
             // Symmetric.
-            assert!(ga.max_abs_diff(&ga.transpose()) < 1e-12, "g{a} not symmetric");
+            assert!(
+                ga.max_abs_diff(&ga.transpose()) < 1e-12,
+                "g{a} not symmetric"
+            );
             // Square to +I.
             let sq = ga.matmul(ga);
             assert!(sq.max_abs_diff(&id) < 1e-12, "g{a}^2 != I");
@@ -678,7 +693,10 @@ mod tests {
             for b in (a + 1)..=9 {
                 let gb = cliff.spatial_generator(b);
                 let ac = ga.matmul(&gb).add(&gb.matmul(&ga));
-                assert!(ac.max_abs() < 1e-12, "spatial gens {a},{b} don't anticommute");
+                assert!(
+                    ac.max_abs() < 1e-12,
+                    "spatial gens {a},{b} don't anticommute"
+                );
             }
         }
     }

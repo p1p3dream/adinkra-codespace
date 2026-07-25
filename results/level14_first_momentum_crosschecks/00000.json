@@ -1,0 +1,38 @@
+{
+  "schema_version": "adynkra.11d.bridge-crosscheck.v2",
+  "role": "independent floating-point cross-check of the Rust exact sparse system",
+  "dynkin_label": "00000",
+  "exterior_degree": 14,
+  "matrix_rows": 2260480,
+  "matrix_columns": 657520,
+  "nonzero_entries": 8561776,
+  "raising_block_rows": [
+    431724,
+    431724,
+    431724,
+    431724,
+    533584
+  ],
+  "expected_kernel_dimension": 1,
+  "smallest_eigenvalues_of_transpose_product": [
+    1.9007799479624353e-21,
+    0.18613715016348586,
+    0.18613715016348628,
+    0.21841873519208513
+  ],
+  "numerical_zero_threshold": 1e-06,
+  "observed_numerical_kernel_dimension": 1,
+  "passed": true,
+  "boundary": "The eigenvalue calculation and integer reconstruction are numerical. The Rust verifier independently checks every stored integer coefficient against every exact raising equation.",
+  "integer_kernel_candidates": [
+    {
+      "path": "work/level14-proposals/artifacts/level14_00000_highest_weight_kernel.i16le",
+      "scale_before_primitive_reduction": 1,
+      "coefficient_gcd_removed": 1,
+      "maximum_rounding_residual": 1.1995837656542108e-10,
+      "nonzero_coefficients": 11440,
+      "minimum_coefficient": -1,
+      "maximum_coefficient": 1
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "alias_entity_count": 11,
+  "entity_aliases_sha256": "9421de8d1ec7ff353e67a0b387a26e775dacc21873ac41a17c23859f64a8fce3",
+  "errors": [],
+  "paper_count": 9,
+  "paper_counts": {
+    "1911.00807": 4,
+    "2002.08502": 5,
+    "2006.03609": 4,
+    "2007.07390": 3,
+    "2012.13308": 5,
+    "2012.14015": 2,
+    "2304.09830": 8,
+    "2311.06842": 7,
+    "2407.09334": 3
+  },
+  "proposal_count": 41,
+  "proposals_sha256": "761c9cc5dc8c69d5f5eed5635c64816ff86a42abdb1209fd727b7f367916e6b2",
+  "relationship_counts": {
+    "DERIVES": 1,
+    "MAKES_CLAIM": 11,
+    "QUALIFIES": 7,
+    "REPORTS_RESULT": 19,
+    "REQUIRES_ASSUMPTION": 1,
+    "SUPPORTS": 2
+  },
+  "schema_version": "gates-claims-results-validation-v1",
+  "source_type_counts": {
+    "claim": 1,
+    "paper": 38,
+    "result": 2
+  },
+  "status": "pass",
+  "target_type_counts": {
+    "claim": 17,
+    "result": 23,
+    "scope": 1
+  }
+}

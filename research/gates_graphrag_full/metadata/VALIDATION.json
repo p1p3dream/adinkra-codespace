@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "corpus_id": "gates_graphrag_full",
+  "validated_against_collection_generated_on": "2026-07-20",
+  "status": "pass",
+  "summary": {
+    "check_count": 27,
+    "passed": 27,
+    "failed": 0,
+    "publication_records": 295,
+    "verified_local_pdfs": 166,
+    "metadata_only_records": 129,
+    "canonical_pdf_pages": 4934
+  },
+  "checks": [
+    {
+      "check": "source_record_count",
+      "status": "pass",
+      "observed": 295,
+      "expected": 295
+    },
+    {
+      "check": "json_record_count",
+      "status": "pass",
+      "observed": 295,
+      "expected": 295
+    },
+    {
+      "check": "csv_record_count",
+      "status": "pass",
+      "observed": 295,
+      "expected": 295
+    },
+    {
+      "check": "source_order_preserved",
+      "status": "pass",
+      "observed": 295,
+      "expected": "all INSPIRE IDs in source order"
+    },
+    {
+      "check": "titles_preserved",
+      "status": "pass",
+      "observed": 295,
+      "expected": "all source titles"
+    },
+    {
+      "check": "unique_paper_ids",
+      "status": "pass",
+      "observed": 295,
+      "expected": 295
+    },
+    {
+      "check": "unique_inspire_ids",
+      "status": "pass",
+      "observed": 295,
+      "expected": 295
+    },
+    {
+      "check": "unique_arxiv_aliases",
+      "status": "pass",
+      "observed": 171,
+      "expected": 171
+    },
+    {
+      "check": "unique_doi_aliases",
+      "status": "pass",
+      "observed": 234,
+      "expected": 234
+    },
+    {
+      "check": "verified_local_pdf_count",
+      "status": "pass",
+      "observed": 166,
+      "expected": 166
+    },
+    {
+      "check": "metadata_only_record_count",
+      "status": "pass",
+      "observed": 129,
+      "expected": 129
+    },
+    {
+      "check": "source_missing_list_count",
+      "status": "pass",
+      "observed": 129,
+      "expected": 129
+    },
+    {
+      "check": "metadata_only_matches_source_missing_list",
+      "status": "pass",
+      "observed": 129,
+      "expected": 129
+    },
+    {
+      "check": "all_canonical_pdf_paths_exist",
+      "status": "pass",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "check": "all_canonical_files_have_pdf_header",
+      "status": "pass",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "check": "all_pdf_hashes_match",
+      "status": "pass",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "check": "all_pdf_sizes_match",
+      "status": "pass",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "check": "canonical_pdf_hashes_unique",
+      "status": "pass",
+      "observed": 166,
+      "expected": 166
+    },
+    {
+      "check": "pilot_membership",
+      "status": "pass",
+      "observed": [
+        "1911.00807",
+        "2002.08502",
+        "2006.03609",
+        "2007.07390",
+        "2012.13308",
+        "2012.14015",
+        "2304.09830",
+        "2311.06842",
+        "2407.09334"
+      ],
+      "expected": [
+        "1911.00807",
+        "2002.08502",
+        "2006.03609",
+        "2007.07390",
+        "2012.13308",
+        "2012.14015",
+        "2304.09830",
+        "2311.06842",
+        "2407.09334"
+      ]
+    },
+    {
+      "check": "pilot_full_text_count",
+      "status": "pass",
+      "observed": 9,
+      "expected": 9
+    },
+    {
+      "check": "false_author_records_absent",
+      "status": "pass",
+      "observed": [],
+      "expected": []
+    },
+    {
+      "check": "false_author_records_documented",
+      "status": "pass",
+      "observed": [
+        "2077897",
+        "2947909"
+      ],
+      "expected": [
+        "2077897",
+        "2947909"
+      ]
+    },
+    {
+      "check": "exact_duplicate_copy_count",
+      "status": "pass",
+      "observed": 4,
+      "expected": 4
+    },
+    {
+      "check": "exact_duplicate_copies_verified",
+      "status": "pass",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "check": "supporting_metadata_pdf_count",
+      "status": "pass",
+      "observed": 2,
+      "expected": 2
+    },
+    {
+      "check": "csv_json_order_match",
+      "status": "pass",
+      "observed": 295,
+      "expected": "all 295 paper IDs in JSON order"
+    },
+    {
+      "check": "csv_json_hash_match",
+      "status": "pass",
+      "observed": 295,
+      "expected": 295
+    }
+  ]
+}

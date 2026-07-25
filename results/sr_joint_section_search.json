@@ -1,0 +1,94 @@
+{
+  "source": "results/sr_hole_minimal.json",
+  "catalog_index": 75,
+  "ansatz": "general real J_F and P_B with exact affine inverse constraints",
+  "method": "deterministic alternating constrained least squares",
+  "seed": 20260714,
+  "starts": 4,
+  "iteration_limit": 100,
+  "best": {
+    "start": 0,
+    "iterations": 100,
+    "max_linkage_residual": 3.885487884916942e-05,
+    "frobenius_linkage_residual": 0.0004431663445949074,
+    "fermion_right_inverse_residual": 2.220446049250313e-16,
+    "boson_left_inverse_residual": 0.0,
+    "max_linkage_residual_after_newton": 1.1102230246251565e-15,
+    "frobenius_linkage_residual_after_newton": 6.954767235446483e-15,
+    "newton_steps": 3,
+    "jacobian_rank": 2304,
+    "jacobian_rows": 2304,
+    "jacobian_columns": 2863,
+    "newton_history": [
+      {
+        "max_residual": 5.1651631809272685e-08,
+        "frobenius_residual": 5.98239417372941e-07
+      },
+      {
+        "max_residual": 4.218847493575595e-15,
+        "frobenius_residual": 5.37165959164145e-14
+      },
+      {
+        "max_residual": 1.1102230246251565e-15,
+        "frobenius_residual": 6.954767235446483e-15
+      }
+    ]
+  },
+  "numerical_candidate_found": true,
+  "exact_certificate_found": false,
+  "candidate_file": "results/sr_joint_section_candidate.npz",
+  "all_starts": [
+    {
+      "start": 0,
+      "iterations": 100,
+      "max_linkage_residual": 3.885487884916942e-05,
+      "frobenius_linkage_residual": 0.0004431663445949074,
+      "fermion_right_inverse_residual": 2.220446049250313e-16,
+      "boson_left_inverse_residual": 0.0,
+      "max_linkage_residual_after_newton": 1.1102230246251565e-15,
+      "frobenius_linkage_residual_after_newton": 6.954767235446483e-15,
+      "newton_steps": 3,
+      "jacobian_rank": 2304,
+      "jacobian_rows": 2304,
+      "jacobian_columns": 2863,
+      "newton_history": [
+        {
+          "max_residual": 5.1651631809272685e-08,
+          "frobenius_residual": 5.98239417372941e-07
+        },
+        {
+          "max_residual": 4.218847493575595e-15,
+          "frobenius_residual": 5.37165959164145e-14
+        },
+        {
+          "max_residual": 1.1102230246251565e-15,
+          "frobenius_residual": 6.954767235446483e-15
+        }
+      ]
+    },
+    {
+      "start": 1,
+      "iterations": 100,
+      "max_linkage_residual": 0.00024721583066744657,
+      "frobenius_linkage_residual": 0.003043241040611623,
+      "fermion_right_inverse_residual": 2.220446049250313e-16,
+      "boson_left_inverse_residual": 0.0
+    },
+    {
+      "start": 2,
+      "iterations": 100,
+      "max_linkage_residual": 0.00013123096608872977,
+      "frobenius_linkage_residual": 0.001617490047564076,
+      "fermion_right_inverse_residual": 2.220446049250313e-16,
+      "boson_left_inverse_residual": 0.0
+    },
+    {
+      "start": 3,
+      "iterations": 100,
+      "max_linkage_residual": 0.00026273200978693385,
+      "frobenius_linkage_residual": 0.0031163694659167717,
+      "fermion_right_inverse_residual": 2.220446049250313e-16,
+      "boson_left_inverse_residual": 0.0
+    }
+  ]
+}

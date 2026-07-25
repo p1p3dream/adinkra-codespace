@@ -1,0 +1,48 @@
+{
+  "artifact_sha256": {
+    "COVERAGE.json": "62b0d006960f4fc2ecb5fbff3a736314a267d319acdde677fb754d8846e46908",
+    "ENTITY_ALIASES.json": "80406f9dd489e0e1afde343a31b924f099a3f47340de643fb06e7500c2117204",
+    "nodes.jsonl": "2468a62a01cd41baa029e5afe1528f136a1b5554691d0e4038e13821d6bb2ea0",
+    "proposals.jsonl": "8c48a876c7ed6677a91a764127b52f2721da2edc42dac9cdac046292ccfb40cf"
+  },
+  "checks": {
+    "all_pending_review": true,
+    "allowed_vocabulary": true,
+    "complete_full_text_coverage": true,
+    "deterministic_rebuild": true,
+    "entity_references_resolve": true,
+    "evidence_is_chunk_anchored": true,
+    "one_proposal_per_paper": true
+  },
+  "counts": {
+    "aliases": 166,
+    "chunks_checked": 10153,
+    "covered_papers": 166,
+    "full_text_papers": 166,
+    "metadata_records": 295,
+    "nodes": 332,
+    "proposals": 166
+  },
+  "deterministic_mismatches": [],
+  "errors": [],
+  "method_counts": {
+    "explicit_active_cue_v1": 147,
+    "explicit_passive_cue_v1": 13,
+    "explicit_special_cue_v1": 4,
+    "explicit_title_scope_v1": 2
+  },
+  "relationship_counts": {
+    "CLASSIFIES": 2,
+    "COMPUTES": 5,
+    "CONSTRUCTS": 8,
+    "DEFINES": 5,
+    "DERIVES": 6,
+    "INTRODUCES": 14,
+    "REPORTS_RESULT": 64,
+    "STUDIES": 56,
+    "SUPPORTS": 2,
+    "USES": 4
+  },
+  "schema_version": "gates-full-semantic-validation-v1",
+  "status": "pass"
+}

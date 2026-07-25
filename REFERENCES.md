@@ -9,10 +9,14 @@ relevant module doc-comments).
 
 ## Enumeration and codes (foundational)
 
+- **Doran, Faux, Gates, Hübsch, Iga, Landweber, Miller**, *Topology Types of
+  Adinkras and the Corresponding Representations of N-Extended Supersymmetry*,
+  arXiv:0806.0050. Enumeration of code and Adinkra-topology equivalence classes.
+  Used by: `code.rs`, `canonical.rs`, `search.rs`.
 - **Doran, Faux, Gates, Hübsch, Iga, Landweber**, *Relating Doubly-Even
   Error-Correcting Codes, Graphs, and Irreducible Representations of N-Extended
-  Supersymmetry*, arXiv:0806.0050. Doubly-even codes ↔ adinkra chromotopologies;
-  the N=4/N=8 reference counts. Used by: `code.rs`, `canonical.rs`, `search.rs`.
+  Supersymmetry*, arXiv:0806.0051. Doubly-even codes and Adinkra
+  chromotopologies.
 - **Doran, Faux, Gates, Hübsch, Iga, Landweber**, *Adinkras for Clifford Algebras,
   and Worldline Supermultiplets*, arXiv:0811.3410; **Faux, Gates**, *Adinkras: A
   Graphical Technology for Supersymmetric Representation Theory*, hep-th/0408004.
@@ -51,19 +55,24 @@ relevant module doc-comments).
 
 - **Gates, Hübsch**, *On Dimensional Extension of Supersymmetry: From Worldlines to
   Worldsheets*, arXiv:1104.0722. The worldsheet bow-tie / height-weighted spin-sum
-  predicate (Thm 2.1/2.2, Cor 2.2). Used by: `filters.rs` (`worldsheet_spin_sum`,
-  and the weight-2 necessary condition).
+  obstruction (Thm 2.1/2.2, Cor 2.2). The paper describes evasion of the
+  obstruction as conjectured to be sufficient. Used by: `filters.rs`
+  (`worldsheet_spin_sum`, the certificate verifier, and the weight-2 condition).
 - **Faux, Iga, Landweber**, *Dimensional Enhancement via Supersymmetry*,
   arXiv:0907.3605. The Ω = 0 enhancement obstruction (N=4; not yet generalized to
   N=16). Referenced for the (deferred) 4D non-gauge filter.
 - **Calkins, Gates, Gates, McPeak**, *Is It Possible To Embed A 4D N=4 SUSY Vector
   Multiplet Within A Completely Off-Shell Adinkra Hologram?*, arXiv:1402.5765
-  (JHEP 05(2014)057). Off-shell N=4 as a linear-algebra closure problem.
+  (JHEP 05(2014)057). Off-shell N=4 as a linear-algebra closure problem; explicitly
+  isolates the paired-auxiliary-spinor premise and asks what changes if it is
+  removed. Used by: `sr_hole.rs` (the minimal unpaired arithmetic audit).
 - **Gates et al.**, *Think Different: ... the SUSY Auxiliary Field Problem*,
   arXiv:1502.04164 (JHEP 04(2015)056). The counting/Diophantine framing of the
   off-shell no-go.
 - **Siegel, Roček**, *On off-shell supermultiplets*, Phys. Lett. B 105 (1981) 275.
-  The auxiliary-field counting no-go (finite aux fields ⇒ ≤ 4 supercharges).
+  The auxiliary-field counting argument. Its contradiction uses the additional
+  conventional premise that auxiliary spinors occur in pairs; it is not an
+  algebra-only exclusion of every finite representation. Used by: `sr_hole.rs`.
 - **Arunseangroj, Bedessem, Gates, Yerger**, *Adinkras & Genomics in Sixteen Color
   Systems (I)*, arXiv:2503.13797 (2025). N=16 k=8 D16/E8×E8 distance-spectrum
   validation; "naive off-shell route closed for 4D N=4 Maxwell." Used as the
@@ -75,41 +84,73 @@ relevant module doc-comments).
 
 ## 10D Clifford / supergravity data
 
-- **Cigliano, Dahl, Gates (et al.)**, *10D Supergravity Numerical Data Sets for L &
-  R Matrices*, arXiv:2512.12157; data repo **github.com/mcmulaz/Super-Sym** ("Garden
+- **Plefka, Waldron**, *Asymptotic Supergraviton States in Matrix Theory*,
+  arXiv:hep-th/9801093. The SO(9) supergraviton state content is
+  `44 + 84 | 128`, with symmetric-traceless tensor, three-form, and
+  gamma-traceless vector-spinor sectors. Used as the identification target for
+  `scripts/check_sr_spin9_decomposition.py`; the decomposition itself is
+  verified there by exact Cartan characteristic polynomials.
+
+- **Jacob Cigliano, Bergen Dahl, S. James Gates, Jr.**, *10D Supergravity Numerical
+  Data Sets for L & R Matrices*, arXiv:2512.12157v1; data repo
+  **github.com/mcmulaz/Super-Sym** ("Garden
   Algebra" Mathematica file, commit `8c8df92`). The split SO(1,9) sigma relation
   `σ^μ σ̃^ν + σ^ν σ̃^μ = 2 η^μν I_16` and the explicit 82×176 / 176×82 L/R matrices +
   non-closure tensor E_IJ. Used by: `lorentz.rs` (split-sigma relation),
-  `tendim_data.rs` + `data/tendim_10d_lr.json` (regenerated via
-  `scripts/gen_10d_data.py`).
-  **Provenance note:** our JSON is *regenerated from the authors' Garden Algebra
-  generative source* (github.com/mcmulaz/Super-Sym, commit `8c8df92`), not a literal
-  download of the paper's matrices. It satisfies the bosonic Garden relation to
+  `tendim_generate.rs`, `tendim_data.rs`, and `data/tendim_10d_lr.json`.
+  **Provenance note:** our JSON is generated in Rust from a transcription of the
+  authors' Garden Algebra source at commit
+  `8c8df92`, not a literal download. It satisfies the bosonic Garden relation to
   ~1.7e-12 in float (exactly 0 in exact arithmetic). The fermionic non-closure
   remnant E_IJ is nonzero (computed here, NOT a paper-reported figure). This is
-  evidence of algebraic plausibility. Additionally, a SEPARATE exact (sympy) port of
-  the Garden source matches our JSON entrywise (0 mismatches; bosonic relation
-  exactly 0 in exact arithmetic) — see `scripts/eval_garden_exact.py`. (This is a
-  second exact implementation of the same Garden formulas, so it corroborates "our
-  JSON equals the Garden source", not an independent proof of the paper's
-  convention.) The dataset is therefore faithful to the authors' Garden Algebra
-  source; we make NO claim of byte-equality to any matrices typeset in the paper.
-  **Worked-example discrepancy (UNRESOLVED):** the paper's displayed worked examples
-  in Eq 6.0.5 (and the gravitino ψ examples in Eq 6.0.6) disagree with the Garden
-  source / our JSON — both in bracketed spinor indices (e.g. `ψ_1(6)` vs `ψ_1(16)`)
-  and some coefficients (e.g. paper `i/16` vs our assembled `7/16`). Whether this is
-  a transcription error, a primitive-vs-assembled presentation difference, or a
-  convention map is NOT established and needs the authors. No typo claim is made.
-  See PROVENANCE.md §6.
-  **License / citation posture:** the upstream repo carries no LICENSE file. We keep
-  the dataset public as an *academic regeneration* of the authors' published
-  Mathematica, with full citation to arXiv:2512.12157 and the pinned upstream commit.
+  evidence of algebraic plausibility. Rust verifies all 136 bosonic relations
+  exactly over `Q(sqrt(2))`. The NumPy and SymPy ports remain independent
+  cross-checks and match the Rust artifact entrywise. None executes Wolfram
+  Language or establishes the authors' intended convention.
+  **Paper/source inconsistency:** the audit checks all 13 displayed equations in
+  Eqs. 6.0.5-6.0.6. Four equations and seven of 26 terms match directly. No fixed
+  shared permutation of the displayed spinor labels reconciles the sampled
+  equations with the generator. Appendix A's
+  printed sigma basis supports the generator's `Q_1 h_11 = 2 ψ_1(16)`, not the
+  displayed `ψ_1(6)`. The executable source uses `1/16 MixedLeft`, while its nearby
+  comment says `1/8`. A complete `1/8` variant fails all 136 bosonic Garden
+  pair relations, while `1/16` closes exactly. The Rust generator and both cross-checks agree; the intended L rows and
+  assembled R coefficients still require author confirmation. See PROVENANCE.md §6 and run
+  `cargo run --release -- tendim-reproduce`.
+  **License / citation posture:** the upstream repo carries no LICENSE file. The
+  local artifact is a cited academic transcription of published generative formulas,
+  not a copied upstream matrix file.
   Full hashes, conventions, regen command, and the mismatch status are recorded in
   **PROVENANCE.md**.
 - Octonionic SO(9) Clifford construction (Fano-plane imaginary-octonion
   left-multiplications) and even-dimensional recursive Clifford construction:
   standard; cf. arXiv:2205.09509 (*Lecture note on Clifford algebra*) and the
-  Brink-Schwarz-Scherk 10D SYM construction. Used by: `lorentz.rs`.
+  Brink-Schwarz-Scherk 10D SYM construction. Used by: `lorentz.rs`, `sr_hole.rs`.
+
+## Permutahedron atlas
+
+- **Cianciara, Gates, Hu, Kirk**, *The 300 "Correlators" Suggests 4D, N=1 SUSY
+  Is a Solution to a Set of Sudoku Puzzles*, arXiv:2012.13308v6. Defines the
+  `S4` one-line dictionary, adjacent-transposition permutahedron, six quartets,
+  and all 21 correlator blocks. Used by `permutahedron_fixtures.rs` and
+  `permutahedron_atlas.rs`.
+- **Bristow, Caporaletti, Cianciara, Gates, Levine, Yerger**, *A Note On
+  Exemplary Off-Shell Constructions Of 4D, N=2 Supersymmetry
+  Representations*, arXiv:2012.14015v7. Supplies the six `S8` representation
+  octets and the Diadem octet in Eqs. (5.1)-(5.7), and states the complete
+  40,320-vertex arrangement and named correlator calculation as future work.
+- **Cianciara, Coleman, Gates, Lee, Zhang**, *N=2 SUSY & the
+  Hexipentisteriruncicantitruncated 7-Simplex*, arXiv:2304.09830v2. Supplies
+  `R8`, the 5,040-octet partition, magic number 112, the 168 coincident
+  left-right cosets, 30 conjugate subgroups, and the `S8` face counts.
+- **Cianciara, Gates, Lee, Levy, Razzaz, Richardson**, *Unfolded Adinkra
+  Properties of Supermultiplets (I)*, arXiv:2311.06842v1. Reviewed as part of
+  the four-paper set. It studies unfolded Adinkras and is not a defining source
+  for the finite permutahedron atlas.
+
+The generated finite datasets and complete validation report are documented in
+`docs/permutahedron-atlas.md`. The paper's term "correlator" is retained only
+for the weak-Bruhat distance matrix and is not used for a holoraumy gadget.
 
 ## Scope honesty (what is NOT claimed)
 
@@ -121,5 +162,7 @@ relevant module doc-comments).
   construction is rectangular, matching the 82×176 dataset, and is future work).
 - The `lorentz::assemble_and_check` `e_norm` is an EXPERIMENTAL residual, not a
   calibrated off-shell/on-shell certificate.
-- No positive off-shell lift of 4D N=4 / 10D N=1 is claimed; the counting no-go
-  stands. The pipeline's contribution is obstruction/classification computation.
+- No positive off-shell lift of 4D N=4 / 10D N=1 is claimed. The existing
+  Siegel-Rocek argument excludes its stated conventional paired-auxiliary ansatz,
+  not every finite algebraic representation. `sr_hole.rs` tests a narrower exact
+  minimal adinkraic embedding ansatz and labels that boundary explicitly.

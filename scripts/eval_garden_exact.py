@@ -41,6 +41,11 @@ from itertools import permutations
 import sympy as sp
 from sympy import I, Rational, sqrt, Matrix, zeros, eye
 
+UPSTREAM_REPOSITORY = "https://github.com/mcmulaz/Super-Sym"
+UPSTREAM_COMMIT = "8c8df92dac17853d7f6cb5b136ef2aec0efdea70"
+UPSTREAM_SOURCE = "Garden Algebra"
+UPSTREAM_SOURCE_SHA256 = "d4499ad3077964b49659103fd3cc69e476ac8abe66a033f2284867a8e03b916c"
+
 # ---------------------------------------------------------------------------
 # Sigma / Pauli setup  --  GA:Ln 4-25
 # Exact 2x2 Pauli matrices; sigma2 carries the exact imaginary unit I.
@@ -118,6 +123,8 @@ def _signature(perm):
     """Signature of a permutation given as a tuple of the actual values (GA uses
     Signature[p] on the permuted value-triple, GA:Ln 47-48 / 55-56)."""
     p = list(perm)
+    if len(set(p)) != len(p):
+        return 0
     n = len(p)
     s = 1
     for i in range(n):
@@ -143,6 +150,10 @@ def Sig3UpT(mu, nu, rho):
     for p in permutations([mu, nu, rho]):
         tot += _signature(p) * (sigmaTildeUp(p[0]) * sigUp[p[1]] * sigmaTildeUp(p[2]))
     return Rational(1, 6) * tot
+
+
+assert Sig3Up(0, 0, 1) == zeros(16, 16)
+assert Sig3UpT(0, 0, 1) == zeros(16, 16)
 
 
 def MixedLeft(mu, nu, rho, xi):
@@ -382,7 +393,9 @@ def main():
 
     print("=" * 78)
     print("EXACT (symbolic) Garden Algebra L/R evaluator")
-    print("Source: /tmp/super-sym/Garden Algebra  (line citations 'GA:Ln' in code)")
+    print(f"Source: {UPSTREAM_REPOSITORY} @ {UPSTREAM_COMMIT}")
+    print(f"Source file: {UPSTREAM_SOURCE}  SHA256={UPSTREAM_SOURCE_SHA256}")
+    print("Line citations use the pinned source file.")
     print("=" * 78)
 
     with open(json_path) as f:

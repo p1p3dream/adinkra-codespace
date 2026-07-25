@@ -1,0 +1,280 @@
+{
+  "schema_version": "adynkra-4d-n1-old-minimal-curvature-complex-v4",
+  "source": "hep-th/0108200",
+  "source_equations": "3.1.22, 5.4.18, 5.5.45, 5.5.48, 7.4.2b, and 7.5.19",
+  "compensator": "the chiral conjugate pair obtained by linearizing delta phi^3 = Dbar^2 D^alpha L_alpha",
+  "scalar_curvature": "R = Dbar^2 (chi_bar - (i/3) partial_a H^a), with its conjugate Rbar",
+  "vector_curvature": "the four-term G_a expression in Superspace Eq. (7.5.19)",
+  "bianchi_identities": [
+    "Dbar^dot-alpha G_(alpha dot-alpha) = -D_alpha R",
+    "D^alpha G_(alpha dot-alpha) = Dbar_dot-alpha Rbar",
+    "D^alpha W_(alpha beta gamma) = -(i/2) partial_(beta^dot-alpha G_(gamma) dot-alpha)",
+    "Dbar^dot-alpha Wbar_(dot-alpha dot-beta dot-gamma) = (i/2) partial^alpha_(dot-beta G_(alpha dot-gamma))"
+  ],
+  "convention": "phi = 1 + chi, epsilon^(01) = 1, D^2 = D_1 D_0, and Dbar^2 = Dbar_1 Dbar_0; displayed Bianchi signs are the translated internal convention",
+  "prepotential_basis_inputs": 64,
+  "compensator_prepotential_basis_inputs_per_chirality": 16,
+  "nonzero_curvature_images": 55,
+  "nonzero_conjugate_curvature_images": 55,
+  "chirality_relations_checked": 160,
+  "chirality_residuals": 0,
+  "antichirality_relations_checked": 160,
+  "antichirality_residuals": 0,
+  "gauge_invariance_relations_checked": 128,
+  "gauge_invariance_residuals": 0,
+  "uncompensated_mutation_residuals": 48,
+  "vector_curvature_components": 4,
+  "nonzero_vector_curvature_images": 344,
+  "vector_gauge_relations_checked": 256,
+  "vector_gauge_residuals": 0,
+  "scalar_vector_bianchi_relations_checked": 192,
+  "scalar_vector_bianchi_residuals": 0,
+  "conjugate_scalar_vector_bianchi_relations_checked": 192,
+  "conjugate_scalar_vector_bianchi_residuals": 0,
+  "weyl_vector_bianchi_relations_checked": 192,
+  "weyl_vector_bianchi_residuals": 0,
+  "conjugate_weyl_vector_bianchi_relations_checked": 192,
+  "conjugate_weyl_vector_bianchi_residuals": 0,
+  "unconstrained_compensator_mutation_residuals": 52,
+  "momentum_fiber_cohomology_checks": [
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "momentum_class": "zero",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 40,
+      "curvature_rank": 6,
+      "curvature_kernel_dimension": 66,
+      "middle_cohomology_dimension": 26
+    },
+    {
+      "momentum": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "momentum_class": "null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "momentum_class": "null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "momentum_class": "null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "momentum_class": "non-null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "momentum_class": "non-null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        2,
+        -1,
+        4,
+        3
+      ],
+      "momentum_class": "non-null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    }
+  ],
+  "nonzero_momentum_fibers_exact_at_potential_term": true,
+  "chiral_only_null_cohomology_dimension": 2,
+  "euler_lagrange_source_equations": "Superspace Eqs. (5.5.45) and (5.5.48), with vanishing cosmological and matter sources",
+  "euler_lagrange_equation": "G_(alpha dot-alpha) = 0, R = 0, and Rbar = 0",
+  "euler_lagrange_momentum_checks": [
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "momentum_class": "zero",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 40,
+      "curvature_rank": 6,
+      "curvature_kernel_dimension": 66,
+      "middle_cohomology_dimension": 26
+    },
+    {
+      "momentum": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "momentum_class": "null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 20,
+      "curvature_kernel_dimension": 52,
+      "middle_cohomology_dimension": 4
+    },
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "momentum_class": "null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 20,
+      "curvature_kernel_dimension": 52,
+      "middle_cohomology_dimension": 4
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "momentum_class": "null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 20,
+      "curvature_kernel_dimension": 52,
+      "middle_cohomology_dimension": 4
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "momentum_class": "non-null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "momentum_class": "non-null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    },
+    {
+      "momentum": [
+        2,
+        -1,
+        4,
+        3
+      ],
+      "momentum_class": "non-null",
+      "chiral_compensator_dimension": 4,
+      "antichiral_compensator_dimension": 4,
+      "allowed_potential_dimension": 72,
+      "gauge_rank": 48,
+      "curvature_rank": 24,
+      "curvature_kernel_dimension": 48,
+      "middle_cohomology_dimension": 0
+    }
+  ],
+  "euler_null_bosonic_cohomology_dimension": 2,
+  "euler_null_fermionic_cohomology_dimension": 2,
+  "euler_null_classes_detected_by_chiral_weyl_bosonic": 1,
+  "euler_null_classes_detected_by_chiral_weyl_fermionic": 1,
+  "euler_null_classes_detected_by_conjugate_weyl_bosonic": 1,
+  "euler_null_classes_detected_by_conjugate_weyl_fermionic": 1,
+  "euler_non_null_fibers_have_zero_cohomology": true,
+  "boundary": "linearized old-minimal curvature complex, known source-free Euler-Lagrange operator, and sampled momentum-fiber cohomology; polynomial-module cohomology, helicity identification, and nonlinear equations remain open",
+  "passed": true
+}

@@ -10,7 +10,6 @@
 /// For n <= 10, we use a branch-and-bound search over all column permutations,
 /// pruned by column weight profiles. For n > 10, we use a heuristic based on
 /// sorted column profiles.
-
 use crate::code::DoublyEvenCode;
 use std::collections::{HashMap, HashSet};
 
@@ -224,10 +223,7 @@ fn column_groups_by_weight(col_weights: &[usize]) -> Vec<(usize, Vec<usize>)> {
 /// More precisely: columns with the same weight are interchangeable. We partition
 /// the n destination positions into blocks matching the group sizes (trying all
 /// orderings of groups with the same size), then permute within each block.
-fn optimized_candidate_permutations(
-    col_weights: &[usize],
-    n: usize,
-) -> Vec<Vec<usize>> {
+fn optimized_candidate_permutations(col_weights: &[usize], n: usize) -> Vec<Vec<usize>> {
     let groups = column_groups_by_weight(col_weights);
 
     // The total permutation count: product of group_size! for each group,
@@ -671,10 +667,7 @@ mod tests {
     /// The [8,4,4] extended Hamming code.
     /// Systematic form: I_4 | P where P encodes the parity check extension.
     fn hamming_8_4() -> DoublyEvenCode {
-        DoublyEvenCode::new(
-            8,
-            vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-        )
+        DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000])
     }
 
     /// The zero code of length 4.

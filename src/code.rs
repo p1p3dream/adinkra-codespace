@@ -43,9 +43,7 @@ impl DoublyEvenCode {
 
     /// Check that every codeword has weight divisible by 4.
     pub fn is_doubly_even(&self) -> bool {
-        self.codewords()
-            .iter()
-            .all(|&w| w.count_ones() % 4 == 0)
+        self.codewords().iter().all(|&w| w.count_ones() % 4 == 0)
     }
 
     pub fn k(&self) -> usize {
@@ -166,9 +164,7 @@ impl DoublyEvenCode {
         }
 
         let root = find(&mut parent, support_bits[0]);
-        support_bits
-            .iter()
-            .all(|&b| find(&mut parent, b) == root)
+        support_bits.iter().all(|&b| find(&mut parent, b) == root)
     }
 }
 
@@ -215,14 +211,8 @@ pub fn enumerate_codes(n: usize) -> Vec<DoublyEvenCode> {
         return vec![DoublyEvenCode::new(0, vec![])];
     }
 
-    let max_val = if n >= 32 {
-        u32::MAX
-    } else {
-        (1u32 << n) - 1
-    };
-    let de_vectors: Vec<u32> = (1..=max_val)
-        .filter(|v| v.count_ones() % 4 == 0)
-        .collect();
+    let max_val = if n >= 32 { u32::MAX } else { (1u32 << n) - 1 };
+    let de_vectors: Vec<u32> = (1..=max_val).filter(|v| v.count_ones() % 4 == 0).collect();
 
     let mut results: Vec<DoublyEvenCode> = vec![DoublyEvenCode::new(n, vec![])];
 
@@ -285,9 +275,7 @@ pub fn enumerate_codes(n: usize) -> Vec<DoublyEvenCode> {
 /// For each n in 1..=max_n, return (n, number of raw doubly-even subspaces).
 /// To get equivalence class counts, pipe through canonical::deduplicate.
 pub fn count_classes(max_n: usize) -> Vec<(usize, usize)> {
-    (1..=max_n)
-        .map(|n| (n, enumerate_codes(n).len()))
-        .collect()
+    (1..=max_n).map(|n| (n, enumerate_codes(n).len())).collect()
 }
 
 // ===========================================================================
@@ -301,10 +289,7 @@ mod tests {
 
     /// The [8,4,4] extended Hamming code in systematic form [I4 | P].
     fn hamming_8_4() -> DoublyEvenCode {
-        DoublyEvenCode::new(
-            8,
-            vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-        )
+        DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000])
     }
 
     // -- basic struct -------------------------------------------------------
@@ -591,7 +576,10 @@ mod tests {
             let we = c.weight_enumerator();
             we[0] == 1 && we[4] == 14 && we[8] == 1
         });
-        assert!(has_hamming, "n=8 must include a code with the [8,4,4] weight enumerator");
+        assert!(
+            has_hamming,
+            "n=8 must include a code with the [8,4,4] weight enumerator"
+        );
     }
 
     #[test]

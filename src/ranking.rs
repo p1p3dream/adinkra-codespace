@@ -116,7 +116,9 @@ impl Ranking {
     /// can be raised. A vertex with no edges is not a source.
     pub fn sources(&self, adj: &[Vec<usize>]) -> Vec<usize> {
         (0..self.height.len())
-            .filter(|&v| !adj[v].is_empty() && adj[v].iter().all(|&w| self.height[w] > self.height[v]))
+            .filter(|&v| {
+                !adj[v].is_empty() && adj[v].iter().all(|&w| self.height[w] > self.height[v])
+            })
             .collect()
     }
 
@@ -142,7 +144,10 @@ impl Ranking {
                 if out.len() >= max_out {
                     break;
                 }
-                let srcs = Ranking { height: cur.clone() }.sources(&adj);
+                let srcs = Ranking {
+                    height: cur.clone(),
+                }
+                .sources(&adj);
                 // Raising ONE rotated source at a time (not all at once, which
                 // would just invert the valise) builds genuine 3+-level hangings.
                 if srcs.is_empty() {
@@ -168,7 +173,11 @@ impl Ranking {
     /// steps rather than O(vertices) — which is what unlocks balanced worldsheet
     /// splits on the catalog's biggest graphs (k=1, 32768 vertices). `chains`
     /// independent restart chains (different raise fractions/seeds); capped output.
-    pub fn structured_raises(chromo: &Chromotopology, chains: usize, max_out: usize) -> Vec<Ranking> {
+    pub fn structured_raises(
+        chromo: &Chromotopology,
+        chains: usize,
+        max_out: usize,
+    ) -> Vec<Ranking> {
         let adj = chromo.vertex_adjacency();
         let nv = chromo.num_vertices();
         let mut seen: std::collections::HashSet<Vec<i32>> = std::collections::HashSet::new();
@@ -178,8 +187,10 @@ impl Ranking {
                 break;
             }
             // Per-chain xorshift PRNG and raise fraction (~1/2 .. 1/7 of sources).
-            let mut state =
-                0x9E37_79B9_7F4A_7C15u64 ^ (chain as u64).wrapping_mul(0xD1B5_4A32_D192_ED03).wrapping_add(1);
+            let mut state = 0x9E37_79B9_7F4A_7C15u64
+                ^ (chain as u64)
+                    .wrapping_mul(0xD1B5_4A32_D192_ED03)
+                    .wrapping_add(1);
             let mut rng = move || {
                 state ^= state << 13;
                 state ^= state >> 7;
@@ -192,7 +203,10 @@ impl Ranking {
                 if out.len() >= max_out {
                     break;
                 }
-                let srcs = Ranking { height: cur.clone() }.sources(&adj);
+                let srcs = Ranking {
+                    height: cur.clone(),
+                }
+                .sources(&adj);
                 if srcs.is_empty() {
                     break;
                 }
@@ -266,12 +280,7 @@ impl Ranking {
 /// has at least one assigned neighbor (so it is connected to the frontier),
 /// try both `neighbor_height +/- 1`, and recurse. When all reachable vertices
 /// are assigned we record the assignment.
-fn dfs_assign(
-    _root: usize,
-    adj: &[Vec<usize>],
-    height: &mut Vec<i32>,
-    results: &mut Vec<Ranking>,
-) {
+fn dfs_assign(_root: usize, adj: &[Vec<usize>], height: &mut Vec<i32>, results: &mut Vec<Ranking>) {
     const UNASSIGNED: i32 = i32::MIN;
 
     // Find the lowest-index unassigned vertex adjacent to an assigned one.
@@ -309,9 +318,9 @@ fn dfs_assign(
     // Try both height choices for v relative to its assigned neighbor.
     for cand in [base + 1, base - 1] {
         // Check consistency against ALL currently-assigned neighbors.
-        let consistent = adj[v].iter().all(|&w| {
-            height[w] == UNASSIGNED || (height[w] - cand).abs() == 1
-        });
+        let consistent = adj[v]
+            .iter()
+            .all(|&w| height[w] == UNASSIGNED || (height[w] - cand).abs() == 1);
         if !consistent {
             continue;
         }
@@ -417,7 +426,11 @@ mod tests {
         // No duplicates.
         let mut seen = std::collections::HashSet::new();
         for r in &all {
-            assert!(seen.insert(r.height.clone()), "duplicate ranking {:?}", r.height);
+            assert!(
+                seen.insert(r.height.clone()),
+                "duplicate ranking {:?}",
+                r.height
+            );
         }
     }
 
@@ -426,15 +439,26 @@ mod tests {
         for (n, gens) in [(4usize, vec![0b1111u32]), (8, vec![0b11110000, 0b00001111])] {
             let ct = Chromotopology::from_code(&DoublyEvenCode::new(n, gens));
             let rs = Ranking::structured_raises(&ct, 6, 200);
-            assert!(!rs.is_empty(), "structured_raises produced nothing for n={n}");
+            assert!(
+                !rs.is_empty(),
+                "structured_raises produced nothing for n={n}"
+            );
             let mut saw_multilevel = false;
             for r in &rs {
-                assert!(r.is_valid(&ct).is_ok(), "invalid ranking {:?}: {}", r.height, r.is_valid(&ct).unwrap_err());
+                assert!(
+                    r.is_valid(&ct).is_ok(),
+                    "invalid ranking {:?}: {}",
+                    r.height,
+                    r.is_valid(&ct).unwrap_err()
+                );
                 if r.num_levels() > 2 {
                     saw_multilevel = true;
                 }
             }
-            assert!(saw_multilevel, "structured_raises should reach 3+ levels for n={n}");
+            assert!(
+                saw_multilevel,
+                "structured_raises should reach 3+ levels for n={n}"
+            );
         }
     }
 

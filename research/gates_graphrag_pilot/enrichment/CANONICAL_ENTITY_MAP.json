@@ -1,0 +1,70 @@
+{
+  "aliases": {
+    "algebra:garden-algebra": {
+      "key": "algebra:garden-algebra",
+      "name": "Garden algebra",
+      "type": "algebra"
+    },
+    "concept:lie-algebra-branching-rule": {
+      "key": "method:lie-algebra-branching-rule",
+      "name": "Lie-algebra branching rule",
+      "type": "method"
+    },
+    "construction:4d-n1-pair-forming-4d-n2-supermultiplet": {
+      "key": "construction:4d-n1-pair-forming-4d-n2-supermultiplet",
+      "name": "off-shell 4D N = 1 supermultiplet pairing for 4D N = 2",
+      "type": "construction"
+    },
+    "construction:adynkra": {
+      "key": "concept:adynkra",
+      "name": "adynkra",
+      "type": "concept"
+    },
+    "construction:adynkra-genome": {
+      "key": "concept:adynkra-genome",
+      "name": "Adynkra genome",
+      "type": "concept"
+    },
+    "construction:adynkrafield": {
+      "key": "concept:adynkrafield",
+      "name": "adynkrafield",
+      "type": "concept"
+    },
+    "construction:infinitely-unfolded-adinkra": {
+      "key": "concept:infinite-unfolded-adinkra",
+      "name": "infinite unfolded Adinkra",
+      "type": "concept"
+    },
+    "dataset:component-multiplet-embedding-d4-d9": {
+      "key": "dataset:component-multiplet-embedding-d4-d9",
+      "name": "component-multiplet embeddings in dimensions four through nine",
+      "type": "dataset"
+    },
+    "method:breitenlohner-prepotential-scan": {
+      "key": "method:breitenlohner-prepotential-scan",
+      "name": "Breitenlohner prepotential scan",
+      "type": "method"
+    },
+    "method:component-field-adynkra-genome-overlap": {
+      "key": "method:adynkrafield-overlap-construction",
+      "name": "adynkrafield overlap construction",
+      "type": "method"
+    },
+    "method:height-yielding-matrix-number": {
+      "key": "invariant:height-yielding-matrix-number",
+      "name": "Height Yielding Matrix Number",
+      "type": "invariant"
+    },
+    "method:hopping-operator": {
+      "key": "concept:hopping-operator",
+      "name": "hopping operator",
+      "type": "concept"
+    },
+    "method:recursive-time-derivative-unfolding": {
+      "key": "method:time-derivative-unfolding",
+      "name": "time-derivative unfolding",
+      "type": "method"
+    }
+  },
+  "schema_version": "gates-semantic-canonical-map-v1"
+}

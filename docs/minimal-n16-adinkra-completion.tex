@@ -1,0 +1,629 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage[letterpaper,margin=0.82in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tabularx}
+
+\definecolor{ink}{HTML}{172033}
+\definecolor{accent}{HTML}{315A8A}
+\definecolor{soft}{HTML}{EDF3F8}
+\definecolor{warn}{HTML}{F8F1E7}
+\definecolor{rulegray}{HTML}{C9D3DE}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  citecolor=accent,
+  urlcolor=accent,
+  pdftitle={Testing a Minimal N=16 Adinkra Completion},
+  pdfauthor={Brandon Kirkland},
+  pdfsubject={Projected one-dimensional linkage equations, covariance tests, and the remaining four-dimensional problem}
+}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.35em,itemsep=0.2em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.2em,topsep=0.25em}
+\titleformat{\section}{\large\bfseries\color{ink}}{}{0pt}{}[\vspace{-0.25em}\color{rulegray}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{accent}}{}{0pt}{}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small Testing a minimal $N=16$ Adinkra completion}
+\rhead{\small Status through 14 July 2026}
+\cfoot{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\newcommand{\summarybox}[1]{%
+  \begin{center}
+  \fcolorbox{rulegray}{soft}{\begin{minipage}{0.94\linewidth}\small #1\end{minipage}}
+  \end{center}}
+\newcommand{\scopebox}[1]{%
+  \begin{center}
+  \fcolorbox{rulegray}{warn}{\begin{minipage}{0.94\linewidth}\small\textbf{Scope.} #1\end{minipage}}
+  \end{center}}
+\newcommand{\pathcode}[1]{\nolinkurl{#1}}
+\newcommand{\artifactpath}[1]{{\scriptsize\pathcode{#1}}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{ink} Testing a Minimal $N=16$ Adinkra Completion}\par
+  \vspace{0.3em}
+  {\large Projected one-dimensional linkage equations, covariance tests, and the remaining
+  four-dimensional problem}\par
+  \vspace{0.55em}
+  {\normalsize Brandon Kirkland}\par
+  \vspace{0.2em}
+  {\small Status through 14 July 2026}
+\end{center}
+
+\summarybox{%
+The project began with a catalog of the 145 positive-dimensional
+permutation-equivalence classes of length-16 doubly-even codes and a tested
+implementation of the associated Adinkra calculations.  On 14 July,
+the minimal $128\vert128$ valise suggested by relaxing the conventional paired
+auxiliary-spinor count was tested.
+For catalog entry 75 and dashing class 0, the projected one-dimensional linkage
+equations have a real solution.  A Banach contraction calculation with final
+rational bounds establishes its existence under the stated arithmetic assumptions.  The tested
+valise does not satisfy any of the higher-dimensional covariance conditions
+examined here.  Its Spin(9) content is $44+84\vert128$, and therefore does not
+contain the $9\vert16$ vector and spinor representations of ten-dimensional
+super-Yang-Mills theory.
+After restriction to $\operatorname{Spin}(3)\times\operatorname{Spin}(6)$, the
+physical gaugino occurs once but the spatial vector and six scalars are absent.
+The next planned case is a nonvalise four-dimensional gauge and auxiliary
+complex with maps that remain nonzero at zero momentum.}
+
+\scopebox{No finite off-shell four-dimensional, $\mathcal N=4$ or
+ten-dimensional,
+$\mathcal N=1$ super-Yang-Mills multiplet is claimed.  The negative
+results apply to the tested valise and to the explicitly described local,
+derivative-only, and direct-sum extensions.}
+
+\section{Literature question}
+
+The conventional auxiliary-field obstruction traces to Siegel and Ro\v cek
+\cite{siegel1981}.  The four-dimensional, $\mathcal N=4$ problem was later
+formulated as an
+Adinkra and linear-algebra completion problem \cite{calkins2014,calkins2015}.
+The paired-unit premise enters the Siegel-Ro\v cek count and is stated
+explicitly in the 2014 reformulation, which asks whether the no-go conclusion
+changes if that premise is dropped \cite{siegel1981,calkins2014}.  The present
+computation provisionally drops only that premise and tests the first resulting
+$N=16$ valise size.  It does not assume that the unpaired units are admissible
+Lorentz representations.  The calculation also uses the
+code-to-Adinkra correspondence \cite{doran2008}, the published
+dimensional-enhancement conditions \cite{faux2009}, and the recent
+sixteen-color classification program \cite{arunseangroj2025}.
+
+Question:
+
+\begin{quote}
+Can a minimal $N=16$ Garden module contain or encode the physical vector and
+gaugino so that the resulting representation is finite, local, covariant, and
+off shell?
+\end{quote}
+
+The tested valise does not contain the required physical fields as an ordinary
+covariant subrepresentation or quotient.  Gauge and auxiliary complexes with
+different field content remain untested.
+
+\section{Research baseline through 13 July 2026}
+
+Before this investigation, the repository contained the following validated
+components.
+
+\subsection{Catalog and representation calculations}
+
+The catalog contains 145 permutation-equivalence classes of positive-dimensional
+length-16 doubly-even codes \cite{doran2008topology}, distributed by code dimension as
+
+\begin{center}
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+$k$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+classes & 4 & 10 & 23 & 38 & 36 & 23 & 9 & 2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For each dimension-$k$ code class, the catalog records one generator matrix and
+the calculation constructs its $2^k$ dashing cohomology classes.  Across all
+145 code classes, this gives 5,128 pairs consisting of a code class and a
+dashing cohomology class before height
+assignments are included.  The catalog and representation pipeline constructs the corresponding
+quotient chromotopologies, dashings, signed-permutation Garden matrices,
+holoraumy matrices, irreducible decompositions, and Gadget values.  The browser
+interfaces display the catalog and these calculated quantities.
+
+\subsection{Worldsheet and enhancement results}
+
+For every catalogued code class, the calculation retains an explicit height
+assignment and a chirality split with $p,q>0$.  A separate computational
+verification pass reconstructs each chromotopology from its catalog generators
+and checks, for all 145 records, the field dimensions, validity of the height
+assignment, nontriviality of the $(p,q)$ split, and the Gates-H\"ubsch spin-sum
+obstruction of Theorems 2.1 and 2.2 \cite{gates2011}.  The paper describes
+evasion of that obstruction as conjectured to be sufficient for worldsheet
+extension.  The present calculation therefore establishes catalog-wide passage
+of the implemented obstruction.  It does not construct the worldsheet
+transformation laws, prove the sufficiency conjecture, or imply extension to
+four or ten dimensions.  The 145 witnesses are retained in
+\pathcode{results/worldsheet_spin_sum_witnesses_n16.json}.
+
+The published dimensional-enhancement equations \cite{faux2009} were first
+checked against the published $N=4$ result.  At $N=16$, the calculation used
+dashing class 0 for each of the 145 code classes and tested a finite candidate
+set: the valise, one engineered parity-gradient candidate when it defined a
+valid ranking, and sampled structured source-raised rankings.  No tested candidate satisfied the
+non-gauge ten-dimensional enhancement condition.  This conclusion is limited
+because neither the dashing classes nor the height assignments were searched
+exhaustively, and the gauge or phantom sector
+had not been implemented.  The cited paper introduces phantoms to handle
+higher-dimensional gauge invariance.
+
+\subsection{Pre-cutoff direction}
+
+The published Baulieu-Berkovits-Bossard-Martin nine-supercharge construction
+had been selected as the next calculation involving gauge symmetry
+\cite{baulieu2008}.  It adds seven auxiliary scalars and closes 9 of the 16
+ten-dimensional supercharges off shell.  As of 13 July, this calculation had
+been specified but not implemented.
+
+\section{Minimal-valise analysis on 14 July}
+
+\subsection{Counting premise and exhaustive restricted scans}
+
+The reviewed count is
+
+\begin{equation}
+16+32n=128m.
+\end{equation}
+
+The increment $32n$ implements the premise that 16-component auxiliary
+fermionic units occur in pairs.  Provisionally dropping only that premise and
+counting the units individually gives
+
+\begin{equation}
+16+16q=128m,
+\end{equation}
+
+whose first solution is $m=1$, $q=7$.  Thus $128\vert128$ is the first size
+suggested by the relaxed count.  This arithmetic does not prove that seven
+independent auxiliary spinors are Lorentz-covariant, local, or admissible.
+
+For both self-dual length-16 chromotopologies, all 256 dashing classes were
+tested exhaustively in each of two restricted ansatz classes:
+
+\begin{itemize}
+  \item no literal nine-boson coordinate subspace exists;
+  \item the standard no-leakage embedding has only the zero solution, including
+        arbitrary real mixing.
+\end{itemize}
+
+These two conclusions cover all 512 minimal dashings within the stated
+ansatz classes.  They do not describe an exhaustive solution of the unrestricted
+bilinear injection and projection equations below.
+
+\subsection{Projected one-dimensional linkage equations}
+
+Introduce linear injection and projection maps
+
+\begin{equation}
+\begin{aligned}
+J_B &: \mathbb R^9\longrightarrow\mathbb R^{128}, &
+P_B &: \mathbb R^{128}\longrightarrow\mathbb R^9,\\
+J_F &: \mathbb R^{16}\longrightarrow\mathbb R^{128}, &
+P_F &: \mathbb R^{128}\longrightarrow\mathbb R^{16},
+\end{aligned}
+\end{equation}
+
+with $P_BJ_B=I_9$ and $P_FJ_F=I_{16}$.  These identities make the pairs
+$(J_B,P_B)$ and $(J_F,P_F)$ linear retractions.  The projected
+one-dimensional linkage matrices are required to equal the nine real symmetric
+Spin(9) gamma matrices.
+
+For the $E_8\times E_8$ topology, catalog entry 75 and dashing 0, a
+coordinate boson injection and rank-16 fermion projection satisfy one set of
+linkage equations.  For the $D_{16}$ topology, the corresponding support
+condition has no solution in this ansatz.  A coordinate right inverse for the
+fermion projection does not satisfy the remaining equations.  The uniform right
+inverse also fails: over the rationals, its coefficient matrix has rank 128 and
+the augmented matrix has rank 129 for each single target component.  For the
+combined nine-target system, the augmented rank is 137.
+
+For catalog entry 75 and dashing class 0, removing those section restrictions
+leaves 2,304 bilinear equations in 2,863 affine variables.  This unrestricted
+bilinear solve was not repeated for the other 511 minimal dashings.  A numerical
+root has maximum residual $1.11\times10^{-15}$ and a Jacobian of full row rank.
+A separate a posteriori Banach contraction calculation uses
+an IEEE-754 round-to-nearest error audit and final rational inequalities.  Under
+those stated arithmetic assumptions, it establishes a real zero within radius
+$3\times10^{-11}$ of the numerical solution.  The final contraction bound is
+
+\begin{equation}
+\frac{46133}{3125000000}<1.
+\end{equation}
+
+The projected one-dimensional system therefore has a real solution.  The
+$112=7\times16$ dimension of the projection kernel is a dimension count; it does
+not establish the presence of seven Lorentz-covariant auxiliary spinors.
+
+\section{Covariance and locality tests}
+
+\subsection{Spin(9) equivariance}
+
+The sixteen Garden colors carry the physical Spin(9) spinor action.  Its
+induced action on all 128 bosons and 128 fermions was constructed symbolically.  The
+quadratic Casimirs are
+
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+space & Casimir \\
+\midrule
+physical vector & 8 \\
+physical spinor & 9 \\
+full bosons & 18 \\
+full fermions & 18 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Every equivariant map must intertwine the quadratic Casimir.  The unequal
+eigenvalues force all four maps in the proposed linear retraction to vanish.
+Thus the real solution of the projected one-dimensional equations is not a
+Spin(9)-equivariant linear retraction of the tested field spaces.
+
+\subsection{Time and spatial derivatives}
+
+For a time-derivative map $T(D)=\sum_k T_kD^k$, Spin(9) commutes with $D$ and
+the Casimir equation applies coefficient by coefficient.  Ordinary node
+raising and lowering cannot satisfy the required retraction identities over
+either $\mathbb R[D]$ or $\mathbb R[D,D^{-1}]$.
+
+For finite local spatial operators over
+$\mathbb R[D,p_1,\ldots,p_9]$, evaluation at $p=0$ gives the already excluded
+time-derivative map.  Hence
+
+\begin{equation}
+(P_BJ_B)(0,D)=0\ne I_9,
+\qquad
+(P_FJ_F)(0,D)=0\ne I_{16}.
+\end{equation}
+
+Spatial-potential gauge shifts $\delta A_i=p_i\epsilon$ and Bianchi corrections
+of positive spatial degree also vanish after setting $p=0$.  The identity therefore
+fails on the same module.
+
+\section{Spin(9) representation of the valise}
+
+Integer characteristic polynomials for four Cartan generators and a separating
+base-32 combination determine the full joint Spin(9) character:
+
+\begin{equation}
+B_{128}=\operatorname{Sym}^2_0(9)\oplus\Lambda^3(9)=44\oplus84,
+\end{equation}
+
+\begin{equation}
+F_{128}=(9\otimes16)-16=128,
+\end{equation}
+
+where the fermionic representation is the gamma-traceless vector-spinor.  This is the
+Spin(9) state content of the eleven-dimensional supergravity multiplet
+\cite{plefka1998}.  It does not contain the vector $9$ and spinor $16$ required
+by the time-reduced ten-dimensional super-Yang-Mills transformations.
+
+The ordinary ten-dimensional exterior complex was also built symbolically:
+
+\begin{equation}
+\Lambda^0\longrightarrow\Lambda^1\longrightarrow\Lambda^2
+\longrightarrow\Lambda^3,
+\end{equation}
+
+with dimensions $1,10,45,120$ and generic ranks $1,9,36$.  Under spatial
+Spin(9), the cochains contain
+
+\begin{equation}
+1,\qquad 1\oplus9,\qquad9\oplus36,\qquad36\oplus84.
+\end{equation}
+
+At total momentum zero, every exterior differential vanishes.  A chain-homotopy
+identity $PJ-I=dH+Hd$ therefore reduces to the ordinary linear retraction already
+excluded by the Casimir calculation.  Replacing potentials by field strengths
+does not change this conclusion unless the representation at zero momentum or
+the differential itself is changed.
+
+An ordinary $N=16$ valise has boson and fermion dimensions in multiples of 128.
+The next direct-sum enlargement of the tested representation has dimension
+$256\vert256$.  Direct sums of this representation and its parity reversal
+contain only combinations of $44$, $84$, and $128$; none contains both a
+bosonic $9$ and a fermionic $16$.
+
+\section{Direct four-dimensional covariance test}
+
+The validated action was also restricted to
+$\operatorname{Spin}(3)\times\operatorname{Spin}(6)\simeq
+SU(2)\times SU(4)_R$.  The physical bosons require
+
+\begin{equation}
+9\longrightarrow(3,1)\oplus(1,6).
+\end{equation}
+
+Restricted Cartan characters and joint-Casimir nullities give
+
+\begin{align}
+44 &\longrightarrow (5,1)\oplus(3,6)\oplus(1,20')\oplus(1,1),\\
+84 &\longrightarrow (1,1)\oplus(3,6)\oplus(3,15)\oplus(1,20),
+\end{align}
+
+and, after complexification,
+
+\begin{align}
+128\longrightarrow{}&(4,4)\oplus(4,\bar4)\oplus(2,4)\oplus(2,\bar4)\\
+&\oplus(2,20)\oplus(2,\overline{20}).
+\end{align}
+
+The real physical gaugino $(2,4)\oplus(2,\bar4)$ has multiplicity one.  The
+required bosonic eigenspaces have dimensions
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+target & found & required \\
+\midrule
+$(3,1)$ spatial vector & 0 & 3 \\
+$(1,6)$ six scalars & 0 & 6 \\
+real gaugino & 16 & 16 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Compact-group complete reducibility therefore excludes an ordinary
+$\operatorname{Spin}(3)\times\operatorname{Spin}(6)$-equivariant linear
+retraction from the tested valise onto the physical field representation.  The
+missing representations are bosonic.
+
+\section{Results and scope}
+
+\subsection{One-dimensional result}
+
+For catalog entry 75 with dashing 0, the projected one-dimensional linkage
+equations have a real solution.  This establishes consistency of those
+projected equations only.
+
+\subsection{Negative results within the tested class}
+
+Within the tested valise, the following constructions do not produce the
+required physical representation:
+
+\begin{itemize}
+  \item literal or standard mixed subspace embedding;
+  \item any Spin(9)-equivariant linear retraction;
+  \item time node raising or finite local spatial derivatives;
+  \item positive-spatial-degree gauge and Bianchi corrections;
+  \item the ordinary derivative-only exterior gauge complex;
+  \item $256\vert256$ direct sums of the same valise representation;
+  \item an ordinary
+        $\operatorname{Spin}(3)\times\operatorname{Spin}(6)$-equivariant
+        linear retraction onto the four-dimensional physical fields.
+\end{itemize}
+
+\subsection{Scope}
+
+The computation does not exclude a different nonvalise or gauge-extended
+representation, an auxiliary complex with maps that remain nonzero at zero
+momentum, a
+rectangular construction, or a nonlocal formulation that removes the zero
+mode.  The last option does not address the usual finite local auxiliary-field
+problem.
+
+\section{Open questions and next calculations}
+
+The next question is whether a finite, local four-dimensional gauge and
+auxiliary complex at zero momentum can supply the missing off-shell degrees of
+freedom while respecting
+$\operatorname{Spin}(3)\times\operatorname{Spin}(6)$, engineering parity, and
+the physical cohomology.  The following calculations address that question in
+order:
+
+\begin{itemize}
+  \item Algebraic complex at zero momentum: enumerate allowed gauge,
+        compensator, Bianchi, and auxiliary maps at zero momentum, then compute
+        their cohomology over the chosen coefficient field.
+  \item Missing-representation inventory: if the zero-momentum complex
+        fails, calculate the missing
+        $\operatorname{Spin}(3)\times\operatorname{Spin}(6)$ representations
+        and the smallest admissible field content before choosing another
+        module size.
+  \item Nonvalise or rectangular one-dimensional linkage: build the smallest
+        candidate implied by that inventory and require one-dimensional closure
+        without equations of motion.
+  \item Full spatial closure: add all three spatial derivative
+        linkages and classify every remainder as a translation, gauge
+        transformation, a term in the image of the complex differential, or an
+        identity.
+  \item Lorentz and internal-symmetry covariance: construct rotations,
+        boosts, and the required internal symmetry on fields, supercharges,
+        gauge parameters, auxiliaries, and differentials.
+  \item Finite, local, off-shell verification: exclude inverse derivatives,
+        hidden boundary conditions, equations of motion, and infinite
+        auxiliary towers.
+  \item Invariant abelian action: construct a local quadratic action,
+        prove invariance under all sixteen supercharges, and verify the physical
+        spectrum and auxiliary signs.
+  \item Counting-premise assessment: after closure and action
+        invariance, compare the construction with the published counting
+        premises and determine which assumption, scope condition, or inference
+        requires revision.  Confirm that the construction preserves locality,
+        finiteness, covariance, and off-shell closure.
+  \item Nonabelian deformation: promote the validated abelian system
+        order by order in the coupling and repeat the closure and action tests.
+\end{itemize}
+
+Inverse spatial derivatives, deletion of zero-momentum modes,
+boundary-condition-dependent constructions, and direct ten-dimensional
+extension are separate cases.  None resolves the stated finite, local,
+four-dimensional problem.
+
+The detailed decision tree and acceptance and rejection criteria are recorded in
+the project roadmap included with the repository.
+
+\section{Computational artifacts and reproduction}
+
+The tested command-line pipeline performs the catalog construction,
+representation calculations, minimal-valise search, and contraction-bound
+verification.  Standalone programs perform the symbolic and numerical audits
+listed below.  The retained outputs and corresponding reproduction commands
+are given below.
+
+Repository:
+\href{https://github.com/p1p3dream/adinkra-codespace}{\texttt{github.com/p1p3dream/adinkra-codespace}}.
+
+\begin{tabularx}{\linewidth}{@{}p{0.45\linewidth}X@{}}
+\toprule
+Artifact & Recorded result \\
+\midrule
+\artifactpath{results/sr_hole_minimal.json} & Arithmetic, topology, dashing, and
+minimal embedding calculation. \\
+\artifactpath{results/worldsheet_spin_sum_witnesses_n16.json} & Explicit height and
+chirality records for all 145 code classes.  The
+\pathcode{worldsheet-verify} command performs the catalog, dimension, height,
+chirality, and spin-sum checks. \\
+\artifactpath{results/sr_joint_root_audit.json} & Banach contraction bounds for
+the projected linkage equations. \\
+\artifactpath{results/sr_so9_equivariance_audit.json} & Symbolic field action,
+covariance, Lie closure, and Casimir obstruction. \\
+\artifactpath{results/sr_nonvalise_locality_audit.json} & Time-derivative ring
+obstruction. \\
+\artifactpath{results/sr_spatial_gauge_locality_audit.json} & Zero-spatial-momentum
+locality result for the stated class of gauge and Bianchi corrections. \\
+\artifactpath{results/sr_spin9_decomposition_audit.json} & Verified
+$44+84\vert128$ character. \\
+\artifactpath{results/sr_gauge_complex_audit.json} & Exterior complex,
+chain-homotopy condition, and $256\vert256$ direct-sum calculation. \\
+\artifactpath{results/sr_spin3_spin6_branching_audit.json} & Verified direct
+four-dimensional branching and physical-field multiplicities. \\
+\bottomrule
+\end{tabularx}
+
+\begin{verbatim}
+cargo run --release -- sr-investigation
+cargo run --release -- worldsheet-verify
+cargo test
+python3 scripts/verify_sr_uniform_section.py
+python3 scripts/search_sr_joint_section.py --starts 4 --iterations 100
+python3 scripts/prove_sr_joint_root.py
+python3 scripts/check_sr_so9_equivariance.py
+python3 scripts/check_sr_nonvalise_locality.py
+python3 scripts/check_sr_spatial_gauge_locality.py
+python3 scripts/check_sr_spin9_decomposition.py
+python3 scripts/check_sr_gauge_complex.py
+python3 scripts/check_sr_spin3_spin6_branching.py
+\end{verbatim}
+
+At the date of this note, the project test suite reports 239 passed tests, no failures,
+and six ignored slow tests.
+
+\begin{thebibliography}{99}
+\small
+\setlength{\itemsep}{0.45\baselineskip}
+
+\bibitem{siegel1981}
+W. Siegel and M. Ro\v cek,
+``On off-shell supermultiplets,''
+\emph{Physics Letters B} \textbf{105}, no.~4 (1981) 275--277,
+report CALT-68-818,
+\href{https://doi.org/10.1016/0370-2693(81)90887-X}{doi:10.1016/0370-2693(81)90887-X}.
+
+\bibitem{calkins2014}
+M. Calkins, D. E. A. Gates, S. J. Gates Jr. and B. McPeak,
+``Is It Possible To Embed A 4D, $N=4$ Supersymmetric Vector Multiplet Within A
+Completely Off-Shell Adinkra Hologram?,''
+\emph{Journal of High Energy Physics} \textbf{2014}, no.~5, article 057
+(2014), preprint UMDEPP-014-004,
+\href{https://arxiv.org/abs/1402.5765}{arXiv:1402.5765 [hep-th]},
+\href{https://doi.org/10.1007/JHEP05(2014)057}{doi:10.1007/JHEP05(2014)057}.
+
+\bibitem{calkins2015}
+M. Calkins, D. E. A. Gates, S. J. Gates Jr. and W. M. Golding,
+``Think Different: Applying the Old Macintosh Mantra to the Computability of
+the SUSY Auxiliary Field Problem,''
+\emph{Journal of High Energy Physics} \textbf{2015}, no.~4, article 056
+(2015), preprint UMDEPP-015-003,
+\href{https://arxiv.org/abs/1502.04164}{arXiv:1502.04164 [hep-th]},
+\href{https://doi.org/10.1007/JHEP04(2015)056}{doi:10.1007/JHEP04(2015)056}.
+
+\bibitem{doran2008}
+C. F. Doran, M. G. Faux, S. J. Gates Jr., T. H\"ubsch, K. M. Iga and
+G. D. Landweber,
+``Relating Doubly-Even Error-Correcting Codes, Graphs, and Irreducible
+Representations of $N$-Extended Supersymmetry,''
+in F. Liu, G. M. N'Gu\'er\'ekata, D. Pokrajac, X. Q. Shi, J. Sun and X. G. Xia,
+eds., \emph{Discrete and Computational Mathematics}, Nova Science Publishers,
+Hauppauge, New York (2008), pp.~53--71, ISBN 978-1-60021-810-1,
+\href{https://arxiv.org/abs/0806.0051}{arXiv:0806.0051 [hep-th]},
+\href{https://doi.org/10.48550/arXiv.0806.0051}{doi:10.48550/arXiv.0806.0051}.
+
+\bibitem{faux2009}
+M. G. Faux, K. M. Iga and G. D. Landweber,
+``Dimensional Enhancement via Supersymmetry,''
+\emph{Advances in Mathematical Physics} \textbf{2011}, article 259089
+(2011), 45 pp.,
+\href{https://arxiv.org/abs/0907.3605}{arXiv:0907.3605 [hep-th]},
+\href{https://doi.org/10.1155/2011/259089}{doi:10.1155/2011/259089}.
+
+\bibitem{arunseangroj2025}
+J. Arunseangroj, J. Bedessem, S. J. Gates Jr. and G. Yerger,
+``Adinkras \& Genomics in Sixteen Color Systems (I),''
+preprint (2025), 33 pp.,
+\href{https://arxiv.org/abs/2503.13797}{arXiv:2503.13797 [hep-th]},
+\href{https://doi.org/10.48550/arXiv.2503.13797}{doi:10.48550/arXiv.2503.13797}.
+
+\bibitem{doran2008topology}
+C. F. Doran, M. G. Faux, S. J. Gates Jr., T. H\"ubsch, K. M. Iga,
+G. D. Landweber and R. L. Miller,
+``Topology Types of Adinkras and the Corresponding Representations of
+$N$-Extended Supersymmetry,''
+preprints UMDEPP 08-010 and SUNY-O/667 (2008), 41 pp.,
+\href{https://arxiv.org/abs/0806.0050}{arXiv:0806.0050 [hep-th]},
+\href{https://doi.org/10.48550/arXiv.0806.0050}{doi:10.48550/arXiv.0806.0050}.
+
+\bibitem{gates2011}
+S. J. Gates Jr. and T. H\"ubsch,
+``On Dimensional Extension of Supersymmetry: From Worldlines to Worldsheets,''
+\emph{Advances in Theoretical and Mathematical Physics} \textbf{16}, no.~6
+(2012) 1619--1667, preprints UMDEPP-11-005 and MIT-CTP-4232,
+\href{https://arxiv.org/abs/1104.0722}{arXiv:1104.0722 [hep-th]},
+\href{https://doi.org/10.4310/ATMP.2012.v16.n6.a2}{doi:10.4310/ATMP.2012.v16.n6.a2}.
+
+\bibitem{baulieu2008}
+L. Baulieu, N. Berkovits, G. Bossard and A. Martin,
+``Ten-dimensional super-Yang-Mills with nine off-shell supersymmetries,''
+\emph{Physics Letters B} \textbf{658}, no.~5 (2008) 249--254,
+\href{https://arxiv.org/abs/0705.2002}{arXiv:0705.2002 [hep-th]},
+\href{https://doi.org/10.1016/j.physletb.2007.05.027}{doi:10.1016/j.physletb.2007.05.027}.
+
+\bibitem{plefka1998}
+J. Plefka and A. Waldron,
+``Asymptotic Supergraviton States in Matrix Theory,''
+in H. Dorn, D. L\"ust and G. Weigt, eds., \emph{Theory of Elementary Particles:
+Proceedings of the 31st International Symposium Ahrenshoop}, Buckow, Germany,
+2--6 September 1997, Wiley-VCH, Berlin and New York (1998), pp.~130--136,
+ISBN 978-3-527-40224-3, report NIKHEF 98-001,
+\href{https://arxiv.org/abs/hep-th/9801093}{arXiv:hep-th/9801093 [hep-th]},
+\href{https://doi.org/10.48550/arXiv.hep-th/9801093}{doi:10.48550/arXiv.hep-th/9801093}.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,353 @@
+{
+  "schema_version": "adynkra-4d-n1-old-minimal-operator-v1",
+  "source_arxiv": "2407.09334v1 and hep-th/0108200",
+  "source_equations": "Adynkra genomes Eqs. (3.6) and (3.11), Adynkrafield definition Eq. (4.4), and examples Eqs. (4.6) and (4.13)-(4.14)",
+  "operator_source": "Superspace Eqs. (5.5.45), (5.5.48), and (7.5.19)",
+  "operator_equation": "E_AF = P_AF (G, R, Rbar) U_AF; E_AF Phi_AF = 0",
+  "coordinate_definition": "published Lorentz-genome blocks with rational Clebsch-Gordan embeddings and the 1/(p! q!) Adynkrafield coefficients",
+  "superspace_ambient_dimension": 96,
+  "adynkrafield_domain_dimension": 72,
+  "supergravity_genome_dimension": 64,
+  "chiral_compensator_genome_dimension": 4,
+  "conjugate_compensator_genome_dimension": 4,
+  "supergravity_genome_blocks": [
+    {
+      "left_degree": 0,
+      "right_degree": 0,
+      "irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "dimension": 4,
+      "coordinate_offset": 0,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 0,
+      "right_degree": 1,
+      "irrep": {
+        "left": 1,
+        "right": 0
+      },
+      "dimension": 2,
+      "coordinate_offset": 4,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 0,
+      "right_degree": 1,
+      "irrep": {
+        "left": 1,
+        "right": 2
+      },
+      "dimension": 6,
+      "coordinate_offset": 6,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 0,
+      "irrep": {
+        "left": 0,
+        "right": 1
+      },
+      "dimension": 2,
+      "coordinate_offset": 12,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 0,
+      "irrep": {
+        "left": 2,
+        "right": 1
+      },
+      "dimension": 6,
+      "coordinate_offset": 14,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 0,
+      "right_degree": 2,
+      "irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "dimension": 4,
+      "coordinate_offset": 20,
+      "factorial_denominator": 2
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 1,
+      "irrep": {
+        "left": 0,
+        "right": 0
+      },
+      "dimension": 1,
+      "coordinate_offset": 24,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 1,
+      "irrep": {
+        "left": 0,
+        "right": 2
+      },
+      "dimension": 3,
+      "coordinate_offset": 25,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 1,
+      "irrep": {
+        "left": 2,
+        "right": 0
+      },
+      "dimension": 3,
+      "coordinate_offset": 28,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 1,
+      "irrep": {
+        "left": 2,
+        "right": 2
+      },
+      "dimension": 9,
+      "coordinate_offset": 31,
+      "factorial_denominator": 1
+    },
+    {
+      "left_degree": 2,
+      "right_degree": 0,
+      "irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "dimension": 4,
+      "coordinate_offset": 40,
+      "factorial_denominator": 2
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 2,
+      "irrep": {
+        "left": 0,
+        "right": 1
+      },
+      "dimension": 2,
+      "coordinate_offset": 44,
+      "factorial_denominator": 2
+    },
+    {
+      "left_degree": 1,
+      "right_degree": 2,
+      "irrep": {
+        "left": 2,
+        "right": 1
+      },
+      "dimension": 6,
+      "coordinate_offset": 46,
+      "factorial_denominator": 2
+    },
+    {
+      "left_degree": 2,
+      "right_degree": 1,
+      "irrep": {
+        "left": 1,
+        "right": 0
+      },
+      "dimension": 2,
+      "coordinate_offset": 52,
+      "factorial_denominator": 2
+    },
+    {
+      "left_degree": 2,
+      "right_degree": 1,
+      "irrep": {
+        "left": 1,
+        "right": 2
+      },
+      "dimension": 6,
+      "coordinate_offset": 54,
+      "factorial_denominator": 2
+    },
+    {
+      "left_degree": 2,
+      "right_degree": 2,
+      "irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "dimension": 4,
+      "coordinate_offset": 60,
+      "factorial_denominator": 4
+    }
+  ],
+  "supergravity_change_of_basis_rank": 64,
+  "factorial_coefficients_enforced": true,
+  "momentum_checks": [
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "momentum_class": "zero",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 6,
+      "adynkrafield_operator_rank": 6,
+      "adynkrafield_operator_nonzero_entries": 6,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "momentum_class": "null",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 20,
+      "adynkrafield_operator_rank": 20,
+      "adynkrafield_operator_nonzero_entries": 90,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "momentum_class": "null",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 20,
+      "adynkrafield_operator_rank": 20,
+      "adynkrafield_operator_nonzero_entries": 90,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "momentum_class": "null",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 20,
+      "adynkrafield_operator_rank": 20,
+      "adynkrafield_operator_nonzero_entries": 610,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "momentum_class": "non-null",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 24,
+      "adynkrafield_operator_rank": 24,
+      "adynkrafield_operator_nonzero_entries": 330,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "momentum_class": "non-null",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 24,
+      "adynkrafield_operator_rank": 24,
+      "adynkrafield_operator_nonzero_entries": 776,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    },
+    {
+      "momentum": [
+        2,
+        -1,
+        4,
+        3
+      ],
+      "momentum_class": "non-null",
+      "domain_embedding_rank": 72,
+      "coordinate_roundtrip_residuals": 0,
+      "superspace_operator_rank_on_domain": 24,
+      "adynkrafield_operator_rank": 24,
+      "adynkrafield_operator_nonzero_entries": 776,
+      "operator_reconstruction_entries_checked": 6912,
+      "operator_reconstruction_residuals": 0,
+      "gauge_columns_checked": 64,
+      "gauge_coordinate_reconstruction_residuals": 0,
+      "gauge_noether_residuals": 0
+    }
+  ],
+  "total_operator_reconstruction_entries_checked": 48384,
+  "total_operator_reconstruction_residuals": 0,
+  "total_gauge_coordinate_reconstruction_residuals": 0,
+  "total_gauge_noether_residuals": 0,
+  "expected_operator_ranks": [
+    6,
+    20,
+    20,
+    20,
+    24,
+    24,
+    24
+  ],
+  "observed_operator_ranks": [
+    6,
+    20,
+    20,
+    20,
+    24,
+    24,
+    24
+  ],
+  "superspace_and_adynkrafield_operators_equivalent_on_tested_fibers": true,
+  "boundary": "exact coordinate translation of the known linearized 4D N=1 old-minimal equation on seven momentum fibers; it does not derive a new equation, prove polynomial-module equivalence, or choose eleven-dimensional constraints",
+  "passed": true
+}

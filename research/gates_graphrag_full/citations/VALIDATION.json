@@ -1,0 +1,18 @@
+{
+  "citation_occurrences": 1165,
+  "distinct_edges": 1131,
+  "errors": [],
+  "local_pdfs_processed": 166,
+  "manifest_records": 295,
+  "nul_characters_detected": 0,
+  "postgres_nul_replacements": 16,
+  "resolution_methods": {
+    "exact_arxiv_identifier": 746,
+    "exact_doi_identifier": 268,
+    "normalized_title_containment": 151
+  },
+  "schema_version": "gates-citation-validation-v1",
+  "title_matches_pending_review": 151,
+  "unresolved_external_stubs": 2694,
+  "valid": true
+}

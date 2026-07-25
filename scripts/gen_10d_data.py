@@ -25,6 +25,7 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 DEFAULT_OUT = os.path.join(REPO_ROOT, "data", "tendim_10d_lr.json")
+PROVENANCE_PATH = os.path.join(REPO_ROOT, "data", "tendim_10d_provenance.json")
 OUT_PATH = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUT
 
 # ---- Numerical tolerances ----
@@ -88,15 +89,9 @@ def perm_sign(p):
 # PORT CAVEAT (Sig3Up / Signature parity): Mathematica's Sig3Up uses
 # Signature[p] where p is a permutation of the *values* {mu,nu,rho}, i.e. the
 # parity of the permutation needed to sort those values into canonical order.
-# Here we instead iterate over permutations of the *positions* range(3) and use
-# perm_sign of that positional permutation. These two parities coincide ONLY
-# when the supplied (mu,nu,rho) are the distinct, already-ascending arguments
-# that the current L/R construction actually passes (Sig3Up is always called as
-# Sig3Up(0,rho,xi) with rho<xi, all distinct -> matches Signature of the sorted
-# value list up to the same overall sign on every term, which cancels under the
-# (1/6) symmetrization). It is NOT a faithful general port of Signature[p]: for
-# repeated indices or non-ascending value arguments the two would diverge. Do
-# not reuse Sig3Up outside the present call sites without revalidating.
+# Here we antisymmetrize over positions. This is equivalent for distinct
+# arguments, and repeated arguments cancel pairwise to zero. The construction
+# does call Sig3Up(0,0,xi); those terms vanish before gauge-fixed assembly.
 def Sig3Up(mu,nu,rho):
     base=[mu,nu,rho]
     tot=np.zeros((16,16),dtype=complex)
@@ -105,6 +100,8 @@ def Sig3Up(mu,nu,rho):
         sg=perm_sign(p)  # positional parity; see PORT CAVEAT above
         tot += sg*(sigUp[idx[0]].dot(sigmaTildeUp(idx[1])).dot(sigUp[idx[2]]))
     return (1.0/6.0)*tot
+
+assert np.allclose(Sig3Up(0,0,1), np.zeros((16,16), dtype=complex))
 
 def MixedLeft(mu,nu,rho,xi):
     return sigmaTilde(mu).dot(Sig3Up(nu,rho,xi))
@@ -255,6 +252,7 @@ for i in range(16):
         err=np.linalg.norm(lhs-rhs)
         if err>max_bos: max_bos=err
 print("Max bosonic residual (||L_i R_j + L_j R_i - 2 d_ij I_82||):", max_bos)
+assert max_bos <= 1e-9, "bosonic Garden residual exceeds 1e-9; refusing to write artifact"
 
 # Fermionic: R_i L_j + R_j L_i = 2 d_ij I + 2 E_ij ; E_ij = (RL+RL)/2 - d_ij I
 max_imag=0.0
@@ -270,7 +268,7 @@ for i in range(16):
         elif i<j:
             offdiag_e_norms.append((i+1,j+1,np.linalg.norm(E)))
 print("Max |Im(L,R entries-derived E)|:", max_imag)
-print("Max diagonal E_ii Frobenius norm (should be ~0 if i==i closes):", diag_e_norm)
+print("Max diagonal E_ii Frobenius norm (nonzero for this on-shell fermion sector):", diag_e_norm)
 nz=[(i,j,n) for (i,j,n) in offdiag_e_norms if n>1e-9]
 print("Number of off-diagonal (i<j) pairs with nonzero E_ij:", len(nz), "out of", len(offdiag_e_norms))
 if nz:
@@ -288,6 +286,17 @@ for L in Ls:
     for v in np.round(L.real.flatten(),6):
         allvals.add(v)
 print("Distinct real entry values in L (sample):", sorted(allvals)[:20], "... total", len(allvals))
+rvals=set()
+for R in Rs:
+    for v in np.round(R.real.flatten(),12):
+        rvals.add(v)
+print("Distinct real entry values in R (sample):", sorted(rvals)[:20], "... total", len(rvals))
+allowed_l = [-2.0, -1.0, 0.0, 1.0, 2.0, np.sqrt(8.0)]
+allowed_r = [0.0, 1/16, -1/16, 1/8, -1/8, 7/16, -7/16, 1/2, -1/2, 1/np.sqrt(8.0)]
+assert all(any(abs(v-a) <= 1e-6 for a in allowed_l) for v in allvals), \
+    "L contains an entry outside the pinned symbolic value set"
+assert all(any(abs(v-a) <= 1e-9 for a in allowed_r) for v in rvals), \
+    "R contains an entry outside the pinned symbolic value set"
 
 # ---- HARD-FAIL on imaginary parts (do NOT silently drop Im) ----
 # The matrices must be real to floating-point precision. If any imaginary part
@@ -333,24 +342,11 @@ def to_list(M):
     return out
 
 # Explicit canonical key order (see note above). The "source" field is written
-# here; the richer "provenance" block (research metadata: upstream commit/hashes,
-# license posture, the resolved Eq 6.0.5 typo note) is maintained out-of-band in
-# PROVENANCE.md and carried in the committed JSON. To avoid clobbering it on
-# regeneration, we PRESERVE an existing provenance block verbatim (inserted in the
-# same position, so regeneration stays byte-identical to the committed file). The
-# reproducibility guarantee is the canonical_token_hash() of the MATRIX content
-# (src/tendim_data.rs), which is independent of this metadata.
-_existing_provenance = None
-if os.path.exists(OUT_PATH):
-    # Fail LOUDLY if the existing file is present but unreadable: silently dropping
-    # the provenance block on a parse error would erase research metadata without
-    # warning. A genuinely missing file (fresh generation) is the only case where
-    # provenance is legitimately absent.
-    with open(OUT_PATH) as _pf:
-        _existing = json.load(_pf)  # raises on malformed JSON -> abort, do not clobber
-    _existing_provenance = _existing.get("provenance")
-    if _existing_provenance is None:
-        print("WARNING: existing JSON has no 'provenance' block to preserve.")
+# here; the richer provenance block is loaded from a separate checked-in manifest.
+# This makes a clean regeneration byte-identical instead of depending on metadata
+# copied from a pre-existing output artifact.
+with open(PROVENANCE_PATH) as _pf:
+    provenance = json.load(_pf)
 
 data={
     "nb":82,"nf":176,"n":16,
@@ -360,8 +356,7 @@ data={
         "fermionic":"R_I L_J + R_J L_I = 2 delta_IJ I_176 + 2 E_IJ"
     },
 }
-if _existing_provenance is not None:
-    data["provenance"]=_existing_provenance
+data["provenance"]=provenance
 data["L"]=[to_list(L) for L in Ls]
 data["R"]=[to_list(R) for R in Rs]
 

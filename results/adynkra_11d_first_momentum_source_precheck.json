@@ -1,0 +1,471 @@
+{
+  "schema_version": "adynkra-11d-first-momentum-source-precheck-v1",
+  "role": "fixed level-14 source work list for the 44 first-momentum intertwiners",
+  "exterior_degree": 14,
+  "channels": [
+    {
+      "intermediate_dynkin_label": "00001",
+      "source_dynkin_label": "00000",
+      "source_dimension": 1,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "00001",
+      "source_dynkin_label": "00100",
+      "source_dimension": 165,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "00001",
+      "source_dynkin_label": "00010",
+      "source_dimension": 330,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "00100",
+      "source_dimension": 165,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "00010",
+      "source_dimension": 330,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "02000",
+      "source_dimension": 1144,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "10100",
+      "source_dimension": 1430,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "10010",
+      "source_dimension": 3003,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "10002",
+      "source_dimension": 4290,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "01100",
+      "source_dimension": 5005,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "01010",
+      "source_dimension": 11583,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_dimension": 17160,
+      "source_multiplicity_at_level_fourteen": 5,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 5
+    },
+    {
+      "intermediate_dynkin_label": "10001",
+      "source_dynkin_label": "00100",
+      "source_dimension": 165,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "10001",
+      "source_dynkin_label": "00010",
+      "source_dimension": 330,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "10001",
+      "source_dynkin_label": "10100",
+      "source_dimension": 1430,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "10001",
+      "source_dynkin_label": "10010",
+      "source_dimension": 3003,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "10001",
+      "source_dynkin_label": "10002",
+      "source_dimension": 4290,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "source_dynkin_label": "10100",
+      "source_dimension": 1430,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "source_dynkin_label": "10010",
+      "source_dimension": 3003,
+      "source_multiplicity_at_level_fourteen": 1,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 1
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "source_dynkin_label": "10002",
+      "source_dimension": 4290,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "source_dynkin_label": "20100",
+      "source_dimension": 7128,
+      "source_multiplicity_at_level_fourteen": 3,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 3
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "source_dynkin_label": "20010",
+      "source_dimension": 15400,
+      "source_multiplicity_at_level_fourteen": 4,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 4
+    },
+    {
+      "intermediate_dynkin_label": "20001",
+      "source_dynkin_label": "20002",
+      "source_dimension": 22275,
+      "source_multiplicity_at_level_fourteen": 2,
+      "target_multiplicity_in_source_tensor_spinor": 1,
+      "map_coefficients": 2
+    }
+  ],
+  "source_kernel_systems": [
+    {
+      "dynkin_label": "00000",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 657520,
+      "raising_block_rows": [
+        431724,
+        431724,
+        431724,
+        431724,
+        533584
+      ],
+      "total_raising_rows": 2260480,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "00010",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "source_weight_space_columns": 280014,
+      "raising_block_rows": [
+        181748,
+        181748,
+        181748,
+        114758,
+        224380
+      ],
+      "total_raising_rows": 884382,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "00100",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 348240,
+      "raising_block_rows": [
+        227528,
+        227528,
+        144678,
+        224380,
+        280014
+      ],
+      "total_raising_rows": 1104128,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "01002",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "source_weight_space_columns": 56758,
+      "raising_block_rows": [
+        36608,
+        22150,
+        34946,
+        34946,
+        27054
+      ],
+      "total_raising_rows": 155704,
+      "expected_kernel_dimension": 5
+    },
+    {
+      "dynkin_label": "01010",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        4,
+        2,
+        2,
+        0
+      ],
+      "source_weight_space_columns": 72380,
+      "raising_block_rows": [
+        47096,
+        28732,
+        44940,
+        27054,
+        56758
+      ],
+      "total_raising_rows": 204580,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "01100",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        4,
+        2,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 91936,
+      "raising_block_rows": [
+        60298,
+        37096,
+        34946,
+        56758,
+        72380
+      ],
+      "total_raising_rows": 261478,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "02000",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        4,
+        0,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 116328,
+      "raising_block_rows": [
+        76888,
+        28732,
+        72380,
+        72380,
+        91936
+      ],
+      "total_raising_rows": 342316,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "10002",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "source_weight_space_columns": 114758,
+      "raising_block_rows": [
+        47096,
+        72380,
+        72380,
+        72380,
+        56758
+      ],
+      "total_raising_rows": 320994,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "10010",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        2,
+        0
+      ],
+      "source_weight_space_columns": 144678,
+      "raising_block_rows": [
+        60298,
+        91936,
+        91936,
+        56758,
+        114758
+      ],
+      "total_raising_rows": 415686,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "10100",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        4,
+        2,
+        2,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 181748,
+      "raising_block_rows": [
+        76888,
+        116328,
+        72380,
+        114758,
+        144678
+      ],
+      "total_raising_rows": 525032,
+      "expected_kernel_dimension": 1
+    },
+    {
+      "dynkin_label": "20002",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        6,
+        2,
+        2,
+        2,
+        2
+      ],
+      "source_weight_space_columns": 36608,
+      "raising_block_rows": [
+        9292,
+        22150,
+        22150,
+        22150,
+        16993
+      ],
+      "total_raising_rows": 92735,
+      "expected_kernel_dimension": 2
+    },
+    {
+      "dynkin_label": "20010",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        6,
+        2,
+        2,
+        2,
+        0
+      ],
+      "source_weight_space_columns": 47096,
+      "raising_block_rows": [
+        12292,
+        28732,
+        28732,
+        16993,
+        36608
+      ],
+      "total_raising_rows": 123357,
+      "expected_kernel_dimension": 4
+    },
+    {
+      "dynkin_label": "20100",
+      "exterior_degree": 14,
+      "highest_weight_doubled_coordinates": [
+        6,
+        2,
+        2,
+        0,
+        0
+      ],
+      "source_weight_space_columns": 60298,
+      "raising_block_rows": [
+        16176,
+        37096,
+        22150,
+        36608,
+        47096
+      ],
+      "total_raising_rows": 159126,
+      "expected_kernel_dimension": 3
+    }
+  ],
+  "distinct_source_target_pairs": 23,
+  "embedded_source_copies": 44,
+  "expected_map_coefficients": 44,
+  "every_target_multiplicity_is_one": true,
+  "passed": true
+}

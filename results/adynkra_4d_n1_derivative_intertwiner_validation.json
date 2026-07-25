@@ -1,0 +1,542 @@
+{
+  "schema_version": "adynkra-4d-n1-derivative-intertwiners-v1",
+  "source_arxiv": "2407.09334",
+  "source_equations": "2.25, 2.26, 2.45, 3.6-3.11",
+  "convention": "rational binary-form Clebsch-Gordan basis for SL(2)_L x SL(2)_R",
+  "genome_irreps_checked": 9,
+  "fundamental_products_checked": 18,
+  "coupling_checks": [
+    {
+      "source_irrep": {
+        "left": 0,
+        "right": 0
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 0
+        }
+      ],
+      "tensor_product_dimension": 2,
+      "target_dimensions_sum": 2,
+      "summands_checked": 1,
+      "equivariance_commutators_checked": 6,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 0,
+        "right": 0
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 0,
+          "right": 1
+        }
+      ],
+      "tensor_product_dimension": 2,
+      "target_dimensions_sum": 2,
+      "summands_checked": 1,
+      "equivariance_commutators_checked": 6,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 0,
+        "right": 1
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 1
+        }
+      ],
+      "tensor_product_dimension": 4,
+      "target_dimensions_sum": 4,
+      "summands_checked": 1,
+      "equivariance_commutators_checked": 6,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 0,
+        "right": 1
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 0,
+          "right": 0
+        },
+        {
+          "left": 0,
+          "right": 2
+        }
+      ],
+      "tensor_product_dimension": 4,
+      "target_dimensions_sum": 4,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 0,
+        "right": 2
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 2
+        }
+      ],
+      "tensor_product_dimension": 6,
+      "target_dimensions_sum": 6,
+      "summands_checked": 1,
+      "equivariance_commutators_checked": 6,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 0,
+        "right": 2
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 0,
+          "right": 1
+        },
+        {
+          "left": 0,
+          "right": 3
+        }
+      ],
+      "tensor_product_dimension": 6,
+      "target_dimensions_sum": 6,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 1,
+        "right": 0
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 0,
+          "right": 0
+        },
+        {
+          "left": 2,
+          "right": 0
+        }
+      ],
+      "tensor_product_dimension": 4,
+      "target_dimensions_sum": 4,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 1,
+        "right": 0
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 1
+        }
+      ],
+      "tensor_product_dimension": 4,
+      "target_dimensions_sum": 4,
+      "summands_checked": 1,
+      "equivariance_commutators_checked": 6,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 0,
+          "right": 1
+        },
+        {
+          "left": 2,
+          "right": 1
+        }
+      ],
+      "tensor_product_dimension": 8,
+      "target_dimensions_sum": 8,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 0
+        },
+        {
+          "left": 1,
+          "right": 2
+        }
+      ],
+      "tensor_product_dimension": 8,
+      "target_dimensions_sum": 8,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 1,
+        "right": 2
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 0,
+          "right": 2
+        },
+        {
+          "left": 2,
+          "right": 2
+        }
+      ],
+      "tensor_product_dimension": 12,
+      "target_dimensions_sum": 12,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 1,
+        "right": 2
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 1
+        },
+        {
+          "left": 1,
+          "right": 3
+        }
+      ],
+      "tensor_product_dimension": 12,
+      "target_dimensions_sum": 12,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 2,
+        "right": 0
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 0
+        },
+        {
+          "left": 3,
+          "right": 0
+        }
+      ],
+      "tensor_product_dimension": 6,
+      "target_dimensions_sum": 6,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 2,
+        "right": 0
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 2,
+          "right": 1
+        }
+      ],
+      "tensor_product_dimension": 6,
+      "target_dimensions_sum": 6,
+      "summands_checked": 1,
+      "equivariance_commutators_checked": 6,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 2,
+        "right": 1
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 1
+        },
+        {
+          "left": 3,
+          "right": 1
+        }
+      ],
+      "tensor_product_dimension": 12,
+      "target_dimensions_sum": 12,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 2,
+        "right": 1
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 2,
+          "right": 0
+        },
+        {
+          "left": 2,
+          "right": 2
+        }
+      ],
+      "tensor_product_dimension": 12,
+      "target_dimensions_sum": 12,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 2,
+        "right": 2
+      },
+      "derivative_chirality": "left",
+      "target_irreps": [
+        {
+          "left": 1,
+          "right": 2
+        },
+        {
+          "left": 3,
+          "right": 2
+        }
+      ],
+      "tensor_product_dimension": 18,
+      "target_dimensions_sum": 18,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    },
+    {
+      "source_irrep": {
+        "left": 2,
+        "right": 2
+      },
+      "derivative_chirality": "right",
+      "target_irreps": [
+        {
+          "left": 2,
+          "right": 1
+        },
+        {
+          "left": 2,
+          "right": 3
+        }
+      ],
+      "tensor_product_dimension": 18,
+      "target_dimensions_sum": 18,
+      "summands_checked": 2,
+      "equivariance_commutators_checked": 12,
+      "projection_embedding_identities": true,
+      "cross_channels_zero": true,
+      "complete": true,
+      "equivariant": true
+    }
+  ],
+  "repeated_irrep_sectors": [
+    {
+      "genome": "one_form_gauge",
+      "total_level": 2,
+      "irrep": {
+        "left": 0,
+        "right": 0
+      },
+      "bidegrees": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "multiplicity": 2,
+      "left_derivative_selector": [
+        0,
+        1
+      ],
+      "right_derivative_selector": [
+        1,
+        0
+      ],
+      "selector_ranks": [
+        1,
+        1
+      ],
+      "combined_selector_rank": 2,
+      "channels_distinguished": true
+    },
+    {
+      "genome": "matter_gravitino",
+      "total_level": 2,
+      "irrep": {
+        "left": 1,
+        "right": 0
+      },
+      "bidegrees": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "multiplicity": 2,
+      "left_derivative_selector": [
+        0,
+        1
+      ],
+      "right_derivative_selector": [
+        1,
+        0
+      ],
+      "selector_ranks": [
+        1,
+        1
+      ],
+      "combined_selector_rank": 2,
+      "channels_distinguished": true
+    },
+    {
+      "genome": "supergravity",
+      "total_level": 2,
+      "irrep": {
+        "left": 1,
+        "right": 1
+      },
+      "bidegrees": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "multiplicity": 2,
+      "left_derivative_selector": [
+        0,
+        1
+      ],
+      "right_derivative_selector": [
+        1,
+        0
+      ],
+      "selector_ranks": [
+        1,
+        1
+      ],
+      "combined_selector_rank": 2,
+      "channels_distinguished": true
+    }
+  ],
+  "repeated_sectors_expected": 3,
+  "repeated_sectors_found": 3,
+  "repeated_channels_distinguished": true,
+  "boundary": "fundamental Clebsch-Gordan intertwiners and chirality-resolved repeated channels; component normalizations and prepotential gauge cohomology remain open",
+  "passed": true
+}

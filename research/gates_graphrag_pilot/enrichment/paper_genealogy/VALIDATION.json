@@ -1,0 +1,38 @@
+{
+  "chunks_sha256": "730dd3be7b8a5dd47e237ea1f59f3cc681c15e66e1e9361917b03e47dd70099f",
+  "errors": [],
+  "evidence_paper_counts": {
+    "2002.08502": 4,
+    "2006.03609": 3,
+    "2007.07390": 6,
+    "2012.14015": 2,
+    "2304.09830": 3,
+    "2407.09334": 7
+  },
+  "proposal_count": 25,
+  "proposals_sha256": "702be751833c6e5d6cb0bc15cf660de12a814b993f31e5add33b5236f54dd025",
+  "relationship_counts": {
+    "COMPARES_WITH": 1,
+    "CORRECTS": 1,
+    "EXTENDS": 8,
+    "PRECEDES_IN_SERIES": 1,
+    "REUSES_METHOD_FROM": 6,
+    "USES_RESULT_FROM": 8
+  },
+  "reviewed_paper_count": 9,
+  "reviewed_papers_without_proposals": [
+    "1911.00807",
+    "2012.13308",
+    "2311.06842"
+  ],
+  "schema_version": "gates-paper-genealogy-validation-v1",
+  "source_paper_counts": {
+    "2002.08502": 4,
+    "2006.03609": 4,
+    "2007.07390": 5,
+    "2012.14015": 2,
+    "2304.09830": 3,
+    "2407.09334": 7
+  },
+  "status": "pass"
+}

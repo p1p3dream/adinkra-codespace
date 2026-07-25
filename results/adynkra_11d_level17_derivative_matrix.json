@@ -1,0 +1,611 @@
+{
+  "schema_version": "adynkra-11d-level17-derivative-matrix-v1",
+  "role": "exact exterior-derivative map from twelve level-16 vector-spinor couplings to seven level-17 hook couplings",
+  "source_basis": [
+    "10000#1",
+    "20000#1",
+    "00100#1",
+    "00100#2",
+    "00010#1",
+    "00010#2",
+    "00002#1",
+    "10100#1",
+    "10010#1",
+    "10002#1",
+    "10002#2",
+    "10002#3"
+  ],
+  "hook_basis": [
+    "10001#1",
+    "01001#1",
+    "01001#2",
+    "20001#1",
+    "11001#1",
+    "11001#2",
+    "11001#3"
+  ],
+  "target_hook_dynkin_label": "11000",
+  "target_coupling_terms": 8,
+  "target_coupling_primitive_coefficients": [
+    1,
+    -1,
+    1,
+    -1,
+    -1,
+    1,
+    -1,
+    1
+  ],
+  "hook_gram_rank": 7,
+  "derivative_matrix_rank": 7,
+  "derivative_matrix_nullity": 5,
+  "matrix_rows_by_hook_columns_by_source": [
+    [
+      {
+        "numerator": "1",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-133",
+        "denominator": "13"
+      },
+      {
+        "numerator": "-10",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-10",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-6",
+        "denominator": "1"
+      },
+      {
+        "numerator": "19152",
+        "denominator": "13"
+      },
+      {
+        "numerator": "1800",
+        "denominator": "13"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-8988",
+        "denominator": "13"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    ],
+    [
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "4",
+        "denominator": "9"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "4",
+        "denominator": "9"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "480",
+        "denominator": "13"
+      },
+      {
+        "numerator": "-80",
+        "denominator": "13"
+      },
+      {
+        "numerator": "-896",
+        "denominator": "39"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    ],
+    [
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "40",
+        "denominator": "9"
+      },
+      {
+        "numerator": "-2",
+        "denominator": "3"
+      },
+      {
+        "numerator": "412",
+        "denominator": "9"
+      },
+      {
+        "numerator": "2",
+        "denominator": "3"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "1920",
+        "denominator": "13"
+      },
+      {
+        "numerator": "-320",
+        "denominator": "13"
+      },
+      {
+        "numerator": "-360584",
+        "denominator": "39"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-700",
+        "denominator": "13"
+      }
+    ],
+    [
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "2",
+        "denominator": "13"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "960",
+        "denominator": "13"
+      },
+      {
+        "numerator": "1600",
+        "denominator": "39"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "168",
+        "denominator": "13"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    ],
+    [
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-1190",
+        "denominator": "143"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-7",
+        "denominator": "143"
+      }
+    ],
+    [
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-48",
+        "denominator": "1573"
+      },
+      {
+        "numerator": "-80",
+        "denominator": "4719"
+      },
+      {
+        "numerator": "-140",
+        "denominator": "1573"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    ],
+    [
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "-16",
+        "denominator": "1573"
+      },
+      {
+        "numerator": "-80",
+        "denominator": "14157"
+      },
+      {
+        "numerator": "56",
+        "denominator": "1573"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    ]
+  ],
+  "primitive_integer_kernel_basis": [
+    [
+      "0",
+      "0",
+      "1",
+      "-62",
+      "-1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "6",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "11520",
+      "0",
+      "540",
+      "2160",
+      "0",
+      "0",
+      "0",
+      "-5",
+      "9",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "168",
+      "84",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "-1",
+      "0"
+    ]
+  ],
+  "kernel_residuals_exactly_zero": true,
+  "kernel_coefficient_mutation_detected": true,
+  "leading_gram_rank": 12,
+  "scalar_factorizing_coordinates": [
+    {
+      "numerator": "-7",
+      "denominator": "16"
+    },
+    {
+      "numerator": "-1",
+      "denominator": "16"
+    },
+    {
+      "numerator": "3",
+      "denominator": "128"
+    },
+    {
+      "numerator": "3",
+      "denominator": "32"
+    },
+    {
+      "numerator": "-3",
+      "denominator": "64"
+    },
+    {
+      "numerator": "99",
+      "denominator": "32"
+    },
+    {
+      "numerator": "1",
+      "denominator": "32"
+    },
+    {
+      "numerator": "1",
+      "denominator": "4608"
+    },
+    {
+      "numerator": "-1",
+      "denominator": "2560"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "1",
+      "denominator": "1344"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    }
+  ],
+  "scalar_factorizing_reconstruction_residual_norm": {
+    "numerator": "0",
+    "denominator": "1"
+  },
+  "scalar_factorizing_direction_is_in_leading_span": true,
+  "scalar_factorizing_hook_image": [
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    }
+  ],
+  "scalar_factorizing_hook_image_is_zero": true,
+  "exact_reconstruction_residual_norms": [
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    },
+    {
+      "numerator": "0",
+      "denominator": "1"
+    }
+  ],
+  "every_derivative_column_is_in_hook_span": true,
+  "maximum_absolute_checked_accumulator": 2128896000,
+  "convention": "canonical sorted spinor-mask exterior basis; left exterior multiplication by the seventeenth derivative; primitive integer source and target couplings",
+  "interpretation": "the exact map has rank 7 and a 5-dimensional kernel in the twelve-dimensional leading-map coefficient space",
+  "boundary": "this is the zero-spacetime-momentum exterior symbol in the direct spinor-prepotential representation complex; it does not select physical coefficients, define the gauge quotient, include momentum corrections, or derive a field equation",
+  "passed": true
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "adynkra-4d-n1-supercovariant-derivative-v1",
+  "source_arxiv": "2407.09334",
+  "source_equation": "2.22",
+  "convention": "D_alpha = partial_alpha + (i/2) theta_bar^dot_alpha partial_alpha_dot_alpha, with the conjugate formula for D_dot_alpha",
+  "grassmann_basis_dimension": 16,
+  "symmetric_derivative_pairs": 10,
+  "monomials_checked_per_pair": 16,
+  "exact_relations_checked": 160,
+  "zero_residual_relations": 160,
+  "residual_relations": 0,
+  "same_chirality_anticommutators_zero": true,
+  "mixed_anticommutators_are_spacetime_derivatives": true,
+  "boundary": "exact superspace derivative algebra only; irreducible Clebsch-Gordan intertwiners and prepotential gauge cohomology remain open",
+  "passed": true
+}

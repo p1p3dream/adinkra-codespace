@@ -1,0 +1,24 @@
+{
+  "schema_version": "adynkra-11d-first-momentum-00001-embedded-coupling-v1",
+  "role": "exact application of the shared abstract coupling to one exterior embedding",
+  "source_dynkin_label": "00000",
+  "source_copy": 1,
+  "source_fixture": "level14_00000_highest_weight_kernel.i16le",
+  "target_dynkin_label": "00001",
+  "abstract_coupling_source_copy": 1,
+  "product_weight_domain_dimension": 1,
+  "primitive_domain_coefficients": [
+    1
+  ],
+  "coupled_nonzero_terms": 11440,
+  "exact_raising_residual_terms_by_simple_root": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "maximum_absolute_checked_accumulator": 1,
+  "shared_abstract_coupling_applied": true,
+  "passed": true
+}

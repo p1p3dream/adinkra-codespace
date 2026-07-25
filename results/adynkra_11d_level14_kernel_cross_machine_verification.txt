@@ -1,0 +1,7 @@
+Verification date: 2026-07-23
+Local host: macOS workstation
+Remote host: stonkbot
+Artifacts compared: 28
+Hash algorithm: SHA-256
+Mismatches: 0
+Hash manifest: results/adynkra_11d_level14_kernel_sha256.txt

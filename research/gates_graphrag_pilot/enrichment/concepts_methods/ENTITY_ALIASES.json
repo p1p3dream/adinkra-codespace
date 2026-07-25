@@ -1,0 +1,383 @@
+{
+  "entities": [
+    {
+      "aliases": [
+        "AG construction",
+        "Adynkra Genome construction"
+      ],
+      "key": "algorithm:adynkra-genome-construction",
+      "name": "Adynkra-genome construction",
+      "type": "algorithm"
+    },
+    {
+      "aliases": [
+        "projection matrix branching algorithm"
+      ],
+      "key": "algorithm:projection-matrix-branching-algorithm",
+      "name": "projection-matrix branching algorithm",
+      "type": "algorithm"
+    },
+    {
+      "aliases": [
+        "recursive construction of supermultiplets"
+      ],
+      "key": "algorithm:recursive-supermultiplet-construction",
+      "name": "recursive supermultiplet construction",
+      "type": "algorithm"
+    },
+    {
+      "aliases": [
+        "level-parameter nilpotency",
+        "nilpotency of level parameters"
+      ],
+      "key": "assumption:nilpotent-level-parameter",
+      "name": "nilpotent level parameter",
+      "type": "assumption"
+    },
+    {
+      "aliases": [
+        "ab-normal cosets"
+      ],
+      "key": "concept:ab-normal-coset",
+      "name": "ab-normal coset",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "adynkras"
+      ],
+      "key": "concept:adynkra",
+      "name": "adynkra",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "AG",
+        "Adynkra Genome",
+        "Adynkra Genomes"
+      ],
+      "key": "concept:adynkra-genome",
+      "name": "Adynkra genome",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "Adynkra Libraries",
+        "Adynkra libraries"
+      ],
+      "key": "concept:adynkra-library",
+      "name": "Adynkra library",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "adynkrafields"
+      ],
+      "key": "concept:adynkrafield",
+      "name": "adynkrafield",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "component field multiplet embedding"
+      ],
+      "key": "concept:component-field-multiplet-embedding",
+      "name": "component-field multiplet embedding",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "11D unconstrained scalar superfield",
+        "11D, N = 1 scalar superfield"
+      ],
+      "key": "concept:eleven-dimensional-unconstrained-scalar-superfield",
+      "name": "eleven-dimensional unconstrained scalar superfield",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "FYT",
+        "fermionic Young tableaux"
+      ],
+      "key": "concept:fermionic-young-tableau",
+      "name": "fermionic Young tableau",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "4D, N = 1 supergravity superfield prepotential"
+      ],
+      "key": "concept:four-dimensional-supergravity-prepotential",
+      "name": "4D, N = 1 supergravity prepotential",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "hopper",
+        "hoppers",
+        "hopping operators",
+        "left hopping operator",
+        "right hopping operator"
+      ],
+      "key": "concept:hopping-operator",
+      "name": "hopping operator",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "infinite unfolded Adinkras",
+        "infinitely unfolded Adinkra",
+        "infinitely unfolded Adinkras"
+      ],
+      "key": "concept:infinite-unfolded-adinkra",
+      "name": "infinite unfolded Adinkra",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "level parameters"
+      ],
+      "key": "concept:level-parameter",
+      "name": "level parameter",
+      "type": "concept"
+    },
+    {
+      "aliases": [],
+      "key": "concept:lie-algebra-branching-rule",
+      "name": "Lie-algebra branching rule",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "mixed YT",
+        "mixed Young tableaux"
+      ],
+      "key": "concept:mixed-young-tableau",
+      "name": "mixed Young tableau",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "S4 permutahedron dissection"
+      ],
+      "key": "concept:s4-permutahedron-dissection",
+      "name": "S4 permutahedron dissection",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "S8 permutations"
+      ],
+      "key": "concept:s8-permutation",
+      "name": "S8 permutation",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "SUSY weight-space embedding in a permutahedron"
+      ],
+      "key": "concept:supersymmetry-weight-space-in-permutahedron",
+      "name": "supersymmetry weight-space embedding in a permutahedron",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "10D Adinkra graph",
+        "ten dimensional Adinkra graph"
+      ],
+      "key": "concept:ten-dimensional-adinkra-graph",
+      "name": "ten-dimensional adinkra graph",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "unfolded Adinkras"
+      ],
+      "key": "concept:unfolded-adinkra",
+      "name": "unfolded Adinkra",
+      "type": "concept"
+    },
+    {
+      "aliases": [
+        "Adinkra vorticity",
+        "nodal vorticity"
+      ],
+      "key": "invariant:adinkra-vorticity",
+      "name": "Adinkra vorticity",
+      "type": "invariant"
+    },
+    {
+      "aliases": [
+        "HYMN",
+        "HYMN value",
+        "HYMN values",
+        "HYMNs",
+        "Height Yielding Matrix Numbers"
+      ],
+      "key": "invariant:height-yielding-matrix-number",
+      "name": "Height Yielding Matrix Number",
+      "type": "invariant"
+    },
+    {
+      "aliases": [
+        "eχ(1)",
+        "net-centric eχ(1)"
+      ],
+      "key": "invariant:net-centric-chi-1",
+      "name": "net-centric chi-1 quantity",
+      "type": "invariant"
+    },
+    {
+      "aliases": [
+        "eχ(2)",
+        "net-centric eχ(2)"
+      ],
+      "key": "invariant:net-centric-chi-2",
+      "name": "net-centric chi-2 quantity",
+      "type": "invariant"
+    },
+    {
+      "aliases": [
+        "Adinkra based component decomposition"
+      ],
+      "key": "method:adinkra-based-component-decomposition",
+      "name": "adinkra-based component decomposition",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "Adynkra diagram encoding"
+      ],
+      "key": "method:adynkra-diagram-encoding",
+      "name": "Adynkra-diagram encoding",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "adynkrafield overlap"
+      ],
+      "key": "method:adynkrafield-overlap-construction",
+      "name": "adynkrafield overlap construction",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "blue and red Young tableaux",
+        "bosonic and spinorial YT"
+      ],
+      "key": "method:bosonic-and-spinorial-young-tableaux",
+      "name": "bosonic and spinorial Young tableaux",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "Breitenlohner approach",
+        "Breitenlohner scan"
+      ],
+      "key": "method:breitenlohner-prepotential-scan",
+      "name": "Breitenlohner prepotential scan",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "permutahedron face simulation"
+      ],
+      "key": "method:computer-simulation-of-permutahedron-faces",
+      "name": "computer simulation of permutahedron faces",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "DL-YT-field translation",
+        "Dynkin label to Young tableau to field variable translation"
+      ],
+      "key": "method:dynkin-young-field-translation",
+      "name": "Dynkin-label to Young-tableau to field-variable translation",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "four color problem on the truncated octahedron"
+      ],
+      "key": "method:four-color-truncated-octahedron-problem",
+      "name": "four-color truncated-octahedron problem",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "higher dimensional Adinkra technology"
+      ],
+      "key": "method:higher-dimensional-adinkra-technology",
+      "name": "higher-dimensional adinkra technology",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "branching rule",
+        "branching rules"
+      ],
+      "key": "method:lie-algebra-branching-rule",
+      "name": "Lie-algebra branching rule",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "plethysms"
+      ],
+      "key": "method:plethysm",
+      "name": "plethysm",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "time derivative unfolding"
+      ],
+      "key": "method:time-derivative-unfolding",
+      "name": "time-derivative unfolding",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "truncation and chromatic number"
+      ],
+      "key": "method:truncation-and-chromatic-number",
+      "name": "truncation and chromatic-number analysis",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "tying rules"
+      ],
+      "key": "method:tying-rule",
+      "name": "tying rule",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "weak Bruhat order"
+      ],
+      "key": "method:weak-bruhat-ordering",
+      "name": "weak Bruhat ordering",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "wedge products"
+      ],
+      "key": "method:wedge-product",
+      "name": "wedge product",
+      "type": "method"
+    },
+    {
+      "aliases": [
+        "Young Tableaux expansion",
+        "Young Tableaux expansions"
+      ],
+      "key": "method:young-tableau-expansion",
+      "name": "Young-tableau expansion",
+      "type": "method"
+    }
+  ],
+  "normalization_policy": "Conservative aliases only; no cross-concept equivalence is inferred.",
+  "schema_version": "gates-entity-aliases-v1"
+}

@@ -134,12 +134,20 @@ pub fn gram_from_contiguous(w: &[f32], ni: usize, l: usize, n: usize) -> Vec<Vec
     if ni > 0 && l > 0 {
         unsafe {
             matrixmultiply::sgemm(
-                ni, l, ni,
+                ni,
+                l,
+                ni,
                 1.0,
-                w.as_ptr(), l as isize, 1,
-                w.as_ptr(), 1, l as isize,
+                w.as_ptr(),
+                l as isize,
+                1,
+                w.as_ptr(),
+                1,
+                l as isize,
                 0.0,
-                prod.as_mut_ptr(), ni as isize, 1,
+                prod.as_mut_ptr(),
+                ni as isize,
+                1,
             );
         }
     }
@@ -157,12 +165,20 @@ pub fn gram_from_contiguous_f64(w: &[f64], ni: usize, l: usize, n: usize) -> Vec
     if ni > 0 && l > 0 {
         unsafe {
             matrixmultiply::dgemm(
-                ni, l, ni,
+                ni,
+                l,
+                ni,
                 1.0,
-                w.as_ptr(), l as isize, 1,
-                w.as_ptr(), 1, l as isize,
+                w.as_ptr(),
+                l as isize,
+                1,
+                w.as_ptr(),
+                1,
+                l as isize,
                 0.0,
-                prod.as_mut_ptr(), ni as isize, 1,
+                prod.as_mut_ptr(),
+                ni as isize,
+                1,
             );
         }
     }
@@ -235,10 +251,15 @@ impl ScratchW {
     /// every byte is overwritten exactly once by `write_summand`).
     pub fn create(path: PathBuf, len_bytes: u64) -> std::io::Result<Self> {
         let file = OpenOptions::new()
-            .read(true).write(true).create(true).truncate(true)
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(true)
             .open(&path)?;
         file.set_len(len_bytes)?;
-        let keep = std::env::var("ADINKRA_KEEP_SCRATCH").map(|v| v == "1").unwrap_or(false);
+        let keep = std::env::var("ADINKRA_KEEP_SCRATCH")
+            .map(|v| v == "1")
+            .unwrap_or(false);
         Ok(ScratchW { file, path, keep })
     }
 
@@ -252,9 +273,16 @@ impl ScratchW {
     fn write_bytes_at(&self, mut off: u64, mut buf: &[u8]) -> std::io::Result<()> {
         while !buf.is_empty() {
             match self.file.write_at(buf, off) {
-                Ok(0) => return Err(std::io::Error::new(
-                    std::io::ErrorKind::WriteZero, "write_at returned 0")),
-                Ok(nw) => { buf = &buf[nw..]; off += nw as u64; }
+                Ok(0) => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::WriteZero,
+                        "write_at returned 0",
+                    ));
+                }
+                Ok(nw) => {
+                    buf = &buf[nw..];
+                    off += nw as u64;
+                }
                 Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
                 Err(e) => return Err(e),
             }
@@ -266,26 +294,46 @@ impl ScratchW {
     /// to call concurrently from multiple threads for distinct `g` (disjoint
     /// ranges). Handles short writes.
     pub fn write_summand(&self, g: usize, vec: &[f32], l: usize) -> std::io::Result<()> {
-        assert_eq!(vec.len(), l, "write_summand: vec.len() != l (layout corruption)");
+        assert_eq!(
+            vec.len(),
+            l,
+            "write_summand: vec.len() != l (layout corruption)"
+        );
         self.write_bytes_at((g as u64) * (l as u64) * 4, f32_as_bytes(vec))
     }
 
     /// f64 counterpart of [`write_summand`] (byte offset `g*l*8`). Used by the
     /// exact `--f64` disk build.
     pub fn write_summand_f64(&self, g: usize, vec: &[f64], l: usize) -> std::io::Result<()> {
-        assert_eq!(vec.len(), l, "write_summand_f64: vec.len() != l (layout corruption)");
+        assert_eq!(
+            vec.len(),
+            l,
+            "write_summand_f64: vec.len() != l (layout corruption)"
+        );
         self.write_bytes_at((g as u64) * (l as u64) * 8, f64_as_bytes(vec))
     }
 
     /// Read `rows` summands starting at summand `row0` into `buf` (len rows*l).
-    fn read_rows(&self, row0: usize, rows: usize, l: usize, buf: &mut [f32]) -> std::io::Result<()> {
+    fn read_rows(
+        &self,
+        row0: usize,
+        rows: usize,
+        l: usize,
+        buf: &mut [f32],
+    ) -> std::io::Result<()> {
         assert_eq!(buf.len(), rows * l, "read_rows: buf.len() != rows*l");
         let off = (row0 as u64) * (l as u64) * 4;
         self.file.read_exact_at(f32_as_bytes_mut(buf), off)
     }
 
     /// f64 counterpart of [`read_rows`] (8-byte stride).
-    fn read_rows_f64(&self, row0: usize, rows: usize, l: usize, buf: &mut [f64]) -> std::io::Result<()> {
+    fn read_rows_f64(
+        &self,
+        row0: usize,
+        rows: usize,
+        l: usize,
+        buf: &mut [f64],
+    ) -> std::io::Result<()> {
         assert_eq!(buf.len(), rows * l, "read_rows_f64: buf.len() != rows*l");
         let off = (row0 as u64) * (l as u64) * 8;
         self.file.read_exact_at(f64_as_bytes_mut(buf), off)
@@ -353,12 +401,20 @@ pub fn gram_from_disk(
             // prod (ti x tj) = A(ti x l) * Bᵀ(l x tj), same strides as gram_from_contiguous.
             unsafe {
                 matrixmultiply::sgemm(
-                    ti, l, tj,
+                    ti,
+                    l,
+                    tj,
                     1.0,
-                    a.as_ptr(), l as isize, 1,
-                    bptr, 1, l as isize,
+                    a.as_ptr(),
+                    l as isize,
+                    1,
+                    bptr,
+                    1,
+                    l as isize,
                     0.0,
-                    prod.as_mut_ptr(), tj as isize, 1,
+                    prod.as_mut_ptr(),
+                    tj as isize,
+                    1,
                 );
             }
             for ar in 0..ti {
@@ -415,12 +471,20 @@ pub fn gram_from_disk_f64(
             };
             unsafe {
                 matrixmultiply::dgemm(
-                    ti, l, tj,
+                    ti,
+                    l,
+                    tj,
                     1.0,
-                    a.as_ptr(), l as isize, 1,
-                    bptr, 1, l as isize,
+                    a.as_ptr(),
+                    l as isize,
+                    1,
+                    bptr,
+                    1,
+                    l as isize,
                     0.0,
-                    prod.as_mut_ptr(), tj as isize, 1,
+                    prod.as_mut_ptr(),
+                    tj as isize,
+                    1,
                 );
             }
             for ar in 0..ti {
@@ -457,7 +521,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, -1, -1, 1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, 1, -1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
     fn vs_n4() -> AdinkraRep {
         let l = vec![
@@ -466,7 +534,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, 1, -1, -1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, -1, 1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d: 4, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d: 4,
+            l_matrices: l,
+        }
     }
 
     /// The flat/Gram path must reproduce the trusted dense gadget exactly (within
@@ -483,9 +555,18 @@ mod tests {
         let w_vs = flatten_summand(s_vs);
 
         let pairs = [
-            (gadget_from_flat(&w_cs, &w_cs, 4), dense_gadget(&dh_cs, &dh_cs)),
-            (gadget_from_flat(&w_vs, &w_vs, 4), dense_gadget(&dh_vs, &dh_vs)),
-            (gadget_from_flat(&w_cs, &w_vs, 4), dense_gadget(&dh_cs, &dh_vs)),
+            (
+                gadget_from_flat(&w_cs, &w_cs, 4),
+                dense_gadget(&dh_cs, &dh_cs),
+            ),
+            (
+                gadget_from_flat(&w_vs, &w_vs, 4),
+                dense_gadget(&dh_vs, &dh_vs),
+            ),
+            (
+                gadget_from_flat(&w_cs, &w_vs, 4),
+                dense_gadget(&dh_cs, &dh_vs),
+            ),
         ];
         for (flat, dense) in pairs {
             assert!(
@@ -518,7 +599,11 @@ mod tests {
             }
             l_matrices.push(SignedPerm::from_parts(perm, sign).unwrap());
         }
-        AdinkraRep { n, d: da + db, l_matrices }
+        AdinkraRep {
+            n,
+            d: da + db,
+            l_matrices,
+        }
     }
 
     /// Precondition for the Gram identity: every Vtilde_IJ of a decomposed summand
@@ -532,9 +617,16 @@ mod tests {
             for (idx, m) in dh.vtilde.iter().enumerate() {
                 let mt = m.transpose();
                 // m + m^T == 0
-                let worst = m.data.iter().zip(mt.data.iter())
-                    .map(|(a, b)| (a + b).abs()).fold(0.0f64, f64::max);
-                assert!(worst < 1e-9, "Vtilde[{idx}] not antisymmetric (worst {worst})");
+                let worst = m
+                    .data
+                    .iter()
+                    .zip(mt.data.iter())
+                    .map(|(a, b)| (a + b).abs())
+                    .fold(0.0f64, f64::max);
+                assert!(
+                    worst < 1e-9,
+                    "Vtilde[{idx}] not antisymmetric (worst {worst})"
+                );
             }
         }
     }
@@ -547,18 +639,21 @@ mod tests {
         let rep = block_diag_n4(&cs_n4(), &cs_n4());
         let decomp = decompose_rep(&rep).unwrap();
         assert_eq!(decomp.summands.len(), 2);
-        let dense: Vec<DenseHoloraumy> =
-            decomp.summands.iter().map(|s| DenseHoloraumy::from_summand(s)).collect();
+        let dense: Vec<DenseHoloraumy> = decomp
+            .summands
+            .iter()
+            .map(|s| DenseHoloraumy::from_summand(s))
+            .collect();
         let dmat = dense_gadget_matrix(&dense);
-        let vectors: Vec<Vec<f32>> =
-            decomp.summands.iter().map(|s| flatten_summand(s)).collect();
+        let vectors: Vec<Vec<f32>> = decomp.summands.iter().map(|s| flatten_summand(s)).collect();
         let gmat = gram_gadget_matrix(&vectors, 4);
         for i in 0..2 {
             for j in 0..2 {
                 assert!(
                     (gmat[i][j] - dmat[i][j]).abs() < 1e-5,
                     "reducible gram[{i}][{j}]={} != dense={}",
-                    gmat[i][j], dmat[i][j]
+                    gmat[i][j],
+                    dmat[i][j]
                 );
             }
             assert!((gmat[i][i] - 1.0).abs() < 1e-5, "summand self-gadget != 1");
@@ -572,8 +667,10 @@ mod tests {
         let cs = decompose_rep(&cs_n4()).unwrap();
         let vs = decompose_rep(&vs_n4()).unwrap();
         let summands = [&cs.summands[0], &vs.summands[0]];
-        let dense: Vec<DenseHoloraumy> =
-            summands.iter().map(|s| DenseHoloraumy::from_summand(s)).collect();
+        let dense: Vec<DenseHoloraumy> = summands
+            .iter()
+            .map(|s| DenseHoloraumy::from_summand(s))
+            .collect();
         let dmat = dense_gadget_matrix(&dense);
         let vectors: Vec<Vec<f32>> = summands.iter().map(|s| flatten_summand(s)).collect();
         let gmat = gram_gadget_matrix(&vectors, 4);
@@ -593,8 +690,11 @@ mod tests {
 
     /// Write summands to a scratch file (summand g at offset g*l*4) and return it.
     fn write_scratch(summands: &[&IrrepSummand], l: usize, tag: &str) -> ScratchW {
-        let path = std::env::temp_dir()
-            .join(format!("adinkra_disktest_{}_{}.f32scratch", tag, std::process::id()));
+        let path = std::env::temp_dir().join(format!(
+            "adinkra_disktest_{}_{}.f32scratch",
+            tag,
+            std::process::id()
+        ));
         let sc = ScratchW::create(path, (summands.len() as u64) * (l as u64) * 4).unwrap();
         for (g, s) in summands.iter().enumerate() {
             sc.write_summand(g, &flatten_summand(s), l).unwrap();
@@ -611,8 +711,10 @@ mod tests {
         let vs = decompose_rep(&vs_n4()).unwrap();
         let summands = [&cs.summands[0], &vs.summands[0]];
         let l = flat_len(4);
-        let dense: Vec<DenseHoloraumy> =
-            summands.iter().map(|s| DenseHoloraumy::from_summand(s)).collect();
+        let dense: Vec<DenseHoloraumy> = summands
+            .iter()
+            .map(|s| DenseHoloraumy::from_summand(s))
+            .collect();
         let dmat = dense_gadget_matrix(&dense);
         let vectors: Vec<Vec<f32>> = summands.iter().map(|s| flatten_summand(s)).collect();
         let gmat = gram_gadget_matrix(&vectors, 4);
@@ -620,8 +722,14 @@ mod tests {
         let dmat_disk = gram_from_disk(&sc, 2, l, 4, 1).unwrap();
         for i in 0..2 {
             for j in 0..2 {
-                assert_eq!(dmat_disk[i][j], gmat[i][j], "disk != in-RAM gram at [{i}][{j}]");
-                assert!((dmat_disk[i][j] - dmat[i][j]).abs() < 1e-6, "disk != dense at [{i}][{j}]");
+                assert_eq!(
+                    dmat_disk[i][j], gmat[i][j],
+                    "disk != in-RAM gram at [{i}][{j}]"
+                );
+                assert!(
+                    (dmat_disk[i][j] - dmat[i][j]).abs() < 1e-6,
+                    "disk != dense at [{i}][{j}]"
+                );
             }
         }
         assert!((dmat_disk[0][0] - 1.0).abs() < 1e-6 && dmat_disk[0][1].abs() < 1e-6);
@@ -645,10 +753,19 @@ mod tests {
         assert_eq!(dmat_disk.len(), 3);
         for i in 0..3 {
             for j in 0..3 {
-                assert_eq!(dmat_disk[i][j], gmat[i][j], "partial-tile disk != in-RAM at [{i}][{j}]");
-                assert!((dmat_disk[i][j] - dmat_disk[j][i]).abs() < 1e-12, "asymmetry at [{i}][{j}]");
+                assert_eq!(
+                    dmat_disk[i][j], gmat[i][j],
+                    "partial-tile disk != in-RAM at [{i}][{j}]"
+                );
+                assert!(
+                    (dmat_disk[i][j] - dmat_disk[j][i]).abs() < 1e-12,
+                    "asymmetry at [{i}][{j}]"
+                );
             }
-            assert!((dmat_disk[i][i] - 1.0).abs() < 1e-5, "self-gadget[{i}] != 1");
+            assert!(
+                (dmat_disk[i][i] - 1.0).abs() < 1e-5,
+                "self-gadget[{i}] != 1"
+            );
         }
     }
 
@@ -680,15 +797,22 @@ mod tests {
             assert!(p.exists());
             p
         }; // sc dropped here
-        assert!(!path.exists(), "scratch not removed on drop: {}", path.display());
+        assert!(
+            !path.exists(),
+            "scratch not removed on drop: {}",
+            path.display()
+        );
     }
 
     // -- exact f64 disk-backed tiled Gram (--f64 build) --------------------
 
     /// Write summands as f64 (summand g at offset g*l*8) and return the scratch.
     fn write_scratch_f64(summands: &[&IrrepSummand], l: usize, tag: &str) -> ScratchW {
-        let path = std::env::temp_dir()
-            .join(format!("adinkra_disktest_{}_{}.f64scratch", tag, std::process::id()));
+        let path = std::env::temp_dir().join(format!(
+            "adinkra_disktest_{}_{}.f64scratch",
+            tag,
+            std::process::id()
+        ));
         let sc = ScratchW::create(path, (summands.len() as u64) * (l as u64) * 8).unwrap();
         let mut buf = vec![0.0f64; l];
         for (g, s) in summands.iter().enumerate() {
@@ -710,8 +834,10 @@ mod tests {
         let summands: Vec<&IrrepSummand> =
             vec![&decomp.summands[0], &decomp.summands[1], &vs.summands[0]];
         let l = flat_len(4);
-        let dense: Vec<DenseHoloraumy> =
-            summands.iter().map(|s| DenseHoloraumy::from_summand(s)).collect();
+        let dense: Vec<DenseHoloraumy> = summands
+            .iter()
+            .map(|s| DenseHoloraumy::from_summand(s))
+            .collect();
         let dmat = dense_gadget_matrix(&dense);
         let sc = write_scratch_f64(&summands, l, "f64t2");
         let disk = gram_from_disk_f64(&sc, 3, l, 4, 2).unwrap();
@@ -721,11 +847,19 @@ mod tests {
                 assert!(
                     (disk[i][j] - dmat[i][j]).abs() < 1e-12,
                     "f64 disk[{i}][{j}]={} != dense={} (diff {:e})",
-                    disk[i][j], dmat[i][j], (disk[i][j] - dmat[i][j]).abs()
+                    disk[i][j],
+                    dmat[i][j],
+                    (disk[i][j] - dmat[i][j]).abs()
                 );
-                assert!((disk[i][j] - disk[j][i]).abs() < 1e-13, "asymmetry at [{i}][{j}]");
+                assert!(
+                    (disk[i][j] - disk[j][i]).abs() < 1e-13,
+                    "asymmetry at [{i}][{j}]"
+                );
             }
-            assert!((disk[i][i] - 1.0).abs() < 1e-12, "f64 self-gadget[{i}] != 1");
+            assert!(
+                (disk[i][i] - 1.0).abs() < 1e-12,
+                "f64 self-gadget[{i}] != 1"
+            );
         }
     }
 
@@ -743,7 +877,10 @@ mod tests {
             let mut expect = vec![0.0f64; l];
             flatten_summand_into_f64(s, &mut expect);
             sc.read_rows_f64(g, 1, l, &mut buf).unwrap();
-            assert_eq!(buf, expect, "summand {g}: f64 read-back != written flat vector");
+            assert_eq!(
+                buf, expect,
+                "summand {g}: f64 read-back != written flat vector"
+            );
         }
     }
 }

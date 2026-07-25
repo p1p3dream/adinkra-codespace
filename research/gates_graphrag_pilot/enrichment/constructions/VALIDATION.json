@@ -1,0 +1,36 @@
+{
+  "alias_entity_count": 11,
+  "entity_aliases_sha256": "aa94726d34969dbb54d21409cb38f0031f87bd013e0745b7777b42aa41723265",
+  "errors": [],
+  "paper_count": 9,
+  "paper_counts": {
+    "1911.00807": 3,
+    "2002.08502": 3,
+    "2006.03609": 5,
+    "2007.07390": 2,
+    "2012.13308": 3,
+    "2012.14015": 4,
+    "2304.09830": 5,
+    "2311.06842": 4,
+    "2407.09334": 5
+  },
+  "proposal_count": 34,
+  "proposals_sha256": "6d2dcff97329b5bfcb99aa866a5c888e865bc2490aebf04083a30e5c61438bc6",
+  "relationship_counts": {
+    "CATALOGS": 3,
+    "CLASSIFIES": 1,
+    "COMPUTES": 3,
+    "CONSTRUCTS": 4,
+    "DECOMPOSES_INTO": 2,
+    "ENCODES": 1,
+    "EQUIVALENT_TO": 4,
+    "GENERATED_BY": 3,
+    "ISOMORPHIC_TO": 1,
+    "MAPS_TO": 3,
+    "PARTITIONS_INTO": 2,
+    "REDUCES_TO": 1,
+    "REPRESENTS": 6
+  },
+  "schema_version": "gates-construction-validation-v1",
+  "status": "pass"
+}

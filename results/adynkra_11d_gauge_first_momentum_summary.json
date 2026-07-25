@@ -1,0 +1,74 @@
+{
+  "schema_version": "adynkra-11d-gauge-first-momentum-summary-v1",
+  "passed": true,
+  "question": "Does any nonempty selection of the six candidate source-gauge channels admit a nonzero leading operator through first momentum under A G_p = 0?",
+  "answer": false,
+  "zero_momentum_kernel_dimensions_by_form_degree": [
+    11,
+    1,
+    1,
+    0,
+    0,
+    1
+  ],
+  "first_momentum_screens": [
+    {
+      "form_degree": 0,
+      "parameter_components": 1,
+      "evaluated_parameter_components": [
+        0
+      ],
+      "parameterized_columns": 55,
+      "functional_rows": 512,
+      "functional_rank": 17,
+      "functional_nullity": 38,
+      "leading_projection_rank": 0,
+      "nonzero_leading_extension_excluded": true,
+      "report_sha256": "4b86b7803fdfe82e930b742ff85f3b6c2c050409e723f820869269e958c21718"
+    },
+    {
+      "form_degree": 1,
+      "parameter_components": 11,
+      "evaluated_parameter_components": [
+        0
+      ],
+      "parameterized_columns": 45,
+      "functional_rows": 512,
+      "functional_rank": 42,
+      "functional_nullity": 3,
+      "leading_projection_rank": 0,
+      "nonzero_leading_extension_excluded": true,
+      "report_sha256": "c2cf34d3b928f6bfb4f8c245d89f6fb955410b1a195da104342948a4f9270849"
+    },
+    {
+      "form_degree": 2,
+      "parameter_components": 55,
+      "evaluated_parameter_components": [
+        0
+      ],
+      "parameterized_columns": 45,
+      "functional_rows": 512,
+      "functional_rank": 33,
+      "functional_nullity": 12,
+      "leading_projection_rank": 0,
+      "nonzero_leading_extension_excluded": true,
+      "report_sha256": "a3165ebb89d6d160e39b08cc6880ebbd130f1168a046d5158b12921037bb95dd"
+    },
+    {
+      "form_degree": 5,
+      "parameter_components": 462,
+      "evaluated_parameter_components": [
+        0
+      ],
+      "parameterized_columns": 45,
+      "functional_rows": 512,
+      "functional_rank": 41,
+      "functional_nullity": 4,
+      "leading_projection_rank": 0,
+      "nonzero_leading_extension_excluded": true,
+      "report_sha256": "f129f072d9004e76659fdf66b262a0d1da86fe2e2f82942b0c19664610f39172"
+    }
+  ],
+  "subset_logic": "Forms 3 and 4 have zero leading kernels at zero momentum. Form 0 is excluded at first momentum. Every remaining nonempty subset contains at least one of forms 1, 2, or 5, and each is excluded individually at first momentum.",
+  "boundary": "The exact linear-functional screens can exclude a nonzero leading extension because the full residual kernel is contained in every functional kernel. They do not classify pure first-momentum solutions, certify a survivor, test an independently supplied target gauge transformation, or decide the retained-hook and Bianchi route."
+}

@@ -1,5 +1,7 @@
 #![allow(dead_code)] // primitive-library module: much of its API surface is exercised by the test suite, not the binary main path
 
+use crate::chromotopology::Chromotopology;
+use crate::ranking::Ranking;
 /// L/R matrix construction and Garden algebra verification for Adinkra
 /// representations.
 ///
@@ -7,10 +9,7 @@
 /// dashing, then verifies the Garden algebra identity:
 ///
 ///   L_I * R_J + L_J * R_I = 2 * delta_IJ * I_d
-
 use crate::signed_perm::SignedPerm;
-use crate::ranking::Ranking;
-use crate::chromotopology::Chromotopology;
 
 #[derive(Debug, Clone)]
 pub struct AdinkraRep {
@@ -138,7 +137,6 @@ impl AdinkraRep {
         }
         sig
     }
-
 }
 
 // ===========================================================================
@@ -161,7 +159,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, -1, -1, 1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, 1, -1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d,
+            l_matrices: l,
+        }
     }
 
     /// N=4 Vector Supermultiplet (VS) from the [4,1,4] code, dashing class 1.
@@ -173,7 +175,11 @@ mod tests {
             SignedPerm::from_parts(vec![2, 3, 0, 1], vec![1, 1, -1, -1]).unwrap(),
             SignedPerm::from_parts(vec![3, 2, 1, 0], vec![1, -1, 1, -1]).unwrap(),
         ];
-        AdinkraRep { n: 4, d, l_matrices: l }
+        AdinkraRep {
+            n: 4,
+            d,
+            l_matrices: l,
+        }
     }
 
     // -- Garden algebra verification ----------------------------------------
@@ -200,12 +206,7 @@ mod tests {
                 }
                 let v = rep.v_matrix(i, j);
                 let v2 = v.compose(&v);
-                assert!(
-                    v2.is_neg_identity(),
-                    "V_{},{} squared should be -I",
-                    i,
-                    j
-                );
+                assert!(v2.is_neg_identity(), "V_{},{} squared should be -I", i, j);
             }
         }
     }
@@ -234,8 +235,8 @@ mod tests {
 
     // -- non-valise (height-aware) L/R --------------------------------------
 
-    use crate::code::DoublyEvenCode;
     use crate::chromotopology::Chromotopology;
+    use crate::code::DoublyEvenCode;
     use crate::ranking::Ranking;
 
     /// The N=4, k=1 chromotopology ({0000, 1111}).
@@ -283,10 +284,10 @@ mod tests {
             vec![3, 2, 1, 0],
         ];
         let dashing = vec![
-            1, 1, 1, 1,       // color 0
-            1, -1, 1, -1,     // color 1
-            1, -1, -1, 1,     // color 2
-            1, 1, -1, -1,     // color 3
+            1, 1, 1, 1, // color 0
+            1, -1, 1, -1, // color 1
+            1, -1, -1, 1, // color 2
+            1, 1, -1, -1, // color 3
         ];
         let rep = AdinkraRep::from_parts(4, 4, &color_perms, &dashing);
 

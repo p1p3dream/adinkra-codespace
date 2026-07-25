@@ -28,7 +28,8 @@ impl SignedPerm {
 
     /// True when this element equals the identity permutation.
     pub fn is_identity(&self) -> bool {
-        self.perm.iter().enumerate().all(|(i, &p)| p == i as u16) && self.sign.iter().all(|&s| s == 1)
+        self.perm.iter().enumerate().all(|(i, &p)| p == i as u16)
+            && self.sign.iter().all(|&s| s == 1)
     }
 
     /// Composition of signed permutations. With the convention that row `i` has
@@ -167,7 +168,8 @@ impl SignedPerm {
 
     /// True when this element equals -I (identity permutation, all signs -1).
     pub fn is_neg_identity(&self) -> bool {
-        self.perm.iter().enumerate().all(|(i, &p)| p == i as u16) && self.sign.iter().all(|&s| s == -1)
+        self.perm.iter().enumerate().all(|(i, &p)| p == i as u16)
+            && self.sign.iter().all(|&s| s == -1)
     }
 
     /// Transpose of the signed-permutation matrix.
@@ -329,13 +331,7 @@ mod tests {
     fn trace_negated_identity() {
         for d in 1..=5 {
             let neg = SignedPerm::identity(d).negate();
-            assert_eq!(
-                neg.trace(),
-                -(d as i64),
-                "Tr(-I_{}) should be -{}",
-                d,
-                d
-            );
+            assert_eq!(neg.trace(), -(d as i64), "Tr(-I_{}) should be -{}", d, d);
         }
     }
 

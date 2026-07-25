@@ -1,0 +1,15 @@
+# schema: worker_id<TAB>host_role<TAB>ordinals
+# Weights are the observed exact nonzero-entry counts from the preserved
+# 2026-07-23 full-run log. Longest-processing-time assignment balances the
+# 2,405,151,800 total entries across eleven workers.
+pod1-w0	runpod	52,7,50,0,16,14,12
+pod1-w1	runpod	51,42,10,32,18,20
+pod1-w2	runpod	47,37,15,40,38,24
+pod1-w3	runpod	54,8,48,34,22,3
+pod1-w4	runpod	55,9,45,19,11
+pod2-w0	runpod	39,33,23,26
+pod2-w1	runpod	43,44,49,53
+pod2-w2	runpod	46,28,2,6
+pod2-w3	runpod	27,41,21,36,13,5
+pod2-w4	runpod	30,35,4,1
+stonkbot-w0	stonkbot	29,31,17,25

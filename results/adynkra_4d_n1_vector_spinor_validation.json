@@ -1,0 +1,68 @@
+{
+  "schema_version": "adynkra-4d-n1-vector-spinor-intertwiners-v1",
+  "source_arxiv": "2407.09334",
+  "source_equations": "2.13, 2.14, 2.19",
+  "decompositions": [
+    "[1,1] tensor [1,0] = [0,1] + [2,1]",
+    "[1,1] tensor [0,1] = [1,0] + [1,2]"
+  ],
+  "vector_spinor_dimension": 8,
+  "projectors": [
+    {
+      "chirality": "left",
+      "sector": "spinor_trace",
+      "dynkin_label": [
+        0,
+        1
+      ],
+      "expected_rank": 2,
+      "computed_rank": 2,
+      "idempotent": true,
+      "equivariant": true
+    },
+    {
+      "chirality": "left",
+      "sector": "spin_three_halves",
+      "dynkin_label": [
+        2,
+        1
+      ],
+      "expected_rank": 6,
+      "computed_rank": 6,
+      "idempotent": true,
+      "equivariant": true
+    },
+    {
+      "chirality": "right",
+      "sector": "spinor_trace",
+      "dynkin_label": [
+        1,
+        0
+      ],
+      "expected_rank": 2,
+      "computed_rank": 2,
+      "idempotent": true,
+      "equivariant": true
+    },
+    {
+      "chirality": "right",
+      "sector": "spin_three_halves",
+      "dynkin_label": [
+        1,
+        2
+      ],
+      "expected_rank": 6,
+      "computed_rank": 6,
+      "idempotent": true,
+      "equivariant": true
+    }
+  ],
+  "completeness_checks": 2,
+  "completeness_failures": 0,
+  "orthogonality_checks": 4,
+  "orthogonality_failures": 0,
+  "sl2_generators_per_chirality": 6,
+  "equivariance_commutators_checked": 24,
+  "boundary": "vector-spinor irreducible projectors only; repeated-irrep derivative maps and gauge cohomology remain open",
+  "passed": true
+}

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
+use crate::chromotopology::Chromotopology;
 use crate::code::DoublyEvenCode;
 use crate::ranking::Ranking;
-use crate::chromotopology::Chromotopology;
 
 #[derive(Debug, Clone)]
 pub struct WorldsheetResult {
@@ -67,9 +67,10 @@ pub fn worldsheet_all_splits(code: &DoublyEvenCode) -> Vec<WorldsheetResult> {
 /// -1.
 ///
 /// THE CONDITION
-/// A 1D (worldline) Adinkra extends to a 2D (p, q) worldsheet iff, around EVERY
-/// 2-colored quadrangle (4-cycle using exactly two colors I, J), the
-/// height-weighted spin sum vanishes and there is no ambidextrous bow-tie.
+/// Theorems 2.1 and 2.2 give a worldline-to-worldsheet obstruction in terms of
+/// every 2-colored quadrangle. The paper conjectures that evading this obstruction
+/// is sufficient for extension. This function checks the stated local spin-sum
+/// predicate; it does not construct worldsheet transformation laws.
 ///
 /// Following the paper, the relevant local object is
 ///     sigma-hat_{I,B}^A = spin(D_I) * ( [F_B] - [F_A] )
@@ -99,15 +100,15 @@ pub fn worldsheet_all_splits(code: &DoublyEvenCode) -> Vec<WorldsheetResult> {
 /// on every nontrivial (p, q) split. This matches Corollary 2.2 and reproduces
 /// the existing `worldsheet_weight2_obstruction` behavior for doubly-even codes.
 ///
-/// Returns true iff the chirality assignment yields a consistent (p, q)
-/// worldsheet extension.
-pub fn worldsheet_spin_sum(
-    chromo: &Chromotopology,
-    ranking: &Ranking,
-    chirality: &[i8],
-) -> bool {
+/// Returns true exactly when the chirality assignment satisfies the implemented
+/// `(p,q)` spin-sum predicate.
+pub fn worldsheet_spin_sum(chromo: &Chromotopology, ranking: &Ranking, chirality: &[i8]) -> bool {
     let n = chromo.n();
-    debug_assert_eq!(chirality.len(), n, "chirality must have one entry per color");
+    debug_assert_eq!(
+        chirality.len(),
+        n,
+        "chirality must have one entry per color"
+    );
     let d = chromo.d();
 
     // Enumerate every 2-colored quadrangle. For colors I != J, a 4-cycle is
@@ -159,8 +160,8 @@ pub fn worldsheet_spin_sum(
                 // Directed, spin-weighted height steps around the quadrangle:
                 //   I:  b1 -> f1   and   b2 -> f2
                 //   J:  f1 -> b2   and   f2 -> b1
-                let spin_sum = ci * ((h_f1 - h_b1) + (h_f2 - h_b2))
-                    + cj * ((h_b2 - h_f1) + (h_b1 - h_f2));
+                let spin_sum =
+                    ci * ((h_f1 - h_b1) + (h_f2 - h_b2)) + cj * ((h_b2 - h_f1) + (h_b1 - h_f2));
 
                 if spin_sum != 0 {
                     return false;
@@ -175,9 +176,9 @@ pub fn worldsheet_spin_sum(
 /// and chirality split, return `Some((p,q))` iff (a) the heights are a valid
 /// hanging (`|Δh|=1` on every edge) and (b) the Gates-Hübsch spin-sum predicate
 /// passes for that chirality. This is the poly-time certificate checker that turns
-/// a found `(p,q)` into a PROVEN existence result: a passing witness is a theorem
-/// ("this class admits a (p,q) worldsheet extension"), independent of how it was
-/// produced. `p = #{+1}`, `q = #{-1}`.
+/// a found `(p,q)` into a verified predicate result, independent of how the witness
+/// was produced. It does not prove the paper's sufficiency conjecture or construct
+/// the corresponding worldsheet representation. `p = #{+1}`, `q = #{-1}`.
 pub fn verify_worldsheet_witness(
     chromo: &Chromotopology,
     height: &[i32],
@@ -189,7 +190,9 @@ pub fn verify_worldsheet_witness(
     if !chirality.iter().all(|&s| s == 1 || s == -1) {
         return None;
     }
-    let ranking = Ranking { height: height.to_vec() };
+    let ranking = Ranking {
+        height: height.to_vec(),
+    };
     if ranking.is_valid(chromo).is_err() {
         return None;
     }
@@ -211,7 +214,7 @@ pub fn verify_worldsheet_witness(
 ///
 /// Returns `(N,0)` when only the trivial unidextrous extension is consistent
 /// (e.g. every valise). A returned `(p,q)` with `p,q>0` is a genuine nontrivial
-/// `(p,q)` worldsheet supersymmetry.
+/// `(p,q)` split passing the implemented obstruction.
 #[allow(dead_code)] // production uses max_balanced_worldsheet_witness; this thin wrapper is test-only
 pub fn max_balanced_worldsheet(chromo: &Chromotopology, ranking: &Ranking) -> (usize, usize) {
     let (p, q, _) = max_balanced_worldsheet_witness(chromo, ranking);
@@ -281,9 +284,9 @@ pub fn max_balanced_worldsheet_witness(
                 continue;
             }
             let t = match (plus_ok[idx], minus_ok[idx]) {
-                (true, true) => continue,    // free pair, no constraint
-                (true, false) => 1i64,       // s_i*s_j = +1
-                (false, true) => -1i64,      // s_i*s_j = -1
+                (true, true) => continue,                      // free pair, no constraint
+                (true, false) => 1i64,                         // s_i*s_j = +1
+                (false, true) => -1i64,                        // s_i*s_j = -1
                 (false, false) => return (0, 0, vec![1i8; n]), // impossible (dead: A+B≡0 keeps +1 feasible)
             };
             let (ri, si) = find(i, &mut parent, &mut rel);
@@ -365,7 +368,11 @@ pub fn max_balanced_worldsheet_witness(
     let mut chirality = vec![1i8; n];
     for x in 0..n {
         let (r, s) = find(x, &mut parent, &mut rel);
-        let root_sign: i64 = if *flipped.get(&r).unwrap_or(&false) { -1 } else { 1 };
+        let root_sign: i64 = if *flipped.get(&r).unwrap_or(&false) {
+            -1
+        } else {
+            1
+        };
         chirality[x] = (root_sign * s) as i8;
     }
     (best_p, n - best_p, chirality)
@@ -378,8 +385,8 @@ pub fn max_balanced_worldsheet_witness(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::code::DoublyEvenCode;
     use crate::chromotopology::Chromotopology;
+    use crate::code::DoublyEvenCode;
     use crate::ranking::Ranking;
 
     /// Valise ranking from a chromotopology: bosons at height 0, fermions at 1.
@@ -392,7 +399,7 @@ mod tests {
 
     /// THE NON-VACUITY EXPERIMENT: on a VALISE every nontrivial (p,q) split fails
     /// (Cor 2.2), but does some HUNG (non-valise) ranking unlock a nontrivial
-    /// worldsheet extension? Enumerate ALL N=4 [4,1] rankings (complete ground
+    /// spin-sum predicate? Enumerate all N=4 [4,1] rankings (complete ground
     /// truth) x all 2^4 chirality splits and count nontrivial passes. If this is
     /// zero the whole worldsheet oracle is vacuous; it must be > 0.
     #[test]
@@ -403,7 +410,9 @@ mod tests {
         let mut best: Option<(usize, usize, Vec<i32>, Vec<i8>)> = None;
         for r in &rankings {
             for bits in 0u32..(1 << 4) {
-                let chir: Vec<i8> = (0..4).map(|c| if bits & (1 << c) != 0 { 1 } else { -1 }).collect();
+                let chir: Vec<i8> = (0..4)
+                    .map(|c| if bits & (1 << c) != 0 { 1 } else { -1 })
+                    .collect();
                 let p = chir.iter().filter(|&&s| s == 1).count();
                 let q = 4 - p;
                 if p == 0 || q == 0 {
@@ -425,20 +434,25 @@ mod tests {
         let produced = Ranking::raised_samples(&chromo, 4, 200);
         let producer_hits = produced.iter().any(|r| {
             (0u32..(1 << 4)).any(|bits| {
-                let chir: Vec<i8> = (0..4).map(|c| if bits & (1 << c) != 0 { 1 } else { -1 }).collect();
+                let chir: Vec<i8> = (0..4)
+                    .map(|c| if bits & (1 << c) != 0 { 1 } else { -1 })
+                    .collect();
                 let p = chir.iter().filter(|&&s| s == 1).count();
                 p != 0 && p != 4 && worldsheet_spin_sum(&chromo, r, &chir)
             })
         });
         eprintln!(
             "N=4 worldsheet: {} nontrivial (ranking,split) passes over {} rankings; example {:?}; producer reaches a pass: {}",
-            nontrivial_passes, rankings.len(), best, producer_hits
+            nontrivial_passes,
+            rankings.len(),
+            best,
+            producer_hits
         );
     }
 
     /// Every (p,q) the oracle reports must come with a chirality witness that
     /// INDEPENDENTLY passes verification (valid hanging + spin-sum) for the same
-    /// (p,q). This is what makes a reported extension a PROVEN existence result.
+    /// `(p,q)`. This makes the predicate result independently checkable.
     #[test]
     fn witness_verifies_for_every_n4_ranking() {
         let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, vec![0b1111]));
@@ -447,9 +461,14 @@ mod tests {
             // Trivial (4,0)/(0,*) always holds; nontrivial must verify too.
             let v = verify_worldsheet_witness(&chromo, &r.height, &chir);
             assert_eq!(
-                v, Some((p, q)),
+                v,
+                Some((p, q)),
                 "witness for ranking {:?} chir {:?} failed to verify (got {:?}, claimed ({},{}))",
-                r.height, chir, v, p, q
+                r.height,
+                chir,
+                v,
+                p,
+                q
             );
         }
     }
@@ -464,15 +483,24 @@ mod tests {
             let chromo = Chromotopology::from_code(&DoublyEvenCode::new(4, gens));
             let true_max = Ranking::enumerate(&chromo)
                 .iter()
-                .map(|r| { let (p, q) = max_balanced_worldsheet(&chromo, r); p.min(q) })
+                .map(|r| {
+                    let (p, q) = max_balanced_worldsheet(&chromo, r);
+                    p.min(q)
+                })
                 .max()
                 .unwrap_or(0);
-            let mut sampled = { let (p, q) = max_balanced_worldsheet(&chromo, &Ranking::valise(&chromo)); p.min(q) };
+            let mut sampled = {
+                let (p, q) = max_balanced_worldsheet(&chromo, &Ranking::valise(&chromo));
+                p.min(q)
+            };
             for r in Ranking::raised_samples(&chromo, 8, 500) {
                 let (p, q) = max_balanced_worldsheet(&chromo, &r);
                 sampled = sampled.max(p.min(q));
             }
-            assert_eq!(sampled, true_max, "sampled max {sampled} != true max {true_max} (sampling missed it)");
+            assert_eq!(
+                sampled, true_max,
+                "sampled max {sampled} != true max {true_max} (sampling missed it)"
+            );
         }
     }
 
@@ -486,14 +514,20 @@ mod tests {
             // Brute force: best min(p,q) over all chirality assignments that pass.
             let mut bf_best_min: i64 = -1; // -1 = nothing passes
             for bits in 0u32..(1 << 4) {
-                let chir: Vec<i8> = (0..4).map(|c| if bits & (1 << c) != 0 { 1 } else { -1 }).collect();
+                let chir: Vec<i8> = (0..4)
+                    .map(|c| if bits & (1 << c) != 0 { 1 } else { -1 })
+                    .collect();
                 if worldsheet_spin_sum(&chromo, r, &chir) {
                     let p = chir.iter().filter(|&&s| s == 1).count();
                     bf_best_min = bf_best_min.max(p.min(4 - p) as i64);
                 }
             }
             let (p, q) = max_balanced_worldsheet(&chromo, r);
-            let fast_min: i64 = if (p, q) == (0, 0) { -1 } else { p.min(q) as i64 };
+            let fast_min: i64 = if (p, q) == (0, 0) {
+                -1
+            } else {
+                p.min(q) as i64
+            };
             assert_eq!(
                 fast_min, bf_best_min,
                 "ranking {:?}: fast min {} != brute-force min {}",
@@ -573,10 +607,7 @@ mod tests {
     #[test]
     fn weight2_never_doubly_even() {
         // For any doubly-even code, e_I ^ e_J has weight 2, never a codeword
-        let code = DoublyEvenCode::new(
-            8,
-            vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-        );
+        let code = DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000]);
         let codewords: HashSet<u32> = code.codewords().into_iter().collect();
         for i in 0..8 {
             for j in (i + 1)..8 {
@@ -600,10 +631,7 @@ mod tests {
 
     #[test]
     fn all_splits_hamming_8_4() {
-        let code = DoublyEvenCode::new(
-            8,
-            vec![0b11100001, 0b11010010, 0b10110100, 0b01111000],
-        );
+        let code = DoublyEvenCode::new(8, vec![0b11100001, 0b11010010, 0b10110100, 0b01111000]);
         let results = worldsheet_all_splits(&code);
         for r in &results {
             if r.p == 0 || r.q == 0 {

@@ -1,0 +1,205 @@
+{
+  "schema_version": "adynkra-4d-n1-old-minimal-action-v1",
+  "source": "hep-th/0108200",
+  "source_equation": "Superspace Eq. (7.2.36), equivalent in flat background to Eq. (7.4.1)",
+  "action": "integral d^4x d^4theta [-3 chi_bar chi + i(chi-chi_bar) partial.H - (1/2) H.(box-D^2 Dbar^2-Dbar^2 D^2)H - (1/4)(partial.H)^2 + (1/12)([Dbar,D]H)^2]",
+  "euler_lagrange_operator": "delta S/delta H = -G; Dbar^2(delta S/delta chi) = -3R; D^2(delta S/delta chi_bar) = -3Rbar",
+  "convention": "phi = 1 + chi, epsilon^(01) = 1, box = partial_00 partial_11 - partial_01 partial_10, and the overall kappa^(-2) is suppressed",
+  "quadratic_momentum_monomials": 15,
+  "momentum_interpolation_determinant": -1440,
+  "momentum_interpolation_full_rank": true,
+  "momentum_checks": [
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        0,
+        1,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        1,
+        0
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        2,
+        -1,
+        4,
+        3
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    },
+    {
+      "momentum": [
+        -2,
+        3,
+        1,
+        4
+      ],
+      "potential_basis_dimension": 96,
+      "hessian_entries_checked": 9216,
+      "source_variation_residuals": 0,
+      "formal_self_adjointness_residuals": 0
+    }
+  ],
+  "total_hessian_entries_checked": 138240,
+  "total_source_variation_residuals": 0,
+  "total_formal_self_adjointness_residuals": 0,
+  "compensator_projection_relations_checked": 192,
+  "compensator_projection_residuals": 0,
+  "noether_relations_checked": 384,
+  "noether_residuals": 0,
+  "source_action_yields_known_equations": true,
+  "formally_self_adjoint": true,
+  "gauge_noether_identity_holds": true,
+  "boundary": "quadratic linearized old-minimal action in flat 4D N=1 superspace; the full-rank interpolation design certifies the degree-two momentum-polynomial Hessian, but this is not a nonlinear or higher-dimensional action",
+  "passed": true
+}

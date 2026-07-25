@@ -1,0 +1,29 @@
+{
+  "schema_version": "adynkra-4d-n1-prepotential-curvature-v2",
+  "sources": [
+    "hep-th/0108200",
+    "2407.09334"
+  ],
+  "source_equations": [
+    "5.2.5 and 5.2.7",
+    "2.21 and 2.22"
+  ],
+  "curvature": "the conjugate pair W_{alpha beta gamma} and Wbar_{dot-alpha dot-beta dot-gamma} from Superspace Eq. (5.2.5)",
+  "convention": "epsilon^(01) = 1 and Dbar^2 = Dbar_1 Dbar_0, following Superspace Eq. (3.4.10)",
+  "symmetric_weyl_components": 4,
+  "prepotential_basis_inputs": 64,
+  "gauge_parameter_basis_inputs": 64,
+  "nonzero_curvature_images": 152,
+  "nonzero_conjugate_curvature_images": 152,
+  "maximum_curvature_derivative_order": 4,
+  "chirality_relations_checked": 512,
+  "chirality_residuals": 0,
+  "antichirality_relations_checked": 512,
+  "antichirality_residuals": 0,
+  "gauge_invariance_relations_checked": 256,
+  "gauge_invariance_residuals": 0,
+  "conjugate_gauge_invariance_relations_checked": 256,
+  "conjugate_gauge_invariance_residuals": 0,
+  "boundary": "this report covers the conformal super-Weyl curvature; the old-minimal scalar and vector curvatures and Bianchi identities are validated in the minimal-curvature artifact; cohomology and the Euler-Lagrange equation are separate",
+  "passed": true
+}
