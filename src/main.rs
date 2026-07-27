@@ -49,6 +49,8 @@ mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
 mod permutahedron_s4_supersymmetry;
+mod permutahedron_s8_conjugate_separation;
+mod permutahedron_s8_orbits;
 mod permutahedron_s8_separation;
 mod permutahedron_s8_supersymmetry;
 mod pipeline;
@@ -114,6 +116,10 @@ fn main() {
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
         "perm-s4-susy-build" => cmd_perm_s4_susy_build(&args),
         "perm-s4-susy-verify" => cmd_perm_s4_susy_verify(),
+        "perm-s8-conjugates-build" => cmd_perm_s8_conjugates_build(&args),
+        "perm-s8-conjugates-verify" => cmd_perm_s8_conjugates_verify(),
+        "perm-s8-orbits-build" => cmd_perm_s8_orbits_build(&args),
+        "perm-s8-orbits-verify" => cmd_perm_s8_orbits_verify(),
         "perm-s8-separation-build" => cmd_perm_s8_separation_build(&args),
         "perm-s8-separation-verify" => cmd_perm_s8_separation_verify(),
         "perm-s8-susy-build" => cmd_perm_s8_susy_build(&args),
@@ -245,6 +251,13 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-s4-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six signed S4 sectors and their Adinkras");
     eprintln!("  perm-s4-susy-verify     Verify all 96 published fiducial signings");
+    eprintln!("  perm-s8-conjugates-build [data-json] [validation-json]");
+    eprintln!("                          Scan all 30 conjugate R8 coset families");
+    eprintln!("  perm-s8-conjugates-verify");
+    eprintln!("                          Verify all 151,200 unsigned GR(8,8) supports");
+    eprintln!("  perm-s8-orbits-build [data-json] [validation-json]");
+    eprintln!("                          Classify one R8 coset atlas under its normalizer");
+    eprintln!("  perm-s8-orbits-verify   Verify the 20 exact normalizer orbits");
     eprintln!("  perm-s8-separation-build [data-json] [validation-json]");
     eprintln!("                          Classify R8 cosets that split into paired S4 sectors");
     eprintln!("  perm-s8-separation-verify");
@@ -460,6 +473,74 @@ fn cmd_perm_s4_susy_build(args: &[String]) {
 
 fn cmd_perm_s4_susy_verify() {
     let artifact = permutahedron_s4_supersymmetry::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_conjugates_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_conjugate_separation.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_conjugate_separation_validation.json");
+    let report = permutahedron_s8_conjugate_separation::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_conjugates_verify() {
+    let artifact = permutahedron_s8_conjugate_separation::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.ordered_pair_correspondence).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.recursive_construction_audit).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbits_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_normalizer_orbits.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_normalizer_orbits_validation.json");
+    let report = permutahedron_s8_orbits::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbits_verify() {
+    let artifact = permutahedron_s8_orbits::build();
     println!(
         "{}",
         serde_json::to_string_pretty(&artifact.validation).unwrap()

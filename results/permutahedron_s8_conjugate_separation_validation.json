@@ -1,0 +1,33 @@
+{
+  "conjugate_subgroups": 30,
+  "canonical_keys_unique": true,
+  "conjugators_per_subgroup": 1344,
+  "invariant_partitions_per_subgroup": 7,
+  "invariant_subgroups_per_global_partition": 6,
+  "cosets_per_subgroup": 5040,
+  "block_compatible_cosets_per_subgroup": 904,
+  "block_incompatible_cosets_per_subgroup": 4136,
+  "unsigned_noncoincident_distinct_sector_candidate_cosets_per_subgroup": 784,
+  "unsigned_noncoincident_distinct_sector_candidate_complement_cosets_per_subgroup": 4256,
+  "block_compatibility_histogram_per_subgroup": {
+    "0": 4136,
+    "1": 854,
+    "3": 49,
+    "7": 1
+  },
+  "unsigned_noncoincident_distinct_sector_candidate_multiplicity_histogram_per_subgroup": {
+    "0": 4256,
+    "1": 756,
+    "3": 28
+  },
+  "pair_class_counts_uniform": true,
+  "diagonal_iff_left_right_coincident": true,
+  "all_subgroup_scans_identical": true,
+  "all_coset_octets_family_unique": true,
+  "recursive_ordered_distinct_sector_pairs_tested": 30,
+  "recursive_distinct_unsigned_octets": 30,
+  "recursive_conjugate_r8_families_used": 1,
+  "recursive_all_octets_in_standard_r8_family": true,
+  "recovered_original_gap_cosets": 0,
+  "passed": true
+}

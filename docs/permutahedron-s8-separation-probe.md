@@ -1,4 +1,4 @@
-# S8 separation probe from paired four-color sectors
+# Single-R8 block-decomposition probe
 
 ## Question
 
@@ -8,7 +8,7 @@ of those four-color sectors into one `R8` octet. This calculation asks how far
 that mechanism extends across the complete 5,040-octet right-coset partition
 of `S8`.
 
-This is a test of a specific decomposition criterion:
+This is a test of a specific unsigned decomposition criterion:
 
 > An `R8` coset is four-plus-four decomposable when all eight of its
 > permutations preserve or exchange the two blocks of an `R8`-invariant
@@ -48,7 +48,9 @@ the octet, so the eight-color label is an unordered pair
 Pi + Pj,  1 <= i <= j <= 6.
 ```
 
-There are 21 such pair classes.
+There are 21 such unordered pair classes. The later decomposability proposal
+in Ref. [3] instead retains block order and requires distinct sectors, giving
+30 ordered classes. Those are tested separately in the all-conjugate scan.
 
 ## Complete scan
 
@@ -84,11 +86,15 @@ distribution:
 | 3 | 49 |
 | 7 | 1 |
 
-This gives a first complete separation:
+This gives a complete result for this single-family block criterion:
 
 - 904 cosets decompose through at least one `R8`-invariant four-plus-four
   split;
 - 4,136 do not decompose by this criterion.
+
+Applying the ordered-distinct construction proposed in Ref. [3] removes 120
+cosets that carry only diagonal decompositions. It leaves 784 unsigned
+noncoincident distinct-sector candidates and a complement of 4,256.
 
 ## Relation to left-right coset coincidence
 
@@ -171,15 +177,18 @@ left-right coincidence test.
 
 ## What this establishes
 
-The scan supplies a complete answer for one well-defined part of the hex
-separation problem: which `R8` cosets inherit a paired four-color decomposition,
-and which pair they inherit for each compatible partition.
+The scan supplies a complete answer for one fixed-`R8` question: which cosets
+inherit an unordered paired four-color decomposition, and which pair they
+inherit for each compatible partition.
 
-It also gives a finite target for the next test. The 4,136 cosets without such
-a split require either:
+The complete all-conjugate calculation shows that transporting the other 28
+four-plus-four partitions recovers none of the 4,136 cosets. Other conjugate
+`R8` subgroups define different octet families rather than new decompositions
+of these fixed-family octets.
+
+The block-incompatible cosets could still require:
 
 - a different decomposition mechanism;
-- another conjugate hopper subgroup;
 - a decomposition not built from two four-color sectors; or
 - exclusion from the intended higher-dimensional representation class.
 
@@ -194,6 +203,8 @@ Gates intended, not another unsigned statistic.
 - The 21 pair classes are combinatorial classes in a fixed block convention.
   Their interpretation as inequivalent physical representations is not
   established.
+- Ref. [3] proposes 30 ordered pairs of distinct sectors. The unordered
+  21-class result here must not be substituted for that proposal.
 - Failure of this four-plus-four criterion is not proof of irreducibility.
 - This does not solve the full hex separation problem.
 
