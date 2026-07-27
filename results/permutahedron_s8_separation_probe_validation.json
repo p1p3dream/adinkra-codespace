@@ -1,0 +1,14 @@
+{
+  "r8_cosets": 5040,
+  "invariant_partitions": 7,
+  "compatible_cosets_per_partition": 144,
+  "total_compatible_incidences": 1008,
+  "distinct_compatible_cosets": 904,
+  "pair_classes_per_partition": 21,
+  "diagonal_pair_incidences": 168,
+  "mixed_pair_incidences": 840,
+  "pair_diagonal_matches_left_right_coincidence": true,
+  "published_octets_located": 6,
+  "published_pair_labels_matched": 6,
+  "passed": true
+}

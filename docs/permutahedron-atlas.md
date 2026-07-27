@@ -19,6 +19,8 @@ eight-color supersymmetry program described in Refs. [1-3]. It contains:
   quartets, and all 96 corresponding Adinkras;
 - the six published signed `S8` systems, all 51 height-sign branches, and their
   Garden, HYMN, graph, Bruhat, coset, chromocharacter, and gadget records;
+- a complete scan of the seven `R8`-invariant four-plus-four partitions,
+  identifying the 904 cosets that inherit paired four-color sector labels;
 - a Garden-sign feasibility calculation for every one of the 5,040 right
   `R8` cosets.
 
@@ -122,6 +124,23 @@ because `TV` is not left-right coincident but does not close. Full method and
 boundary details are in
 [`permutahedron-s8-supersymmetry.md`](permutahedron-s8-supersymmetry.md).
 
+## Paired four-color separation probe
+
+The seven `R8`-invariant partitions of eight labels into two blocks of four
+provide a direct test of the paired construction used for the published
+eight-color systems. Each partition contains 144 complete `R8` cosets. Those
+cosets divide into the 21 unordered pairs of the six four-color sectors.
+
+Across all seven partitions, 904 distinct cosets admit at least one such
+decomposition and 4,136 admit none. Every diagonal pair coincides with a
+left-right coincident coset for that partition. The 168 diagonal incidences
+therefore connect the paired-sector construction to the existing normalizer
+result.
+
+This is a partial separation of the hex, not a physical classification of all
+5,040 octets. Full results and boundaries are in
+[`permutahedron-s8-separation-probe.md`](permutahedron-s8-separation-probe.md).
+
 ## Reproduction
 
 The atlas is generated in Rust. From the repository root, run:
@@ -132,6 +151,8 @@ cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
 cargo run --release -- perm-s4-susy-build
 cargo run --release -- perm-s4-susy-verify
+cargo run --release -- perm-s8-separation-build
+cargo run --release -- perm-s8-separation-verify
 cargo run --release -- perm-s8-susy-build
 cargo run --release -- perm-s8-susy-verify
 ```
@@ -142,9 +163,11 @@ Generated data:
 - `data/permutahedron_s8_atlas.json`
 - `data/permutahedron_s8_garden.json`
 - `data/permutahedron_s4_supersymmetry.json`
+- `data/permutahedron_s8_separation_probe.json`
 - `data/permutahedron_s8_supersymmetry.json`
 - `results/permutahedron_validation.json`
 - `results/permutahedron_s4_supersymmetry_validation.json`
+- `results/permutahedron_s8_separation_probe_validation.json`
 - `results/permutahedron_s8_supersymmetry_validation.json`
 
 Validated artifact hashes:
@@ -154,8 +177,10 @@ Validated artifact hashes:
 | `data/permutahedron_s4_atlas.json` | `0738927f723ffd16b310ff7a7bcbafa8629b791583524a165a9c1635c008be2c` |
 | `data/permutahedron_s8_atlas.json` | `b178d1642d05f1b7e0b9b5b5befdf3fb3c412717b80202c9836fe1bf061f4ba3` |
 | `data/permutahedron_s8_garden.json` | `9e0d983f678ee89704809008ea5fdeea993fbb5d535f53564477b9a313056a67` |
+| `data/permutahedron_s8_separation_probe.json` | `a4ad22c1cefb1df44b474d59d7d7d2ec9fc928773d975223e870989efa714c4d` |
 | `data/permutahedron_s8_supersymmetry.json` | `3df539d4d82472566cc4ab90dc5dbf5f8ab1035ee9708cd1d7c26a51a550d241` |
 | `results/permutahedron_validation.json` | `feb3d95a19a525dd538e53baa2b56018988629fe8576ce6cbc29d39174973cc1` |
+| `results/permutahedron_s8_separation_probe_validation.json` | `9411560dab54dfbd2cc3e5ee3dbd8d3c42cfb9074efe87d667470b3ab01c11b4` |
 | `results/permutahedron_s8_supersymmetry_validation.json` | `a6fb4d1ec4e6571d55d9780db81906f589aa1fc354bc9c6b19d00048f41002b4` |
 
 The validation report records zero mismatches in the 576 entries determined by
@@ -184,6 +209,7 @@ Validate the browser datasets and their Garden-scan join with:
 ```sh
 node scripts/test_permutahedron_atlas.mjs
 node scripts/test_permutahedron_s4_supersymmetry.mjs
+node scripts/test_permutahedron_s8_separation.mjs
 node scripts/test_permutahedron_s8_supersymmetry.mjs
 ```
 
