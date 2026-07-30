@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>S4 Permutahedron Explorer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f7f6f1;
+      --panel: #ffffff;
+      --ink: #121820;
+      --muted: #5e6b78;
+      --line: #d8dde1;
+      --soft: #eef1f2;
+      --accent: #234f70;
+      --gold: #c58a19;
+      --blue: #175ac6;
+      --green: #16844a;
+      --red: #ce3131;
+      --shadow: 0 10px 30px #23313f14;
+      --cm: #49955d;
+      --tm: #8851a2;
+      --vm: #d94d49;
+      --vm1: #4b70cd;
+      --vm2: #dd8438;
+      --vm3: #3aa7b5;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --paper: #081119;
+      --panel: #0e1b24;
+      --ink: #edf3f6;
+      --muted: #9cafba;
+      --line: #28404d;
+      --soft: #132630;
+      --accent: #6bc7dd;
+      --gold: #f1bd5b;
+      --shadow: 0 12px 32px #0006;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+    button, input, select {
+      font: inherit;
+      color: inherit;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+    }
+    button { cursor: pointer; padding: 8px 10px; }
+    button:hover, button:focus-visible { border-color: var(--accent); outline: none; }
+    button.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+    input, select { padding: 8px 9px; width: 100%; }
+    header {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 10px 16px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 10px #23313f0d;
+      position: relative;
+      z-index: 4;
+    }
+    h1 { font-size: 20px; line-height: 1.05; margin: 0; letter-spacing: -.01em; }
+    .subtitle { color: var(--muted); margin-top: 4px; font-size: 12px; }
+    .header-spacer { flex: 1; }
+    .status {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+    .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #24a66b; }
+    main {
+      height: calc(100% - 70px);
+      display: grid;
+      grid-template-columns: 292px minmax(420px, 1fr) 390px;
+      min-width: 0;
+    }
+    aside {
+      background: var(--panel);
+      overflow: auto;
+      padding: 14px;
+      min-width: 0;
+    }
+    aside:first-child { border-right: 1px solid var(--line); }
+    aside:last-child { border-left: 1px solid var(--line); }
+    section { margin: 0 0 18px; }
+    h2 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h3 { margin: 0 0 8px; font-size: 14px; }
+    .stack { display: grid; gap: 7px; }
+    .row { display: flex; gap: 7px; align-items: center; }
+    .row > * { min-width: 0; flex: 1; }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      margin: 6px 0;
+    }
+    .check input { width: auto; margin: 0; }
+    .generator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .generator { position: relative; padding-left: 21px; }
+    .generator::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: var(--g);
+    }
+    .generator.active { background: color-mix(in srgb, var(--g) 13%, var(--panel)); color: var(--ink); border-color: var(--g); }
+    .sector-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .sector-button { text-align: left; padding: 7px 8px; }
+    .sector-button i {
+      display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--sector);
+    }
+    .legend { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+    .legend-line { display: inline-block; width: 24px; border-top: 3px solid; margin-right: 7px; vertical-align: middle; }
+    .facts {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      padding: 9px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    #stage {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      background: var(--paper);
+    }
+    canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+    canvas.dragging { cursor: grabbing; }
+    #hud {
+      position: absolute;
+      left: 12px;
+      bottom: 11px;
+      pointer-events: none;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 6px 9px;
+      box-shadow: var(--shadow);
+      font-size: 12px;
+    }
+    #orientationBadge {
+      position: absolute;
+      left: 12px;
+      top: 11px;
+      pointer-events: none;
+      background: color-mix(in srgb, var(--panel) 91%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 7px 9px;
+      box-shadow: var(--shadow);
+    }
+    #orientationBadge strong { display: block; }
+    #orientationBadge span { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .selected-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+    #selectedPermutation { font: 750 30px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; }
+    #selectedId { color: var(--muted); font-size: 11px; margin-top: 5px; }
+    #sectorPill {
+      margin-left: auto;
+      color: #fff;
+      background: var(--sector);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .kv { display: grid; grid-template-columns: minmax(115px, auto) 1fr; gap: 5px 10px; margin: 0; font-size: 12px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; overflow-wrap: anywhere; }
+    .neighbor-grid { display: grid; gap: 5px; }
+    .neighbor-grid button { display: flex; justify-content: space-between; padding: 6px 8px; text-align: left; }
+    .neighbor-grid strong { color: var(--generator); }
+    .face-card, .hopper-card {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 7px 8px;
+      margin: 5px 0;
+      font-size: 12px;
+    }
+    .face-card strong, .hopper-card strong { display: block; margin-bottom: 3px; }
+    .permutations { color: var(--muted); font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .matrix-wrap { overflow-x: auto; }
+    table.matrix { border-collapse: collapse; margin-top: 7px; }
+    .matrix td {
+      width: 29px; height: 27px;
+      border: 1px solid var(--line);
+      text-align: center;
+      font: 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .matrix td.nz { background: var(--soft); color: var(--accent); font-weight: 800; }
+    .signed-note { color: var(--muted); font-size: 11px; margin: 8px 0 0; }
+    .pass { color: #178a58; font-weight: 700; }
+    :root[data-theme="dark"] .pass { color: #6ee0ad; }
+    .source-list { display: grid; gap: 7px; font-size: 11px; color: var(--muted); }
+    .source-list a { color: var(--accent); }
+    .small { color: var(--muted); font-size: 11px; }
+    .wide-button { width: 100%; }
+    @media (max-width: 1120px) {
+      main { grid-template-columns: 245px minmax(380px, 1fr) 330px; }
+    }
+    @media (max-width: 880px) {
+      body { overflow: auto; }
+      header { height: auto; flex-wrap: wrap; }
+      main { height: auto; min-height: calc(100vh - 86px); grid-template-columns: 230px 1fr; grid-template-rows: 70vh auto; }
+      aside:last-child { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); columns: 2; column-gap: 24px; }
+      aside:last-child section, .selected-heading { break-inside: avoid; }
+    }
+    @media (max-width: 650px) {
+      main { display: flex; flex-direction: column; }
+      #stage { height: 68vh; order: -1; }
+      aside { border: 0 !important; }
+      aside:last-child { columns: 1; }
+      .status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Four-Color Permutahedron</h1>
+      <div class="subtitle">A fixed, manipulable model of the 24 permutations in S<sub>4</sub></div>
+    </div>
+    <div class="status">24 vertices · 36 edges · 6 SUSY quartets · 96 signed representatives</div>
+    <div class="header-spacer"></div>
+    <button id="themeButton" title="Switch presentation colors">Dark view</button>
+    <button id="exportButton" title="Export the current view as a high-resolution PNG">Export PNG</button>
+  </header>
+  <main>
+    <aside aria-label="Visualization controls">
+      <section>
+        <h2>Orientation</h2>
+        <div class="stack">
+          <button id="jimBaseButton" class="active">Six-node base requested by Jim</button>
+          <button id="paperBaseButton">Four-node base from page 64</button>
+          <button id="isometricButton">Neutral isometric view</button>
+          <button id="resetCameraButton">Reset camera only</button>
+        </div>
+      </section>
+      <section>
+        <h2>Find a permutation</h2>
+        <div class="row">
+          <input id="searchInput" inputmode="numeric" maxlength="4" placeholder="1234" aria-label="Permutation">
+          <button id="searchButton">Find</button>
+        </div>
+        <div id="searchError" class="small" role="alert"></div>
+      </section>
+      <section>
+        <h2>Adjacent transpositions</h2>
+        <div class="generator-grid">
+          <button class="generator active" data-generator="1" style="--g:var(--blue)">(12)</button>
+          <button class="generator active" data-generator="2" style="--g:var(--green)">(23)</button>
+          <button class="generator active" data-generator="3" style="--g:var(--red)">(34)</button>
+        </div>
+      </section>
+      <section>
+        <h2>Display</h2>
+        <label class="check"><input id="labelsToggle" type="checkbox" checked> Vertex labels</label>
+        <label class="check"><input id="edgeLabelsToggle" type="checkbox"> Edge labels</label>
+        <label class="check"><input id="facesToggle" type="checkbox"> Selected faces</label>
+        <label class="check"><input id="quartetToggle" type="checkbox"> Highlight selected SUSY quartet</label>
+        <label class="check"><input id="baseToggle" type="checkbox" checked> Requested base hexagon</label>
+      </section>
+      <section>
+        <h2>Six SUSY quartets</h2>
+        <div id="sectorButtons" class="sector-grid"></div>
+        <button id="clearSectorButton" class="wide-button" style="margin-top:6px">Highlight selected vertex's quartet</button>
+      </section>
+      <section>
+        <h2>Edge key</h2>
+        <div class="legend">
+          <div><i class="legend-line" style="border-color:var(--blue)"></i>(12)</div>
+          <div><i class="legend-line" style="border-color:var(--green)"></i>(23)</div>
+          <div><i class="legend-line" style="border-color:var(--red)"></i>(34)</div>
+        </div>
+      </section>
+      <div class="facts">
+        The vertices and edges are fixed. Dragging changes only the camera. The initial orientation places the requested six-node hexagonal face at the base.
+      </div>
+    </aside>
+
+    <div id="stage">
+      <canvas id="canvas" aria-label="Manipulable three-dimensional S4 permutahedron"></canvas>
+      <div id="orientationBadge">
+        <strong id="orientationTitle">Requested six-node base</strong>
+        <span id="orientationText">4 fixed in the fourth position</span>
+      </div>
+      <div id="hud">Drag to rotate · wheel to zoom · click a vertex for details</div>
+    </div>
+
+    <aside aria-label="Selected vertex details">
+      <div class="selected-heading">
+        <div>
+          <div id="selectedPermutation">1234</div>
+          <div id="selectedId">S4-00000</div>
+        </div>
+        <div id="sectorPill" style="--sector:var(--vm3)">VM<sub>3</sub></div>
+      </div>
+
+      <section>
+        <h2>Vertex</h2>
+        <dl id="vertexFacts" class="kv"></dl>
+      </section>
+      <section>
+        <h2>Adjacent vertices</h2>
+        <div id="neighbors" class="neighbor-grid"></div>
+      </section>
+      <section>
+        <h2>Geometric faces</h2>
+        <div id="faces"></div>
+      </section>
+      <section>
+        <h2>SUSY quartet and hopping operators</h2>
+        <div id="quartet"></div>
+        <div id="hoppers"></div>
+      </section>
+      <section>
+        <h2>Signed representative</h2>
+        <label class="small" for="signingSelect">Published Boolean-factor assignment</label>
+        <select id="signingSelect"></select>
+        <dl id="signingFacts" class="kv" style="margin-top:9px"></dl>
+        <div id="selectedMatrix" class="matrix-wrap"></div>
+        <p class="signed-note">The Boolean factors, signed L-matrix, Garden check, chi<sub>0</sub>, and Gadget data belong to the selected signed quartet. They are not properties of an unsigned vertex by itself.</p>
+      </section>
+      <section>
+        <h2>Validation</h2>
+        <dl id="validationFacts" class="kv"></dl>
+      </section>
+      <section>
+        <h2>Sources</h2>
+        <div id="sources" class="source-list"></div>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    "use strict";
+    const ATLAS = /*__ATLAS_JSON__*/null;
+    const SUSY = /*__SUPERSYMMETRY_JSON__*/null;
+
+    const $ = id => document.getElementById(id);
+    const canvas = $("canvas");
+    const ctx = canvas.getContext("2d", { alpha: false });
+
+    const GENERATOR_COLORS = { 1: "#175ac6", 2: "#16844a", 3: "#ce3131" };
+    const SECTOR_META = [
+      { id: "P1", name: "CM", color: "#49955d" },
+      { id: "P2", name: "TM", color: "#8851a2" },
+      { id: "P3", name: "VM", color: "#d94d49" },
+      { id: "P4", name: "VM₁", color: "#4b70cd" },
+      { id: "P5", name: "VM₂", color: "#dd8438" },
+      { id: "P6", name: "VM₃", color: "#3aa7b5" },
+    ];
+    const JIM_BASE_LABELS = ["1234", "1324", "3124", "3214", "2314", "2134"];
+    const PAPER_BASE_LABELS = ["1234", "1243", "2143", "2134"];
+    const HOPPERS = [
+      { name: "H₁", word: [], expression: "()" },
+      { name: "H₂", word: [1, 3], expression: "(12)(34)" },
+      { name: "H₃", word: [2, 1, 3, 2], expression: "(23)(12)(34)(23)" },
+      { name: "H₄", word: [3, 1, 2, 1, 3, 2], expression: "(34)(12)(23)(12)(34)(23)" },
+    ];
+
+    const permutations = ATLAS.permutations.map(value =>
+      Array.isArray(value) ? value.map(Number) : String(value).split("").map(Number)
+    );
+    const labels = permutations.map(p => p.join(""));
+    const rankByLabel = new Map(labels.map((label, rank) => [label, rank]));
+    const edges = ATLAS.edges.map(edge => ({ a: edge[0], b: edge[1], generator: edge[2] }));
+    const adjacency = Array.from({ length: 24 }, () => []);
+    for (const edge of edges) {
+      adjacency[edge.a].push({ rank: edge.b, generator: edge.generator });
+      adjacency[edge.b].push({ rank: edge.a, generator: edge.generator });
+    }
+    adjacency.forEach(row => row.sort((a, b) => a.generator - b.generator));
+
+    const sectorByRank = new Array(24);
+    SUSY.sectors.forEach((sector, sectorIndex) =>
+      sector.ordered_ranks.forEach((rank, colorIndex) => {
+        sectorByRank[rank] = { sectorIndex, colorIndex };
+      })
+    );
+
+    function inversePermutation(permutation) {
+      const inverse = new Array(4);
+      permutation.forEach((value, position) => { inverse[value - 1] = position + 1; });
+      return inverse;
+    }
+
+    function pointFor(permutation) {
+      const q = inversePermutation(permutation).map(value => value - 2.5);
+      return [
+        (q[0] - q[1]) / Math.sqrt(2),
+        (q[0] + q[1] - 2 * q[2]) / Math.sqrt(6),
+        (q[0] + q[1] + q[2] - 3 * q[3]) / Math.sqrt(12),
+      ];
+    }
+    const worldPoints = permutations.map(pointFor);
+
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const cross = (a, b) => [
+      a[1] * b[2] - a[2] * b[1],
+      a[2] * b[0] - a[0] * b[2],
+      a[0] * b[1] - a[1] * b[0],
+    ];
+    const length = value => Math.sqrt(dot(value, value));
+    const normalize = value => {
+      const norm = length(value) || 1;
+      return value.map(component => component / norm);
+    };
+    const add = (a, b) => a.map((value, index) => value + b[index]);
+    const subtract = (a, b) => a.map((value, index) => value - b[index]);
+    const scaleVector = (value, scale) => value.map(component => component * scale);
+    const identity3 = () => [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+    const matrixVector = (matrix, vector) => matrix.map(row => dot(row, vector));
+    const matrixMultiply = (a, b) =>
+      a.map(row => b[0].map((_, column) => row.reduce(
+        (sum, value, index) => sum + value * b[index][column],
+        0,
+      )));
+    const rotationZ = angle => [
+      [Math.cos(angle), -Math.sin(angle), 0],
+      [Math.sin(angle), Math.cos(angle), 0],
+      [0, 0, 1],
+    ];
+
+    function rotationFromTo(fromInput, toInput) {
+      const from = normalize(fromInput);
+      const to = normalize(toInput);
+      const v = cross(from, to);
+      const s = length(v);
+      const c = Math.max(-1, Math.min(1, dot(from, to)));
+      if (s < 1e-10) {
+        if (c > 0) return identity3();
+        const axis = normalize(Math.abs(from[0]) < .8 ? cross(from, [1, 0, 0]) : cross(from, [0, 1, 0]));
+        const [x, y, z] = axis;
+        return [
+          [2 * x * x - 1, 2 * x * y, 2 * x * z],
+          [2 * y * x, 2 * y * y - 1, 2 * y * z],
+          [2 * z * x, 2 * z * y, 2 * z * z - 1],
+        ];
+      }
+      const [x, y, z] = v;
+      const k = (1 - c) / (s * s);
+      return [
+        [1 + k * (-y * y - z * z), -z + k * x * y, y + k * x * z],
+        [z + k * y * x, 1 + k * (-x * x - z * z), -x + k * y * z],
+        [-y + k * z * x, x + k * z * y, 1 + k * (-x * x - y * y)],
+      ];
+    }
+
+    function cycleComponents(generators) {
+      const allowed = new Set(generators);
+      const seen = new Set();
+      const components = [];
+      for (let start = 0; start < 24; start += 1) {
+        if (seen.has(start)) continue;
+        const queue = [start], component = [];
+        seen.add(start);
+        while (queue.length) {
+          const rank = queue.shift();
+          component.push(rank);
+          for (const neighbor of adjacency[rank]) {
+            if (!allowed.has(neighbor.generator) || seen.has(neighbor.rank)) continue;
+            seen.add(neighbor.rank);
+            queue.push(neighbor.rank);
+          }
+        }
+        components.push(orderCycle(component, allowed));
+      }
+      return components;
+    }
+
+    function orderCycle(component, allowed) {
+      const members = new Set(component);
+      const start = Math.min(...component);
+      const ordered = [start];
+      let previous = null, current = start;
+      while (ordered.length < component.length) {
+        const choices = adjacency[current]
+          .filter(item => members.has(item.rank) && allowed.has(item.generator) && item.rank !== previous)
+          .sort((a, b) => a.generator - b.generator || a.rank - b.rank);
+        const next = choices.find(item => !ordered.includes(item.rank)) ?? choices[0];
+        previous = current;
+        current = next.rank;
+        ordered.push(current);
+      }
+      return ordered;
+    }
+
+    const squareFaces = cycleComponents([1, 3]).map((members, index) => ({
+      kind: "square",
+      id: `square-${index + 1}`,
+      members,
+    }));
+    const hexFaces = [
+      ...cycleComponents([1, 2]),
+      ...cycleComponents([2, 3]),
+    ].map((members, index) => ({
+      kind: "hexagon",
+      id: `hexagon-${index + 1}`,
+      members,
+    }));
+    const faces = [...squareFaces, ...hexFaces];
+
+    const jimBaseRanks = JIM_BASE_LABELS.map(label => rankByLabel.get(label));
+    const paperBaseRanks = PAPER_BASE_LABELS.map(label => rankByLabel.get(label));
+    const jimBaseSet = new Set(jimBaseRanks);
+    const paperBaseSet = new Set(paperBaseRanks);
+    const jimBaseFace = hexFaces.find(face => face.members.every(rank => jimBaseSet.has(rank)));
+    const paperBaseFace = squareFaces.find(face => face.members.every(rank => paperBaseSet.has(rank)));
+    jimBaseFace.members = jimBaseRanks;
+    paperBaseFace.members = paperBaseRanks;
+
+    function faceDescription(face) {
+      if (face === jimBaseFace) return "Requested base: 4 fixed in the fourth position";
+      if (face === paperBaseFace) return "Four-node base shown on page 64";
+      const memberPermutations = face.members.map(rank => permutations[rank]);
+      for (let position = 0; position < 4; position += 1) {
+        const value = memberPermutations[0][position];
+        if (memberPermutations.every(permutation => permutation[position] === value)) {
+          return `${value} fixed in position ${position + 1}`;
+        }
+      }
+      return face.kind === "square" ? "Commuting (12) and (34) face" : "Adjacent-transposition face";
+    }
+
+    function orientationForFace(face, firstEdge) {
+      const centroid = face.members
+        .map(rank => worldPoints[rank])
+        .reduce(add, [0, 0, 0])
+        .map(value => value / face.members.length);
+      const alignNormal = rotationFromTo(centroid, [0, 0, -1]);
+      const edge = subtract(worldPoints[firstEdge[1]], worldPoints[firstEdge[0]]);
+      const alignedEdge = matrixVector(alignNormal, edge);
+      const alignEdge = rotationZ(-Math.atan2(alignedEdge[1], alignedEdge[0]));
+      return matrixMultiply(alignEdge, alignNormal);
+    }
+
+    const ORIENTATIONS = {
+      jim: {
+        title: "Requested six-node base",
+        text: "4 fixed in the fourth position · one node from each SUSY quartet",
+        matrix: orientationForFace(jimBaseFace, [jimBaseRanks[0], jimBaseRanks[1]]),
+        yaw: -.55,
+        elevation: .44,
+      },
+      paper: {
+        title: "Four-node base from page 64",
+        text: "Square face generated by (12) and (34)",
+        matrix: orientationForFace(paperBaseFace, [paperBaseRanks[0], paperBaseRanks[1]]),
+        yaw: -.42,
+        elevation: .46,
+      },
+      isometric: {
+        title: "Neutral isometric view",
+        text: "No designated base face",
+        matrix: identity3(),
+        yaw: -.78,
+        elevation: .55,
+      },
+    };
+
+    const state = {
+      selectedRank: rankByLabel.get("1234"),
+      hoveredRank: null,
+      selectedSector: null,
+      selectedSigning: 0,
+      generators: new Set([1, 2, 3]),
+      labels: true,
+      edgeLabels: false,
+      faces: false,
+      quartet: false,
+      base: true,
+      orientation: "jim",
+      modelMatrix: ORIENTATIONS.jim.matrix,
+      yaw: ORIENTATIONS.jim.yaw,
+      elevation: ORIENTATIONS.jim.elevation,
+      zoom: 1,
+      drag: null,
+      projected: [],
+    };
+
+    function applyGenerator(rank, generator) {
+      return adjacency[rank].find(item => item.generator === generator).rank;
+    }
+    function applyWord(rank, word) {
+      return word.reduce((current, generator) => applyGenerator(current, generator), rank);
+    }
+    function inversionCount(permutation) {
+      let count = 0;
+      for (let i = 0; i < permutation.length; i += 1) {
+        for (let j = i + 1; j < permutation.length; j += 1) {
+          if (permutation[i] > permutation[j]) count += 1;
+        }
+      }
+      return count;
+    }
+    function permutationMatrix(permutation) {
+      return Array.from({ length: 4 }, (_, row) =>
+        Array.from({ length: 4 }, (_, column) => column === permutation[row] - 1 ? 1 : 0)
+      );
+    }
+    function signedMatrix(permutation, booleanFactor) {
+      return permutationMatrix(permutation).map((row, rowIndex) => {
+        const sign = booleanFactor & (1 << rowIndex) ? -1 : 1;
+        return row.map(value => value * sign);
+      });
+    }
+    function antipodeRank(rank) {
+      return rankByLabel.get([...permutations[rank]].reverse().join(""));
+    }
+    function containingFaces(rank) {
+      return faces.filter(face => face.members.includes(rank));
+    }
+    function currentSectorIndex() {
+      return state.selectedSector ?? sectorByRank[state.selectedRank].sectorIndex;
+    }
+    function currentSector() {
+      return SUSY.sectors[currentSectorIndex()];
+    }
+    function currentSectorMeta() {
+      return SECTOR_META[currentSectorIndex()];
+    }
+
+    function cameraBasis() {
+      const direction = [
+        Math.cos(state.elevation) * Math.cos(state.yaw),
+        Math.cos(state.elevation) * Math.sin(state.yaw),
+        Math.sin(state.elevation),
+      ];
+      const referenceUp = Math.abs(direction[2]) > .96 ? [0, 1, 0] : [0, 0, 1];
+      const right = normalize(cross(referenceUp, direction));
+      const up = normalize(cross(direction, right));
+      return { direction, right, up };
+    }
+
+    function projectedPoints(width, height, exportMode = false) {
+      const basis = cameraBasis();
+      const modelPoints = worldPoints.map(point => matrixVector(state.modelMatrix, point));
+      const screenScale = Math.min(width, height) * (exportMode ? .17 : .175) * state.zoom;
+      const centerX = width * .5;
+      const centerY = height * (exportMode ? .54 : .50);
+      return modelPoints.map(point => ({
+        x: centerX + dot(point, basis.right) * screenScale,
+        y: centerY - dot(point, basis.up) * screenScale,
+        depth: dot(point, basis.direction),
+        model: point,
+      }));
+    }
+
+    function css(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function roundedRect(context, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      context.beginPath();
+      context.moveTo(x + r, y);
+      context.arcTo(x + width, y, x + width, y + height, r);
+      context.arcTo(x + width, y + height, x, y + height, r);
+      context.arcTo(x, y + height, x, y, r);
+      context.arcTo(x, y, x + width, y, r);
+      context.closePath();
+    }
+
+    function drawFace(context, face, points, color, alpha) {
+      const projected = face.members.map(rank => points[rank]);
+      context.save();
+      context.globalAlpha = alpha;
+      context.fillStyle = color;
+      context.strokeStyle = color;
+      context.lineWidth = 1.5;
+      context.beginPath();
+      projected.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+      context.closePath();
+      context.fill();
+      context.globalAlpha = Math.min(1, alpha * 3.2);
+      context.stroke();
+      context.restore();
+    }
+
+    function drawQuartetLinks(context, points, sector, color, exportMode) {
+      if (!state.quartet) return;
+      const base = sector.ordered_ranks[0];
+      context.save();
+      context.strokeStyle = color;
+      context.lineWidth = exportMode ? 4 : 2;
+      context.setLineDash(exportMode ? [14, 10] : [8, 6]);
+      context.globalAlpha = .72;
+      for (const hopper of HOPPERS.slice(1)) {
+        const target = applyWord(base, hopper.word);
+        const a = points[base], b = points[target];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const bend = (hopper.word.length - 2) * (exportMode ? 16 : 8);
+        const mx = (a.x + b.x) / 2 - dy * .09 - bend;
+        const my = (a.y + b.y) / 2 + dx * .09;
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        context.quadraticCurveTo(mx, my, b.x, b.y);
+        context.stroke();
+      }
+      context.restore();
+    }
+
+    function drawLabel(context, point, label, selected, sectorColor, exportMode) {
+      const fontSize = exportMode ? 27 : 12;
+      context.font = `${selected ? 750 : 650} ${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+      const width = context.measureText(label).width + (exportMode ? 20 : 10);
+      const height = exportMode ? 38 : 20;
+      const x = point.x - width / 2;
+      const y = point.y - (exportMode ? 54 : 30);
+      context.fillStyle = css("--panel");
+      context.strokeStyle = selected ? sectorColor : css("--line");
+      context.lineWidth = selected ? (exportMode ? 4 : 2) : 1;
+      roundedRect(context, x, y, width, height, exportMode ? 8 : 5);
+      context.fill();
+      context.stroke();
+      context.fillStyle = css("--ink");
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(label, point.x, y + height / 2 + .5);
+    }
+
+    function drawLegend(context, width, height, exportMode) {
+      if (!exportMode) return;
+      context.save();
+      context.textBaseline = "middle";
+      context.font = "600 25px system-ui, sans-serif";
+      const entries = [
+        ["(12)", GENERATOR_COLORS[1]],
+        ["(23)", GENERATOR_COLORS[2]],
+        ["(34)", GENERATOR_COLORS[3]],
+      ];
+      let x = width / 2 - 240;
+      const y = height - 82;
+      for (const [name, color] of entries) {
+        context.strokeStyle = color;
+        context.lineWidth = 8;
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x + 55, y);
+        context.stroke();
+        context.fillStyle = "#17202a";
+        context.fillText(name, x + 72, y);
+        x += 170;
+      }
+      context.restore();
+    }
+
+    function renderTo(context, width, height, exportMode = false) {
+      const points = projectedPoints(width, height, exportMode);
+      if (!exportMode) state.projected = points;
+      context.save();
+      context.fillStyle = exportMode ? "#ffffff" : css("--paper");
+      context.fillRect(0, 0, width, height);
+
+      if (exportMode) {
+        context.fillStyle = "#111820";
+        context.textAlign = "center";
+        context.font = "750 50px system-ui, sans-serif";
+        context.fillText("Four-Color Permutahedron", width / 2, 72);
+        context.font = "400 25px system-ui, sans-serif";
+        context.fillStyle = "#56636f";
+        context.fillText(
+          `${ORIENTATIONS[state.orientation].title} · 24 permutation vertices · 36 adjacent-transposition edges`,
+          width / 2,
+          116,
+        );
+      }
+
+      const selectedFaces = state.faces ? containingFaces(state.selectedRank) : [];
+      const facesToDraw = [];
+      if (state.base) facesToDraw.push({ face: jimBaseFace, color: "#dfad39", alpha: .12 });
+      selectedFaces.forEach(face => facesToDraw.push({
+        face,
+        color: face.kind === "square" ? "#6c7e8d" : currentSectorMeta().color,
+        alpha: face.kind === "square" ? .08 : .055,
+      }));
+      facesToDraw
+        .sort((a, b) => {
+          const da = a.face.members.reduce((sum, rank) => sum + points[rank].depth, 0) / a.face.members.length;
+          const db = b.face.members.reduce((sum, rank) => sum + points[rank].depth, 0) / b.face.members.length;
+          return da - db;
+        })
+        .forEach(item => drawFace(context, item.face, points, item.color, item.alpha));
+
+      const sortedEdges = [...edges].sort((a, b) =>
+        (points[a.a].depth + points[a.b].depth) - (points[b.a].depth + points[b.b].depth)
+      );
+      for (const edge of sortedEdges) {
+        if (!state.generators.has(edge.generator)) continue;
+        const a = points[edge.a], b = points[edge.b];
+        const selected = edge.a === state.selectedRank || edge.b === state.selectedRank;
+        context.strokeStyle = GENERATOR_COLORS[edge.generator];
+        context.globalAlpha = selected ? 1 : .76;
+        context.lineWidth = selected ? (exportMode ? 10 : 4.2) : (exportMode ? 6 : 2.25);
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        context.lineTo(b.x, b.y);
+        context.stroke();
+        if (state.edgeLabels) {
+          context.globalAlpha = .9;
+          context.fillStyle = exportMode ? "#ffffff" : css("--panel");
+          const x = (a.x + b.x) / 2, y = (a.y + b.y) / 2;
+          const text = `(${edge.generator}${edge.generator + 1})`;
+          context.font = `${exportMode ? 21 : 10}px ui-monospace, monospace`;
+          const tw = context.measureText(text).width + (exportMode ? 12 : 6);
+          roundedRect(context, x - tw / 2, y - (exportMode ? 14 : 8), tw, exportMode ? 28 : 16, 4);
+          context.fill();
+          context.fillStyle = GENERATOR_COLORS[edge.generator];
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.fillText(text, x, y);
+        }
+      }
+      context.globalAlpha = 1;
+
+      const sector = currentSector();
+      const sectorMeta = currentSectorMeta();
+      drawQuartetLinks(context, points, sector, sectorMeta.color, exportMode);
+      const quartetRanks = new Set(state.quartet ? sector.ordered_ranks : []);
+      const depthOrder = Array.from({ length: 24 }, (_, rank) => rank)
+        .sort((a, b) => points[a].depth - points[b].depth);
+      for (const rank of depthOrder) {
+        const point = points[rank];
+        const selected = rank === state.selectedRank;
+        const hovered = rank === state.hoveredRank;
+        const inQuartet = quartetRanks.has(rank);
+        const inBase = state.base && jimBaseSet.has(rank);
+        const nodeSector = SECTOR_META[sectorByRank[rank].sectorIndex];
+        const radius = selected
+          ? (exportMode ? 22 : 10)
+          : hovered
+            ? (exportMode ? 19 : 8)
+            : (exportMode ? 15 : 6.2);
+        context.fillStyle = inQuartet ? sectorMeta.color : exportMode ? "#ffffff" : css("--panel");
+        context.strokeStyle = selected ? "#111820" : inBase ? "#c58a19" : nodeSector.color;
+        context.lineWidth = selected ? (exportMode ? 7 : 3) : inBase ? (exportMode ? 5 : 2.4) : (exportMode ? 4 : 1.8);
+        context.beginPath();
+        context.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+      }
+      if (state.labels) {
+        for (const rank of depthOrder) {
+          drawLabel(
+            context,
+            points[rank],
+            labels[rank],
+            rank === state.selectedRank,
+            SECTOR_META[sectorByRank[rank].sectorIndex].color,
+            exportMode,
+          );
+        }
+      }
+      drawLegend(context, width, height, exportMode);
+      context.restore();
+    }
+
+    function render() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.floor(rect.width * dpr));
+      const height = Math.max(1, Math.floor(rect.height * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      renderTo(ctx, rect.width, rect.height, false);
+    }
+
+    function matrixHtml(values) {
+      return `<table class="matrix" aria-label="Signed L-matrix"><tbody>${values.map(row =>
+        `<tr>${row.map(value => `<td class="${value ? "nz" : ""}">${value || ""}</td>`).join("")}</tr>`
+      ).join("")}</tbody></table>`;
+    }
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, character =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]
+    );
+
+    function updateDetails() {
+      const rank = state.selectedRank;
+      const permutation = permutations[rank];
+      const sectorInfo = sectorByRank[rank];
+      const sector = SUSY.sectors[sectorInfo.sectorIndex];
+      const sectorMeta = SECTOR_META[sectorInfo.sectorIndex];
+      const selectedFaces = containingFaces(rank);
+      const antipode = antipodeRank(rank);
+
+      $("selectedPermutation").textContent = labels[rank];
+      $("selectedId").textContent = `S4-${String(rank).padStart(5, "0")}`;
+      $("sectorPill").textContent = sectorMeta.name;
+      $("sectorPill").style.setProperty("--sector", sectorMeta.color);
+      $("vertexFacts").innerHTML = `
+        <dt>lexicographic rank</dt><dd>${rank}</dd>
+        <dt>Bruhat length</dt><dd>${inversionCount(permutation)}</dd>
+        <dt>SUSY quartet</dt><dd>${sectorMeta.name} (${sector.id})</dd>
+        <dt>published L slot</dt><dd>L<sub>${sectorInfo.colorIndex + 1}</sub></dd>
+        <dt>antipode</dt><dd><button data-select-rank="${antipode}" style="padding:2px 6px">${labels[antipode]}</button></dd>
+        <dt>requested base</dt><dd>${jimBaseSet.has(rank) ? "yes, one of six" : "no"}</dd>
+        <dt>permutation matrix</dt><dd>${permutationMatrix(permutation).map(row => row.join(" ")).join(" · ")}</dd>
+      `;
+      $("vertexFacts").querySelectorAll("[data-select-rank]").forEach(button =>
+        button.onclick = () => selectRank(Number(button.dataset.selectRank))
+      );
+
+      $("neighbors").innerHTML = adjacency[rank].map(neighbor => `
+        <button data-select-rank="${neighbor.rank}" style="--generator:${GENERATOR_COLORS[neighbor.generator]}">
+          <span>${labels[neighbor.rank]}</span>
+          <strong>(${neighbor.generator}${neighbor.generator + 1})</strong>
+        </button>
+      `).join("");
+      $("neighbors").querySelectorAll("button").forEach(button =>
+        button.onclick = () => selectRank(Number(button.dataset.selectRank))
+      );
+
+      $("faces").innerHTML = selectedFaces
+        .sort((a, b) => a.members.length - b.members.length)
+        .map(face => `
+          <div class="face-card">
+            <strong>${face.kind === "square" ? "Four-node square face" : "Six-node hexagonal face"}</strong>
+            <div>${escapeHtml(faceDescription(face))}</div>
+            <div class="permutations">${face.members.map(member => labels[member]).join(" · ")}</div>
+          </div>
+        `).join("");
+
+      $("quartet").innerHTML = `
+        <div class="face-card" style="border-color:${sectorMeta.color}">
+          <strong>${sectorMeta.name} · ${sector.id} · S<sub>4</sub>/V<sub>4</sub> ${escapeHtml(sector.invariants.quotient_s3_cycle)}</strong>
+          <div class="permutations">${sector.ordered_ranks.map(member => labels[member]).join(" · ")}</div>
+          <div class="small">Bruhat word: ${sector.invariants.ordered_bruhat_upper_triangle.join(", ")}</div>
+        </div>
+      `;
+      $("hoppers").innerHTML = HOPPERS.map(hopper => {
+        const target = applyWord(rank, hopper.word);
+        return `
+          <button class="hopper-card" data-select-rank="${target}" style="width:100%;text-align:left">
+            <strong>${hopper.name}: ${hopper.expression} → ${labels[target]}</strong>
+            <span class="small">${hopper.word.length ? `${hopper.word.length}-step adjacent-transposition word` : "identity"}</span>
+          </button>
+        `;
+      }).join("");
+      $("hoppers").querySelectorAll("button").forEach(button =>
+        button.onclick = () => selectRank(Number(button.dataset.selectRank))
+      );
+
+      state.selectedSigning = Math.min(state.selectedSigning, sector.published_fiducial_signings.length - 1);
+      $("signingSelect").innerHTML = sector.published_fiducial_signings.map((signing, index) =>
+        `<option value="${index}">Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`
+      ).join("");
+      $("signingSelect").value = String(state.selectedSigning);
+      updateSigningDetails();
+
+      const validation = SUSY.validation;
+      $("validationFacts").innerHTML = `
+        <dt>vertices</dt><dd>${ATLAS.metadata.vertex_count} / ${ATLAS.metadata.vertex_count}</dd>
+        <dt>edges</dt><dd>${ATLAS.metadata.edge_count} / ${ATLAS.metadata.edge_count}</dd>
+        <dt>SUSY quartets</dt><dd>${validation.quartet_count} / ${validation.quartet_count}</dd>
+        <dt>signed representatives</dt><dd>${validation.garden_representations_passed} / ${validation.garden_representations_checked}</dd>
+        <dt>dense Garden residuals</dt><dd class="pass">${validation.dense_garden_residual_entries}</dd>
+        <dt>odd-dashing failures</dt><dd class="pass">${validation.odd_dashing_failures}</dd>
+      `;
+      updateSectorButtons();
+    }
+
+    function updateSigningDetails() {
+      const rank = state.selectedRank;
+      const sectorInfo = sectorByRank[rank];
+      const sector = SUSY.sectors[sectorInfo.sectorIndex];
+      const signing = sector.published_fiducial_signings[state.selectedSigning];
+      const matrixRecord = signing.matrices[sectorInfo.colorIndex];
+      $("signingFacts").innerHTML = `
+        <dt>Boolean factors</dt><dd>${signing.boolean_factors.join(", ")}</dd>
+        <dt>chi<sub>0</sub></dt><dd>${signing.chi0 > 0 ? "+1" : "-1"}</dd>
+        <dt>Garden closure</dt><dd class="${signing.garden_sparse_passed ? "pass" : ""}">${signing.garden_sparse_passed ? "pass" : "fail"}</dd>
+        <dt>dense residuals</dt><dd class="${signing.dense_residual_entries === 0 ? "pass" : ""}">${signing.dense_residual_entries}</dd>
+        <dt>selected factor</dt><dd>b = ${matrixRecord.boolean_factor}</dd>
+        <dt>row signs</dt><dd>${matrixRecord.diagonal_signs.map(value => value > 0 ? "+1" : "-1").join(", ")}</dd>
+      `;
+      $("selectedMatrix").innerHTML = `
+        <h3 style="margin-top:10px">L<sub>${sectorInfo.colorIndex + 1}</sub> for ${labels[rank]}</h3>
+        ${matrixHtml(signedMatrix(permutations[rank], matrixRecord.boolean_factor))}
+      `;
+    }
+
+    function updateSectorButtons() {
+      const activeSector = currentSectorIndex();
+      $("sectorButtons").innerHTML = SECTOR_META.map((meta, index) => `
+        <button class="sector-button ${state.selectedSector === index ? "active" : ""}" data-sector="${index}" style="--sector:${meta.color}">
+          <i></i>${meta.name}
+        </button>
+      `).join("");
+      $("sectorButtons").querySelectorAll("button").forEach(button => {
+        const sectorIndex = Number(button.dataset.sector);
+        button.setAttribute("aria-pressed", state.selectedSector === sectorIndex ? "true" : "false");
+        if (state.selectedSector === sectorIndex) {
+          button.style.background = SECTOR_META[sectorIndex].color;
+          button.style.borderColor = SECTOR_META[sectorIndex].color;
+        } else if (state.selectedSector === null && sectorIndex === activeSector) {
+          button.style.borderColor = SECTOR_META[sectorIndex].color;
+        }
+        button.onclick = () => {
+          state.selectedSector = sectorIndex;
+          state.selectedRank = SUSY.sectors[sectorIndex].ordered_ranks[0];
+          state.selectedSigning = 0;
+          state.quartet = true;
+          $("quartetToggle").checked = true;
+          render();
+          updateDetails();
+        };
+      });
+    }
+
+    function selectRank(rank) {
+      state.selectedRank = rank;
+      state.hoveredRank = null;
+      state.selectedSigning = 0;
+      if (state.selectedSector !== null && !SUSY.sectors[state.selectedSector].ordered_ranks.includes(rank)) {
+        state.selectedSector = null;
+      }
+      render();
+      updateDetails();
+    }
+
+    function setOrientation(name) {
+      const preset = ORIENTATIONS[name];
+      state.orientation = name;
+      state.modelMatrix = preset.matrix;
+      state.yaw = preset.yaw;
+      state.elevation = preset.elevation;
+      state.zoom = 1;
+      $("orientationTitle").textContent = preset.title;
+      $("orientationText").textContent = preset.text;
+      ["jim", "paper", "isometric"].forEach(key => {
+        const button = key === "jim" ? $("jimBaseButton") : key === "paper" ? $("paperBaseButton") : $("isometricButton");
+        button.classList.toggle("active", key === name);
+      });
+      render();
+    }
+
+    function nearestRank(x, y) {
+      let best = null, bestDistance = Infinity;
+      state.projected.forEach((point, rank) => {
+        const distance = (point.x - x) ** 2 + (point.y - y) ** 2;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = rank;
+        }
+      });
+      return bestDistance <= 18 ** 2 ? best : null;
+    }
+
+    function exportPng() {
+      const output = document.createElement("canvas");
+      output.width = 2400;
+      output.height = 1800;
+      const outputContext = output.getContext("2d", { alpha: false });
+      const previousTheme = document.documentElement.dataset.theme;
+      document.documentElement.dataset.theme = "light";
+      renderTo(outputContext, output.width, output.height, true);
+      if (previousTheme) document.documentElement.dataset.theme = previousTheme;
+      else delete document.documentElement.dataset.theme;
+      output.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `S4_permutahedron_${state.orientation}_${labels[state.selectedRank]}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, "image/png");
+      render();
+    }
+
+    function runSelfChecks() {
+      const failures = [];
+      if (permutations.length !== 24) failures.push("vertex count");
+      if (edges.length !== 36) failures.push("edge count");
+      if (squareFaces.length !== 6) failures.push("square face count");
+      if (hexFaces.length !== 8) failures.push("hexagonal face count");
+      if (!jimBaseFace || !paperBaseFace) failures.push("base faces");
+      if (!JIM_BASE_LABELS.every(label => rankByLabel.has(label))) failures.push("requested base labels");
+      if (!SUSY.validation.passed) failures.push("supersymmetry validation");
+      const edgeLengths = edges.map(edge => length(subtract(worldPoints[edge.a], worldPoints[edge.b])));
+      if (Math.max(...edgeLengths) - Math.min(...edgeLengths) > 1e-9) failures.push("equal native edge lengths");
+      for (let rank = 0; rank < 24; rank += 1) {
+        const sector = SUSY.sectors[sectorByRank[rank].sectorIndex];
+        const orbit = new Set(HOPPERS.map(hopper => applyWord(rank, hopper.word)));
+        if (orbit.size !== 4 || [...orbit].some(member => !sector.ordered_ranks.includes(member))) {
+          failures.push(`hopper orbit at ${labels[rank]}`);
+          break;
+        }
+      }
+      if (failures.length) throw new Error(`S4 explorer self-check failed: ${failures.join(", ")}`);
+    }
+
+    function initSources() {
+      $("sources").innerHTML = `
+        <div>
+          Howard University progress-report deck · pp. 60-73 and 94-96<br>
+          Four-color permutahedron, six named quartets, hopping operators, and face motion
+        </div>
+      ` + SUSY.sources.map(source => `
+        <div>
+          <a href="https://arxiv.org/abs/${escapeHtml(source.arxiv_id)}" target="_blank" rel="noopener">arXiv:${escapeHtml(source.arxiv_id)}</a>
+          · ${escapeHtml(source.locator)}<br>${escapeHtml(source.role)}
+        </div>
+      `).join("");
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      canvas.setPointerCapture(event.pointerId);
+      state.drag = {
+        x: event.clientX,
+        y: event.clientY,
+        yaw: state.yaw,
+        elevation: state.elevation,
+        moved: false,
+      };
+      canvas.classList.add("dragging");
+    });
+    canvas.addEventListener("pointermove", event => {
+      const rect = canvas.getBoundingClientRect();
+      if (!state.drag) {
+        const rank = nearestRank(event.clientX - rect.left, event.clientY - rect.top);
+        if (rank !== state.hoveredRank) {
+          state.hoveredRank = rank;
+          render();
+        }
+        return;
+      }
+      const dx = event.clientX - state.drag.x;
+      const dy = event.clientY - state.drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) state.drag.moved = true;
+      state.yaw = state.drag.yaw - dx * .008;
+      state.elevation = Math.max(-1.45, Math.min(1.45, state.drag.elevation + dy * .008));
+      render();
+    });
+    canvas.addEventListener("pointerup", event => {
+      const rect = canvas.getBoundingClientRect();
+      if (state.drag && !state.drag.moved) {
+        const rank = nearestRank(event.clientX - rect.left, event.clientY - rect.top);
+        if (rank !== null) selectRank(rank);
+      }
+      state.drag = null;
+      canvas.classList.remove("dragging");
+    });
+    canvas.addEventListener("pointerleave", () => {
+      if (!state.drag && state.hoveredRank !== null) {
+        state.hoveredRank = null;
+        render();
+      }
+    });
+    canvas.addEventListener("wheel", event => {
+      event.preventDefault();
+      state.zoom = Math.max(.55, Math.min(2.8, state.zoom * Math.exp(-event.deltaY * .001)));
+      render();
+    }, { passive: false });
+
+    $("jimBaseButton").onclick = () => setOrientation("jim");
+    $("paperBaseButton").onclick = () => setOrientation("paper");
+    $("isometricButton").onclick = () => setOrientation("isometric");
+    $("resetCameraButton").onclick = () => {
+      const preset = ORIENTATIONS[state.orientation];
+      state.yaw = preset.yaw;
+      state.elevation = preset.elevation;
+      state.zoom = 1;
+      render();
+    };
+    $("themeButton").onclick = () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      document.documentElement.dataset.theme = dark ? "light" : "dark";
+      $("themeButton").textContent = dark ? "Dark view" : "Light view";
+      render();
+    };
+    $("exportButton").onclick = exportPng;
+    $("searchButton").onclick = () => {
+      const label = $("searchInput").value.replace(/\D/g, "");
+      const rank = rankByLabel.get(label);
+      if (rank === undefined) {
+        $("searchError").textContent = "Enter each of 1, 2, 3, and 4 exactly once.";
+        return;
+      }
+      $("searchError").textContent = "";
+      selectRank(rank);
+    };
+    $("searchInput").onkeydown = event => { if (event.key === "Enter") $("searchButton").click(); };
+    document.querySelectorAll(".generator").forEach(button => {
+      button.onclick = () => {
+        const generator = Number(button.dataset.generator);
+        if (state.generators.has(generator)) state.generators.delete(generator);
+        else state.generators.add(generator);
+        button.classList.toggle("active", state.generators.has(generator));
+        render();
+      };
+    });
+    $("labelsToggle").onchange = event => { state.labels = event.target.checked; render(); };
+    $("edgeLabelsToggle").onchange = event => { state.edgeLabels = event.target.checked; render(); };
+    $("facesToggle").onchange = event => { state.faces = event.target.checked; render(); };
+    $("quartetToggle").onchange = event => { state.quartet = event.target.checked; render(); };
+    $("baseToggle").onchange = event => { state.base = event.target.checked; render(); };
+    $("clearSectorButton").onclick = () => {
+      state.selectedSector = null;
+      state.selectedSigning = 0;
+      state.quartet = true;
+      $("quartetToggle").checked = true;
+      render();
+      updateDetails();
+    };
+    $("signingSelect").onchange = event => {
+      state.selectedSigning = Number(event.target.value);
+      updateSigningDetails();
+    };
+
+    runSelfChecks();
+    initSources();
+    updateDetails();
+    new ResizeObserver(render).observe($("stage"));
+    render();
+  </script>
+</body>
+</html>
