@@ -137,7 +137,7 @@
       display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--sector);
     }
     .legend { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
-    .legend-line { display: inline-block; width: 24px; border-top: 3px solid; margin-right: 7px; vertical-align: middle; }
+    .legend-line { display: inline-block; width: 28px; border-top: 5px solid; border-radius: 999px; margin-right: 7px; vertical-align: middle; }
     .facts {
       border: 1px solid var(--line);
       background: var(--soft);
@@ -736,23 +736,17 @@
       context.restore();
     }
 
-    function drawLabel(context, point, label, selected, sectorColor, exportMode) {
-      const fontSize = exportMode ? 27 : 12;
-      context.font = `${selected ? 750 : 650} ${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-      const width = context.measureText(label).width + (exportMode ? 20 : 10);
-      const height = exportMode ? 38 : 20;
-      const x = point.x - width / 2;
-      const y = point.y - (exportMode ? 54 : 30);
-      context.fillStyle = css("--panel");
-      context.strokeStyle = selected ? sectorColor : css("--line");
-      context.lineWidth = selected ? (exportMode ? 4 : 2) : 1;
-      roundedRect(context, x, y, width, height, exportMode ? 8 : 5);
-      context.fill();
-      context.stroke();
-      context.fillStyle = css("--ink");
+    function drawLabel(context, point, label, selected, exportMode) {
+      const fontSize = exportMode ? (selected ? 27 : 24) : (selected ? 12.5 : 10.5);
+      context.font = `${selected ? 800 : 700} ${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText(label, point.x, y + height / 2 + .5);
+      context.lineJoin = "round";
+      context.strokeStyle = "rgba(0,0,0,.62)";
+      context.lineWidth = exportMode ? 4 : 2;
+      context.strokeText(label, point.x, point.y + (exportMode ? 1 : .25));
+      context.fillStyle = "#ffffff";
+      context.fillText(label, point.x, point.y + (exportMode ? 1 : .25));
     }
 
     function drawLegend(context, width, height, exportMode) {
@@ -769,7 +763,8 @@
       const y = height - 82;
       for (const [name, color] of entries) {
         context.strokeStyle = color;
-        context.lineWidth = 8;
+        context.lineWidth = 13;
+        context.lineCap = "round";
         context.beginPath();
         context.moveTo(x, y);
         context.lineTo(x + 55, y);
@@ -827,7 +822,9 @@
         const selected = edge.a === state.selectedRank || edge.b === state.selectedRank;
         context.strokeStyle = GENERATOR_COLORS[edge.generator];
         context.globalAlpha = selected ? 1 : .76;
-        context.lineWidth = selected ? (exportMode ? 10 : 4.2) : (exportMode ? 6 : 2.25);
+        context.lineWidth = selected ? (exportMode ? 18 : 8) : (exportMode ? 13 : 5.5);
+        context.lineCap = "round";
+        context.lineJoin = "round";
         context.beginPath();
         context.moveTo(a.x, a.y);
         context.lineTo(b.x, b.y);
@@ -863,26 +860,42 @@
         const inBase = state.base && jimBaseSet.has(rank);
         const nodeSector = SECTOR_META[sectorByRank[rank].sectorIndex];
         const radius = selected
-          ? (exportMode ? 22 : 10)
+          ? (exportMode ? 38 : 19)
           : hovered
-            ? (exportMode ? 19 : 8)
-            : (exportMode ? 15 : 6.2);
-        context.fillStyle = inQuartet ? sectorMeta.color : exportMode ? "#ffffff" : css("--panel");
-        context.strokeStyle = selected ? "#111820" : inBase ? "#c58a19" : nodeSector.color;
-        context.lineWidth = selected ? (exportMode ? 7 : 3) : inBase ? (exportMode ? 5 : 2.4) : (exportMode ? 4 : 1.8);
+            ? (exportMode ? 34 : 16.5)
+            : (exportMode ? 30 : 14.5);
+        context.save();
+        context.shadowColor = selected
+          ? nodeSector.color
+          : inQuartet
+            ? sectorMeta.color
+            : "rgba(0,0,0,.34)";
+        context.shadowBlur = selected ? (exportMode ? 22 : 10) : inQuartet ? (exportMode ? 14 : 6) : (exportMode ? 8 : 3);
+        const sphere = context.createRadialGradient(
+          point.x - radius * .34,
+          point.y - radius * .38,
+          radius * .08,
+          point.x,
+          point.y,
+          radius,
+        );
+        sphere.addColorStop(0, selected ? "#77828d" : "#626b75");
+        sphere.addColorStop(.48, selected ? "#343e48" : "#303943");
+        sphere.addColorStop(1, "#10161c");
+        context.fillStyle = sphere;
+        context.strokeStyle = selected ? "#ffffff" : inBase ? "#d7a72d" : nodeSector.color;
+        context.lineWidth = selected ? (exportMode ? 8 : 3.5) : inBase ? (exportMode ? 6 : 2.8) : (exportMode ? 5 : 2.2);
         context.beginPath();
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
         context.fill();
         context.stroke();
-      }
-      if (state.labels) {
-        for (const rank of depthOrder) {
+        context.restore();
+        if (state.labels) {
           drawLabel(
             context,
-            points[rank],
+            point,
             labels[rank],
-            rank === state.selectedRank,
-            SECTOR_META[sectorByRank[rank].sectorIndex].color,
+            selected,
             exportMode,
           );
         }
