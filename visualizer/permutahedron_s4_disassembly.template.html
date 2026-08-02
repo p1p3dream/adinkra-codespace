@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>S4 Six-Quartet Disassembly</title>
+  <style>
+    :root {
+      color-scheme:light; --paper:#f7f6f1; --panel:#fff; --ink:#121820; --muted:#5e6b78;
+      --line:#d8dde1; --soft:#eef1f2; --accent:#234f70; --good:#16844a;
+      --cm:#49955d; --tm:#8851a2; --vm:#d94d49; --vm1:#4b70cd; --vm2:#dd8438; --vm3:#3aa7b5;
+    }
+    :root[data-theme="dark"] { color-scheme:dark; --paper:#081119; --panel:#0e1b24; --ink:#edf3f6; --muted:#9cafba; --line:#28404d; --soft:#132630; --accent:#6bc7dd; --good:#6ee0ad; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--paper); color:var(--ink); font:14px/1.43 Inter,ui-sans-serif,system-ui,sans-serif; }
+    button,input,select,a.button { font:inherit; color:inherit; border:1px solid var(--line); background:var(--panel); border-radius:7px; padding:8px 10px; }
+    button,a.button { cursor:pointer; text-decoration:none; }
+    button:hover,a.button:hover,button:focus-visible,a.button:focus-visible { border-color:var(--accent); outline:none; }
+    button.active { color:#fff; background:var(--accent); border-color:var(--accent); }
+    header { height:70px; display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--panel); border-bottom:1px solid var(--line); }
+    h1 { margin:0; font-size:20px; line-height:1.08; }
+    .subtitle,.small { color:var(--muted); font-size:11px; }
+    .subtitle { margin-top:4px; font-size:12px; }
+    .status { margin-left:auto; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:6px 11px; white-space:nowrap; }
+    .status::before { content:""; display:inline-block; width:7px; height:7px; margin-right:8px; border-radius:50%; background:var(--good); }
+    #layout { height:calc(100% - 70px); display:grid; grid-template-columns:280px minmax(500px,1fr) 360px; }
+    aside { min-width:0; overflow:auto; padding:14px; background:var(--panel); }
+    #controls { border-right:1px solid var(--line); }
+    #details { border-left:1px solid var(--line); }
+    section { margin:0 0 16px; padding:0 0 14px; border-bottom:1px solid var(--line); }
+    section:last-child { border-bottom:0; }
+    h2 { margin:0 0 8px; color:var(--muted); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+    .stack { display:grid; gap:6px; }
+    .row { display:flex; gap:6px; }
+    .row>* { flex:1; min-width:0; }
+    .wide { width:100%; }
+    .primary { color:#fff; background:var(--accent); border-color:var(--accent); font-weight:750; }
+    .sector-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+    .sector { text-align:left; border-left:5px solid var(--sector); }
+    .sector.active { background:var(--sector); border-color:var(--sector); color:#fff; }
+    .check { display:flex; align-items:center; gap:8px; margin:7px 0; }
+    .check input { width:auto; }
+    input[type="range"] { width:100%; padding:0; }
+    .facts { border:1px solid var(--line); background:var(--soft); color:var(--muted); border-radius:7px; padding:9px; font-size:11px; }
+    #stage { position:relative; min-width:0; overflow:hidden; background:var(--paper); }
+    canvas { display:block; width:100%; height:100%; cursor:pointer; touch-action:none; }
+    #modeBadge,#hud { position:absolute; left:12px; border:1px solid var(--line); background:color-mix(in srgb,var(--panel) 92%,transparent); border-radius:7px; padding:7px 9px; pointer-events:none; }
+    #modeBadge { top:11px; }
+    #modeBadge strong { display:block; }
+    #modeBadge span,#hud { color:var(--muted); font-size:11px; }
+    #hud { bottom:11px; }
+    .selected { display:flex; gap:10px; align-items:start; padding-bottom:12px; border-bottom:1px solid var(--line); margin-bottom:12px; }
+    #selectedPermutation { font:800 29px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.05em; }
+    #sectorPill { margin-left:auto; padding:5px 8px; border-radius:999px; background:var(--sector); color:#fff; font-weight:750; }
+    .kv { display:grid; grid-template-columns:128px 1fr; gap:6px 9px; margin:0; font-size:12px; }
+    .kv dt { color:var(--muted); }
+    .kv dd { margin:0; overflow-wrap:anywhere; }
+    .path-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+    .path-grid button { padding:7px; text-align:left; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .path-grid button.active { color:#fff; background:var(--sector); border-color:var(--sector); }
+    table { border-collapse:collapse; margin-top:8px; }
+    td { width:28px; height:27px; text-align:center; border:1px solid var(--line); font:12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    td.nz { background:var(--soft); color:var(--accent); font-weight:800; }
+    @media(max-width:1100px) { #layout { grid-template-columns:245px minmax(440px,1fr) 320px; } }
+    @media(max-width:820px) { html,body { overflow:auto; } header { height:auto; flex-wrap:wrap; } .status { display:none; } #layout { height:auto; display:flex; flex-direction:column; } #stage { height:70vh; order:-1; } aside { border:0!important; } }
+    @media(prefers-reduced-motion:reduce) { }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>S4 Six-Quartet Disassembly</h1><div class="subtitle">The 24 permutations separated into six four-member hopper paths</div></div>
+    <div class="status">24 vertices · 6 quartets · 4 hopper positions each</div>
+    <a class="button" href="permutahedron_s4_explorer.html">Full permutahedron</a>
+    <button id="themeButton">Dark view</button>
+    <button id="exportButton">Export PNG</button>
+  </header>
+  <div id="layout">
+    <aside id="controls">
+      <section>
+        <h2>Disassembly</h2>
+        <div class="stack">
+          <button id="playButton" class="primary">Play disassembly</button>
+          <div class="row"><button id="assembleButton">Reassemble</button><button id="finishButton">Separate now</button></div>
+          <label class="small" for="progressSlider">Assembly → six paths</label>
+          <input id="progressSlider" type="range" min="0" max="1000" value="0">
+        </div>
+      </section>
+      <section>
+        <h2>Six quartets</h2>
+        <div id="sectorButtons" class="sector-grid"></div>
+        <div class="stack" style="margin-top:7px">
+          <button id="drillButton">Drill into selected quartet</button>
+          <button id="showAllButton">Show all six paths</button>
+        </div>
+      </section>
+      <section>
+        <h2>Display</h2>
+        <label class="check"><input id="labelsToggle" type="checkbox" checked> Permutation labels</label>
+        <label class="check"><input id="hopperToggle" type="checkbox" checked> Hopper-position labels</label>
+        <label class="check"><input id="guideToggle" type="checkbox" checked> Quartet path guides</label>
+        <label class="check"><input id="edgesToggle" type="checkbox" checked> Permutahedron edges while assembled</label>
+      </section>
+      <div class="facts">
+        Each separated row uses the same ordered positions H1, H2, H3, H4. The row segments are hopping-order guides. They are not adjacent-transposition edges of the permutahedron.
+      </div>
+    </aside>
+
+    <main id="stage">
+      <canvas id="canvas" aria-label="Animated disassembly of the S4 permutahedron into six SUSY quartets"></canvas>
+      <div id="modeBadge"><strong id="modeTitle">Assembled permutahedron</strong><span id="modeText">24 vertices and 36 adjacent-transposition edges</span></div>
+      <div id="hud">Select a quartet, then drill into it · double-click a bubble to drill directly</div>
+    </main>
+
+    <aside id="details">
+      <div class="selected"><div><div id="selectedPermutation">1234</div><div id="selectedId" class="small">S4-00000 · H1</div></div><div id="sectorPill">VM3</div></div>
+      <section><h2>Selected quartet</h2><dl id="quartetFacts" class="kv"></dl><div id="pathMembers" class="path-grid" style="margin-top:9px"></div></section>
+      <section><h2>Common path</h2><dl id="hopperFacts" class="kv"></dl></section>
+      <section><h2>Signed representative</h2><select id="signingSelect" class="wide"></select><dl id="signingFacts" class="kv" style="margin-top:9px"></dl><div id="matrix"></div></section>
+      <section><h2>Boundary</h2><div class="facts">The six quartets are the six S4/V4 cosets stored in the validated artifact. Path segments show a common ordering by hopping operators, not new geometric edges or a proof of four-dimensional origin.</div></section>
+    </aside>
+  </div>
+
+  <script>
+    "use strict";
+    const ATLAS=/*__ATLAS_JSON__*/null;
+    const SUSY=/*__SUPERSYMMETRY_JSON__*/null;
+    const DISASSEMBLY=/*__DISASSEMBLY_JSON__*/null;
+    const $=id=>document.getElementById(id);
+    const canvas=$("canvas"),context=canvas.getContext("2d",{alpha:false});
+    const SECTORS=[
+      {name:"CM",color:"#49955d"},{name:"TM",color:"#8851a2"},{name:"VM",color:"#d94d49"},
+      {name:"VM1",color:"#4b70cd"},{name:"VM2",color:"#dd8438"},{name:"VM3",color:"#3aa7b5"},
+    ];
+    const EDGE_COLORS={1:"#175ac6",2:"#16844a",3:"#ce3131"};
+    const permutations=ATLAS.permutations.map(value=>Array.isArray(value)?value.map(Number):String(value).split("").map(Number));
+    const labels=permutations.map(value=>value.join(""));
+    const paths=DISASSEMBLY.sectors.map(value=>value.hopper_ordered_ranks);
+    const sectorByRank=new Array(24),slotByRank=new Array(24);
+    paths.forEach((path,sector)=>path.forEach((rank,slot)=>{sectorByRank[rank]=sector;slotByRank[rank]=slot;}));
+
+    function inversePermutation(permutation){const inverse=new Array(4);permutation.forEach((value,position)=>inverse[value-1]=position+1);return inverse;}
+    function worldPoint(permutation){const q=inversePermutation(permutation).map(value=>value-2.5);return[(q[0]-q[1])/Math.sqrt(2),(q[0]+q[1]-2*q[2])/Math.sqrt(6),(q[0]+q[1]+q[2]-3*q[3])/Math.sqrt(12)];}
+    const worldPoints=permutations.map(worldPoint);
+    const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+    const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+    const normalize=value=>{const n=Math.hypot(...value)||1;return value.map(x=>x/n);};
+    const direction=normalize([.72,-.66,.58]),right=normalize(cross([0,0,1],direction)),up=normalize(cross(direction,right));
+    const smooth=t=>t*t*(3-2*t),mix=(a,b,t)=>a+(b-a)*t;
+    const state={progress:0,focus:0,focusSector:null,selectedSector:5,selectedRank:paths[5][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0};
+
+    function assembledPoints(width,height){const scale=Math.min(width,height)*.175;return worldPoints.map(point=>({x:width*.5+dot(point,right)*scale,y:height*.5-dot(point,up)*scale,depth:dot(point,direction)}));}
+    function rowPoints(width,height){const points=new Array(24);const left=width*.20,rightX=width*.86,top=height*.15,bottom=height*.86;paths.forEach((path,sector)=>path.forEach((rank,slot)=>{points[rank]={x:mix(left,rightX,slot/3),y:mix(top,bottom,sector/5),depth:sector};}));return points;}
+    function focusPoints(width,height){const points=rowPoints(width,height);const sector=state.focusSector??state.selectedSector;paths[sector].forEach((rank,slot)=>{points[rank]={x:mix(width*.16,width*.86,slot/3),y:height*.49,depth:slot};});return points;}
+    function currentPoints(width,height){const assembled=assembledPoints(width,height),rows=rowPoints(width,height),focus=focusPoints(width,height),t=smooth(state.progress),f=smooth(state.focus);return assembled.map((point,rank)=>({x:mix(mix(point.x,rows[rank].x,t),focus[rank].x,f),y:mix(mix(point.y,rows[rank].y,t),focus[rank].y,f),depth:mix(point.depth,rows[rank].depth,t)}));}
+
+    function bubble(ctx,point,label,color,selected,radius,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.shadowColor=selected?color:"rgba(0,0,0,.35)";ctx.shadowBlur=selected?12:5;ctx.shadowOffsetY=2;const g=ctx.createRadialGradient(point.x-radius*.38,point.y-radius*.42,radius*.04,point.x,point.y,radius);g.addColorStop(0,"#68727a");g.addColorStop(.28,"#30383e");g.addColorStop(.66,"#101519");g.addColorStop(1,"#020405");ctx.fillStyle=g;ctx.strokeStyle=selected?"#fff":color;ctx.lineWidth=selected?3.5:2.2;ctx.beginPath();ctx.arc(point.x,point.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowColor="transparent";ctx.strokeStyle="rgba(255,255,255,.82)";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(point.x-radius*.08,point.y-radius*.08,radius*.62,Math.PI*1.08,Math.PI*1.72);ctx.stroke();if(state.labels){ctx.font=`${selected?800:700} ${selected?12:10.5}px ui-monospace,SFMono-Regular,Menlo,monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.strokeStyle="rgba(0,0,0,.75)";ctx.lineWidth=2;ctx.strokeText(label,point.x,point.y);ctx.fillStyle="#fff";ctx.fillText(label,point.x,point.y);}ctx.restore();}
+
+    function renderTo(ctx,width,height,exportMode=false){const points=currentPoints(width,height);if(!exportMode)state.screen=points;ctx.save();ctx.fillStyle=exportMode?"#fff":getComputedStyle(document.documentElement).getPropertyValue("--paper");ctx.fillRect(0,0,width,height);const t=smooth(state.progress),f=smooth(state.focus);if(exportMode){ctx.fillStyle="#121820";ctx.textAlign="center";ctx.font="800 44px system-ui";ctx.fillText("S4 Six-Quartet Disassembly",width/2,56);ctx.fillStyle="#5e6b78";ctx.font="22px system-ui";ctx.fillText("24 permutations · six S4/V4 cosets · common H1-H4 ordering",width/2,94);}
+      if(state.edges&&t<.995){ctx.lineCap="round";for(const [a,b,generator] of ATLAS.edges){ctx.globalAlpha=(1-t)*.82;ctx.strokeStyle=EDGE_COLORS[generator];ctx.lineWidth=exportMode?9:4.5;ctx.beginPath();ctx.moveTo(points[a].x,points[a].y);ctx.lineTo(points[b].x,points[b].y);ctx.stroke();}}
+      if(t>.01){for(let sector=0;sector<6;sector++){const active=state.focusSector===null||sector===state.focusSector;const alpha=t*(state.focusSector===null?1:active?1:1-f);const path=paths[sector],meta=SECTORS[sector],ys=path.map(rank=>points[rank].y);ctx.save();ctx.globalAlpha=alpha*.12;ctx.fillStyle=meta.color;const pad=exportMode?36:22,top=Math.min(...ys)-pad,bottom=Math.max(...ys)+pad;ctx.fillRect(width*.07,top,width*.88,bottom-top);ctx.restore();if(state.guides){ctx.save();ctx.globalAlpha=alpha*.92;ctx.strokeStyle=meta.color;ctx.lineWidth=exportMode?10:5;ctx.lineCap="round";ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();ctx.restore();}ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=meta.color;ctx.font=`800 ${exportMode?24:13}px system-ui`;ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(`${meta.name} · ${SUSY.sectors[sector].id}`,width*.075,points[path[0]].y);ctx.restore();}}
+      const order=Array.from({length:24},(_,rank)=>rank).sort((a,b)=>points[a].depth-points[b].depth);for(const rank of order){const sector=sectorByRank[rank],active=state.focusSector===null||sector===state.focusSector,alpha=state.focusSector===null?1:active?1:1-f;if(alpha<.03)continue;const selected=rank===state.selectedRank,radius=selected?(exportMode?34:19):f&&active?(exportMode?32:18):(exportMode?27:14.5);bubble(ctx,points[rank],labels[rank],SECTORS[sector].color,selected,radius,alpha);if(state.hoppers&&t>.18){ctx.save();ctx.globalAlpha=t*alpha;ctx.fillStyle=exportMode?"#3d4852":getComputedStyle(document.documentElement).getPropertyValue("--muted");ctx.font=`700 ${exportMode?20:10.5}px ui-monospace,monospace`;ctx.textAlign="center";ctx.fillText(DISASSEMBLY.hopper_labels[slotByRank[rank]],points[rank].x,points[rank].y+(exportMode?52:29));ctx.restore();}}
+      if(exportMode){ctx.fillStyle="#5e6b78";ctx.textAlign="center";ctx.font="18px system-ui";ctx.fillText("Path segments show hopping order and are not permutahedron edges.",width/2,height-28);}ctx.restore();}
+
+    function render(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));context.setTransform(dpr,0,0,dpr,0,0);renderTo(context,rect.width,rect.height);updateBadge();}
+    function updateBadge(){if(state.focus>.02){const meta=SECTORS[state.focusSector??state.selectedSector];$("modeTitle").textContent=`${meta.name} quartet`;$("modeText").textContent="Four permutations along the common H1-H4 path";}else if(state.progress>.98){$("modeTitle").textContent="Six separated quartet paths";$("modeText").textContent="All 24 vertices retained · four per path";}else if(state.progress<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent="24 vertices and 36 adjacent-transposition edges";}else{$("modeTitle").textContent="Disassembling";$("modeText").textContent=`${Math.round(state.progress*100)}% separated`;}}
+
+    function animateField(field,to,duration=1050,after){const token=++state.animation,from=state[field],start=performance.now();const step=now=>{if(token!==state.animation)return;const t=Math.min(1,(now-start)/duration);state[field]=mix(from,to,smooth(t));if(field==="progress")$("progressSlider").value=String(Math.round(state.progress*1000));render();if(t<1)requestAnimationFrame(step);else after?.();};requestAnimationFrame(step);}
+    function playDisassembly(){state.focusSector=null;state.focus=0;animateField("progress",1,1500);}
+    function reassemble(){const finish=()=>animateField("progress",0,1250);if(state.focus>.01)animateField("focus",0,450,()=>{state.focusSector=null;finish();});else finish();}
+    function drill(){state.focusSector=state.selectedSector;const focus=()=>animateField("focus",1,700);if(state.progress<.98)animateField("progress",1,900,focus);else focus();}
+    function showAll(){animateField("focus",0,550,()=>{state.focusSector=null;render();});}
+
+    function permutationMatrix(permutation){return Array.from({length:4},(_,row)=>Array.from({length:4},(_,column)=>column===permutation[row]-1?1:0));}
+    function signedMatrix(permutation,factor){return permutationMatrix(permutation).map((row,index)=>row.map(value=>value*(factor&(1<<index)?-1:1)));}
+    function matrixHtml(values){return `<table><tbody>${values.map(row=>`<tr>${row.map(value=>`<td class="${value?"nz":""}">${value||""}</td>`).join("")}</tr>`).join("")}</tbody></table>`;}
+    function updateDetails(){const sector=state.selectedSector,rank=state.selectedRank,meta=SECTORS[sector],record=SUSY.sectors[sector],slot=slotByRank[rank];$("selectedPermutation").textContent=labels[rank];$("selectedId").textContent=`S4-${String(rank).padStart(5,"0")} · ${DISASSEMBLY.hopper_labels[slot]}`;$("sectorPill").textContent=meta.name;$("sectorPill").style.setProperty("--sector",meta.color);$("quartetFacts").innerHTML=`<dt>coset</dt><dd>${record.id}</dd><dt>S4/V4 coordinate</dt><dd>${record.invariants.quotient_s3_cycle}</dd><dt>members</dt><dd>4</dd><dt>common path</dt><dd class="small">verified H1-H4 orbit</dd>`;$("pathMembers").innerHTML=paths[sector].map((member,index)=>`<button class="${member===rank?"active":""}" data-rank="${member}" style="--sector:${meta.color}">${DISASSEMBLY.hopper_labels[index]} · ${labels[member]}</button>`).join("");$("pathMembers").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank)));$("hopperFacts").innerHTML=DISASSEMBLY.hopper_labels.map((label,index)=>`<dt>${label}</dt><dd>${DISASSEMBLY.hopper_expressions[index]}</dd>`).join("");state.signing=Math.min(state.signing,record.published_fiducial_signings.length-1);$("signingSelect").innerHTML=record.published_fiducial_signings.map((signing,index)=>`<option value="${index}">Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`).join("");$("signingSelect").value=String(state.signing);updateSigning();updateSectorButtons();}
+    function updateSigning(){const sector=state.selectedSector,rank=state.selectedRank,record=SUSY.sectors[sector],signing=record.published_fiducial_signings[state.signing],originalSlot=record.ordered_ranks.indexOf(rank),matrix=signing.matrices[originalSlot];$("signingFacts").innerHTML=`<dt>Boolean factors</dt><dd>${signing.boolean_factors.join(", ")}</dd><dt>chi0</dt><dd>${signing.chi0>0?"+1":"-1"}</dd><dt>Garden closure</dt><dd style="color:var(--good);font-weight:750">${signing.garden_sparse_passed?"pass":"fail"}</dd><dt>dense residuals</dt><dd>${signing.dense_residual_entries}</dd><dt>selected factor</dt><dd>b = ${matrix.boolean_factor}</dd>`;$("matrix").innerHTML=matrixHtml(signedMatrix(permutations[rank],matrix.boolean_factor));}
+    function updateSectorButtons(){$("sectorButtons").innerHTML=SECTORS.map((meta,index)=>`<button class="sector ${index===state.selectedSector?"active":""}" data-sector="${index}" style="--sector:${meta.color}">${meta.name} · ${SUSY.sectors[index].id}</button>`).join("");$("sectorButtons").querySelectorAll("button").forEach(button=>button.onclick=()=>selectSector(Number(button.dataset.sector)));}
+    function selectSector(sector){state.selectedSector=sector;state.selectedRank=paths[sector][0];state.signing=0;if(state.focus>.98){state.focusSector=sector;render();}updateDetails();render();}
+    function selectRank(rank){state.selectedRank=rank;state.selectedSector=sectorByRank[rank];state.signing=0;updateDetails();render();}
+    function nearestRank(x,y){let best=null,distance=22**2;state.screen.forEach((point,rank)=>{if(state.focus>.8&&sectorByRank[rank]!==state.focusSector)return;const d=(point.x-x)**2+(point.y-y)**2;if(d<distance){distance=d;best=rank;}});return best;}
+    function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=state.focus>.5?`S4_quartet_${SECTORS[state.focusSector].name}.png`:`S4_six_quartet_disassembly.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
+
+    $("playButton").onclick=playDisassembly;$("assembleButton").onclick=reassemble;$("finishButton").onclick=()=>{state.animation++;state.progress=1;state.focus=0;state.focusSector=null;$("progressSlider").value="1000";render();};$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("progressSlider").oninput=event=>{state.animation++;state.progress=Number(event.target.value)/1000;state.focus=0;state.focusSector=null;render();};$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};$("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};$("exportButton").onclick=exportPng;
+    canvas.onclick=event=>{const rect=canvas.getBoundingClientRect(),rank=nearestRank(event.clientX-rect.left,event.clientY-rect.top);if(rank!==null)selectRank(rank);};canvas.ondblclick=event=>{const rect=canvas.getBoundingClientRect(),rank=nearestRank(event.clientX-rect.left,event.clientY-rect.top);if(rank!==null){selectRank(rank);drill();}};
+    function selfCheck(){if(ATLAS.metadata.vertex_count!==24||ATLAS.metadata.edge_count!==36)throw new Error("S4 atlas count failure");if(paths.length!==6||paths.some(path=>path.length!==4)||new Set(paths.flat()).size!==24)throw new Error("quartet partition failure");if(!DISASSEMBLY.validation.common_hopper_path_verified)throw new Error("hopper path validation failure");}
+    selfCheck();updateDetails();new ResizeObserver(render).observe($("stage"));render();
+    if(!matchMedia("(prefers-reduced-motion: reduce)").matches)setTimeout(playDisassembly,650);
+  </script>
+</body>
+</html>
