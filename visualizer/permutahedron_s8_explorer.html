@@ -103,7 +103,7 @@
       <label class="check"><input id="fullVerticesToggle" type="checkbox" checked> All permutation vertices</label>
       <label class="check"><input id="octetToggle" type="checkbox" checked> Selected octet bubbles</label>
       <label class="check"><input id="labelsToggle" type="checkbox" checked> Labels inside selected bubbles</label>
-      <label class="check"><input id="isolateToggle" type="checkbox" checked> Octet focus</label>
+      <label class="check"><input id="isolateToggle" type="checkbox"> Octet focus</label>
     </section>
     <div class="facts">The complete graph is rendered by WebGL. Labels appear only on the selected eight-member R<sub>8</sub> coset because labeling all 40,320 vertices would obscure the structure.</div>
   </aside>
@@ -873,7 +873,7 @@ class S8WebGLRenderer {
   const state={
     selectedRank:0, octetId:0, yaw:-.72, elevation:.46, zoom:1,
     generators:new Set([1,2,3,4,5,6,7]), fullEdges:true, fullVertices:true,
-    showOctet:true, labels:true, isolate:true, drag:null,
+    showOctet:true, labels:true, isolate:false, drag:null,
   };
   const renderer=new S8WebGLRenderer($("glCanvas"),positions,edges,generatorColorVectors);
   const overlay=$("overlay"), overlayContext=overlay.getContext("2d");
