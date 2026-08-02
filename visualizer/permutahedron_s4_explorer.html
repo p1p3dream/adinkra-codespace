@@ -742,10 +742,10 @@
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.lineJoin = "round";
-      context.strokeStyle = "rgba(255,255,255,.9)";
+      context.strokeStyle = "rgba(0,0,0,.7)";
       context.lineWidth = exportMode ? 4 : 2;
       context.strokeText(label, point.x, point.y + (exportMode ? 1 : .25));
-      context.fillStyle = "#111820";
+      context.fillStyle = "#ffffff";
       context.fillText(label, point.x, point.y + (exportMode ? 1 : .25));
     }
 
@@ -880,12 +880,12 @@
           point.y,
           radius,
         );
-        sphere.addColorStop(0, "#ffffff");
-        sphere.addColorStop(.34, selected ? "#f8fbfd" : "#f4f7f9");
-        sphere.addColorStop(.72, selected ? "#e5ebef" : "#dce3e8");
-        sphere.addColorStop(1, selected ? "#b9c5cc" : "#aebac2");
+        sphere.addColorStop(0, selected ? "#7a858d" : "#68727a");
+        sphere.addColorStop(.28, selected ? "#39434a" : "#30383e");
+        sphere.addColorStop(.66, selected ? "#141a1f" : "#101519");
+        sphere.addColorStop(1, "#020405");
         context.fillStyle = sphere;
-        context.strokeStyle = selected ? "#111820" : inBase ? "#d7a72d" : nodeSector.color;
+        context.strokeStyle = selected ? "#ffffff" : inBase ? "#d7a72d" : nodeSector.color;
         context.lineWidth = selected ? (exportMode ? 8 : 3.5) : inBase ? (exportMode ? 6 : 2.8) : (exportMode ? 5 : 2.2);
         context.beginPath();
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
