@@ -742,10 +742,10 @@
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.lineJoin = "round";
-      context.strokeStyle = "rgba(0,0,0,.62)";
+      context.strokeStyle = "rgba(255,255,255,.9)";
       context.lineWidth = exportMode ? 4 : 2;
       context.strokeText(label, point.x, point.y + (exportMode ? 1 : .25));
-      context.fillStyle = "#ffffff";
+      context.fillStyle = "#111820";
       context.fillText(label, point.x, point.y + (exportMode ? 1 : .25));
     }
 
@@ -869,25 +869,42 @@
           ? nodeSector.color
           : inQuartet
             ? sectorMeta.color
-            : "rgba(0,0,0,.34)";
-        context.shadowBlur = selected ? (exportMode ? 22 : 10) : inQuartet ? (exportMode ? 14 : 6) : (exportMode ? 8 : 3);
+            : "rgba(18,30,40,.38)";
+        context.shadowBlur = selected ? (exportMode ? 24 : 11) : inQuartet ? (exportMode ? 16 : 7) : (exportMode ? 12 : 5);
+        context.shadowOffsetY = exportMode ? 5 : 2;
         const sphere = context.createRadialGradient(
-          point.x - radius * .34,
-          point.y - radius * .38,
-          radius * .08,
+          point.x - radius * .38,
+          point.y - radius * .42,
+          radius * .04,
           point.x,
           point.y,
           radius,
         );
-        sphere.addColorStop(0, selected ? "#77828d" : "#626b75");
-        sphere.addColorStop(.48, selected ? "#343e48" : "#303943");
-        sphere.addColorStop(1, "#10161c");
+        sphere.addColorStop(0, "#ffffff");
+        sphere.addColorStop(.34, selected ? "#f8fbfd" : "#f4f7f9");
+        sphere.addColorStop(.72, selected ? "#e5ebef" : "#dce3e8");
+        sphere.addColorStop(1, selected ? "#b9c5cc" : "#aebac2");
         context.fillStyle = sphere;
-        context.strokeStyle = selected ? "#ffffff" : inBase ? "#d7a72d" : nodeSector.color;
+        context.strokeStyle = selected ? "#111820" : inBase ? "#d7a72d" : nodeSector.color;
         context.lineWidth = selected ? (exportMode ? 8 : 3.5) : inBase ? (exportMode ? 6 : 2.8) : (exportMode ? 5 : 2.2);
         context.beginPath();
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
         context.fill();
+        context.stroke();
+        context.shadowColor = "transparent";
+        context.shadowBlur = 0;
+        context.shadowOffsetY = 0;
+        context.strokeStyle = "rgba(255,255,255,.82)";
+        context.lineWidth = exportMode ? 4 : 1.7;
+        context.lineCap = "round";
+        context.beginPath();
+        context.arc(
+          point.x - radius * .08,
+          point.y - radius * .08,
+          radius * .62,
+          Math.PI * 1.08,
+          Math.PI * 1.72,
+        );
         context.stroke();
         context.restore();
         if (state.labels) {
