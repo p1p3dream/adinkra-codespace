@@ -173,6 +173,8 @@
     showOctet:true, labels:true, isolate:false, drag:null,
   };
   const renderer=new S8WebGLRenderer($("glCanvas"),positions,edges,generatorColorVectors);
+  renderer.lineAlpha=.78;
+  renderer.pointSizes[0]=1.65;
   const overlay=$("overlay"), overlayContext=overlay.getContext("2d");
 
   function inversionLength(label){ let n=0; for(let i=0;i<8;i++)for(let j=i+1;j<8;j++)if(label[i]>label[j])n++; return n; }
