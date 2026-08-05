@@ -185,7 +185,7 @@
     // with the camera and stop being horizontal rows, and they run off the
     // canvas because their extent is fixed in model units rather than in
     // fractions of the available width.
-    const STRAND_LEFT=.505,STRAND_RIGHT=.925,STRAND_TOP=.10,STRAND_BOTTOM=.90;
+    const STRAND_LEFT=.575,STRAND_RIGHT=.955,STRAND_TOP=.09,STRAND_BOTTOM=.91;
     function strandPoints(width,height){
       const points=new Array(24),f=smooth(state.focus),focused=state.focusChain??state.selectedChain;
       paths.forEach((path,chain)=>path.forEach((rank,slot)=>{
@@ -197,8 +197,8 @@
     }
     // The solid slides left in screen space as strands come out. Shifting it in
     // model space instead would rotate the offset along with the camera.
-    const solidShift=width=>mix(0,-width*.235,smooth(meanProgress()));
-    function projectPoints(modelPoints,width,height){const t=smooth(meanProgress()),basePitch=mix(.48,0,t),baseYaw=mix(-.62,0,t),scale=Math.min(width,height)*mix(.115,.100,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
+    const solidShift=width=>mix(0,-width*.315,smooth(meanProgress()));
+    function projectPoints(modelPoints,width,height){const t=smooth(meanProgress()),basePitch=mix(.48,0,t),baseYaw=mix(-.62,0,t),scale=Math.min(width,height)*mix(.115,.092,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
     // The vacated permutahedron sites, projected with the same camera, so the
     // white markers sit exactly where the popped nodes used to be.
     function vacatedPoints(width,height){return projectPoints(worldPoints,width,height);}
