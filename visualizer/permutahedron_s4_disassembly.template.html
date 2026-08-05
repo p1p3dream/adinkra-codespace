@@ -103,6 +103,10 @@
       </section>
       <section>
         <h2>3D camera</h2>
+        <div class="stack" style="margin-bottom:6px">
+          <button class="orientationButton active" data-orientation="page64">Howard p.64 view</button>
+          <button class="orientationButton" data-orientation="hex_floor">Hexagon at the floor</button>
+        </div>
         <button id="resetCameraButton" class="wide">Reset camera</button>
         <div class="row" style="margin-top:6px">
           <button class="axisButton" data-axis="pitch">Rotate X</button>
@@ -163,12 +167,17 @@
     function worldPoint(permutation){const q=inversePermutation(permutation).map(value=>value-2.5);return[(q[0]-q[1])/Math.sqrt(2),(q[0]+q[1]-2*q[2])/Math.sqrt(6),(q[0]+q[1]+q[2]-3*q[3])/Math.sqrt(12)];}
     function matrixVector(matrix,vector){return matrix.map(row=>row.reduce((sum,value,index)=>sum+value*vector[index],0));}
     const rawWorldPoints=permutations.map(worldPoint);
-    const worldPoints=rawWorldPoints.map(point=>matrixVector(DISASSEMBLY.orientation_matrix,point));
+    // Starts in the Howard p.64 view. That figure is vertex down, 1234 at the
+    // bottom and 4321 at the top, which is not the hexagon-on-the-floor view he
+    // asked for on 2026-08-04, so both are kept and the other is a preset.
+    const ORIENTATIONS=DISASSEMBLY.orientations;
+    let worldPoints=rawWorldPoints.map(point=>matrixVector(ORIENTATIONS.page64.matrix,point));
+    function setOrientation(key){worldPoints=rawWorldPoints.map(point=>matrixVector(ORIENTATIONS[key].matrix,point));state.orientation=key;document.querySelectorAll(".orientationButton").forEach(button=>button.classList.toggle("active",button.dataset.orientation===key));render();}
     const smooth=t=>t*t*(3-2*t),mix=(a,b,t)=>a+(b-a)*t;
     // Each strand extracts independently, so progress is per chain rather than
     // global. He clicks once per strand and narrates over it, so nothing here
     // advances on its own.
-    const state={chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false};
+    const state={orientation:"page64",chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false};
     // The acceptance harness runs the same code path, just faster, so a six
     // strand click-through completes inside a headless budget.
     const CHECK_MODE=new URLSearchParams(location.search).has("phase3check");
@@ -198,7 +207,9 @@
     // The solid slides left in screen space as strands come out. Shifting it in
     // model space instead would rotate the offset along with the camera.
     const solidShift=width=>mix(0,-width*.315,smooth(meanProgress()));
-    function projectPoints(modelPoints,width,height){const t=smooth(meanProgress()),basePitch=mix(.48,0,t),baseYaw=mix(-.62,0,t),scale=Math.min(width,height)*mix(.115,.092,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
+    // No extra camera tilt. The orientation matrix alone defines the starting
+    // view, so it reproduces the printed figure rather than a rotated version.
+    function projectPoints(modelPoints,width,height){const t=smooth(meanProgress()),scale=Math.min(width,height)*mix(.115,.092,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch,state.yaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
     // The vacated permutahedron sites, projected with the same camera, so the
     // white markers sit exactly where the popped nodes used to be.
     function vacatedPoints(width,height){return projectPoints(worldPoints,width,height);}
@@ -326,7 +337,7 @@
     }
 
     function render(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));context.setTransform(dpr,0,0,dpr,0,0);renderTo(context,rect.width,rect.height);updateBadge();$("cameraReadout").textContent=`X ${Math.round(state.pitch*180/Math.PI)}° · Y ${Math.round(state.yaw*180/Math.PI)}° · Z ${Math.round(state.roll*180/Math.PI)}° · zoom ${state.zoom.toFixed(2)}`;}
-    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Ascending four-digit order within and across quartets";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent="Hexagonal face down · 24 vertices · 36 edges";}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands out`;$("modeText").textContent="Click to pop the next strand";}}
+    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Ascending four-digit order within and across quartets";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent=`${ORIENTATIONS[state.orientation].label} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands out`;$("modeText").textContent="Click to pop the next strand";}}
 
     // Headless Chrome has no compositor, so requestAnimationFrame does not fire
     // reliably there. The harness needs the same animation code to complete, so
@@ -374,6 +385,7 @@
     function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);const record=DISASSEMBLY.chains[state.focusChain??state.selectedChain];link.download=state.focus>.5?`S4_quartet_${record.multiplet}.png`:`S4_six_quartets_ascending.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
 
     $("playButton").onclick=popNext;$("assembleButton").onclick=reassemble;$("finishButton").onclick=separateAll;$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("progressSlider").oninput=event=>{if(state.busy){syncSlider();return;}state.animation++;const value=Number(event.target.value)/1000;state.chainProgress.fill(value);state.focus=0;state.focusChain=null;state.glow={chain:null,step:0};updateControls();render();};$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};$("detailsButton").onclick=()=>{const hidden=$("layout").classList.toggle("no-details");$("detailsButton").textContent=hidden?"Show details":"Hide details";render();};$("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};$("exportButton").onclick=exportPng;
+    document.querySelectorAll(".orientationButton").forEach(button=>button.onclick=()=>setOrientation(button.dataset.orientation));
     $("resetCameraButton").onclick=()=>{state.yaw=0;state.pitch=0;state.roll=0;state.zoom=1;render();};document.querySelectorAll(".axisButton").forEach(button=>button.onclick=()=>{state[button.dataset.axis]+=Math.PI/2;render();});
     canvas.addEventListener("pointerdown",event=>{canvas.setPointerCapture(event.pointerId);state.drag={id:event.pointerId,x:event.clientX,y:event.clientY,yaw:state.yaw,pitch:state.pitch,roll:state.roll,moved:false};canvas.classList.add("dragging");});
     canvas.addEventListener("pointermove",event=>{if(!state.drag||event.pointerId!==state.drag.id)return;const dx=event.clientX-state.drag.x,dy=event.clientY-state.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)state.drag.moved=true;if(event.shiftKey){state.roll=state.drag.roll+dx*.009;}else{state.yaw=state.drag.yaw+dx*.009;state.pitch=state.drag.pitch+dy*.009;}render();});

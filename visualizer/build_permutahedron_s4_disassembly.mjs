@@ -284,11 +284,36 @@ const baseCentroid = [...baseRanks]
   .map(rank => worldPoints[rank])
   .reduce(add, [0, 0, 0])
   .map(value => value / baseRanks.size);
+// Orientation A, the hexagon flat on the floor. Gates asked for this on
+// 2026-08-04 (L177) so the six permutations ending in 4 form the base.
 const alignNormal = rotationFromTo(baseCentroid, [0, -1, 0]);
 const baseFirstEdge = subtract(worldPoints[rankByLabel.get(baseFaceCycle[1])], worldPoints[rankByLabel.get(baseFaceCycle[0])]);
 const alignedFirstEdge = matrixVector(alignNormal, baseFirstEdge);
-const orientationMatrix = matrixMultiply(rotationY(Math.atan2(alignedFirstEdge[2], alignedFirstEdge[0])), alignNormal);
-const orientedBaseCentroid = matrixVector(orientationMatrix, baseCentroid);
+const hexFloorMatrix = matrixMultiply(rotationY(Math.atan2(alignedFirstEdge[2], alignedFirstEdge[0])), alignNormal);
+const orientedBaseCentroid = matrixVector(hexFloorMatrix, baseCentroid);
+
+// Orientation B, the figure printed on HowardTLK.v2.pdf p. 64. That view is
+// vertex down, not face down: 1234 sits at the bottom and 4321 at the top, with
+// 3421 to the upper left, 4312 to the upper right, and 4231 hidden behind.
+// 1234 and 4321 are antipodal, so aligning that axis fixes everything but the
+// spin, which is set by putting 4231 directly behind the top vertex.
+const topRank = rankByLabel.get("4321");
+const page64Align = rotationFromTo(worldPoints[topRank], [0, 1, 0]);
+const behind = matrixVector(page64Align, worldPoints[rankByLabel.get("4231")]);
+const page64Matrix = matrixMultiply(
+  rotationY(Math.PI - Math.atan2(behind[0], behind[2])),
+  page64Align
+);
+const page64Point = label => matrixVector(page64Matrix, worldPoints[rankByLabel.get(label)]);
+const page64Heights = labels.map((_, rank) => matrixVector(page64Matrix, worldPoints[rank])[1]);
+const page64MatchesFigure =
+  Math.abs(page64Point("1234")[1] - Math.min(...page64Heights)) < 1e-9 &&
+  Math.abs(page64Point("4321")[1] - Math.max(...page64Heights)) < 1e-9 &&
+  page64Point("3421")[0] < -0.5 &&
+  page64Point("4312")[0] > 0.5 &&
+  page64Point("4231")[2] < -0.5 &&
+  page64Point("3241")[0] < -1.5 &&
+  page64Point("4132")[0] > 1.5;
 
 const coversAllVertices = covered.size === 24;
 const requestedBaseIsHexFace = baseRanks.size === 6 &&
@@ -354,13 +379,18 @@ if (!journeysUseRealEdges) throw new Error("A quartet journey traverses somethin
 if (!journeysVisitMembersInOrder) throw new Error("A quartet journey does not pass through its four members in listed order.");
 if (!oneBaseMemberPerQuartet) throw new Error("A quartet does not contain exactly one base-face member.");
 if (!requestedFacePointsDown) throw new Error("The requested hexagonal face was not oriented downward.");
+if (!page64MatchesFigure) throw new Error("The p.64 orientation does not reproduce the printed figure's layout.");
 
 const disassembly = {
   schema_version: "s4-six-ascending-weight-quartets-v4",
   source: "HowardTLK.v2.pdf p. 61 for the quartet listing, p. 64 for link weight; Gates call 2026-08-04",
   ordering: "each permutation read as a four-digit number, ascending; quartets ordered by smallest member",
-  orientation: "requested hexagonal face down; permutations ending in 4 form the base",
-  orientation_matrix: orientationMatrix,
+  orientation: "starts in the HowardTLK.v2.pdf p. 64 view; the hexagon-down view he asked for on 2026-08-04 is a preset",
+  orientation_matrix: page64Matrix,
+  orientations: {
+    page64: { label: "Howard p. 64 figure", matrix: page64Matrix },
+    hex_floor: { label: "Hexagon at the floor", matrix: hexFloorMatrix },
+  },
   base_face_cycle: baseFaceCycle,
   chains,
   validation: {
@@ -383,6 +413,7 @@ const disassembly = {
     journeys_visit_members_in_order: journeysVisitMembersInOrder,
     one_base_member_per_quartet: oneBaseMemberPerQuartet,
     requested_face_points_down: requestedFacePointsDown,
+    page64_matches_figure: page64MatchesFigure,
   },
 };
 
