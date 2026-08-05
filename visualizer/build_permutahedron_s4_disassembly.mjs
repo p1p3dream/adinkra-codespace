@@ -73,23 +73,51 @@ const bfsDistances = start => {
   }
   return distance;
 };
-// Deterministic shortest, non-backtracking route. Several geodesics can join two
-// members, so this always takes the lowest-numbered generator that still reduces
-// the remaining distance. Gates calls this a self-avoiding random walk: shortest
-// path, never backtrack (2026-08-04 call, L147-161).
-const shortestRoute = (start, target) => {
+// Every shortest route between two members, generated in a deterministic order:
+// at each step the lower-numbered generator is explored first, so the list is
+// stable across builds.
+const allShortestRoutes = (start, target) => {
   const toTarget = bfsDistances(target);
-  const route = [start];
-  let current = start;
-  while (current !== target) {
-    const step = [...adjacency[current].entries()]
+  const routes = [];
+  const walk = path => {
+    const current = path.at(-1);
+    if (current === target) { routes.push([...path]); return; }
+    const steps = [...adjacency[current].entries()]
       .filter(([, next]) => toTarget[next] === toTarget[current] - 1)
-      .sort((a, b) => a[0] - b[0])[0];
-    if (!step) throw new Error(`No shortest route from ${labels[start]} to ${labels[target]}.`);
-    current = step[1];
-    route.push(current);
+      .sort((a, b) => a[0] - b[0]);
+    for (const [, next] of steps) { path.push(next); walk(path); path.pop(); }
+  };
+  walk([start]);
+  if (!routes.length) throw new Error(`No shortest route from ${labels[start]} to ${labels[target]}.`);
+  return routes;
+};
+
+// Gates calls the traversal a self-avoiding random walk: shortest path, never
+// backtrack (2026-08-04 call, L147-161). He means the whole journey through the
+// quartet, not each leg in isolation. Picking each leg greedily satisfies the
+// per-leg condition but revisits a node in two of the six quartets, so the legs
+// are chosen jointly here: the first combination of per-leg geodesics whose
+// concatenation visits no node twice. All six quartets admit one.
+const selfAvoidingJourney = ranks => {
+  const options = ranks.slice(0, -1).map((rank, index) => allShortestRoutes(rank, ranks[index + 1]));
+  let solution = null;
+  const search = (index, walk, chosen) => {
+    if (solution) return;
+    if (index === options.length) { solution = { walk: [...walk], routes: [...chosen] }; return; }
+    for (const route of options[index]) {
+      const next = walk.concat(index ? route.slice(1) : route);
+      if (new Set(next).size !== next.length) continue;
+      chosen.push(route);
+      search(index + 1, next, chosen);
+      chosen.pop();
+      if (solution) return;
+    }
+  };
+  search(0, [], []);
+  if (!solution) {
+    throw new Error(`No self-avoiding journey through ${ranks.map(rank => labels[rank]).join(", ")}.`);
   }
-  return route;
+  return solution;
 };
 const add = (a, b) => a.map((value, index) => value + b[index]);
 const subtract = (a, b) => a.map((value, index) => value - b[index]);
@@ -190,9 +218,10 @@ const chains = supersymmetry.sectors
         `Quartet ${chainIndex + 1} is ${memberLabels.join(",")}, expected ${expected.members.join(",")} per HowardTLK.v2.pdf p. 61.`
       );
     }
+    const journey = selfAvoidingJourney(ranks);
     const legRoutes = ranks.slice(0, -1).map((rank, index) => {
       const target = ranks[index + 1];
-      const route = shortestRoute(rank, target);
+      const route = journey.routes[index];
       const distance = shortestDistance(rank, target);
       if (route.length - 1 !== distance || new Set(route).size !== route.length) {
         throw new Error(`${sector.id} leg ${index + 1} is not a shortest no-backtracking route.`);
@@ -232,6 +261,13 @@ const chains = supersymmetry.sectors
       labels: memberLabels,
       leg_routes: legRoutes,
       legs,
+      // The three legs concatenated: one continuous walk visiting the four
+      // members in order and no node twice. This is what the glow animates.
+      journey_ranks: journey.walk,
+      journey_labels: journey.walk.map(rank => labels[rank]),
+      // Index into journey_ranks where each member sits, so the animation knows
+      // where to rest between members.
+      member_stops: ranks.map(rank => journey.walk.indexOf(rank)),
       base_face_label: baseMembers[0],
       base_face_position: memberLabels.indexOf(baseMembers[0]) + 1,
     };
@@ -278,6 +314,21 @@ const noBacktracking = chains.every(chain =>
   chain.leg_routes.every(route => new Set(route.route_ranks).size === route.route_ranks.length)
 );
 const guideSegmentsAreNotEdges = chains.every(chain => chain.legs.every(distance => distance > 1));
+const journeysAreSelfAvoiding = chains.every(chain =>
+  new Set(chain.journey_ranks).size === chain.journey_ranks.length
+);
+const journeysUseRealEdges = chains.every(chain =>
+  chain.journey_ranks.slice(0, -1).every((rank, index) =>
+    [...adjacency[rank].values()].includes(chain.journey_ranks[index + 1])
+  )
+);
+const journeysVisitMembersInOrder = chains.every(chain =>
+  chain.member_stops.every((stop, index) =>
+    stop >= 0 &&
+    chain.journey_ranks[stop] === chain.ranks[index] &&
+    (index === 0 || stop > chain.member_stops[index - 1])
+  )
+);
 const baseFaceIsCyclic = baseFaceCycle.every((label, index) => {
   const a = rankByLabel.get(label);
   const b = rankByLabel.get(baseFaceCycle[(index + 1) % baseFaceCycle.length]);
@@ -298,6 +349,9 @@ if (!legsMatchPage61) throw new Error("A quartet's legs do not match HowardTLK.v
 if (!legPatternsAreDistinct) throw new Error("The six quartets no longer have six distinct leg patterns.");
 if (!shortestLegRoutes || !noBacktracking) throw new Error("A leg lacks a shortest no-backtracking route.");
 if (!guideSegmentsAreNotEdges) throw new Error("A quartet guide was incorrectly classified as one permutahedron edge.");
+if (!journeysAreSelfAvoiding) throw new Error("A quartet journey revisits a node, so it is not a self-avoiding walk.");
+if (!journeysUseRealEdges) throw new Error("A quartet journey traverses something that is not a permutahedron edge.");
+if (!journeysVisitMembersInOrder) throw new Error("A quartet journey does not pass through its four members in listed order.");
 if (!oneBaseMemberPerQuartet) throw new Error("A quartet does not contain exactly one base-face member.");
 if (!requestedFacePointsDown) throw new Error("The requested hexagonal face was not oriented downward.");
 
@@ -324,6 +378,9 @@ const disassembly = {
     shortest_leg_routes: shortestLegRoutes,
     no_backtracking: noBacktracking,
     guide_segments_are_not_single_edges: guideSegmentsAreNotEdges,
+    journeys_are_self_avoiding: journeysAreSelfAvoiding,
+    journeys_use_real_edges: journeysUseRealEdges,
+    journeys_visit_members_in_order: journeysVisitMembersInOrder,
     one_base_member_per_quartet: oneBaseMemberPerQuartet,
     requested_face_points_down: requestedFacePointsDown,
   },
@@ -346,6 +403,7 @@ for (const chain of chains) {
   console.log(
     `  ${String(chain.position).padStart(2)}. ${chain.multiplet.padEnd(4)} ` +
     `${chain.labels.join(", ")}  legs ${chain.legs.join(",")}` +
-    `  base ${chain.base_face_label} at position ${chain.base_face_position}`
+    `  journey ${chain.journey_ranks.length - 1} links, self-avoiding` +
+    `  base ${chain.base_face_label} at ${chain.base_face_position}`
   );
 }

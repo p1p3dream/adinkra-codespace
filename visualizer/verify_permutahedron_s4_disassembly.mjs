@@ -101,6 +101,29 @@ data.chains.forEach((chain, index) => {
     });
   });
 
+  // The journey is the three legs concatenated. Gates calls the traversal a
+  // self-avoiding walk, so it must visit no node twice across the whole quartet,
+  // not merely within each leg.
+  const journey = chain.journey_ranks ?? [];
+  check(journey.length > 0, `Quartet ${index + 1} has no journey.`);
+  check(new Set(journey).size === journey.length,
+    `Quartet ${index + 1} journey revisits a node, so it is not self-avoiding.`);
+  journey.slice(0, -1).forEach((rank, i) => {
+    check(adjacency[rank]?.has(journey[i + 1]),
+      `Quartet ${index + 1} journey step ${i + 1} is not a permutahedron edge.`);
+  });
+  // Recompute the concatenation from the legs and require it to match.
+  const rebuilt = chain.leg_routes.reduce((walk, route, i) =>
+    walk.concat(i ? route.route_ranks.slice(1) : route.route_ranks), []);
+  check(rebuilt.join(",") === journey.join(","),
+    `Quartet ${index + 1} journey does not equal its legs concatenated.`);
+  // The four members must appear in listed order along the journey.
+  const stops = got.map(label => journey.indexOf(rankByLabel.get(label)));
+  check(stops.every((stop, i) => stop >= 0 && (i === 0 || stop > stops[i - 1])),
+    `Quartet ${index + 1} journey does not pass through its members in order.`);
+  check((chain.member_stops ?? []).join(",") === stops.join(","),
+    `Quartet ${index + 1} member_stops ${chain.member_stops} disagree with recomputed ${stops}.`);
+
   // Base-face membership is a highlight, so verify it without letting it order anything.
   check(chain.base_face_label === want.base,
     `Quartet ${index + 1} base member is ${chain.base_face_label}, expected ${want.base}.`);

@@ -219,6 +219,12 @@ animation work; animating the wrong order would burn a second review.
    the walk reaches it, the animation rests between members (L23), then
    restarts from the entry node and extends.
 4. **Blank white ball left at each vacated position** (L219).
+
+   This only reads correctly if the permutahedron edges are drawn on the fixed
+   lattice rather than between current node positions. Drawn the other way, an
+   extracted strand drags its edges with it and the solid tears apart instead of
+   showing a hole. The strands stack to the right and the solid slides left as
+   they come out, so the vacated lattice stays legible.
 5. **Hexagon at the floor** (L177), using the corrected cyclic order.
 6. **Jul 30 styling contract:** thick links per Howard page 64 (SL21, SL29);
    node names inside the node domains in white letters (SL7, SL31).
@@ -232,6 +238,15 @@ animation work; animating the wrong order would burn a second review.
   4 and 6 member by member. Quartet 1 is not evidence.
 - The glow paths for quartets 4 and 6 never revisit a node (backtrack check
   recomputed from the route arrays).
+
+  **Correction found while building this.** Choosing each leg independently
+  satisfies the per-leg condition but produces a concatenated walk that revisits
+  a node in quartets 1 (VM3, revisits 4312) and 6 (VM1, revisits 3241). Gates
+  applies the self-avoiding condition to the whole traversal, not to each leg,
+  so the legs are now chosen jointly: the first combination of per-leg geodesics
+  whose concatenation visits no node twice. All six quartets admit one. The
+  emitted `journey_ranks` is that walk, and `member_stops` marks where the four
+  members sit along it.
 - Styling: rendered label pixels inside node fill are white; link stroke
   width matches the Howard page 64 sample by side-by-side comparison. The
   Howard PDF was permission-blocked from this machine during planning; open
