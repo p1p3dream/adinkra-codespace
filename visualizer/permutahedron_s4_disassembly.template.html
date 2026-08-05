@@ -187,6 +187,11 @@
     const CHECK_MODE=new URLSearchParams(location.search).has("phase3check");
     const SPEED=CHECK_MODE?14:1;
     const meanProgress=()=>state.chainProgress.reduce((total,value)=>total+value,0)/6;
+    // The solid has to be fully out of the strand column as soon as the FIRST
+    // strand lands, not gradually as the average climbs. Driving the shift by
+    // the mean left the solid near centre with one or two strands out, and the
+    // strand slots are at fixed screen positions, so they overlapped it.
+    const peakProgress=()=>Math.max(...state.chainProgress);
     const poppedCount=()=>state.chainProgress.filter(value=>value>.99).length;
 
     // Strands stack on the right. The solid slides left as they come out, so the
@@ -210,10 +215,10 @@
     }
     // The solid slides left in screen space as strands come out. Shifting it in
     // model space instead would rotate the offset along with the camera.
-    const solidShift=width=>mix(0,-width*.315,smooth(meanProgress()));
+    const solidShift=width=>mix(0,-width*.315,smooth(peakProgress()));
     // Each orientation preset carries its own viewing tilt, which eases to zero
     // as the strands come out so the solid flattens while it empties.
-    function projectPoints(modelPoints,width,height){const t=smooth(meanProgress()),preset=ORIENTATIONS[state.orientation],basePitch=mix(preset.pitch,0,t),baseYaw=mix(preset.yaw,0,t),scale=Math.min(width,height)*mix(.115,.092,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
+    function projectPoints(modelPoints,width,height){const t=smooth(peakProgress()),preset=ORIENTATIONS[state.orientation],basePitch=mix(preset.pitch,0,t),baseYaw=mix(preset.yaw,0,t),scale=Math.min(width,height)*mix(.115,.092,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
     // The vacated permutahedron sites, projected with the same camera, so the
     // white markers sit exactly where the popped nodes used to be.
     function vacatedPoints(width,height){return projectPoints(worldPoints,width,height);}
@@ -230,7 +235,7 @@
       ctx.save();
       ctx.fillStyle=exportMode?"#fff":getComputedStyle(document.documentElement).getPropertyValue("--paper");
       ctx.fillRect(0,0,width,height);
-      const t=smooth(meanProgress()),f=smooth(state.focus),vacated=vacatedPoints(width,height);
+      const t=smooth(peakProgress()),f=smooth(state.focus),vacated=vacatedPoints(width,height);
       if(exportMode){
         ctx.fillStyle="#121820";ctx.textAlign="center";ctx.font="800 44px system-ui";
         ctx.fillText("S4 Six-Quartet Ascending Separation",width/2,56);
