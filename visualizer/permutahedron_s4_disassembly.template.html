@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>S4 Six-Quartet Disassembly</title>
+  <title>S4 Six-Quartet Ascending Separation</title>
   <style>
     :root {
       color-scheme:light; --paper:#f7f6f1; --panel:#fff; --ink:#121820; --muted:#5e6b78;
@@ -12,7 +12,7 @@
     }
     :root[data-theme="dark"] { color-scheme:dark; --paper:#081119; --panel:#0e1b24; --ink:#edf3f6; --muted:#9cafba; --line:#28404d; --soft:#132630; --accent:#6bc7dd; --good:#6ee0ad; }
     * { box-sizing:border-box; }
-    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--paper); color:var(--ink); font:14px/1.43 Inter,ui-sans-serif,system-ui,sans-serif; }
+    html,body { width:100%; height:100%; margin:0; overflow:auto; background:var(--paper); color:var(--ink); font:14px/1.43 Inter,ui-sans-serif,system-ui,sans-serif; }
     button,input,select,a.button { font:inherit; color:inherit; border:1px solid var(--line); background:var(--panel); border-radius:7px; padding:8px 10px; }
     button,a.button { cursor:pointer; text-decoration:none; }
     button:hover,a.button:hover,button:focus-visible,a.button:focus-visible { border-color:var(--accent); outline:none; }
@@ -23,7 +23,10 @@
     .subtitle { margin-top:4px; font-size:12px; }
     .status { margin-left:auto; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:6px 11px; white-space:nowrap; }
     .status::before { content:""; display:inline-block; width:7px; height:7px; margin-right:8px; border-radius:50%; background:var(--good); }
-    #layout { height:calc(100% - 70px); display:grid; grid-template-columns:280px minmax(500px,1fr) 360px; }
+    /* The centre column previously had a 500px minimum, which with the two
+       sidebars forced a 1140px floor. Below that the grid overflowed and the
+       fourth member of every quartet was clipped out of view. */
+    #layout { height:calc(100% - 70px); display:grid; grid-template-columns:minmax(210px,260px) minmax(0,1fr) minmax(250px,330px); }
     aside { min-width:0; overflow:auto; padding:14px; background:var(--panel); }
     #controls { border-right:1px solid var(--line); }
     #details { border-left:1px solid var(--line); }
@@ -62,15 +65,15 @@
     table { border-collapse:collapse; margin-top:8px; }
     td { width:28px; height:27px; text-align:center; border:1px solid var(--line); font:12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
     td.nz { background:var(--soft); color:var(--accent); font-weight:800; }
-    @media(max-width:1100px) { #layout { grid-template-columns:245px minmax(440px,1fr) 320px; } }
+    @media(max-width:1100px) { #layout { grid-template-columns:minmax(190px,225px) minmax(0,1fr) minmax(220px,290px); } }
     @media(max-width:820px) { html,body { overflow:auto; } header { height:auto; flex-wrap:wrap; } .status { display:none; } #layout { height:auto; display:flex; flex-direction:column; } #stage { height:70vh; order:-1; } aside { border:0!important; } }
     @media(prefers-reduced-motion:reduce) { }
   </style>
 </head>
 <body>
   <header>
-    <div><h1>S4 Six-Quartet Disassembly</h1><div class="subtitle">The 24 permutations separated into six four-member hopper paths</div></div>
-    <div class="status">24 vertices · 6 quartets · 4 hopper positions each</div>
+    <div><h1>S4 Six-Quartet Ascending Separation</h1><div class="subtitle">Each permutation read as a four-digit number, ascending, per HowardTLK.v2.pdf p. 61</div></div>
+    <div class="status">24 vertices · 36 edges · 6 quartets</div>
     <a class="button" href="permutahedron_s4_explorer.html">Full permutahedron</a>
     <button id="themeButton">Dark view</button>
     <button id="exportButton">Export PNG</button>
@@ -82,16 +85,16 @@
         <div class="stack">
           <button id="playButton" class="primary">Play disassembly</button>
           <div class="row"><button id="assembleButton">Reassemble</button><button id="finishButton">Separate now</button></div>
-          <label class="small" for="progressSlider">Assembly → six paths</label>
+          <label class="small" for="progressSlider">Assembly → six quartet strands</label>
           <input id="progressSlider" type="range" min="0" max="1000" value="0">
         </div>
       </section>
       <section>
-        <h2>Six quartets</h2>
+        <h2>Six quartets, ascending</h2>
         <div id="sectorButtons" class="sector-grid"></div>
         <div class="stack" style="margin-top:7px">
-          <button id="drillButton">Drill into selected quartet</button>
-          <button id="showAllButton">Show all six paths</button>
+          <button id="drillButton">Drill into selected chain</button>
+          <button id="showAllButton">Show all six chains</button>
         </div>
       </section>
       <section>
@@ -107,27 +110,28 @@
       <section>
         <h2>Display</h2>
         <label class="check"><input id="labelsToggle" type="checkbox" checked> Permutation labels</label>
-        <label class="check"><input id="hopperToggle" type="checkbox" checked> Hopper-position labels</label>
-        <label class="check"><input id="guideToggle" type="checkbox" checked> Quartet path guides</label>
+        <label class="check"><input id="hopperToggle" type="checkbox" checked> Position and leg distance</label>
+        <label class="check"><input id="guideToggle" type="checkbox" checked> Quartet strand guides</label>
         <label class="check"><input id="edgesToggle" type="checkbox" checked> Permutahedron edges while assembled</label>
       </section>
       <div class="facts">
-        Each separated row uses the same ordered positions H1, H2, H3, H4. The row segments are hopping-order guides. They are not adjacent-transposition edges of the permutahedron.
+        The assembled solid rests on the hexagonal face of the six permutations ending in 4. Each strand lists its quartet in ascending four-digit order, and the leg between consecutive members is a shortest path that never revisits a vertex. Exactly one member of every quartet lies on the base face; that is a highlight, not the ordering rule.
       </div>
     </aside>
 
     <main id="stage">
-      <canvas id="canvas" aria-label="Animated disassembly of the S4 permutahedron into six SUSY quartets"></canvas>
+      <canvas id="canvas" aria-label="Animated separation of the S4 permutahedron into six SUSY-quartet strands in ascending four-digit order"></canvas>
       <div id="modeBadge"><strong id="modeTitle">Assembled permutahedron</strong><span id="modeText">24 vertices and 36 adjacent-transposition edges</span></div>
       <div id="hud">Drag to rotate · Shift-drag to roll · wheel to zoom · double-click a bubble to drill</div>
     </main>
 
     <aside id="details">
-      <div class="selected"><div><div id="selectedPermutation">1234</div><div id="selectedId" class="small">S4-00000 · H1</div></div><div id="sectorPill">VM3</div></div>
+      <div class="selected"><div><div id="selectedPermutation">1234</div><div id="selectedId" class="small">S4-00000 · position 1</div></div><div id="sectorPill">VM3</div></div>
       <section><h2>Selected quartet</h2><dl id="quartetFacts" class="kv"></dl><div id="pathMembers" class="path-grid" style="margin-top:9px"></div></section>
-      <section><h2>Common path</h2><dl id="hopperFacts" class="kv"></dl></section>
+      <section><h2>Legs between consecutive members</h2><dl id="hopperFacts" class="kv"></dl></section>
       <section><h2>Signed representative</h2><select id="signingSelect" class="wide"></select><dl id="signingFacts" class="kv" style="margin-top:9px"></dl><div id="matrix"></div></section>
-      <section><h2>Boundary</h2><div class="facts">The six quartets are the six S4/V4 cosets stored in the validated artifact. Path segments show a common ordering by hopping operators, not new geometric edges or a proof of four-dimensional origin.</div></section>
+      <section><h2>Boundary</h2><div class="facts">The six strands are the six S4/V4 quartets, each listed in ascending four-digit order. The strand segments are organizational guides, not single permutahedron edges. Each leg is a certified shortest path with no repeated vertex, and the six leg patterns are all different: 2,6,2 / 2,4,2 / 4,6,4 / 6,4,6 / 4,2,4 / 6,2,6.</div></section>
+      <section><h2>Published erratum</h2><div class="facts" id="erratumNote"></div></section>
     </aside>
   </div>
 
@@ -138,59 +142,116 @@
     const DISASSEMBLY=/*__DISASSEMBLY_JSON__*/null;
     const $=id=>document.getElementById(id);
     const canvas=$("canvas"),context=canvas.getContext("2d",{alpha:false});
-    const SECTORS=[
-      {name:"CM",color:"#49955d"},{name:"TM",color:"#8851a2"},{name:"VM",color:"#d94d49"},
-      {name:"VM1",color:"#4b70cd"},{name:"VM2",color:"#dd8438"},{name:"VM3",color:"#3aa7b5"},
-    ];
+    // Keyed by multiplet name rather than by sector index, so a reorder cannot
+    // silently repaint a quartet with another multiplet's colour.
+    const SECTOR_COLORS={CM:"#49955d",TM:"#8851a2",VM:"#d94d49",VM1:"#4b70cd",VM2:"#dd8438",VM3:"#3aa7b5"};
+    const colorFor=chain=>SECTOR_COLORS[chain.multiplet]??"#5e6b78";
     const EDGE_COLORS={1:"#175ac6",2:"#16844a",3:"#ce3131"};
     const permutations=ATLAS.permutations.map(value=>Array.isArray(value)?value.map(Number):String(value).split("").map(Number));
     const labels=permutations.map(value=>value.join(""));
-    const paths=DISASSEMBLY.sectors.map(value=>value.hopper_ordered_ranks);
-    const sectorByRank=new Array(24),slotByRank=new Array(24);
-    paths.forEach((path,sector)=>path.forEach((rank,slot)=>{sectorByRank[rank]=sector;slotByRank[rank]=slot;}));
+    const paths=DISASSEMBLY.chains.map(value=>value.ranks);
+    const chainByRank=new Array(24),slotByRank=new Array(24);
+    paths.forEach((path,chain)=>path.forEach((rank,slot)=>{chainByRank[rank]=chain;slotByRank[rank]=slot;}));
 
     function inversePermutation(permutation){const inverse=new Array(4);permutation.forEach((value,position)=>inverse[value-1]=position+1);return inverse;}
     function worldPoint(permutation){const q=inversePermutation(permutation).map(value=>value-2.5);return[(q[0]-q[1])/Math.sqrt(2),(q[0]+q[1]-2*q[2])/Math.sqrt(6),(q[0]+q[1]+q[2]-3*q[3])/Math.sqrt(12)];}
-    const worldPoints=permutations.map(worldPoint);
+    function matrixVector(matrix,vector){return matrix.map(row=>row.reduce((sum,value,index)=>sum+value*vector[index],0));}
+    const rawWorldPoints=permutations.map(worldPoint);
+    const worldPoints=rawWorldPoints.map(point=>matrixVector(DISASSEMBLY.orientation_matrix,point));
     const smooth=t=>t*t*(3-2*t),mix=(a,b,t)=>a+(b-a)*t;
-    const state={progress:0,focus:0,focusSector:null,selectedSector:5,selectedRank:paths[5][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null};
+    const state={progress:0,focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null};
 
-    function rowModelPoints(){const points=new Array(24);paths.forEach((path,sector)=>path.forEach((rank,slot)=>{points[rank]=[mix(-3.25,3.25,slot/3),mix(2.55,-2.55,sector/5),0];}));return points;}
+    function rowModelPoints(){const points=new Array(24);paths.forEach((path,chain)=>path.forEach((rank,slot)=>{points[rank]=[mix(-3.65,3.65,slot/3),mix(2.65,-2.65,chain/5),0];}));return points;}
     const separatedModelPoints=rowModelPoints();
-    function focusModelPoints(){const points=separatedModelPoints.map(point=>[...point]),sector=state.focusSector??state.selectedSector;paths[sector].forEach((rank,slot)=>points[rank]=[mix(-3.35,3.35,slot/3),0,0]);return points;}
+    function focusModelPoints(){const points=separatedModelPoints.map(point=>[...point]),chain=state.focusChain??state.selectedChain;paths[chain].forEach((rank,slot)=>points[rank]=[mix(-3.8,3.8,slot/3),0,0]);return points;}
     function rotatePoint(point,xAngle,yAngle,zAngle){let[x,y,z]=point;let c=Math.cos(xAngle),s=Math.sin(xAngle);[y,z]=[y*c-z*s,y*s+z*c];c=Math.cos(yAngle);s=Math.sin(yAngle);[x,z]=[x*c+z*s,-x*s+z*c];c=Math.cos(zAngle);s=Math.sin(zAngle);[x,y]=[x*c-y*s,x*s+y*c];return[x,y,z];}
     function currentModelPoints(){const rows=separatedModelPoints,focus=focusModelPoints(),t=smooth(state.progress),f=smooth(state.focus);return worldPoints.map((point,rank)=>point.map((value,axis)=>mix(mix(value,rows[rank][axis],t),focus[rank][axis],f)));}
     function currentPoints(width,height){const t=smooth(state.progress),basePitch=mix(.48,0,t),baseYaw=mix(-.62,0,t),scale=Math.min(width,height)*.115*state.zoom,centerY=height*.5;return currentModelPoints().map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/13);return{x:width*.5+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
 
-    function bubble(ctx,point,label,color,selected,radius,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.shadowColor=selected?color:"rgba(0,0,0,.35)";ctx.shadowBlur=selected?12:5;ctx.shadowOffsetY=2;const g=ctx.createRadialGradient(point.x-radius*.38,point.y-radius*.42,radius*.04,point.x,point.y,radius);g.addColorStop(0,"#68727a");g.addColorStop(.28,"#30383e");g.addColorStop(.66,"#101519");g.addColorStop(1,"#020405");ctx.fillStyle=g;ctx.strokeStyle=selected?"#fff":color;ctx.lineWidth=selected?3.5:2.2;ctx.beginPath();ctx.arc(point.x,point.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowColor="transparent";ctx.strokeStyle="rgba(255,255,255,.82)";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(point.x-radius*.08,point.y-radius*.08,radius*.62,Math.PI*1.08,Math.PI*1.72);ctx.stroke();if(state.labels){ctx.font=`${selected?800:700} ${selected?12:10.5}px ui-monospace,SFMono-Regular,Menlo,monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.strokeStyle="rgba(0,0,0,.75)";ctx.lineWidth=2;ctx.strokeText(label,point.x,point.y);ctx.fillStyle="#fff";ctx.fillText(label,point.x,point.y);}ctx.restore();}
+    function bubble(ctx,point,label,color,selected,radius,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.shadowColor=selected?color:"rgba(0,0,0,.28)";ctx.shadowBlur=selected?12:5;ctx.shadowOffsetY=2;const g=ctx.createRadialGradient(point.x-radius*.38,point.y-radius*.42,radius*.04,point.x,point.y,radius);g.addColorStop(0,"#fff");g.addColorStop(.28,"#fbfbfa");g.addColorStop(.66,selected?"#f2f3f3":"#eceeed");g.addColorStop(1,selected?"#dfe3e4":"#d7dcdd");ctx.fillStyle=g;ctx.strokeStyle=selected?"#080b0d":color;ctx.lineWidth=selected?3.5:2.2;ctx.beginPath();ctx.arc(point.x,point.y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowColor="transparent";ctx.strokeStyle="rgba(255,255,255,.98)";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(point.x-radius*.08,point.y-radius*.08,radius*.62,Math.PI*1.08,Math.PI*1.72);ctx.stroke();if(state.labels){ctx.font=`${selected?800:700} ${selected?12:10.5}px ui-monospace,SFMono-Regular,Menlo,monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.strokeStyle="rgba(255,255,255,.86)";ctx.lineWidth=2;ctx.strokeText(label,point.x,point.y);ctx.fillStyle="#080b0d";ctx.fillText(label,point.x,point.y);}ctx.restore();}
 
-    function renderTo(ctx,width,height,exportMode=false){const points=currentPoints(width,height);if(!exportMode)state.screen=points;ctx.save();ctx.fillStyle=exportMode?"#fff":getComputedStyle(document.documentElement).getPropertyValue("--paper");ctx.fillRect(0,0,width,height);const t=smooth(state.progress),f=smooth(state.focus);if(exportMode){ctx.fillStyle="#121820";ctx.textAlign="center";ctx.font="800 44px system-ui";ctx.fillText("S4 Six-Quartet Disassembly",width/2,56);ctx.fillStyle="#5e6b78";ctx.font="22px system-ui";ctx.fillText("24 permutations · six S4/V4 cosets · common H1-H4 ordering",width/2,94);}
-      if(state.edges&&t<.995){ctx.lineCap="round";for(const [a,b,generator] of ATLAS.edges){ctx.globalAlpha=(1-t)*.82;ctx.strokeStyle=EDGE_COLORS[generator];ctx.lineWidth=exportMode?9:4.5;ctx.beginPath();ctx.moveTo(points[a].x,points[a].y);ctx.lineTo(points[b].x,points[b].y);ctx.stroke();}}
-      if(t>.01){for(let sector=0;sector<6;sector++){const active=state.focusSector===null||sector===state.focusSector,alpha=t*(state.focusSector===null?1:active?1:1-f),path=paths[sector],meta=SECTORS[sector],first=points[path[0]],last=points[path[3]],dx=last.x-first.x,dy=last.y-first.y,distance=Math.hypot(dx,dy)||1,ux=dx/distance,uy=dy/distance;ctx.save();ctx.globalAlpha=alpha*.12;ctx.strokeStyle=meta.color;ctx.lineWidth=exportMode?64:44;ctx.lineCap="round";ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();ctx.restore();if(state.guides){ctx.save();ctx.globalAlpha=alpha*.92;ctx.strokeStyle=meta.color;ctx.lineWidth=exportMode?10:5;ctx.lineCap="round";ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();ctx.restore();}ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=meta.color;ctx.font=`800 ${exportMode?24:13}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(`${meta.name} · ${SUSY.sectors[sector].id}`,first.x-ux*(exportMode?92:64),first.y-uy*(exportMode?92:64));ctx.restore();}}
-      const order=Array.from({length:24},(_,rank)=>rank).sort((a,b)=>points[a].depth-points[b].depth);for(const rank of order){const sector=sectorByRank[rank],active=state.focusSector===null||sector===state.focusSector,alpha=state.focusSector===null?1:active?1:1-f;if(alpha<.03)continue;const selected=rank===state.selectedRank,radius=selected?(exportMode?34:19):f&&active?(exportMode?32:18):(exportMode?27:14.5);bubble(ctx,points[rank],labels[rank],SECTORS[sector].color,selected,radius,alpha);if(state.hoppers&&t>.18){const path=paths[sector],first=points[path[0]],last=points[path[3]],dx=last.x-first.x,dy=last.y-first.y,distance=Math.hypot(dx,dy)||1,nx=-dy/distance,ny=dx/distance,offset=exportMode?52:29;ctx.save();ctx.globalAlpha=t*alpha;ctx.fillStyle=exportMode?"#3d4852":getComputedStyle(document.documentElement).getPropertyValue("--muted");ctx.font=`700 ${exportMode?20:10.5}px ui-monospace,monospace`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(DISASSEMBLY.hopper_labels[slotByRank[rank]],points[rank].x+nx*offset,points[rank].y+ny*offset);ctx.restore();}}
-      if(exportMode){ctx.fillStyle="#5e6b78";ctx.textAlign="center";ctx.font="18px system-ui";ctx.fillText("Path segments show hopping order and are not permutahedron edges.",width/2,height-28);}ctx.restore();}
+    function renderTo(ctx,width,height,exportMode=false){
+      const points=currentPoints(width,height);
+      if(!exportMode)state.screen=points;
+      ctx.save();
+      ctx.fillStyle=exportMode?"#fff":getComputedStyle(document.documentElement).getPropertyValue("--paper");
+      ctx.fillRect(0,0,width,height);
+      const t=smooth(state.progress),f=smooth(state.focus);
+      if(exportMode){
+        ctx.fillStyle="#121820";ctx.textAlign="center";ctx.font="800 44px system-ui";
+        ctx.fillText("S4 Six-Quartet Ascending Separation",width/2,56);
+        ctx.fillStyle="#5e6b78";ctx.font="22px system-ui";
+        ctx.fillText("24 permutations · six quartets, each in ascending four-digit order",width/2,94);
+      }
+      if(state.edges&&t<.995){
+        ctx.lineCap="round";
+        for(const [a,b,generator] of ATLAS.edges){
+          ctx.globalAlpha=(1-t)*.82;ctx.strokeStyle=EDGE_COLORS[generator];ctx.lineWidth=exportMode?9:4.5;
+          ctx.beginPath();ctx.moveTo(points[a].x,points[a].y);ctx.lineTo(points[b].x,points[b].y);ctx.stroke();
+        }
+      }
+      if(t>.01){
+        for(let chain=0;chain<6;chain++){
+          const chainRecord=DISASSEMBLY.chains[chain],color=colorFor(chainRecord);
+          const active=state.focusChain===null||chain===state.focusChain;
+          const alpha=t*(state.focusChain===null?1:active?1:1-f),path=paths[chain],first=points[path[0]],last=points[path[3]];
+          const dx=last.x-first.x,dy=last.y-first.y,distance=Math.hypot(dx,dy)||1,ux=dx/distance,uy=dy/distance;
+          ctx.save();ctx.globalAlpha=alpha*.12;ctx.strokeStyle=color;ctx.lineWidth=exportMode?64:44;ctx.lineCap="round";
+          ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();ctx.restore();
+          if(state.guides){
+            ctx.save();ctx.globalAlpha=alpha*.92;ctx.strokeStyle=color;ctx.lineWidth=exportMode?10:5;ctx.lineCap="round";
+            ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();
+            ctx.restore();
+          }
+          ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.font=`800 ${exportMode?24:13}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";
+          ctx.fillText(`${chainRecord.multiplet} · legs ${chainRecord.legs.join(",")}`,first.x-ux*(exportMode?110:78),first.y-uy*(exportMode?110:78));ctx.restore();
+        }
+      }
+      const order=Array.from({length:24},(_,rank)=>rank).sort((a,b)=>points[a].depth-points[b].depth);
+      for(const rank of order){
+        const chain=chainByRank[rank],chainRecord=DISASSEMBLY.chains[chain],color=colorFor(chainRecord);
+        const active=state.focusChain===null||chain===state.focusChain,alpha=state.focusChain===null?1:active?1:1-f;
+        if(alpha<.03)continue;
+        const selected=rank===state.selectedRank,radius=selected?(exportMode?34:19):f&&active?(exportMode?32:18):(exportMode?27:14.5);
+        bubble(ctx,points[rank],labels[rank],color,selected,radius,alpha);
+        if(state.hoppers&&t>.18){
+          const path=paths[chain],first=points[path[0]],last=points[path[3]],dx=last.x-first.x,dy=last.y-first.y,distance=Math.hypot(dx,dy)||1,nx=-dy/distance,ny=dx/distance,offset=exportMode?52:29;
+          ctx.save();ctx.globalAlpha=t*alpha;ctx.fillStyle=exportMode?"#3d4852":getComputedStyle(document.documentElement).getPropertyValue("--muted");
+          ctx.font=`700 ${exportMode?20:10.5}px ui-monospace,monospace`;ctx.textAlign="center";ctx.textBaseline="middle";
+          const slot=slotByRank[rank],leg=chainRecord.legs[slot];
+          const caption=leg===undefined?`#${slot+1}`:`#${slot+1} · ${leg}→`;
+          ctx.fillText(caption,points[rank].x+nx*offset,points[rank].y+ny*offset);ctx.restore();
+        }
+        if(chainRecord.base_face_position===slotByRank[rank]+1&&t>.18){
+          ctx.save();ctx.globalAlpha=alpha*.9;ctx.strokeStyle=color;ctx.lineWidth=exportMode?4:2;
+          ctx.beginPath();ctx.arc(points[rank].x,points[rank].y,radius+(exportMode?9:6),0,Math.PI*2);ctx.stroke();ctx.restore();
+        }
+      }
+      if(exportMode){ctx.fillStyle="#5e6b78";ctx.textAlign="center";ctx.font="18px system-ui";ctx.fillText("Each leg is a shortest path with no repeated vertex. Ringed nodes lie on the base hexagon.",width/2,height-28);}
+      ctx.restore();
+    }
 
     function render(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));context.setTransform(dpr,0,0,dpr,0,0);renderTo(context,rect.width,rect.height);updateBadge();$("cameraReadout").textContent=`X ${Math.round(state.pitch*180/Math.PI)}° · Y ${Math.round(state.yaw*180/Math.PI)}° · Z ${Math.round(state.roll*180/Math.PI)}° · zoom ${state.zoom.toFixed(2)}`;}
-    function updateBadge(){if(state.focus>.02){const meta=SECTORS[state.focusSector??state.selectedSector];$("modeTitle").textContent=`${meta.name} quartet`;$("modeText").textContent="Four permutations along the common H1-H4 path";}else if(state.progress>.98){$("modeTitle").textContent="Six separated quartet paths";$("modeText").textContent="All 24 vertices retained · four per path";}else if(state.progress<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent="24 vertices and 36 adjacent-transposition edges";}else{$("modeTitle").textContent="Disassembling";$("modeText").textContent=`${Math.round(state.progress*100)}% separated`;}}
+    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.progress>.98){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Ascending four-digit order within and across quartets";}else if(state.progress<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent="Hexagonal face down · 24 vertices · 36 edges";}else{$("modeTitle").textContent="Separating";$("modeText").textContent=`${Math.round(state.progress*100)}% separated`;}}
 
     function animateField(field,to,duration=1050,after){const token=++state.animation,from=state[field],start=performance.now();const step=now=>{if(token!==state.animation)return;const t=Math.min(1,(now-start)/duration);state[field]=mix(from,to,smooth(t));if(field==="progress")$("progressSlider").value=String(Math.round(state.progress*1000));render();if(t<1)requestAnimationFrame(step);else after?.();};requestAnimationFrame(step);}
-    function playDisassembly(){state.focusSector=null;state.focus=0;animateField("progress",1,1500);}
-    function reassemble(){const finish=()=>animateField("progress",0,1250);if(state.focus>.01)animateField("focus",0,450,()=>{state.focusSector=null;finish();});else finish();}
-    function drill(){state.focusSector=state.selectedSector;const focus=()=>animateField("focus",1,700);if(state.progress<.98)animateField("progress",1,900,focus);else focus();}
-    function showAll(){animateField("focus",0,550,()=>{state.focusSector=null;render();});}
+    function playDisassembly(){state.focusChain=null;state.focus=0;animateField("progress",1,1500);}
+    function reassemble(){const finish=()=>animateField("progress",0,1250);if(state.focus>.01)animateField("focus",0,450,()=>{state.focusChain=null;finish();});else finish();}
+    function drill(){state.focusChain=state.selectedChain;const focus=()=>animateField("focus",1,700);if(state.progress<.98)animateField("progress",1,900,focus);else focus();}
+    function showAll(){animateField("focus",0,550,()=>{state.focusChain=null;render();});}
 
     function permutationMatrix(permutation){return Array.from({length:4},(_,row)=>Array.from({length:4},(_,column)=>column===permutation[row]-1?1:0));}
     function signedMatrix(permutation,factor){return permutationMatrix(permutation).map((row,index)=>row.map(value=>value*(factor&(1<<index)?-1:1)));}
     function matrixHtml(values){return `<table><tbody>${values.map(row=>`<tr>${row.map(value=>`<td class="${value?"nz":""}">${value||""}</td>`).join("")}</tr>`).join("")}</tbody></table>`;}
-    function updateDetails(){const sector=state.selectedSector,rank=state.selectedRank,meta=SECTORS[sector],record=SUSY.sectors[sector],slot=slotByRank[rank];$("selectedPermutation").textContent=labels[rank];$("selectedId").textContent=`S4-${String(rank).padStart(5,"0")} · ${DISASSEMBLY.hopper_labels[slot]}`;$("sectorPill").textContent=meta.name;$("sectorPill").style.setProperty("--sector",meta.color);$("quartetFacts").innerHTML=`<dt>coset</dt><dd>${record.id}</dd><dt>S4/V4 coordinate</dt><dd>${record.invariants.quotient_s3_cycle}</dd><dt>members</dt><dd>4</dd><dt>common path</dt><dd class="small">verified H1-H4 orbit</dd>`;$("pathMembers").innerHTML=paths[sector].map((member,index)=>`<button class="${member===rank?"active":""}" data-rank="${member}" style="--sector:${meta.color}">${DISASSEMBLY.hopper_labels[index]} · ${labels[member]}</button>`).join("");$("pathMembers").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank)));$("hopperFacts").innerHTML=DISASSEMBLY.hopper_labels.map((label,index)=>`<dt>${label}</dt><dd>${DISASSEMBLY.hopper_expressions[index]}</dd>`).join("");state.signing=Math.min(state.signing,record.published_fiducial_signings.length-1);$("signingSelect").innerHTML=record.published_fiducial_signings.map((signing,index)=>`<option value="${index}">Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`).join("");$("signingSelect").value=String(state.signing);updateSigning();updateSectorButtons();}
-    function updateSigning(){const sector=state.selectedSector,rank=state.selectedRank,record=SUSY.sectors[sector],signing=record.published_fiducial_signings[state.signing],originalSlot=record.ordered_ranks.indexOf(rank),matrix=signing.matrices[originalSlot];$("signingFacts").innerHTML=`<dt>Boolean factors</dt><dd>${signing.boolean_factors.join(", ")}</dd><dt>chi0</dt><dd>${signing.chi0>0?"+1":"-1"}</dd><dt>Garden closure</dt><dd style="color:var(--good);font-weight:750">${signing.garden_sparse_passed?"pass":"fail"}</dd><dt>dense residuals</dt><dd>${signing.dense_residual_entries}</dd><dt>selected factor</dt><dd>b = ${matrix.boolean_factor}</dd>`;$("matrix").innerHTML=matrixHtml(signedMatrix(permutations[rank],matrix.boolean_factor));}
-    function updateSectorButtons(){$("sectorButtons").innerHTML=SECTORS.map((meta,index)=>`<button class="sector ${index===state.selectedSector?"active":""}" data-sector="${index}" style="--sector:${meta.color}">${meta.name} · ${SUSY.sectors[index].id}</button>`).join("");$("sectorButtons").querySelectorAll("button").forEach(button=>button.onclick=()=>selectSector(Number(button.dataset.sector)));}
-    function selectSector(sector){state.selectedSector=sector;state.selectedRank=paths[sector][0];state.signing=0;if(state.focus>.98){state.focusSector=sector;render();}updateDetails();render();}
-    function selectRank(rank){state.selectedRank=rank;state.selectedSector=sectorByRank[rank];state.signing=0;updateDetails();render();}
-    function nearestRank(x,y){let best=null,distance=22**2;state.screen.forEach((point,rank)=>{if(state.focus>.8&&sectorByRank[rank]!==state.focusSector)return;const d=(point.x-x)**2+(point.y-y)**2;if(d<distance){distance=d;best=rank;}});return best;}
-    function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=state.focus>.5?`S4_quartet_${SECTORS[state.focusSector].name}.png`:`S4_six_quartet_disassembly.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
+    function updateDetails(){const chain=state.selectedChain,chainRecord=DISASSEMBLY.chains[chain],sector=chainRecord.sector_index,rank=state.selectedRank,color=colorFor(chainRecord),record=SUSY.sectors[sector],slot=slotByRank[rank];$("selectedPermutation").textContent=labels[rank];const onBase=chainRecord.base_face_label===labels[rank];$("selectedId").textContent=`S4-${String(rank).padStart(5,"0")} · position ${slot+1} of 4${onBase?" · on base hexagon":""}`;$("sectorPill").textContent=chainRecord.multiplet;$("sectorPill").style.setProperty("--sector",color);$("quartetFacts").innerHTML=`<dt>multiplet</dt><dd>${chainRecord.representation_label}</dd><dt>coset</dt><dd>${record.id}</dd><dt>S4/V4 coordinate</dt><dd>${record.invariants.quotient_s3_cycle}</dd><dt>strand position</dt><dd>${chainRecord.position} of 6</dd><dt>ordering</dt><dd>ascending four-digit</dd><dt>legs</dt><dd>${chainRecord.legs.join(" · ")}</dd><dt>base-face member</dt><dd>${chainRecord.base_face_label} at position ${chainRecord.base_face_position}</dd>`;$("pathMembers").innerHTML=paths[chain].map((member,index)=>`<button class="${member===rank?"active":""}" data-rank="${member}" style="--sector:${color}">${index+1} · ${labels[member]}${labels[member]===chainRecord.base_face_label?" ●":""}</button>`).join("");$("pathMembers").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank)));$("hopperFacts").innerHTML=chainRecord.leg_routes.map(route=>`<dt>${route.from_label} → ${route.to_label}</dt><dd><strong>${route.distance} links</strong><br><span class="small">${route.route_labels.join(" → ")}</span></dd>`).join("");state.signing=Math.min(state.signing,record.published_fiducial_signings.length-1);$("signingSelect").innerHTML=record.published_fiducial_signings.map((signing,index)=>`<option value="${index}">Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`).join("");$("signingSelect").value=String(state.signing);updateSigning();updateSectorButtons();}
+    function updateSigning(){const chainRecord=DISASSEMBLY.chains[state.selectedChain],sector=chainRecord.sector_index,rank=state.selectedRank,record=SUSY.sectors[sector],signing=record.published_fiducial_signings[state.signing],originalSlot=record.ordered_ranks.indexOf(rank),matrix=signing.matrices[originalSlot];$("signingFacts").innerHTML=`<dt>Boolean factors</dt><dd>${signing.boolean_factors.join(", ")}</dd><dt>chi0</dt><dd>${signing.chi0>0?"+1":"-1"}</dd><dt>Garden closure</dt><dd style="color:var(--good);font-weight:750">${signing.garden_sparse_passed?"pass":"fail"}</dd><dt>dense residuals</dt><dd>${signing.dense_residual_entries}</dd><dt>selected factor</dt><dd>b = ${matrix.boolean_factor}</dd>`;$("matrix").innerHTML=matrixHtml(signedMatrix(permutations[rank],matrix.boolean_factor));}
+    function updateSectorButtons(){$("sectorButtons").innerHTML=DISASSEMBLY.chains.map((chainRecord,index)=>`<button class="sector ${index===state.selectedChain?"active":""}" data-chain="${index}" style="--sector:${colorFor(chainRecord)}">${chainRecord.position}. ${chainRecord.multiplet}<br><span class="small">${chainRecord.labels[0]} · legs ${chainRecord.legs.join(",")}</span></button>`).join("");$("sectorButtons").querySelectorAll("button").forEach(button=>button.onclick=()=>selectChain(Number(button.dataset.chain)));}
+    function selectChain(chain){state.selectedChain=chain;state.selectedRank=paths[chain][0];state.signing=0;if(state.focus>.98){state.focusChain=chain;render();}updateDetails();render();}
+    function selectRank(rank){state.selectedRank=rank;state.selectedChain=chainByRank[rank];state.signing=0;updateDetails();render();}
+    function nearestRank(x,y){let best=null,distance=22**2;state.screen.forEach((point,rank)=>{if(state.focus>.8&&chainByRank[rank]!==state.focusChain)return;const d=(point.x-x)**2+(point.y-y)**2;if(d<distance){distance=d;best=rank;}});return best;}
+    function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);const record=DISASSEMBLY.chains[state.focusChain??state.selectedChain];link.download=state.focus>.5?`S4_quartet_${record.multiplet}.png`:`S4_six_quartets_ascending.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
 
-    $("playButton").onclick=playDisassembly;$("assembleButton").onclick=reassemble;$("finishButton").onclick=()=>{state.animation++;state.progress=1;state.focus=0;state.focusSector=null;$("progressSlider").value="1000";render();};$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("progressSlider").oninput=event=>{state.animation++;state.progress=Number(event.target.value)/1000;state.focus=0;state.focusSector=null;render();};$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};$("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};$("exportButton").onclick=exportPng;
+    $("playButton").onclick=playDisassembly;$("assembleButton").onclick=reassemble;$("finishButton").onclick=()=>{state.animation++;state.progress=1;state.focus=0;state.focusChain=null;$("progressSlider").value="1000";render();};$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("progressSlider").oninput=event=>{state.animation++;state.progress=Number(event.target.value)/1000;state.focus=0;state.focusChain=null;render();};$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};$("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};$("exportButton").onclick=exportPng;
     $("resetCameraButton").onclick=()=>{state.yaw=0;state.pitch=0;state.roll=0;state.zoom=1;render();};document.querySelectorAll(".axisButton").forEach(button=>button.onclick=()=>{state[button.dataset.axis]+=Math.PI/2;render();});
     canvas.addEventListener("pointerdown",event=>{canvas.setPointerCapture(event.pointerId);state.drag={id:event.pointerId,x:event.clientX,y:event.clientY,yaw:state.yaw,pitch:state.pitch,roll:state.roll,moved:false};canvas.classList.add("dragging");});
     canvas.addEventListener("pointermove",event=>{if(!state.drag||event.pointerId!==state.drag.id)return;const dx=event.clientX-state.drag.x,dy=event.clientY-state.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)state.drag.moved=true;if(event.shiftKey){state.roll=state.drag.roll+dx*.009;}else{state.yaw=state.drag.yaw+dx*.009;state.pitch=state.drag.pitch+dy*.009;}render();});
@@ -198,8 +259,55 @@
     canvas.addEventListener("pointercancel",()=>{state.drag=null;canvas.classList.remove("dragging");});
     canvas.addEventListener("wheel",event=>{event.preventDefault();state.zoom=Math.max(.45,Math.min(3.5,state.zoom*Math.exp(-event.deltaY*.001)));render();},{passive:false});
     canvas.ondblclick=event=>{const rect=canvas.getBoundingClientRect(),rank=nearestRank(event.clientX-rect.left,event.clientY-rect.top);if(rank!==null){selectRank(rank);drill();}};
-    function selfCheck(){if(ATLAS.metadata.vertex_count!==24||ATLAS.metadata.edge_count!==36)throw new Error("S4 atlas count failure");if(paths.length!==6||paths.some(path=>path.length!==4)||new Set(paths.flat()).size!==24)throw new Error("quartet partition failure");if(!DISASSEMBLY.validation.common_hopper_path_verified)throw new Error("hopper path validation failure");}
-    selfCheck();updateDetails();new ResizeObserver(render).observe($("stage"));render();
+    // Recomputed here from ATLAS.edges. This deliberately reads nothing from
+    // DISASSEMBLY.validation, so a build that sets its own flags to true still
+    // fails if the geometry disagrees. Every assertion below can fail.
+    function selfCheck(){
+      const problems=[];
+      const assert=(condition,message)=>{if(!condition)problems.push(message);};
+      const adjacency=Array.from({length:24},()=>new Set());
+      for(const [a,b] of ATLAS.edges){adjacency[a].add(b);adjacency[b].add(a);}
+      const distancesFrom=start=>{const d=new Array(24).fill(-1),queue=[start];d[start]=0;for(let i=0;i<queue.length;i++){for(const next of adjacency[queue[i]]){if(d[next]!==-1)continue;d[next]=d[queue[i]]+1;queue.push(next);}}return d;};
+      const rankByLabel=new Map(labels.map((label,rank)=>[label,rank]));
+
+      assert(ATLAS.metadata.vertex_count===24&&ATLAS.metadata.edge_count===36,"atlas vertex or edge count is wrong");
+      assert(adjacency.reduce((total,set)=>total+set.size,0)===72,"edge list does not describe 36 undirected edges");
+      assert(paths.length===6&&paths.every(path=>path.length===4)&&new Set(paths.flat()).size===24,"the quartets do not partition S4");
+
+      DISASSEMBLY.chains.forEach((chain,index)=>{
+        const members=chain.labels;
+        assert(members.every((label,i)=>i===0||Number(members[i-1])<Number(label)),`${chain.multiplet} is not in ascending four-digit order`);
+        if(index>0)assert(Number(DISASSEMBLY.chains[index-1].labels[0])<Number(members[0]),`quartet ${index+1} is out of order against the one before it`);
+        const legs=members.slice(0,-1).map((label,i)=>distancesFrom(rankByLabel.get(label))[rankByLabel.get(members[i+1])]);
+        assert(legs.join(",")===chain.legs.join(","),`${chain.multiplet} claims legs ${chain.legs.join(",")} but the graph gives ${legs.join(",")}`);
+        assert(legs.every(distance=>distance>1),`${chain.multiplet} has a leg that is a single edge`);
+        chain.leg_routes.forEach(route=>{
+          const ranks=route.route_ranks;
+          assert(ranks.length-1===distancesFrom(ranks[0])[ranks.at(-1)],`${chain.multiplet} leg ${route.leg} is not a shortest path`);
+          assert(new Set(ranks).size===ranks.length,`${chain.multiplet} leg ${route.leg} revisits a vertex`);
+          assert(ranks.slice(0,-1).every((rank,i)=>adjacency[rank].has(ranks[i+1])),`${chain.multiplet} leg ${route.leg} traverses a non-edge`);
+        });
+        assert(chain.labels[chain.base_face_position-1]===chain.base_face_label,`${chain.multiplet} base-face position does not match its label`);
+      });
+
+      assert(new Set(DISASSEMBLY.chains.map(chain=>chain.legs.join(","))).size===6,"the six leg patterns have collapsed, so the ordering has reverted");
+      const cycle=DISASSEMBLY.base_face_cycle??[];
+      assert(cycle.length===6&&cycle.every(label=>label.endsWith("4")),"the base face is not the six permutations ending in 4");
+      assert(cycle.every((label,i)=>adjacency[rankByLabel.get(label)]?.has(rankByLabel.get(cycle[(i+1)%cycle.length]))),"the base hexagon self-intersects");
+
+      const holder=DISASSEMBLY.chains.find(chain=>chain.labels.includes("3412"));
+      const vm2=DISASSEMBLY.chains.find(chain=>chain.multiplet==="VM2");
+      assert(holder?.multiplet==="VM3",`3412 sits in ${holder?.multiplet}, but it belongs to VM3`);
+      assert(vm2?.labels.includes("3421")&&!vm2.labels.includes("3412"),"the published VM2 erratum has been reintroduced");
+
+      if(problems.length)throw new Error("self-check failed: "+problems.join("; "));
+    }
+    function showErratum(){
+      const vm2=DISASSEMBLY.chains.find(chain=>chain.multiplet==="VM2");
+      const vm3=DISASSEMBLY.chains.find(chain=>chain.multiplet==="VM3");
+      $("erratumNote").innerHTML=`arXiv:2408.09342 Tables 3 and 5 print <strong>3412</strong> for VM2. That address belongs to VM3 (shown here in strand ${vm3.position}). VM2 is <strong>3421</strong>, which is what arXiv:1210.0478 Eq. 5.2 lists and what the Garden algebra admits: 3412 gives 0 signings of 65,536 and 3421 gives 256. This tool shows VM2 as ${vm2.labels.join(", ")}.`;
+    }
+    selfCheck();showErratum();updateDetails();new ResizeObserver(render).observe($("stage"));render();
     if(!matchMedia("(prefers-reduced-motion: reduce)").matches)setTimeout(playDisassembly,650);
   </script>
 </body>
