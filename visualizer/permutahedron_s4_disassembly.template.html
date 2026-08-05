@@ -223,8 +223,18 @@
           ctx.save();ctx.globalAlpha=Math.min(1,progress*1.35);
           ctx.fillStyle="#ffffff";ctx.strokeStyle="#c3ccd1";ctx.lineWidth=exportMode?3:1.6;
           ctx.beginPath();ctx.arc(site.x,site.y,exportMode?25:13.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+          // The permutation is the site's address, not a property of the node
+          // that left. Later journeys cross these sites constantly (11 of the
+          // 15 nodes on the last strand's journey are already vacated), so the
+          // name stays put in muted grey and only the quartet colour departs.
+          let named=false;
+          if(state.labels){
+            ctx.font=`600 ${exportMode?18:9.5}px ui-monospace,SFMono-Regular,Menlo,monospace`;
+            ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#98a5ac";
+            ctx.fillText(labels[rank],site.x,site.y);named=true;
+          }
           ctx.restore();
-          if(!exportMode)state.drawn.vacated.push(rank);
+          if(!exportMode)state.drawn.vacated.push({rank,named});
         }
       }
       // The journey glows link by link before its strand lifts out (L17-33).
@@ -427,6 +437,13 @@
           await idle();
           const drawnVacated=state.drawn.vacated.length;
           if(drawnVacated!==click*4)failures.push(`after pop ${click}, renderer drew ${drawnVacated} white balls, expected ${click*4}`);
+          const unnamed=state.drawn.vacated.filter(marker=>!marker.named).length;
+          if(state.labels&&unnamed)failures.push(`after pop ${click}, ${unnamed} vacated sites lost their permutation name`);
+          // Every node the next journeys cross must still be identifiable.
+          const crossable=new Set(state.drawn.vacated.filter(marker=>marker.named).map(marker=>marker.rank));
+          const laterCrossings=DISASSEMBLY.chains.slice(click).flatMap(later=>later.journey_ranks).filter(rank=>state.chainProgress[chainByRank[rank]]>.99);
+          const anonymous=laterCrossings.filter(rank=>!crossable.has(rank));
+          if(anonymous.length)failures.push(`after pop ${click}, ${anonymous.length} nodes on later journeys are unnamed`);
           if(poppedCount()!==click)failures.push(`after pop ${click}, ${poppedCount()} strands are out`);
           if(record.position!==click)failures.push(`click ${click} popped strand ${record.position} (${record.multiplet}), expected strand ${click}`);
           const drawn=state.lastGlowDrawn;
