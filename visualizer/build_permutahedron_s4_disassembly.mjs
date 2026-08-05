@@ -404,11 +404,14 @@ const disassembly = {
   schema_version: "s4-six-ascending-weight-quartets-v4",
   source: "HowardTLK.v2.pdf p. 61 for the quartet listing, p. 64 for link weight; Gates call 2026-08-04",
   ordering: "each permutation read as a four-digit number, ascending; quartets ordered by smallest member",
-  orientation: "starts in the HowardTLK.v2.pdf p. 64 view; the hexagon-down view he asked for on 2026-08-04 is a preset",
-  orientation_matrix: page64Matrix,
+  orientation: "starts with the hexagon flat on the floor (2026-08-04, L177); the p. 64 figure view is a preset",
+  orientation_matrix: hexFloorMatrix,
+  // Each preset carries the camera tilt it is meant to be viewed at. The
+  // hexagon-down view wants a three-quarter angle so the solid reads as a solid;
+  // the p. 64 figure is drawn flat on, so it takes no extra rotation.
   orientations: {
-    page64: { label: "Howard p. 64 figure", matrix: page64Matrix },
-    hex_floor: { label: "Hexagon at the floor", matrix: hexFloorMatrix },
+    hex_floor: { label: "Hexagon at the floor", matrix: hexFloorMatrix, pitch: 0.48, yaw: -0.62 },
+    page64: { label: "Howard p. 64 figure", matrix: page64Matrix, pitch: 0, yaw: 0 },
   },
   base_face_cycle: baseFaceCycle,
   chains,
