@@ -304,28 +304,44 @@ const alignedFirstEdge = matrixVector(alignNormal, baseFirstEdge);
 const hexFloorMatrix = matrixMultiply(rotationY(Math.atan2(alignedFirstEdge[2], alignedFirstEdge[0])), alignNormal);
 const orientedBaseCentroid = matrixVector(hexFloorMatrix, baseCentroid);
 
-// Orientation B, the figure printed on HowardTLK.v2.pdf p. 64. That view is
-// vertex down, not face down: 1234 sits at the bottom and 4321 at the top, with
-// 3421 to the upper left, 4312 to the upper right, and 4231 hidden behind.
-// 1234 and 4321 are antipodal, so aligning that axis fixes everything but the
-// spin, which is set by putting 4231 directly behind the top vertex.
-const topRank = rankByLabel.get("4321");
-const page64Align = rotationFromTo(worldPoints[topRank], [0, 1, 0]);
-const behind = matrixVector(page64Align, worldPoints[rankByLabel.get("4231")]);
-const page64Matrix = matrixMultiply(
-  rotationY(Math.PI - Math.atan2(behind[0], behind[2])),
-  page64Align
+// Orientation B: the solid sits on the square face {1234, 2134, 2143, 1243},
+// with 1234 toward the viewer, 2134 on the left, 1243 on the right, 2143 behind.
+// That set is a genuine square facet: the generators (12) and (34) commute, each
+// member has degree 2 within the set, all four sit exactly 1.0 from the face
+// centroid, edges are sqrt(2) and diagonals are 2.
+// Drop the face centroid straight down, then spin so 1234 has azimuth 0, which
+// points at the camera because larger z is nearer in this renderer.
+const squareFaceCycle = ["1234", "2134", "2143", "1243"];
+const squareCentroid = squareFaceCycle
+  .map(label => worldPoints[rankByLabel.get(label)])
+  .reduce(add, [0, 0, 0])
+  .map(value => value / squareFaceCycle.length);
+const squareAlign = rotationFromTo(squareCentroid, [0, -1, 0]);
+const alignedFront = matrixVector(squareAlign, worldPoints[rankByLabel.get("1234")]);
+let page64Matrix = matrixMultiply(
+  rotationY(-Math.atan2(alignedFront[0], alignedFront[2])),
+  squareAlign
 );
+// Handedness is not pinned by the two steps above, so flip if the left and right
+// members came out swapped.
+if (matrixVector(page64Matrix, worldPoints[rankByLabel.get("2134")])[0] >
+    matrixVector(page64Matrix, worldPoints[rankByLabel.get("1243")])[0]) {
+  page64Matrix = matrixMultiply(rotationY(Math.PI), page64Matrix);
+}
 const page64Point = label => matrixVector(page64Matrix, worldPoints[rankByLabel.get(label)]);
 const page64Heights = labels.map((_, rank) => matrixVector(page64Matrix, worldPoints[rank])[1]);
+const page64Floor = Math.min(...page64Heights);
 const page64MatchesFigure =
-  Math.abs(page64Point("1234")[1] - Math.min(...page64Heights)) < 1e-9 &&
-  Math.abs(page64Point("4321")[1] - Math.max(...page64Heights)) < 1e-9 &&
-  page64Point("3421")[0] < -0.5 &&
-  page64Point("4312")[0] > 0.5 &&
-  page64Point("4231")[2] < -0.5 &&
-  page64Point("3241")[0] < -1.5 &&
-  page64Point("4132")[0] > 1.5;
+  // All four square-face members rest on the floor, and nothing sits lower.
+  squareFaceCycle.every(label => Math.abs(page64Point(label)[1] - page64Floor) < 1e-9) &&
+  labels.filter((_, rank) => Math.abs(page64Heights[rank] - page64Floor) < 1e-9).length === 4 &&
+  // 1234 front, 2143 back, 2134 left, 1243 right.
+  page64Point("1234")[2] > 0.5 &&
+  page64Point("2143")[2] < -0.5 &&
+  page64Point("2134")[0] < -0.5 &&
+  page64Point("1243")[0] > 0.5 &&
+  Math.abs(page64Point("1234")[0]) < 1e-9 &&
+  Math.abs(page64Point("2143")[0]) < 1e-9;
 
 const coversAllVertices = covered.size === 24;
 const requestedBaseIsHexFace = baseRanks.size === 6 &&
@@ -398,20 +414,20 @@ if (!journeysUseRealEdges) throw new Error("A quartet journey traverses somethin
 if (!journeysVisitMembersInOrder) throw new Error("A quartet journey does not pass through its four members in listed order.");
 if (!oneBaseMemberPerQuartet) throw new Error("A quartet does not contain exactly one base-face member.");
 if (!requestedFacePointsDown) throw new Error("The requested hexagonal face was not oriented downward.");
-if (!page64MatchesFigure) throw new Error("The p.64 orientation does not reproduce the printed figure's layout.");
+if (!page64MatchesFigure) throw new Error("The square-face-down orientation is wrong: expected 1234 front, 2134 left, 1243 right, 2143 back, all four on the floor.");
 
 const disassembly = {
   schema_version: "s4-six-ascending-weight-quartets-v4",
   source: "HowardTLK.v2.pdf p. 61 for the quartet listing, p. 64 for link weight; Gates call 2026-08-04",
   ordering: "each permutation read as a four-digit number, ascending; quartets ordered by smallest member",
-  orientation: "starts with the hexagon flat on the floor (2026-08-04, L177); the p. 64 figure view is a preset",
-  orientation_matrix: hexFloorMatrix,
+  orientation: "sits on the square face 1234/2134/2143/1243 with 1234 toward the viewer; the hexagon-down view is a preset",
+  orientation_matrix: page64Matrix,
   // Each preset carries the camera tilt it is meant to be viewed at. The
   // hexagon-down view wants a three-quarter angle so the solid reads as a solid;
   // the p. 64 figure is drawn flat on, so it takes no extra rotation.
   orientations: {
     hex_floor: { label: "Hexagon at the floor", matrix: hexFloorMatrix, pitch: 0.48, yaw: -0.62 },
-    page64: { label: "Howard p. 64 figure", matrix: page64Matrix, pitch: 0, yaw: 0 },
+    page64: { label: "Square face down, 1234 front", matrix: page64Matrix, pitch: 0.34, yaw: 0 },
   },
   base_face_cycle: baseFaceCycle,
   chains,

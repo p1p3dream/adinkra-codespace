@@ -104,8 +104,8 @@
       <section>
         <h2>3D camera</h2>
         <div class="stack" style="margin-bottom:6px">
-          <button class="orientationButton active" data-orientation="hex_floor">Hexagon at the floor</button>
-          <button class="orientationButton" data-orientation="page64">Howard p.64 view</button>
+          <button class="orientationButton active" data-orientation="page64">Howard p.64 view</button>
+          <button class="orientationButton" data-orientation="hex_floor">Hexagon at the floor</button>
         </div>
         <button id="resetCameraButton" class="wide">Reset camera</button>
         <div class="row" style="margin-top:6px">
@@ -175,13 +175,13 @@
     // bottom and 4321 at the top, which is not the hexagon-on-the-floor view he
     // asked for on 2026-08-04, so both are kept and the other is a preset.
     const ORIENTATIONS=DISASSEMBLY.orientations;
-    let worldPoints=rawWorldPoints.map(point=>matrixVector(ORIENTATIONS.hex_floor.matrix,point));
+    let worldPoints=rawWorldPoints.map(point=>matrixVector(ORIENTATIONS.page64.matrix,point));
     function setOrientation(key){worldPoints=rawWorldPoints.map(point=>matrixVector(ORIENTATIONS[key].matrix,point));state.orientation=key;document.querySelectorAll(".orientationButton").forEach(button=>button.classList.toggle("active",button.dataset.orientation===key));render();}
     const smooth=t=>t*t*(3-2*t),mix=(a,b,t)=>a+(b-a)*t;
     // Each strand extracts independently, so progress is per chain rather than
     // global. He clicks once per strand and narrates over it, so nothing here
     // advances on its own.
-    const state={orientation:"hex_floor",chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false};
+    const state={orientation:"page64",chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false};
     // The acceptance harness runs the same code path, just faster, so a six
     // strand click-through completes inside a headless budget.
     const CHECK_MODE=new URLSearchParams(location.search).has("phase3check");
