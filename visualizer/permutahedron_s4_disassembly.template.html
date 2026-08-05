@@ -156,6 +156,9 @@
     const colorFor=chain=>SECTOR_COLORS[chain.multiplet]??"#5e6b78";
     const EDGE_COLORS={1:"#175ac6",2:"#16844a",3:"#ce3131"};
     const VACATED_GREY="#c3ccd1";
+    // HowardTLK.v2.pdf p. 61 lists the quartets P[1] through P[6], which is CM,
+    // TM, VM, VM1, VM2, VM3 and is not a smallest-member sort.
+    const PAGE61_ORDER=["P1","P2","P3","P4","P5","P6"];
     const hexMix=(from,to,t)=>{const a=[1,3,5].map(i=>parseInt(from.substr(i,2),16)),b=[1,3,5].map(i=>parseInt(to.substr(i,2),16));return "#"+a.map((value,i)=>Math.round(value+(b[i]-value)*t).toString(16).padStart(2,"0")).join("");};
     const permutations=ATLAS.permutations.map(value=>Array.isArray(value)?value.map(Number):String(value).split("").map(Number));
     const labels=permutations.map(value=>value.join(""));
@@ -411,7 +414,7 @@
       DISASSEMBLY.chains.forEach((chain,index)=>{
         const members=chain.labels;
         assert(members.every((label,i)=>i===0||Number(members[i-1])<Number(label)),`${chain.multiplet} is not in ascending four-digit order`);
-        if(index>0)assert(Number(DISASSEMBLY.chains[index-1].labels[0])<Number(members[0]),`quartet ${index+1} is out of order against the one before it`);
+        assert(chain.sector_id===PAGE61_ORDER[index],`strand ${index+1} is ${chain.sector_id}, but p. 61 lists ${PAGE61_ORDER[index]} there`);
         const legs=members.slice(0,-1).map((label,i)=>distancesFrom(rankByLabel.get(label))[rankByLabel.get(members[i+1])]);
         assert(legs.join(",")===chain.legs.join(","),`${chain.multiplet} claims legs ${chain.legs.join(",")} but the graph gives ${legs.join(",")}`);
         assert(legs.every(distance=>distance>1),`${chain.multiplet} has a leg that is a single edge`);
@@ -438,6 +441,10 @@
       });
 
       assert(new Set(DISASSEMBLY.chains.map(chain=>chain.legs.join(","))).size===6,"the six leg patterns have collapsed, so the ordering has reverted");
+      // p. 61 does not sort the quartets by smallest member. Those first members
+      // run 1423, 1342, 1324, 1432, 1243, 1234, so they must not be ascending.
+      const firstMembers=DISASSEMBLY.chains.map(chain=>Number(chain.labels[0]));
+      assert(firstMembers.some((value,index)=>index>0&&firstMembers[index-1]>value),"the quartets are sorted by smallest member, which is not p. 61's order");
       const cycle=DISASSEMBLY.base_face_cycle??[];
       assert(cycle.length===6&&cycle.every(label=>label.endsWith("4")),"the base face is not the six permutations ending in 4");
       assert(cycle.every((label,i)=>adjacency[rankByLabel.get(label)]?.has(rankByLabel.get(cycle[(i+1)%cycle.length]))),"the base hexagon self-intersects");

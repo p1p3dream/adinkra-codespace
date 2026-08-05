@@ -15,19 +15,24 @@ const [template, atlasText, supersymmetryText] = await Promise.all([
 
 const atlas = JSON.parse(atlasText);
 const supersymmetry = JSON.parse(supersymmetryText);
-// HowardTLK.v2.pdf, p. 61. Each quartet is a coset of the Vierergruppe. Members
-// are listed by reading every permutation as a four-digit number, ascending, and
-// the quartets themselves are ordered by their smallest member. Gates specified
-// this ordering on the 2026-08-04 call and named p. 61 as the authority.
-// Legs are the link distances between consecutive listed members. They are six
-// distinct patterns, not the uniform 2,6,2 the previous hopper ordering produced.
+// HowardTLK.v2.pdf, p. 61, transcribed line for line. Gates named that page as
+// the authority for how these quartets should be listed (2026-08-04, L199-201).
+//
+// Two separate rules are at work and they are easy to conflate. Within a
+// quartet the members ascend as four-digit numbers. The quartets themselves run
+// P[1] through P[6], which is NOT ascending by smallest member: those run 1423,
+// 1342, 1324, 1432, 1243, 1234. Sorting the quartets by smallest member looks
+// tidier and is wrong.
+//
+// Legs are the link distances between consecutive listed members. Six distinct
+// patterns, not the uniform 2,6,2 the earlier hopper ordering produced.
 const expectedQuartets = [
-  { members: ["1234", "2143", "3412", "4321"], legs: [2, 6, 2] },
-  { members: ["1243", "2134", "3421", "4312"], legs: [2, 4, 2] },
-  { members: ["1324", "2413", "3142", "4231"], legs: [4, 6, 4] },
-  { members: ["1342", "2431", "3124", "4213"], legs: [6, 4, 6] },
-  { members: ["1423", "2314", "3241", "4132"], legs: [4, 2, 4] },
-  { members: ["1432", "2341", "3214", "4123"], legs: [6, 2, 6] },
+  { sector: "P1", multiplet: "CM",  members: ["1423", "2314", "3241", "4132"], legs: [4, 2, 4] },
+  { sector: "P2", multiplet: "TM",  members: ["1342", "2431", "3124", "4213"], legs: [6, 4, 6] },
+  { sector: "P3", multiplet: "VM",  members: ["1324", "2413", "3142", "4231"], legs: [4, 6, 4] },
+  { sector: "P4", multiplet: "VM1", members: ["1432", "2341", "3214", "4123"], legs: [6, 2, 6] },
+  { sector: "P5", multiplet: "VM2", members: ["1243", "2134", "3421", "4312"], legs: [2, 4, 2] },
+  { sector: "P6", multiplet: "VM3", members: ["1234", "2143", "3412", "4321"], legs: [2, 6, 2] },
 ];
 // The six permutations ending in 4, in cyclic order around the face. Verified
 // against the atlas edges by baseFaceIsCyclic below: consecutive entries, and
@@ -201,18 +206,25 @@ if (representationByAddress.size !== 24) {
   throw new Error(`The atlas maps ${representationByAddress.size} addresses to representations, expected 24.`);
 }
 // Each quartet comes from its published coset. Members are sorted by reading the
-// label as a four-digit number, then the quartets are ordered by smallest member.
-// Nothing here consults the base face; that is a highlight, not the ordering rule.
+// label as a four-digit number; the quartets themselves follow p. 61's P[1] to
+// P[6] sequence, which the atlas sector ids already encode. Nothing here consults
+// the base face; that is a highlight, not the ordering rule.
+const sectorOrder = expectedQuartets.map(quartet => quartet.sector);
 const chains = supersymmetry.sectors
   .map((sector, sectorIndex) => ({
     sector,
     sectorIndex,
     ranks: [...sector.ordered_ranks].sort((a, b) => Number(labels[a]) - Number(labels[b])),
   }))
-  .sort((a, b) => Number(labels[a.ranks[0]]) - Number(labels[b.ranks[0]]))
+  .sort((a, b) => sectorOrder.indexOf(a.sector.id) - sectorOrder.indexOf(b.sector.id))
   .map(({ sector, sectorIndex, ranks }, chainIndex) => {
     const memberLabels = ranks.map(rank => labels[rank]);
     const expected = expectedQuartets[chainIndex];
+    if (sector.id !== expected.sector) {
+      throw new Error(
+        `Strand ${chainIndex + 1} is ${sector.id}, expected ${expected.sector} per HowardTLK.v2.pdf p. 61.`
+      );
+    }
     if (memberLabels.join(",") !== expected.members.join(",")) {
       throw new Error(
         `Quartet ${chainIndex + 1} is ${memberLabels.join(",")}, expected ${expected.members.join(",")} per HowardTLK.v2.pdf p. 61.`
@@ -323,8 +335,14 @@ const oneChainPerSector = new Set(chains.map(chain => chain.sector_index)).size 
 const ascendingWithinQuartets = chains.every(chain =>
   chain.labels.every((label, index) => index === 0 || Number(chain.labels[index - 1]) < Number(label))
 );
-const ascendingAcrossQuartets = chains.every((chain, index) =>
-  index === 0 || Number(chains[index - 1].labels[0]) < Number(chain.labels[0])
+// p. 61 runs P[1] to P[6]. Deliberately not a smallest-member sort: that would
+// give 1234, 1243, 1324, 1342, 1423, 1432 and disagree with the printed page.
+const matchesPage61Order = chains.every((chain, index) =>
+  chain.sector_id === expectedQuartets[index].sector &&
+  chain.multiplet === expectedQuartets[index].multiplet
+);
+const quartetsAreNotSmallestMemberSorted = chains.some((chain, index) =>
+  index > 0 && Number(chains[index - 1].labels[0]) > Number(chain.labels[0])
 );
 const legsMatchPage61 = chains.every((chain, index) =>
   chain.legs.join(",") === expectedQuartets[index].legs.join(",")
@@ -369,7 +387,8 @@ if (!coversAllVertices || !oneChainPerSector) throw new Error("The six quartets 
 if (!requestedBaseIsHexFace) throw new Error("The requested down-facing base is not a hexagonal face.");
 if (!baseFaceIsCyclic) throw new Error("The base face labels are not in cyclic order, so the hexagon self-intersects.");
 if (!ascendingWithinQuartets) throw new Error("A quartet is not listed in ascending four-digit order.");
-if (!ascendingAcrossQuartets) throw new Error("The quartets are not ordered by their smallest member.");
+if (!matchesPage61Order) throw new Error("The quartets are not in the P[1] to P[6] order printed on HowardTLK.v2.pdf p. 61.");
+if (!quartetsAreNotSmallestMemberSorted) throw new Error("The quartets came out sorted by smallest member, which is the error p. 61 rules out.");
 if (!legsMatchPage61) throw new Error("A quartet's legs do not match HowardTLK.v2.pdf p. 61.");
 if (!legPatternsAreDistinct) throw new Error("The six quartets no longer have six distinct leg patterns.");
 if (!shortestLegRoutes || !noBacktracking) throw new Error("A leg lacks a shortest no-backtracking route.");
@@ -402,7 +421,7 @@ const disassembly = {
     requested_base_is_hex_face: requestedBaseIsHexFace,
     base_face_is_cyclic: baseFaceIsCyclic,
     ascending_within_quartets: ascendingWithinQuartets,
-    ascending_across_quartets: ascendingAcrossQuartets,
+    matches_page_61_order: matchesPage61Order,
     legs_match_page_61: legsMatchPage61,
     leg_patterns_are_distinct: legPatternsAreDistinct,
     shortest_leg_routes: shortestLegRoutes,

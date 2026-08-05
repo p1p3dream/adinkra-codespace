@@ -51,20 +51,29 @@ Ordering rule: read each permutation as a four-digit number, sort ascending
 (L183-187). Authority is Howard talk page 61 (L199-201). Path rule: shortest
 path, never backtrack, "the self-avoiding random walk" (L147-161).
 
-The six quartets in ascending weight, with consecutive leg link-distances and
-base-hexagon membership:
+The six quartets exactly as HowardTLK.v2.pdf p. 61 prints them, P[1] to P[6],
+with consecutive leg link-distances and base-hexagon membership:
 
-| # | quartet | legs | base member, position | multiplet |
-|---|---|---|---|---|
-| 1 | 1234, 2143, 3412, 4321 | 2, 6, 2 | 1234, 1st | VM3 |
-| 2 | 1243, 2134, 3421, 4312 | 2, 4, 2 | 2134, 2nd | VM2 |
-| 3 | 1324, 2413, 3142, 4231 | 4, 6, 4 | 1324, 1st | VM |
-| 4 | 1342, 2431, 3124, 4213 | 6, 4, 6 | 3124, 3rd | TM |
-| 5 | 1423, 2314, 3241, 4132 | 4, 2, 4 | 2314, 2nd | CM |
-| 6 | 1432, 2341, 3214, 4123 | 6, 2, 6 | 3214, 3rd | VM1 |
+| # | page 61 | quartet | legs | base member, position | multiplet |
+|---|---|---|---|---|---|
+| 1 | P[1] | 1423, 2314, 3241, 4132 | 4, 2, 4 | 2314, 2nd | CM |
+| 2 | P[2] | 1342, 2431, 3124, 4213 | 6, 4, 6 | 3124, 3rd | TM |
+| 3 | P[3] | 1324, 2413, 3142, 4231 | 4, 6, 4 | 1324, 1st | VM |
+| 4 | P[4] | 1432, 2341, 3214, 4123 | 6, 2, 6 | 3214, 3rd | VM1 |
+| 5 | P[5] | 1243, 2134, 3421, 4312 | 2, 4, 2 | 2134, 2nd | VM2 |
+| 6 | P[6] | 1234, 2143, 3412, 4321 | 2, 6, 2 | 1234, 1st | VM3 |
 
-The multiplet column follows arXiv:1210.0478 Eq. (5.2a-f), which lists the six
-solution sets by name; rewritten in ascending weight they are the rows above.
+**Two ordering rules, and conflating them is the trap.** Within a quartet the
+members ascend as four-digit numbers. The quartets themselves run P[1] to P[6],
+which is *not* a smallest-member sort: their first members run 1423, 1342, 1324,
+1432, 1243, 1234. An earlier revision of this plan and of the builder sorted the
+quartets by smallest member, which produced VM3, VM2, VM, TM, CM, VM1 and
+disagreed with the page Gates named as authoritative. Both the builder and the
+verifier now assert that the first members are *not* ascending, so that mistake
+cannot come back silently.
+
+The multiplet column matches arXiv:1210.0478 Eq. (5.2a-f) and the colour swatches
+printed on p. 61 (CM green, TM purple, VM red, VM1 blue, VM2 orange, VM3 teal).
 
 Base face: the six permutations ending in 4. Cyclic order:
 `1234, 1324, 3124, 3214, 2314, 2134`.

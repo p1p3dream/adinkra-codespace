@@ -14,13 +14,17 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 
+// Transcribed from HowardTLK.v2.pdf p. 61 in its printed order, P[1] to P[6].
+// Members ascend within a quartet; the quartets do NOT ascend by smallest member
+// (those would run 1234, 1243, 1324, 1342, 1423, 1432). Sorting them that way is
+// the mistake this list exists to catch.
 const expected = [
-  { members: ["1234", "2143", "3412", "4321"], legs: [2, 6, 2], base: "1234", basePosition: 1, multiplet: "VM3" },
-  { members: ["1243", "2134", "3421", "4312"], legs: [2, 4, 2], base: "2134", basePosition: 2, multiplet: "VM2" },
-  { members: ["1324", "2413", "3142", "4231"], legs: [4, 6, 4], base: "1324", basePosition: 1, multiplet: "VM" },
-  { members: ["1342", "2431", "3124", "4213"], legs: [6, 4, 6], base: "3124", basePosition: 3, multiplet: "TM" },
-  { members: ["1423", "2314", "3241", "4132"], legs: [4, 2, 4], base: "2314", basePosition: 2, multiplet: "CM" },
-  { members: ["1432", "2341", "3214", "4123"], legs: [6, 2, 6], base: "3214", basePosition: 3, multiplet: "VM1" },
+  { members: ["1423", "2314", "3241", "4132"], legs: [4, 2, 4], base: "2314", basePosition: 2, multiplet: "CM",  sector: "P1" },
+  { members: ["1342", "2431", "3124", "4213"], legs: [6, 4, 6], base: "3124", basePosition: 3, multiplet: "TM",  sector: "P2" },
+  { members: ["1324", "2413", "3142", "4231"], legs: [4, 6, 4], base: "1324", basePosition: 1, multiplet: "VM",  sector: "P3" },
+  { members: ["1432", "2341", "3214", "4123"], legs: [6, 2, 6], base: "3214", basePosition: 3, multiplet: "VM1", sector: "P4" },
+  { members: ["1243", "2134", "3421", "4312"], legs: [2, 4, 2], base: "2134", basePosition: 2, multiplet: "VM2", sector: "P5" },
+  { members: ["1234", "2143", "3412", "4321"], legs: [2, 6, 2], base: "1234", basePosition: 1, multiplet: "VM3", sector: "P6" },
 ];
 
 // arXiv:2408.09342 Tables 3 and 5 print 3412 for VM2. That address belongs to VM3.
@@ -135,7 +139,16 @@ data.chains.forEach((chain, index) => {
 data.chains.forEach((chain, index) => {
   check(chain.multiplet === expected[index].multiplet,
     `Quartet ${index + 1} is multiplet ${chain.multiplet}, expected ${expected[index].multiplet}.`);
+  check(chain.sector_id === expected[index].sector,
+    `Strand ${index + 1} is ${chain.sector_id}, expected ${expected[index].sector} per p. 61.`);
 });
+
+// Guard the specific mistake p. 61 rules out: a smallest-member sort. Under
+// p. 61 the first members run 1423, 1342, 1324, 1432, 1243, 1234, so they must
+// NOT come out ascending.
+const firstMembers = data.chains.map(chain => Number(chain.labels[0]));
+check(firstMembers.some((value, i) => i > 0 && firstMembers[i - 1] > value),
+  "The quartets are sorted by smallest member, which is not the order printed on p. 61.");
 
 // Guard the published erratum directly: 3412 must sit in VM3, not VM2.
 const holder = data.chains.find(chain => chain.labels.includes(erratum.wrong));

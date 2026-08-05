@@ -62,8 +62,9 @@ labels = re.findall(r'<button[^>]*>(.*?)</button>', buttons.group(1), re.S) if b
 if len(labels) != 6:
     failures.append(f"expected 6 strand buttons, rendered {len(labels)}")
 
-expected = [("VM3", "2,6,2"), ("VM2", "2,4,2"), ("VM", "4,6,4"),
-            ("TM", "6,4,6"), ("CM", "4,2,4"), ("VM1", "6,2,6")]
+# HowardTLK.v2.pdf p. 61 order, P[1] through P[6].
+expected = [("CM", "4,2,4"), ("TM", "6,4,6"), ("VM", "4,6,4"),
+            ("VM1", "6,2,6"), ("VM2", "2,4,2"), ("VM3", "2,6,2")]
 for index, (multiplet, legs) in enumerate(expected):
     if index >= len(labels):
         break
