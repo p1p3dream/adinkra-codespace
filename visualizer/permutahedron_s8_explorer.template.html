@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>S8 Permutahedron Explorer</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --paper:#f7f5ef; --panel:#fff; --ink:#111820; --muted:#586574;
+      --line:#d5dbe0; --soft:#eef2f4; --accent:#24597b; --good:#16845b;
+      --sidebar:292px; --details:356px;
+    }
+    :root[data-theme="dark"] {
+      --paper:#0e1419; --panel:#151d24; --ink:#eef4f7; --muted:#9aabb6;
+      --line:#33414b; --soft:#202b33; --accent:#7dc0e8; --good:#6ee0ad;
+    }
+    html,body { margin:0; width:100%; height:100%; overflow:hidden; background:var(--paper); color:var(--ink); font:14px/1.42 Inter,ui-sans-serif,system-ui,sans-serif; }
+    button,input,select { font:inherit; color:inherit; }
+    button,select,input[type="text"],input[type="number"] { border:1px solid var(--line); background:var(--panel); border-radius:7px; padding:8px 10px; }
+    button { cursor:pointer; }
+    button:hover { border-color:var(--accent); }
+    button.active { color:#fff; background:var(--accent); border-color:var(--accent); }
+    #app { height:100%; display:grid; grid-template-columns:var(--sidebar) minmax(380px,1fr) var(--details); grid-template-rows:70px 1fr; }
+    header { grid-column:1/-1; display:flex; align-items:center; gap:20px; padding:0 16px; border-bottom:1px solid var(--line); background:var(--panel); z-index:5; }
+    header h1 { font-size:20px; margin:0; }
+    header p { margin:2px 0 0; color:var(--muted); font-size:12px; }
+    .status { margin-right:auto; border:1px solid var(--line); border-radius:999px; padding:7px 12px; color:var(--muted); white-space:nowrap; }
+    .status::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--good); margin-right:8px; }
+    aside { background:var(--panel); overflow:auto; padding:12px 14px 26px; }
+    #controls { border-right:1px solid var(--line); }
+    #details { border-left:1px solid var(--line); }
+    section { padding:5px 0 13px; border-bottom:1px solid var(--line); margin-bottom:10px; }
+    section:last-child { border-bottom:0; }
+    h2 { margin:6px 0 8px; color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; }
+    .wide { width:100%; }
+    .row { display:flex; gap:7px; }
+    .row > * { min-width:0; flex:1; }
+    .check { display:flex; align-items:center; gap:7px; margin:6px 0; }
+    .small { font-size:11px; color:var(--muted); }
+    .generator-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+    .generator { padding:7px 3px; border-color:var(--g); }
+    .generator.active { background:color-mix(in srgb,var(--g) 15%,var(--panel)); color:var(--ink); box-shadow:inset 0 -4px 0 var(--g); }
+    #stage { position:relative; overflow:hidden; background:var(--paper); touch-action:none; cursor:grab; }
+    #stage.dragging { cursor:grabbing; }
+    #glCanvas,#overlay { position:absolute; inset:0; width:100%; height:100%; }
+    #overlay { pointer-events:none; }
+    #projectionBadge,#hud { position:absolute; z-index:3; border:1px solid var(--line); background:color-mix(in srgb,var(--panel) 92%,transparent); border-radius:7px; padding:8px 10px; }
+    #projectionBadge { left:12px; top:12px; }
+    #projectionBadge strong { display:block; }
+    #projectionBadge span,#hud { color:var(--muted); font-size:11px; }
+    #hud { left:12px; bottom:12px; }
+    .octet-nav { display:grid; grid-template-columns:42px 1fr 42px; gap:5px; }
+    .facts { padding:9px; background:var(--soft); border:1px solid var(--line); border-radius:7px; color:var(--muted); font-size:11px; }
+    .selected-head { display:flex; align-items:flex-start; gap:8px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+    #selectedPermutation { font:800 29px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.035em; }
+    #selectedId { margin-top:5px; color:var(--muted); font-size:11px; }
+    #octetPill { margin-left:auto; border-radius:999px; padding:5px 8px; background:var(--accent); color:#fff; font-size:11px; font-weight:750; }
+    .kv { display:grid; grid-template-columns:128px 1fr; gap:6px 9px; margin:0; font-size:12px; }
+    .kv dt { color:var(--muted); }
+    .kv dd { margin:0; overflow-wrap:anywhere; }
+    .member-grid,.neighbor-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+    .member-grid button,.neighbor-grid button { padding:6px 8px; text-align:left; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .member-grid button.active { background:var(--accent); color:#fff; }
+    .source { font-size:11px; color:var(--muted); margin:7px 0; }
+    .source a { color:var(--accent); }
+    .pass { color:var(--good); font-weight:750; }
+    @media(max-width:1080px) { :root { --sidebar:250px; --details:310px; } }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div><h1>Eight-Color Permutahedron</h1><p>A manipulable three-dimensional projection of the complete S<sub>8</sub> dataset</p></div>
+    <div class="status">40,320 vertices · 141,120 edges · 5,040 R<sub>8</sub> octets</div>
+    <button id="themeButton">Dark view</button>
+    <button id="exportButton">Export PNG</button>
+  </header>
+  <aside id="controls">
+    <section>
+      <h2>View</h2>
+      <button id="resetButton" class="wide active">Standard 3D projection</button>
+      <div class="small" style="margin-top:7px">This is a fixed generic projection from the seven-dimensional sum-zero representation to three dimensions.</div>
+    </section>
+    <section>
+      <h2>Find a permutation</h2>
+      <div class="row"><input id="searchInput" type="text" maxlength="8" value="12345678" aria-label="Permutation"><button id="searchButton">Find</button></div>
+      <div id="searchError" class="small" role="alert"></div>
+    </section>
+    <section>
+      <h2>Adjacent transpositions</h2>
+      <div id="generatorButtons" class="generator-grid"></div>
+    </section>
+    <section>
+      <h2>R8 octet</h2>
+      <div class="octet-nav"><button id="previousOctet">‹</button><input id="octetInput" type="number" min="0" max="5039" value="0" aria-label="R8 octet identifier"><button id="nextOctet">›</button></div>
+      <button id="randomOctet" class="wide" style="margin-top:6px">Random octet</button>
+      <select id="namedSystem" class="wide" style="margin-top:6px" aria-label="Published named system"></select>
+    </section>
+    <section>
+      <h2>Display</h2>
+      <label class="check"><input id="fullEdgesToggle" type="checkbox" checked> Full edge structure</label>
+      <label class="check"><input id="fullVerticesToggle" type="checkbox" checked> All permutation vertices</label>
+      <label class="check"><input id="octetToggle" type="checkbox" checked> Selected octet bubbles</label>
+      <label class="check"><input id="labelsToggle" type="checkbox" checked> Labels inside selected bubbles</label>
+      <label class="check"><input id="isolateToggle" type="checkbox"> Octet focus</label>
+    </section>
+    <div class="facts">The complete graph is rendered by WebGL. Labels appear only on the selected eight-member R<sub>8</sub> coset because labeling all 40,320 vertices would obscure the structure.</div>
+  </aside>
+  <main id="stage" aria-label="Interactive S8 permutahedron projection">
+    <canvas id="glCanvas"></canvas><canvas id="overlay"></canvas>
+    <div id="projectionBadge"><strong>Fixed generic projection</strong><span>7D sum-zero space → 3D · drag to rotate</span></div>
+    <div id="hud">Drag to rotate · wheel to zoom · click a bubble or point</div>
+  </main>
+  <aside id="details">
+    <div class="selected-head"><div><div id="selectedPermutation">12345678</div><div id="selectedId">S8-00000</div></div><div id="octetPill">R8 #0</div></div>
+    <section><h2>Vertex</h2><dl id="vertexDetails" class="kv"></dl></section>
+    <section><h2>Adjacent vertices</h2><div id="neighbors" class="neighbor-grid"></div></section>
+    <section><h2>Selected octet</h2><div id="octetDetails" class="kv"></div><div id="octetMembers" class="member-grid" style="margin-top:9px"></div></section>
+    <section><h2>Validation and boundary</h2><div id="validation" class="source"></div></section>
+    <section><h2>Sources</h2><div id="sources"></div></section>
+  </aside>
+</div>
+<script>
+  const ATLAS = /*__S8_ATLAS__*/;
+  const GARDEN = /*__S8_GARDEN__*/;
+  /*__S8_WEBGL_CORE__*/
+
+  const $ = id => document.getElementById(id);
+  const labels = ATLAS.permutations;
+  const rankByLabel = new Map(labels.map((label,rank)=>[label,rank]));
+  const GENERATOR_COLORS = ["#1769d2","#168a50","#d93434","#7b46ad","#df7d18","#1698a8","#d43b87"];
+  const generatorColorVectors = GENERATOR_COLORS.map(hex => {
+    const n=parseInt(hex.slice(1),16); return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255,1];
+  });
+  const gardenByOctet = GARDEN.cosets;
+  const namedByOctet = new Map(GARDEN.named_octets.map(item=>[item.right_slice_id,item]));
+  const representationByOctet = new Map(ATLAS.representations.map(item=>[item.right_slice_id,item]));
+
+  function inversePermutation(label) {
+    const inverse=new Array(8);
+    for(let position=0;position<8;position++) inverse[Number(label[position])-1]=position+1;
+    return inverse;
+  }
+  function dotN(a,b){ let sum=0; for(let i=0;i<a.length;i++) sum+=a[i]*b[i]; return sum; }
+  function normalized(v){ const n=Math.sqrt(dotN(v,v))||1; return v.map(x=>x/n); }
+  function projectionBasis(){
+    let seed=0x8ad1c0de;
+    const random=()=>{ seed=(Math.imul(seed,1664525)+1013904223)>>>0; return seed/4294967296; };
+    const basis=[];
+    for(let axis=0;axis<3;axis++){
+      let v=Array.from({length:8},()=>random()*2-1);
+      const mean=v.reduce((a,b)=>a+b,0)/8; v=v.map(x=>x-mean);
+      for(const b of basis){ const d=dotN(v,b); v=v.map((x,i)=>x-d*b[i]); }
+      basis.push(normalized(v));
+    }
+    return basis;
+  }
+  const BASIS=projectionBasis();
+  const positions=new Float32Array(labels.length*3);
+  let maxRadius=0;
+  for(let rank=0;rank<labels.length;rank++){
+    const q=inversePermutation(labels[rank]).map(value=>value-4.5);
+    const p=BASIS.map(axis=>dotN(q,axis));
+    positions.set(p,rank*3); maxRadius=Math.max(maxRadius,Math.hypot(...p));
+  }
+  for(let i=0;i<positions.length;i++) positions[i]/=maxRadius;
+  const edges=ATLAS.edges.map(edge=>({a:edge[0],b:edge[1],generator:edge[2]}));
+
+  const state={
+    selectedRank:0, octetId:0, yaw:-.72, elevation:.46, zoom:1,
+    generators:new Set([1,2,3,4,5,6,7]), fullEdges:true, fullVertices:true,
+    showOctet:true, labels:true, isolate:false, drag:null,
+  };
+  const renderer=new S8WebGLRenderer($("glCanvas"),positions,edges,generatorColorVectors);
+  renderer.lineAlpha=.78;
+  renderer.pointSizes[0]=1.65;
+  const overlay=$("overlay"), overlayContext=overlay.getContext("2d");
+
+  function inversionLength(label){ let n=0; for(let i=0;i<8;i++)for(let j=i+1;j<8;j++)if(label[i]>label[j])n++; return n; }
+  function neighbor(rank,generator){
+    const chars=labels[rank].split(""); [chars[generator-1],chars[generator]]=[chars[generator],chars[generator-1]];
+    return rankByLabel.get(chars.join(""));
+  }
+  function currentRanks(){ return ATLAS.right_slices[state.octetId]; }
+  function resize(){
+    renderer.resize();
+    const rect=overlay.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2);
+    overlay.width=Math.max(1,Math.round(rect.width*dpr)); overlay.height=Math.max(1,Math.round(rect.height*dpr));
+    overlayContext.setTransform(dpr,0,0,dpr,0,0); render();
+  }
+  function applyRendererState(){
+    renderer.setCamera(state.yaw,state.elevation,state.zoom);
+    for(let g=1;g<=7;g++)renderer.setGeneratorVisible(g,state.generators.has(g));
+    renderer.setHighlightRanks(state.showOctet?currentRanks():[state.selectedRank]);
+    renderer.setSelectedRanks([state.selectedRank]);
+    renderer.clearColor.set(document.documentElement.dataset.theme==="dark"?[.055,.078,.098,1]:[.969,.965,.945,1]);
+  }
+  function bubble(context,point,label,selected,border,radius){
+    context.save(); context.shadowColor=selected?border:"rgba(0,0,0,.38)"; context.shadowBlur=selected?12:6; context.shadowOffsetY=2;
+    const gradient=context.createRadialGradient(point.x-radius*.38,point.y-radius*.42,radius*.04,point.x,point.y,radius);
+    gradient.addColorStop(0,selected?"#7a858d":"#68727a"); gradient.addColorStop(.28,selected?"#39434a":"#30383e"); gradient.addColorStop(.66,selected?"#141a1f":"#101519"); gradient.addColorStop(1,"#020405");
+    context.fillStyle=gradient; context.strokeStyle=selected?"#fff":border; context.lineWidth=selected?3.5:2.2;
+    context.beginPath(); context.arc(point.x,point.y,radius,0,Math.PI*2); context.fill(); context.stroke();
+    context.shadowColor="transparent"; context.beginPath(); context.strokeStyle="rgba(255,255,255,.8)"; context.lineWidth=1.6; context.arc(point.x-radius*.08,point.y-radius*.08,radius*.62,Math.PI*1.08,Math.PI*1.72); context.stroke();
+    if(state.labels){ context.font=`${selected?800:700} ${selected?11.5:10}px ui-monospace,SFMono-Regular,Menlo,monospace`; context.textAlign="center"; context.textBaseline="middle"; context.strokeStyle="rgba(0,0,0,.72)"; context.lineWidth=2; context.strokeText(label,point.x,point.y+.3); context.fillStyle="#fff"; context.fillText(label,point.x,point.y+.3); }
+    context.restore();
+  }
+  function drawOverlay(){
+    const rect=overlay.getBoundingClientRect(); overlayContext.clearRect(0,0,rect.width,rect.height);
+    const ranks=state.showOctet?currentRanks():[state.selectedRank];
+    const points=ranks.map(rank=>({rank,...renderer.projectRank(rank)})).filter(item=>item.visible!==false).sort((a,b)=>a.depth-b.depth);
+    for(const point of points){
+      const selected=point.rank===state.selectedRank; const garden=gardenByOctet[state.octetId];
+      bubble(overlayContext,point,labels[point.rank],selected,garden.abnormal?"#d8a31d":"#20a0ae",selected?21:16);
+    }
+  }
+  function render(){
+    applyRendererState();
+    renderer.render({showEdges:state.fullEdges,showVertices:state.fullVertices,isolate:state.isolate});
+    drawOverlay();
+  }
+  function selectRank(rank,followOctet=true){
+    state.selectedRank=rank;
+    if(followOctet) state.octetId=ATLAS.right_slice_by_rank[rank];
+    syncControls(); updateDetails(); render();
+  }
+  function selectOctet(id,selectFirst=true){
+    state.octetId=Math.max(0,Math.min(ATLAS.right_slices.length-1,Number(id)||0));
+    if(selectFirst) state.selectedRank=ATLAS.right_slices[state.octetId][0];
+    syncControls(); updateDetails(); render();
+  }
+  function syncControls(){
+    $("octetInput").value=state.octetId;
+    const named=namedByOctet.get(state.octetId); $("namedSystem").value=named?String(state.octetId):"";
+  }
+  function updateDetails(){
+    const rank=state.selectedRank,label=labels[rank],garden=gardenByOctet[state.octetId],named=namedByOctet.get(state.octetId),rep=representationByOctet.get(state.octetId);
+    $("selectedPermutation").textContent=label; $("selectedId").textContent=`S8-${String(rank).padStart(5,"0")}`; $("octetPill").textContent=`R8 #${state.octetId}`;
+    $("vertexDetails").innerHTML=`<dt>lexicographic rank</dt><dd>${rank.toLocaleString()}</dd><dt>Bruhat length</dt><dd>${inversionLength(label)}</dd><dt>right R8 octet</dt><dd>${ATLAS.right_slice_by_rank[rank]}</dd><dt>left R8 octet</dt><dd>${ATLAS.left_slice_by_rank[rank]}</dd><dt>named system</dt><dd>${rep?rep.label:"none"}</dd>`;
+    $("neighbors").innerHTML=Array.from({length:7},(_,i)=>{const target=neighbor(rank,i+1);return `<button data-rank="${target}">${labels[target]} <strong style="color:${GENERATOR_COLORS[i]}">(${i+1}${i+2})</strong></button>`}).join("");
+    $("neighbors").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank)));
+    $("octetDetails").innerHTML=`<dt>left/right cosets coincide</dt><dd>${garden.abnormal?"yes":"no"}</dd><dt>some Garden signing exists</dt><dd class="pass">yes</dd><dt>equation rank</dt><dd>${garden.equation_rank}</dd><dt>nullity</dt><dd>${garden.nullity}</dd><dt>labeled signings</dt><dd>${garden.solution_count.toLocaleString()}</dd><dt>published signs</dt><dd>${named?named.published_status.replaceAll("_"," "):"not attached"}</dd>`;
+    $("octetMembers").innerHTML=currentRanks().map(member=>`<button class="${member===rank?"active":""}" data-rank="${member}">${labels[member]}</button>`).join("");
+    $("octetMembers").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank),false));
+  }
+  function initControls(){
+    $("generatorButtons").innerHTML=GENERATOR_COLORS.map((color,i)=>`<button class="generator active" data-generator="${i+1}" style="--g:${color}">(${i+1}${i+2})</button>`).join("");
+    $("generatorButtons").querySelectorAll("button").forEach(button=>button.onclick=()=>{const g=Number(button.dataset.generator);state.generators.has(g)?state.generators.delete(g):state.generators.add(g);button.classList.toggle("active",state.generators.has(g));render();});
+    $("namedSystem").innerHTML='<option value="">Published named system…</option>'+GARDEN.named_octets.map(item=>`<option value="${item.right_slice_id}">${item.id} · R8 #${item.right_slice_id} · ${item.published_status.includes("nonclosure")?"printed signs do not close":"printed signs close"}</option>`).join("");
+    $("namedSystem").onchange=e=>{if(e.target.value!=="")selectOctet(Number(e.target.value));};
+    $("searchButton").onclick=()=>{const label=$("searchInput").value.trim();if(!/^[1-8]{8}$/.test(label)||new Set(label).size!==8){$("searchError").textContent="Enter each digit 1 through 8 exactly once.";return;}$("searchError").textContent="";selectRank(rankByLabel.get(label));};
+    $("searchInput").onkeydown=e=>{if(e.key==="Enter")$("searchButton").click();};
+    $("previousOctet").onclick=()=>selectOctet((state.octetId+5039)%5040); $("nextOctet").onclick=()=>selectOctet((state.octetId+1)%5040); $("randomOctet").onclick=()=>selectOctet(Math.floor(Math.random()*5040)); $("octetInput").onchange=e=>selectOctet(e.target.value);
+    $("fullEdgesToggle").onchange=e=>{state.fullEdges=e.target.checked;render();}; $("fullVerticesToggle").onchange=e=>{state.fullVertices=e.target.checked;render();}; $("octetToggle").onchange=e=>{state.showOctet=e.target.checked;render();}; $("labelsToggle").onchange=e=>{state.labels=e.target.checked;drawOverlay();}; $("isolateToggle").onchange=e=>{state.isolate=e.target.checked;render();};
+    $("resetButton").onclick=()=>{state.yaw=-.72;state.elevation=.46;state.zoom=1;render();};
+    $("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};
+    $("exportButton").onclick=exportPng;
+  }
+  function pickRank(x,y){
+    let best=null,bestD=20*20;
+    const preferred=state.showOctet?currentRanks():[state.selectedRank];
+    for(const rank of preferred){const p=renderer.projectRank(rank),d=(p.x-x)**2+(p.y-y)**2;if(d<bestD){bestD=d;best=rank;}}
+    return best;
+  }
+  function exportPng(){
+    const output=document.createElement("canvas");output.width=2400;output.height=1800;const c=output.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,2400,1800);c.fillStyle="#111820";c.textAlign="center";c.font="800 48px system-ui";c.fillText("Eight-Color Permutahedron",1200,68);c.fillStyle="#5b6771";c.font="24px system-ui";c.fillText(`Fixed 7D-to-3D projection · R8 octet #${state.octetId} · selected ${labels[state.selectedRank]}`,1200,110);c.drawImage($("glCanvas"),80,145,2240,1530);c.drawImage(overlay,80,145,2240,1530);c.font="20px system-ui";c.fillText("40,320 vertices · 141,120 adjacent-transposition edges · 5,040 R8 octets",1200,1740);const link=document.createElement("a");link.download=`S8_permutahedron_R8_${state.octetId}_${labels[state.selectedRank]}.png`;link.href=output.toDataURL("image/png");link.click();
+  }
+  function initSources(){
+    $("validation").innerHTML=`<span class="pass">Dataset validation passed.</span><br>${ATLAS.metadata.vertex_count.toLocaleString()} vertices and ${ATLAS.metadata.edge_count.toLocaleString()} edges are complete. All ${GARDEN.cosets_scanned.toLocaleString()} labeled R8 cosets admit Garden signings. This does not identify a unique physical signing or four-dimensional parent.`;
+    $("sources").innerHTML=ATLAS.metadata.source_locators.map(source=>`<div class="source"><a href="https://arxiv.org/abs/${source.arxiv_id}" target="_blank" rel="noopener">arXiv:${source.arxiv_id}</a> · PDF pp. ${source.pdf_pages}<br>${source.equation_or_table}</div>`).join("");
+  }
+  const stage=$("stage");
+  stage.onpointerdown=e=>{stage.setPointerCapture(e.pointerId);state.drag={x:e.clientX,y:e.clientY,yaw:state.yaw,elevation:state.elevation,moved:false};stage.classList.add("dragging");};
+  stage.onpointermove=e=>{if(!state.drag)return;const dx=e.clientX-state.drag.x,dy=e.clientY-state.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)state.drag.moved=true;state.yaw=state.drag.yaw-dx*.007;state.elevation=Math.max(-1.5,Math.min(1.5,state.drag.elevation+dy*.007));render();};
+  stage.onpointerup=e=>{const rect=stage.getBoundingClientRect();if(state.drag&&!state.drag.moved){const rank=pickRank(e.clientX-rect.left,e.clientY-rect.top);if(rank!==null)selectRank(rank);}state.drag=null;stage.classList.remove("dragging");};
+  stage.onwheel=e=>{e.preventDefault();state.zoom=Math.max(.5,Math.min(7,state.zoom*Math.exp(-e.deltaY*.001)));render();};
+  addEventListener("resize",resize);
+
+  function selfCheck(){
+    const failures=[];
+    if(labels.length!==40320)failures.push("vertex count"); if(edges.length!==141120)failures.push("edge count"); if(ATLAS.right_slices.length!==5040)failures.push("octet count");
+    if(ATLAS.right_slices.some(slice=>slice.length!==8))failures.push("octet size"); if(new Set(ATLAS.right_slices.flat()).size!==40320)failures.push("octet partition"); if(!GARDEN.passed)failures.push("Garden artifact");
+    if(failures.length)throw new Error(`S8 explorer self-check failed: ${failures.join(", ")}`);
+  }
+  selfCheck();initControls();initSources();resize();syncControls();updateDetails();
+</script>
+</body>
+</html>

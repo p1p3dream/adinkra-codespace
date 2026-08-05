@@ -4,3 +4,7 @@
 __pycache__/
 *.pyc
 *.f64bin
+
+# Call recordings and transcripts, never commit
+transcripts/
+plan-sources/
