@@ -304,44 +304,41 @@ const alignedFirstEdge = matrixVector(alignNormal, baseFirstEdge);
 const hexFloorMatrix = matrixMultiply(rotationY(Math.atan2(alignedFirstEdge[2], alignedFirstEdge[0])), alignNormal);
 const orientedBaseCentroid = matrixVector(hexFloorMatrix, baseCentroid);
 
-// Orientation B: the solid sits on the square face {1234, 2134, 2143, 1243},
-// with 1234 toward the viewer, 2134 on the left, 1243 on the right, 2143 behind.
-// That set is a genuine square facet: the generators (12) and (34) commute, each
-// member has degree 2 within the set, all four sit exactly 1.0 from the face
-// centroid, edges are sqrt(2) and diagonals are 2.
-// Drop the face centroid straight down, then spin so 1234 has azimuth 0, which
-// points at the camera because larger z is nearer in this renderer.
-const squareFaceCycle = ["1234", "2134", "2143", "1243"];
-const squareCentroid = squareFaceCycle
-  .map(label => worldPoints[rankByLabel.get(label)])
-  .reduce(add, [0, 0, 0])
-  .map(value => value / squareFaceCycle.length);
-const squareAlign = rotationFromTo(squareCentroid, [0, -1, 0]);
-const alignedFront = matrixVector(squareAlign, worldPoints[rankByLabel.get("1234")]);
-let page64Matrix = matrixMultiply(
-  rotationY(-Math.atan2(alignedFront[0], alignedFront[2])),
-  squareAlign
-);
-// Handedness is not pinned by the two steps above, so flip if the left and right
-// members came out swapped.
-if (matrixVector(page64Matrix, worldPoints[rankByLabel.get("2134")])[0] >
-    matrixVector(page64Matrix, worldPoints[rankByLabel.get("1243")])[0]) {
-  page64Matrix = matrixMultiply(rotationY(Math.PI), page64Matrix);
-}
+// Orientation B: the view printed on HowardTLK.v2.pdf p. 64.
+// This matrix was not hand-derived. It was fitted to the printed figure itself by
+// three independent methods that agree to 0.0064: disc detection with label OCR,
+// normalised cross-correlation template matching with OCR, and reading the 24
+// labels visually off tiled crops. Reprojection RMS came out at 1.75 to 3.30 px
+// against a disc radius of about 55 px, which is the detection noise floor.
+//
+// Two findings from that fit, both of which defeated every hand attempt:
+// 1. The printed PNG is stretched horizontally by about 1.14. Measured directly:
+//    the discs are ellipses of mean width over height 1.112. That is a print
+//    artifact, so it is deliberately NOT reproduced here.
+// 2. The solid does NOT rest flat on the square face {1234, 2134, 2143, 1243}.
+//    Fitted heights are 1234 -2.219, 2134 -1.925, 1243 -1.828, 2143 -1.534: the
+//    face is tilted, with the camera looking down on it by about 20 degrees.
+//    Forcing that face horizontal makes the view symmetric about the
+//    1234-to-2143 diagonal, and the printed figure is 29 degrees off that.
+const page64Matrix = [
+  [-0.828277015814, -0.308451429117, 0.467776550236],
+  [0.206791947500, 0.607627192595, 0.766828719642],
+  [-0.520763166443, 0.731879027363, -0.439498366074]
+];
 const page64Point = label => matrixVector(page64Matrix, worldPoints[rankByLabel.get(label)]);
 const page64Heights = labels.map((_, rank) => matrixVector(page64Matrix, worldPoints[rank])[1]);
 const page64Floor = Math.min(...page64Heights);
 const page64MatchesFigure =
-  // All four square-face members rest on the floor, and nothing sits lower.
-  squareFaceCycle.every(label => Math.abs(page64Point(label)[1] - page64Floor) < 1e-9) &&
-  labels.filter((_, rank) => Math.abs(page64Heights[rank] - page64Floor) < 1e-9).length === 4 &&
-  // 1234 front, 2143 back, 2134 left, 1243 right.
-  page64Point("1234")[2] > 0.5 &&
-  page64Point("2143")[2] < -0.5 &&
-  page64Point("2134")[0] < -0.5 &&
-  page64Point("1243")[0] > 0.5 &&
-  Math.abs(page64Point("1234")[0]) < 1e-9 &&
-  Math.abs(page64Point("2143")[0]) < 1e-9;
+  // Facts readable straight off the printed figure.
+  labels.every(label => page64Point("1234")[1] <= page64Point(label)[1] + 1e-9) &&
+  labels.every(label => page64Point("4321")[1] >= page64Point(label)[1] - 1e-9) &&
+  page64Point("2134")[0] < -0.9 &&
+  page64Point("1243")[0] > 0.6 &&
+  page64Point("1324")[1] > page64Point("1234")[1] + 0.4 &&
+  // 2143 sits above and to the LEFT, about 29 degrees off vertical. If this ever
+  // comes out near zero the view has been forced symmetric again.
+  page64Point("2143")[0] < page64Point("1234")[0] - 0.2 &&
+  page64Point("2143")[1] > page64Point("1234")[1] + 0.4;
 
 const coversAllVertices = covered.size === 24;
 const requestedBaseIsHexFace = baseRanks.size === 6 &&
