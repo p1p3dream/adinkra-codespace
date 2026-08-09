@@ -22,6 +22,8 @@ use crate::signed_perm::SignedPerm;
 pub mod cls;
 pub mod cm;
 pub mod gmatrix;
+pub mod gmatrix_csp;
+pub mod gmatrix_full;
 pub mod gmatrix_oracle;
 pub mod gmatrix_verify;
 pub mod roots;

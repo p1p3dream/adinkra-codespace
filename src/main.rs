@@ -182,6 +182,12 @@ fn main() {
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
+        "cls-g-full-build" => cmd_cls_g_full_build(&args),
+        "cls-g-full-verify" => cmd_cls_g_full_verify(&args),
+        "cls-g-csp-build" => cmd_cls_g_csp_build(&args),
+        "cls-g-csp-shard" => cmd_cls_g_csp_shard(&args),
+        "cls-g-csp-status" => cmd_cls_g_csp_status(&args),
+        "cls-g-csp-merge" => cmd_cls_g_csp_merge(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -233,6 +239,23 @@ fn print_usage(prog: &str) {
     eprintln!("                          scales to k<=3 where the dense path cannot reach)");
     eprintln!("  decompose-audit <k> <sample_reps> [json]");
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
+    eprintln!("  cls-g-full-build [side] [blocks] [threads] [cap] [json]");
+    eprintln!("                          Full {{-1,0,1}} CLS G-matrix enumeration via the");
+    eprintln!("                          K=Q(sqrt(-3)) commutant reduction (side L|R, blocks 1..3)");
+    eprintln!("  cls-g-full-verify [side] [blocks] [json]");
+    eprintln!("                          Re-verify the ladder and every stored sample of an artifact");
+    eprintln!("  cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]");
+    eprintln!("                          v2 slot-level CSP engine: correlated product boxes,");
+    eprintln!("                          residual arc-consistency, MRV order (stride>1 = stratified sample)");
+    eprintln!("  cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]");
+    eprintln!("                          Durable sharded enumeration: one immutable shard per");
+    eprintln!("                          slot-0 prefix, atomic writes, skips existing valid shards");
+    eprintln!("  cls-g-csp-status [dir]");
+    eprintln!("                          Live dashboard over a shard dir: coverage, checksum,");
+    eprintln!("                          per-pod heartbeats, per-worker progress, ETA (read-only)");
+    eprintln!("  cls-g-csp-merge [side] [blocks] [dir] [json]");
+    eprintln!("                          Verify full shard coverage and merge commutatively;");
+    eprintln!("                          refuses an incomplete or inconsistent census");
     eprintln!("  sr-investigation [json] Analyze the minimal unpaired Siegel-Rocek case");
     eprintln!("                          (default: adinkra_codes_n16.json)");
     eprintln!("  bbbm                    Verify the generic minimal N=9 valise scaffold");
@@ -2263,6 +2286,180 @@ fn cmd_decompose_probe(args: &[String]) {
     pipeline::run_decompose_probe(json_path, k, num);
 }
 
+fn cmd_cls_g_full_build(args: &[String]) {
+    use four_color::gmatrix_full::{Side, run_build};
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-full-build [side] [blocks] [threads] [cap] [json]", args[0]);
+            std::process::exit(1);
+        }
+    };
+    let m = args.get(3).and_then(|s| s.parse::<usize>().ok()).unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let threads = args
+        .get(4)
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or_else(|| {
+            std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(4)
+        });
+    let cap = args.get(5).and_then(|s| s.parse::<u64>().ok());
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_full_{}_{}blocks.json",
+        side.name(),
+        m
+    );
+    let path = args.get(6).map(String::as_str).unwrap_or(&default_path);
+    run_build(side, m, threads, cap, path);
+}
+
+fn cmd_cls_g_full_verify(args: &[String]) {
+    use four_color::gmatrix_full::{Side, run_verify};
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-full-verify [side] [blocks] [json]", args[0]);
+            std::process::exit(1);
+        }
+    };
+    let m = args.get(3).and_then(|s| s.parse::<usize>().ok()).unwrap_or(3);
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_full_{}_{}blocks.json",
+        side.name(),
+        m
+    );
+    let path = args.get(4).map(String::as_str).unwrap_or(&default_path);
+    if !run_verify(side, m, path) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_cls_g_csp_build(args: &[String]) {
+    use four_color::gmatrix_csp::run_build;
+    use four_color::gmatrix_full::Side;
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]", args[0]);
+            std::process::exit(1);
+        }
+    };
+    let m = parse_opt_num(args.get(3), "blocks").unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let threads = parse_opt_num(args.get(4), "threads").unwrap_or_else(|| {
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4)
+    });
+    if threads == 0 {
+        eprintln!("threads must be >= 1");
+        std::process::exit(1);
+    }
+    let cap: Option<u64> = parse_opt_num(args.get(5).filter(|s| s.as_str() != "-"), "cap");
+    let stride = parse_opt_num(args.get(6), "stride").unwrap_or(1);
+    if stride == 0 {
+        eprintln!("stride must be >= 1");
+        std::process::exit(1);
+    }
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_csp_{}_{}blocks.json",
+        side.name(),
+        m
+    );
+    let path = args.get(7).map(String::as_str).unwrap_or(&default_path);
+    run_build(side, m, threads, cap, stride, path);
+}
+
+fn cmd_cls_g_csp_shard(args: &[String]) {
+    use four_color::gmatrix_csp::run_shards;
+    use four_color::gmatrix_full::Side;
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]", args[0]);
+            std::process::exit(1);
+        }
+    };
+    let m = parse_opt_num(args.get(3), "blocks").unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let start = parse_opt_num(args.get(4), "start").unwrap_or(0);
+    let count = parse_opt_num(args.get(5), "count").unwrap_or(1);
+    let threads = parse_opt_num(args.get(6), "threads").unwrap_or_else(|| {
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4)
+    });
+    if threads == 0 {
+        eprintln!("threads must be >= 1");
+        std::process::exit(1);
+    }
+    let default_dir = format!("results/cls_g_csp_shards_{}_{}blocks", side.name(), m);
+    let dir = args.get(7).map(String::as_str).unwrap_or(&default_dir);
+    let stride = parse_opt_num(args.get(8), "stride").unwrap_or(1);
+    if stride == 0 {
+        eprintln!("stride must be >= 1");
+        std::process::exit(1);
+    }
+    if !run_shards(side, m, start, count, threads, dir, stride) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_cls_g_csp_status(args: &[String]) {
+    use four_color::gmatrix_csp::run_status;
+    let dir = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/cls_g_csp_shards_L_3blocks");
+    if !run_status(dir) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_cls_g_csp_merge(args: &[String]) {
+    use four_color::gmatrix_csp::run_merge;
+    use four_color::gmatrix_full::Side;
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-csp-merge [side] [blocks] [dir] [json]", args[0]);
+            std::process::exit(1);
+        }
+    };
+    let m = parse_opt_num(args.get(3), "blocks").unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let default_dir = format!("results/cls_g_csp_shards_{}_{}blocks", side.name(), m);
+    let dir = args.get(4).map(String::as_str).unwrap_or(&default_dir);
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_csp_{}_{}blocks_merged.json",
+        side.name(),
+        m
+    );
+    let path = args.get(5).map(String::as_str).unwrap_or(&default_path);
+    if !run_merge(side, m, dir, path) {
+        std::process::exit(2);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Argument parsing helpers
 // ---------------------------------------------------------------------------
@@ -2282,4 +2479,17 @@ fn parse_usize_arg(args: &[String], index: usize, usage_hint: &str) -> usize {
             std::process::exit(1);
         }
     }
+}
+
+/// Optional numeric argument: absent -> None; present but unparseable ->
+/// exit 1. Silently defaulting a typo can quietly convert a stratified
+/// sample into a full census run (or vice versa), so present-but-invalid
+/// is a launch error, never a default.
+fn parse_opt_num<T: std::str::FromStr>(arg: Option<&String>, name: &str) -> Option<T> {
+    arg.map(|s| {
+        s.parse::<T>().unwrap_or_else(|_| {
+            eprintln!("{name} must be a number, got '{s}'");
+            std::process::exit(1);
+        })
+    })
 }

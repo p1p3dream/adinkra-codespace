@@ -557,8 +557,9 @@ fn analyze_cls_side(ls: &[IntMat]) -> ClsSide {
 /// All {-1, 0, 1} matrices X with X * C == D * X (intertwiners from C to D), in a
 /// deterministic order. Same backtracking engine as g_matrices but with a linear
 /// (not quadratic) constraint, so it is fast at these sizes. When C == D this is
-/// the commutant of C.
-fn intertwiners(d: &IntMat, c: &IntMat) -> Vec<IntMat> {
+/// the commutant of C. pub(super) so gmatrix_full can reuse it for the exact
+/// entry alphabets of the full CLS enumeration.
+pub(super) fn intertwiners(d: &IntMat, c: &IntMat) -> Vec<IntMat> {
     // We reuse the entry-backtracking idea specialized to the single linear
     // bracket (X*C - D*X)[i][j] = 0.
     let n = d.len();
