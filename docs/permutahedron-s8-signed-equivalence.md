@@ -16,6 +16,9 @@ closing result under explicit signed equivalence relations.
 - arXiv:1712.07826, Eq. (2.33), gives the fixed-color nodal relation
   `L'_I = X L_I Y`, with signed permutation matrices acting on the two node
   levels.
+- arXiv:1405.0048, Eqs. (32)-(41), Eqs. (44)-(53), and Appendices B-C,
+  supplies the four-dimensional `CV` and `CT` transformation laws, their gauge
+  choices, and their reductions to the published eight-color matrices.
 - `HowardTLK.v2.pdf`, pp. 61, 64, 73, 77, and 80-81, supplies the six-quartet
   geometric base case, the 24-node permutahedron, and the hopping construction
   that motivates the higher-color separation problem.
@@ -130,7 +133,7 @@ Artifacts:
 
 | Artifact | SHA256 |
 |---|---|
-| data | `a128d7e74669dfbba4f5f00b11f8744d8f132e27af7985eee594db161749bad7` |
+| data | `dd4b6329fc42ecad1325d21ee935269a73c0c6f9979ddefa4a83aae026dab585` |
 | validation | `7dcd0987c7a9ab3df5fc36c04c4a77767f5e8921355a04b2d76759e46029f608` |
 
 The independent JavaScript audit reconstructs all 5,760 candidates from the
@@ -160,7 +163,12 @@ It requires data discarded by one-dimensional reduction:
    and `VM3` without inferring parentage from their one-dimensional names.
 
 `HowardTLK.v2.pdf` fixes the permutation geometry and hopping construction. It
-does not supply the spatial linkage or gauge data needed for this gate. Until
-those data are specified, the exact stopping statement is that the signed
+does not supply the spatial linkage or gauge data needed for this gate. The
+exact stopping statement for the present calculation is that the signed
 one-dimensional recursion is irreducible but does not determine
 four-dimensional parentage.
+
+The required positive-control data are available in arXiv:1405.0048. The
+implementation build order is recorded in
+`docs/permutahedron-s8-higher-dimensional-gate.md`. The remaining source gap
+applies to the `VM1`, `VM2`, and `VM3` constructions, not to `CT` or `CV`.

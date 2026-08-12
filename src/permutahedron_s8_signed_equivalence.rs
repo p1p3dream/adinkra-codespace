@@ -642,6 +642,11 @@ pub fn build() -> SignedEquivalenceArtifact {
                 role: "fixed-color signed nodal equivalence",
             },
             SourceRecord {
+                source: "arXiv:1405.0048",
+                locator: "Eqs. (32)-(41), Eqs. (44)-(53), and Appendices B-C",
+                role: "four-dimensional chiral-vector and chiral-tensor transformation laws, gauge choices, and their one-dimensional reductions",
+            },
+            SourceRecord {
                 source: "HowardTLK.v2.pdf",
                 locator: "pp. 61, 64, 73, 77, 80-81",
                 role: "the six four-color quartets, permutahedron geometry, hopping operators, and the intended four-color base case",
