@@ -1,0 +1,18 @@
+{
+  "schema_version": "chiral-vector-4d-closure-v1",
+  "source": "arXiv:1405.0048 Eqs. (32)-(41), with gamma conventions from arXiv:0902.3830 Appendix A",
+  "gamma_conventions_verified": true,
+  "component_fields": 17,
+  "charge_pairs": 36,
+  "component_relations_checked": 612,
+  "nongauge_field_relations_checked": 468,
+  "vector_potential_relations_checked": 144,
+  "residual_relations": 0,
+  "residual_terms": 0,
+  "vector_gauge_term_is_required": true,
+  "reduced_l_matrix_entries_checked": 512,
+  "reduced_l_matrix_residual_entries": 0,
+  "exact_cv_anchor_recovered": true,
+  "passed": true,
+  "boundary": "This reproduces the published linear abelian chiral-vector component algebra, including closure on the vector potential modulo the printed gauge term. It is not a new four-dimensional construction."
+}

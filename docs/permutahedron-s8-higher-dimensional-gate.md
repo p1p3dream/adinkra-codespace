@@ -39,6 +39,15 @@ reproduced first, then their gauge-fixed reductions must match the exact `CV`
 and `CT` anchors already stored in
 `data/permutahedron_s8_signed_equivalence.json`.
 
+## Current status
+
+The chiral-vector positive control is complete. Exact Rust and independent
+JavaScript implementations verify all 612 component relations, including the
+vector gauge residue, and recover all 512 entries of the committed `CV` anchor.
+See `docs/chiral-vector-4d-positive-control.md`.
+
+The chiral-tensor positive control remains next.
+
 ## Exact implementation order
 
 1. Pin the four-dimensional Majorana gamma-matrix, charge-conjugation, metric,
@@ -46,10 +55,10 @@ and `CT` anchors already stored in
    charge-conjugation identities independently.
 2. Represent fields and first derivatives as exact sparse jets. Retain the
    vector and two-form potentials so gauge terms remain visible.
-3. Transcribe the `CV` rules in Eqs. (32)-(35). Evaluate every supercharge pair
+3. Completed: transcribe the `CV` rules in Eqs. (32)-(35). Evaluate every supercharge pair
    on every component field and compare the residue with Eq. (38), including
    the vector gauge transformation.
-4. Apply Eqs. (40)-(41), reduce to one temporal coordinate, and verify the
+4. Completed: apply Eqs. (40)-(41), reduce to one temporal coordinate, and verify the
    resulting matrices against the committed `CV` anchor byte for byte.
 5. Repeat the component closure and reduction checks for `CT` using
    Eqs. (44)-(53), including the two-form gauge transformation.
