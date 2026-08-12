@@ -45,6 +45,7 @@ mod lorentz_intertwiners;
 mod lr_matrix;
 mod minimal_supergravity_action;
 mod minimal_supergravity_curvatures;
+mod maxwell_phantom;
 mod nauty_canonical;
 mod orientation;
 mod permutahedron;
@@ -144,6 +145,8 @@ fn main() {
             cmd_higher_dimensional_fingerprint_build(&args)
         }
         "higher-dimensional-fingerprint-verify" => cmd_higher_dimensional_fingerprint_verify(),
+        "maxwell-phantom-build" => cmd_maxwell_phantom_build(&args),
+        "maxwell-phantom-verify" => cmd_maxwell_phantom_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -303,6 +306,9 @@ fn print_usage(prog: &str) {
     eprintln!("  higher-dimensional-fingerprint-build [json]");
     eprintln!("                          Compare source-fixed CV and CT spatial and gauge data");
     eprintln!("  higher-dimensional-fingerprint-verify Verify the CV/CT comparison gates");
+    eprintln!("  maxwell-phantom-build [json]");
+    eprintln!("                          Extract the Maxwell magnetic phantom linkage sector");
+    eprintln!("  maxwell-phantom-verify Verify phantom support and Eq. 5.8 exactly");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -753,6 +759,26 @@ fn cmd_higher_dimensional_fingerprint_build(args: &[String]) {
 
 fn cmd_higher_dimensional_fingerprint_verify() {
     let artifact = higher_dimensional_fingerprint::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_phantom_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_phantom.json");
+    let artifact = maxwell_phantom::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_phantom_verify() {
+    let artifact = maxwell_phantom::build();
     println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
     if !artifact.passed {
         std::process::exit(2);

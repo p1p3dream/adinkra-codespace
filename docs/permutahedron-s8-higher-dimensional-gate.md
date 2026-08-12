@@ -72,6 +72,18 @@ anchor. See `docs/chiral-tensor-4d-positive-control.md`.
    `VM3` candidate would need before the same test is meaningful. Do not infer
    missing spatial transformations from a valise matrix alone.
 
+## Gauge and phantom continuation
+
+The Maxwell magnetic phantom sector is now an additional positive control.
+Exact Rust and independent JavaScript implementations extract the 12 nonzero
+phantom entries and verify every spatial magnetic row in Eq. (5.8) of
+arXiv:0907.3605. See `docs/maxwell-phantom-positive-control.md`.
+
+The next implementation gate is the canonical Bianchi reshuffling in
+Eqs. (5.4)-(5.5) and the complete gauge-enhancement condition in Eq. (5.11).
+That condition must reproduce the known Maxwell passer before it is generalized
+to the eight-color systems.
+
 ## Acceptance gates
 
 The positive-control implementation passes only if all of the following hold:
