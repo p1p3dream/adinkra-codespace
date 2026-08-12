@@ -174,6 +174,23 @@ under that stated action, including ten orbits covering the original 4,136
 block-incompatible cosets. These orbit identifiers are not physical
 supermultiplet types.
 
+## Signed recursion on the thirty ordered pairs
+
+The Boolean rule in arXiv:2304.09830v2 Sec. 2.2 is now applied to every
+ordered distinct pair of the six printed signed four-color systems. All eight
+cyclic four-adjacent-bit flips are tested for every pair, giving 240 exact
+signed candidates.
+
+Sixteen candidates close, carried by eight ordered pairs. Every accepted pair
+closes for the complementary masks starting at positions 2 and 6. The
+`CM -> TM` start-6 result reproduces the printed `CT` matrices exactly. All
+closing candidates have self-Gadget one and scalar commutant. The calculation
+therefore certifies irreducible one-dimensional Garden representations, not
+four-dimensional multiplet assignments.
+
+The full result and its color-order boundary are documented in
+[`permutahedron-s8-signed-recursion.md`](permutahedron-s8-signed-recursion.md).
+
 Methods, counts, and boundaries are recorded in:
 
 - [`permutahedron-s8-conjugate-separation.md`](permutahedron-s8-conjugate-separation.md);

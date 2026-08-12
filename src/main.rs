@@ -52,6 +52,7 @@ mod permutahedron_s4_supersymmetry;
 mod permutahedron_s8_conjugate_separation;
 mod permutahedron_s8_orbits;
 mod permutahedron_s8_separation;
+mod permutahedron_s8_signed_recursion;
 mod permutahedron_s8_supersymmetry;
 mod pipeline;
 mod prepotential_curvature;
@@ -122,6 +123,8 @@ fn main() {
         "perm-s8-orbits-verify" => cmd_perm_s8_orbits_verify(),
         "perm-s8-separation-build" => cmd_perm_s8_separation_build(&args),
         "perm-s8-separation-verify" => cmd_perm_s8_separation_verify(),
+        "perm-s8-signed-recursion-build" => cmd_perm_s8_signed_recursion_build(&args),
+        "perm-s8-signed-recursion-verify" => cmd_perm_s8_signed_recursion_verify(),
         "perm-s8-susy-build" => cmd_perm_s8_susy_build(&args),
         "perm-s8-susy-verify" => cmd_perm_s8_susy_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
@@ -262,6 +265,9 @@ fn print_usage(prog: &str) {
     eprintln!("                          Classify R8 cosets that split into paired S4 sectors");
     eprintln!("  perm-s8-separation-verify");
     eprintln!("                          Verify all invariant 4+4 splits and pair classes");
+    eprintln!("  perm-s8-signed-recursion-build [data-json] [validation-json]");
+    eprintln!("                          Test all cyclic Boolean flips on all 30 ordered pairs");
+    eprintln!("  perm-s8-signed-recursion-verify");
     eprintln!("  perm-s8-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six published signed S8 representations");
     eprintln!("  perm-s8-susy-verify     Verify closure, nonclosure, HYMN, and all m/n branches");
@@ -578,6 +584,36 @@ fn cmd_perm_s8_separation_verify() {
     println!(
         "{}",
         serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_signed_recursion_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_signed_recursion.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_signed_recursion_validation.json");
+    let report = permutahedron_s8_signed_recursion::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_signed_recursion_verify() {
+    let artifact = permutahedron_s8_signed_recursion::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
     );
     if !artifact.validation.passed {
         std::process::exit(2);

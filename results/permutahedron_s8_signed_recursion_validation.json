@@ -1,0 +1,19 @@
+{
+  "signed_s4_source_representatives_checked": 6,
+  "signed_s4_source_representatives_closing": 6,
+  "source_signed_words_match_fixtures": true,
+  "vm2_uses_3421_not_3412": true,
+  "ordered_distinct_pairs_checked": 30,
+  "cyclic_four_bit_masks_checked_per_pair": 8,
+  "signed_candidates_checked": 240,
+  "dense_garden_entries_checked": 1966080,
+  "closing_candidates": 16,
+  "nonclosing_candidates": 224,
+  "ordered_pairs_with_at_least_one_closing_mask": 8,
+  "ordered_pairs_without_a_closing_mask": 22,
+  "distinct_exact_closing_matrix_systems": 16,
+  "ct_source_anchor_matched": true,
+  "all_closing_self_gadgets_equal_one": true,
+  "all_closing_commutants_are_scalar": true,
+  "passed": true
+}

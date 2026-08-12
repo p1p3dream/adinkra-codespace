@@ -242,6 +242,9 @@ The repository currently supplies:
 - an exact test showing that the unsigned subgroup-block incidence relation is
   complete rather than one-to-one;
 - the 20 normalizer-conjugacy classes of the fixed-`R8` coset family.
+- the prescribed cyclic four-bit Boolean-factor scan for all 30 ordered
+  distinct source pairs under the printed color order: 240 candidates, 16
+  exact closures across 8 ordered pairs.
 
 The original single-family scan classifies 21 unordered four-color pair
 labels. Applying the published distinct-factor restriction leaves:
@@ -279,11 +282,9 @@ recursive pair-to-family map is constant, not bijective.
 
 The present atlas does not yet contain:
 
-1. the prescribed recursive Boolean-factor test on every decomposable
-   ordered pair;
-2. canonical signed equivalence classes with field relabeling, vertex
+1. canonical signed equivalence classes with field relabeling, vertex
    switching, color ordering, and duality stated explicitly;
-3. a higher-dimensional enhancement test assigning a four-dimensional
+2. a higher-dimensional enhancement test assigning a four-dimensional
    multiplet interpretation to the resulting one-dimensional systems.
 
 ## What would close each gap
@@ -326,9 +327,13 @@ different questions:
    construction.
 
 The first is transferred across the full conjugacy orbit by relabeling and
-has the published `2^19` count. The second carries the information that
-separates the printed `CT/CV` systems from the printed
-`CC/TT/TV/VV` systems.
+has the published `2^19` count. The second has now been tested for all 30
+ordered distinct source pairs under the printed color order. Of 240 cyclic
+flip candidates, 16 close, carried by 8 ordered pairs. The two closing masks
+for each accepted pair are complementary and differ by reversing the signs of
+colors five through eight. The `CM -> TM` result reproduces the printed `CT`
+system exactly. Extending this result to alternative relative color orders and
+complete signed equivalence classes remains open.
 
 ### Physical separation
 
