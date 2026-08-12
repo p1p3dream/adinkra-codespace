@@ -1,0 +1,20 @@
+{
+  "ordered_distinct_pairs": 30,
+  "relative_color_orders_per_pair": 24,
+  "cyclic_masks_per_order": 8,
+  "candidates_checked": 5760,
+  "closing_candidates": 24,
+  "closing_pair_alignment_configurations": 12,
+  "ct_exact_anchor_recovered": true,
+  "cv_exact_anchor_recovered": true,
+  "all_closers_have_scalar_commutant": true,
+  "every_serialized_witness_verified": true,
+  "equivalence_class_counts_by_layer": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "all_closers_share_one_fixed_color_nodal_class": true,
+  "passed": true
+}

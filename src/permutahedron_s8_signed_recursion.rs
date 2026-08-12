@@ -7,7 +7,7 @@
 //! are tested here. Garden closure is the acceptance condition in the paper.
 
 use crate::decompose::{antisymmetric_commutant_dim, commutant_dim};
-use crate::holoraumy::{gadget, HoloraumyData};
+use crate::holoraumy::{HoloraumyData, gadget};
 use crate::lr_matrix::AdinkraRep;
 use crate::permutahedron_fixtures::{S4_ORDERED_QUARTETS, S8_REPRESENTATION_OCTETS};
 use crate::permutahedron_s8_supersymmetry::S8_BASE_BOOLEAN_FACTORS;
@@ -176,7 +176,7 @@ fn source_signed_words_match_fixtures() -> bool {
     })
 }
 
-fn cyclic_mask(start: usize) -> (u8, [usize; 4]) {
+pub(crate) fn cyclic_mask(start: usize) -> (u8, [usize; 4]) {
     let positions = std::array::from_fn(|offset| (start + offset) % 8);
     let mask = positions
         .iter()
@@ -185,10 +185,18 @@ fn cyclic_mask(start: usize) -> (u8, [usize; 4]) {
 }
 
 fn recursive_permutations(first: usize, second: usize) -> [[u8; 8]; 8] {
+    aligned_recursive_permutations(first, second, [0, 1, 2, 3])
+}
+
+pub(crate) fn aligned_recursive_permutations(
+    first: usize,
+    second: usize,
+    second_color_alignment: [usize; 4],
+) -> [[u8; 8]; 8] {
     std::array::from_fn(|color| {
         let local = color % 4;
         let left = S4_ORDERED_QUARTETS[first][local];
-        let right = S4_ORDERED_QUARTETS[second][local];
+        let right = S4_ORDERED_QUARTETS[second][second_color_alignment[local]];
         if color < 4 {
             std::array::from_fn(|row| {
                 if row < 4 {
@@ -210,9 +218,18 @@ fn recursive_permutations(first: usize, second: usize) -> [[u8; 8]; 8] {
 }
 
 fn recursive_boolean_factors(first: usize, second: usize, mask: u8) -> [u8; 8] {
+    aligned_recursive_boolean_factors(first, second, [0, 1, 2, 3], mask)
+}
+
+pub(crate) fn aligned_recursive_boolean_factors(
+    first: usize,
+    second: usize,
+    second_color_alignment: [usize; 4],
+    mask: u8,
+) -> [u8; 8] {
     let first_four: [u8; 4] = std::array::from_fn(|color| {
         S4_RECURSION_BOOLEAN_FACTORS[first][color]
-            | (S4_RECURSION_BOOLEAN_FACTORS[second][color] << 4)
+            | (S4_RECURSION_BOOLEAN_FACTORS[second][second_color_alignment[color]] << 4)
     });
     std::array::from_fn(|color| {
         if color < 4 {
@@ -223,7 +240,7 @@ fn recursive_boolean_factors(first: usize, second: usize, mask: u8) -> [u8; 8] {
     })
 }
 
-fn build_rep(permutations: &[[u8; 8]; 8], factors: &[u8; 8]) -> AdinkraRep {
+pub(crate) fn build_rep(permutations: &[[u8; 8]; 8], factors: &[u8; 8]) -> AdinkraRep {
     let color_permutations: Vec<Vec<usize>> = permutations
         .iter()
         .map(|p| p.iter().map(|&entry| usize::from(entry - 1)).collect())
@@ -267,7 +284,7 @@ fn transpose(matrix: &[Vec<i16>]) -> Vec<Vec<i16>> {
         .collect()
 }
 
-fn closure_record(rep: &AdinkraRep) -> ClosureRecord {
+pub(crate) fn closure_record(rep: &AdinkraRep) -> ClosureRecord {
     let l: Vec<_> = (0..N).map(|color| dense_l(rep, color)).collect();
     let r: Vec<_> = l.iter().map(|matrix| transpose(matrix)).collect();
     let mut entries_checked = 0usize;
@@ -308,7 +325,7 @@ fn closure_record(rep: &AdinkraRep) -> ClosureRecord {
     }
 }
 
-fn hymn_record(rep: &AdinkraRep) -> HymnRecord {
+pub(crate) fn hymn_record(rep: &AdinkraRep) -> HymnRecord {
     let mut product = (0..16)
         .map(|row| (0..16).map(|column| i16::from(row == column)).collect())
         .collect::<Vec<Vec<i16>>>();
@@ -350,7 +367,10 @@ fn hymn_record(rep: &AdinkraRep) -> HymnRecord {
     }
 }
 
-fn exact_published_match(permutations: &[[u8; 8]; 8], factors: &[u8; 8]) -> Option<&'static str> {
+pub(crate) fn exact_published_match(
+    permutations: &[[u8; 8]; 8],
+    factors: &[u8; 8],
+) -> Option<&'static str> {
     const LABELS: [&str; 6] = ["CC", "CT", "CV", "TT", "TV", "VV"];
     (0..6).find_map(|index| {
         (S8_REPRESENTATION_OCTETS[index].permutations == *permutations
@@ -359,7 +379,7 @@ fn exact_published_match(permutations: &[[u8; 8]; 8], factors: &[u8; 8]) -> Opti
     })
 }
 
-fn matrix_checksum(rep: &AdinkraRep) -> String {
+pub(crate) fn matrix_checksum(rep: &AdinkraRep) -> String {
     let mut hash = 0xcbf29ce484222325u64;
     for matrix in &rep.l_matrices {
         for row in 0..D {
@@ -643,14 +663,18 @@ mod tests {
     fn full_scan_counts_every_ordered_pair_and_flip() {
         let artifact = build();
         assert_eq!(artifact.ordered_pairs.len(), 30);
-        assert!(artifact
-            .ordered_pairs
-            .iter()
-            .all(|pair| pair.first_index != pair.second_index));
-        assert!(artifact
-            .ordered_pairs
-            .iter()
-            .all(|pair| pair.candidates.len() == 8));
+        assert!(
+            artifact
+                .ordered_pairs
+                .iter()
+                .all(|pair| pair.first_index != pair.second_index)
+        );
+        assert!(
+            artifact
+                .ordered_pairs
+                .iter()
+                .all(|pair| pair.candidates.len() == 8)
+        );
         assert_eq!(artifact.validation.signed_candidates_checked, 240);
         assert_eq!(artifact.validation.dense_garden_entries_checked, 1_966_080);
         assert_eq!(artifact.validation.closing_candidates, 16);
@@ -682,5 +706,71 @@ mod tests {
         ]);
         assert_eq!(actual_pairs, expected_pairs);
         assert!(artifact.validation.passed);
+    }
+
+    #[test]
+    fn relative_color_alignment_census_is_exact() {
+        let alignments: Vec<[usize; 4]> = crate::permutahedron::permutations(4)
+            .unwrap()
+            .map(|permutation| {
+                permutation
+                    .as_slice()
+                    .iter()
+                    .map(|entry| usize::from(entry - 1))
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap()
+            })
+            .collect();
+        let mut closing = Vec::new();
+        for first in 0..6 {
+            for second in 0..6 {
+                if first == second {
+                    continue;
+                }
+                for alignment in &alignments {
+                    let permutations = aligned_recursive_permutations(first, second, *alignment);
+                    for start in 0..8 {
+                        let factors = aligned_recursive_boolean_factors(
+                            first,
+                            second,
+                            *alignment,
+                            cyclic_mask(start).0,
+                        );
+                        let rep = build_rep(&permutations, &factors);
+                        if rep.verify_garden_algebra() {
+                            closing.push((first, second, *alignment, start));
+                        }
+                    }
+                }
+            }
+        }
+        let expected = vec![
+            (0, 1, [0, 1, 2, 3], 1),
+            (0, 1, [0, 1, 2, 3], 5),
+            (0, 2, [0, 1, 2, 3], 1),
+            (0, 2, [0, 1, 2, 3], 5),
+            (0, 2, [1, 0, 3, 2], 3),
+            (0, 2, [1, 0, 3, 2], 7),
+            (1, 0, [0, 1, 2, 3], 1),
+            (1, 0, [0, 1, 2, 3], 5),
+            (2, 0, [0, 1, 2, 3], 1),
+            (2, 0, [0, 1, 2, 3], 5),
+            (2, 0, [1, 0, 3, 2], 3),
+            (2, 0, [1, 0, 3, 2], 7),
+            (3, 4, [0, 1, 2, 3], 1),
+            (3, 4, [0, 1, 2, 3], 5),
+            (3, 5, [0, 1, 2, 3], 1),
+            (3, 5, [0, 1, 2, 3], 5),
+            (3, 5, [2, 3, 0, 1], 3),
+            (3, 5, [2, 3, 0, 1], 7),
+            (4, 3, [0, 1, 2, 3], 1),
+            (4, 3, [0, 1, 2, 3], 5),
+            (5, 3, [0, 1, 2, 3], 1),
+            (5, 3, [0, 1, 2, 3], 5),
+            (5, 3, [2, 3, 0, 1], 3),
+            (5, 3, [2, 3, 0, 1], 7),
+        ];
+        assert_eq!(closing, expected);
     }
 }

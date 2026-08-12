@@ -136,18 +136,17 @@ Artifacts:
 | data | `3ed8e5fca168c4e9867115e1afb1ff121cef276d611091636f0d057bdab88dff` |
 | validation | `05858f02ab1bd2e8a037635f4d78b356dee11a8543528707d367571a865a4e1c` |
 
-## Boundary and next gate
+## Boundary and completed next gate
 
 This closes the literal eight-mask scan for all thirty ordered pairs under the
-printed source ordering. It does not yet:
+printed source ordering. By itself, this pass does not:
 
-- quotient the results by all boson, fermion, color, switching, block-swap,
-  or duality equivalences;
-- scan alternative relative color alignments;
 - enumerate arbitrary Garden signings outside the paper's cyclic-flip ansatz;
 - establish four-dimensional enhancement.
 
-The next gate is therefore the canonical signed equivalence calculation. It
-should first determine whether the eight accepted ordered-pair results reduce
-beyond the proved complementary-mask identification, then test alternative
-relative color alignments against the published `CV` fixture.
+That gate is now complete in
+`docs/permutahedron-s8-signed-equivalence.md`. The 24 relative color orders
+raise the exhaustive scan to 5,760 candidates. Exactly 24 close, the printed
+`CV` system is recovered at relative order `2143`, and all 24 closers lie in
+one fixed-color nodal signed-equivalence class. The next gate is the
+Gadget-orthonormal frame census over the quotiented signing library.

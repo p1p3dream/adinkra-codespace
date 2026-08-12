@@ -52,6 +52,7 @@ mod permutahedron_s4_supersymmetry;
 mod permutahedron_s8_conjugate_separation;
 mod permutahedron_s8_orbits;
 mod permutahedron_s8_separation;
+mod permutahedron_s8_signed_equivalence;
 mod permutahedron_s8_signed_recursion;
 mod permutahedron_s8_supersymmetry;
 mod pipeline;
@@ -123,6 +124,8 @@ fn main() {
         "perm-s8-orbits-verify" => cmd_perm_s8_orbits_verify(),
         "perm-s8-separation-build" => cmd_perm_s8_separation_build(&args),
         "perm-s8-separation-verify" => cmd_perm_s8_separation_verify(),
+        "perm-s8-equivalence-build" => cmd_perm_s8_equivalence_build(&args),
+        "perm-s8-equivalence-verify" => cmd_perm_s8_equivalence_verify(),
         "perm-s8-signed-recursion-build" => cmd_perm_s8_signed_recursion_build(&args),
         "perm-s8-signed-recursion-verify" => cmd_perm_s8_signed_recursion_verify(),
         "perm-s8-susy-build" => cmd_perm_s8_susy_build(&args),
@@ -265,6 +268,9 @@ fn print_usage(prog: &str) {
     eprintln!("                          Classify R8 cosets that split into paired S4 sectors");
     eprintln!("  perm-s8-separation-verify");
     eprintln!("                          Verify all invariant 4+4 splits and pair classes");
+    eprintln!("  perm-s8-equivalence-build [data-json] [validation-json]");
+    eprintln!("                          Scan relative color orders and exact signed equivalences");
+    eprintln!("  perm-s8-equivalence-verify");
     eprintln!("  perm-s8-signed-recursion-build [data-json] [validation-json]");
     eprintln!("                          Test all cyclic Boolean flips on all 30 ordered pairs");
     eprintln!("  perm-s8-signed-recursion-verify");
@@ -585,6 +591,39 @@ fn cmd_perm_s8_separation_verify() {
         "{}",
         serde_json::to_string_pretty(&artifact.findings).unwrap()
     );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_equivalence_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_signed_equivalence.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_signed_equivalence_validation.json");
+    let report = permutahedron_s8_signed_equivalence::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_equivalence_verify() {
+    let artifact = permutahedron_s8_signed_equivalence::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    for layer in &artifact.equivalence_layers {
+        println!("{}: {} classes", layer.name, layer.classes.len());
+    }
     if !artifact.validation.passed {
         std::process::exit(2);
     }
