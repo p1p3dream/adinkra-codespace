@@ -172,3 +172,9 @@ The required positive-control data are available in arXiv:1405.0048. The
 implementation build order is recorded in
 `docs/permutahedron-s8-higher-dimensional-gate.md`. The remaining source gap
 applies to the `VM1`, `VM2`, and `VM3` constructions, not to `CT` or `CV`.
+
+The intervening embedded four-color test is also complete. Each closer retains
+one `chi0=+1` block and one `chi0=-1` block. The Maxwell gate is identical to
+that `chi0` classification on all 48 retained blocks, does not distinguish
+`CT` from `CV`, and does not separate the two source-parentage categories. See
+`docs/maxwell-s8-embedded-subalgebra-scan.md`.

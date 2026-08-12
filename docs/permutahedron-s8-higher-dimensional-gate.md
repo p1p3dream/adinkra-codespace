@@ -97,9 +97,17 @@ quartets. Exactly the 48 signings with `chi0 = -1` pass; all 48 with
 additional selector beyond `chi0` on this library. See
 `docs/maxwell-s4-published-signing-scan.md`.
 
-The next finite eight-color calculation is limited to the ordered pair of
-embedded four-color subalgebra classes. It does not claim a complete
-eight-supercharge gauge-enhancement test.
+The finite embedded-subalgebra calculation is complete. Both signed four-color
+blocks were extracted from each of the 24 closing recursive candidates. All 48
+blocks close. Every eight-color closer pairs one `chi0=+1` block with one
+`chi0=-1` block, and the Maxwell gate selects exactly the `chi0=-1` block.
+The two ordered signatures occur 12 times each, mix the stated-parent and
+unstated-parent source categories, and do not distinguish the published `CT`
+and `CV` anchors. See
+`docs/maxwell-s8-embedded-subalgebra-scan.md`.
+
+This exhausts the four-color Maxwell information retained by the recursion.
+It is not a complete eight-supercharge gauge-enhancement test.
 
 ## Acceptance gates
 
@@ -124,6 +132,12 @@ verified equations and gauge residues.
 It cannot manufacture four-dimensional transformation laws for `VM1`, `VM2`,
 or `VM3`. A negative result for those candidates is meaningful only after a
 candidate spatial linkage and gauge structure has been specified.
+
+Because `CT`, `CV`, and all 22 other closers occupy one fixed-color nodal
+class, every closer admits a one-dimensional signed-node relabeling to both
+positive controls. That does not give each closer two intrinsic
+four-dimensional parents. It proves that the valise data cannot choose between
+the two different published higher-dimensional structures.
 
 ## Howard-talk boundary
 

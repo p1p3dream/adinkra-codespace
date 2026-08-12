@@ -78,6 +78,12 @@ Primary artifact:
 results/maxwell_s8_subalgebra_scan.json
 ```
 
+SHA256:
+
+```text
+c4fd1396d11c262f7bc0ef63d32501ca5ffadac5c80d885ac3c6ada1501a286a
+```
+
 ## Next decision
 
 Further progress requires information not contained in the retained four-color `chi0` or Maxwell class. The next useful discriminator must use data that couples the two blocks, such as the full signed eight-color holoraumy, the signed recursion convention, or an explicit higher-dimensional target supplied independently of the one-dimensional Garden representation.
