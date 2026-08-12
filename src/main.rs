@@ -38,6 +38,7 @@ mod eleven_dimensional_spinor_bridge_kernels;
 mod enhance;
 mod eval;
 mod filters;
+mod higher_dimensional_fingerprint;
 mod holoraumy;
 mod lorentz;
 mod lorentz_intertwiners;
@@ -139,6 +140,10 @@ fn main() {
         "chiral-vector-4d-verify" => cmd_chiral_vector_4d_verify(),
         "chiral-tensor-4d-build" => cmd_chiral_tensor_4d_build(&args),
         "chiral-tensor-4d-verify" => cmd_chiral_tensor_4d_verify(),
+        "higher-dimensional-fingerprint-build" => {
+            cmd_higher_dimensional_fingerprint_build(&args)
+        }
+        "higher-dimensional-fingerprint-verify" => cmd_higher_dimensional_fingerprint_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -295,6 +300,9 @@ fn print_usage(prog: &str) {
     eprintln!("  chiral-tensor-4d-build [data-json] [validation-json]");
     eprintln!("                          Reproduce 4D chiral-tensor closure and its 1D reduction");
     eprintln!("  chiral-tensor-4d-verify Verify Eqs. 44-53 of arXiv:1405.0048 exactly");
+    eprintln!("  higher-dimensional-fingerprint-build [json]");
+    eprintln!("                          Compare source-fixed CV and CT spatial and gauge data");
+    eprintln!("  higher-dimensional-fingerprint-verify Verify the CV/CT comparison gates");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -727,6 +735,26 @@ fn cmd_chiral_tensor_4d_verify() {
     let report = chiral_tensor_4d::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_fingerprint_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/higher_dimensional_fingerprint.json");
+    let artifact = higher_dimensional_fingerprint::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_fingerprint_verify() {
+    let artifact = higher_dimensional_fingerprint::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
         std::process::exit(2);
     }
 }

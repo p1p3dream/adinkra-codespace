@@ -65,11 +65,12 @@ anchor. See `docs/chiral-tensor-4d-positive-control.md`.
    resulting matrices against the committed `CV` anchor byte for byte.
 5. Completed: repeat the component closure and reduction checks for `CT` using
    Eqs. (44)-(53), including the two-form gauge transformation.
-6. Record the spatial linkage and gauge data that distinguish the two positive
-controls despite their common `8|8` Garden size.
-7. Define the minimum additional data that a `VM1`, `VM2`, or `VM3` candidate
-   would need before the same test is meaningful. Do not infer missing spatial
-   transformations from a valise matrix alone.
+6. Completed: record the spatial linkage and gauge data that distinguish the
+   two positive controls despite their common `8|8` Garden size. See
+   `docs/cv-ct-higher-dimensional-fingerprints.md`.
+7. Completed: define the minimum additional data that a `VM1`, `VM2`, or
+   `VM3` candidate would need before the same test is meaningful. Do not infer
+   missing spatial transformations from a valise matrix alone.
 
 ## Acceptance gates
 

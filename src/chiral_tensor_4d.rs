@@ -8,9 +8,12 @@
 use crate::chiral_vector_4d::{
     Clifford4D, GaussianRational, Matrix4, matrix_mul, matrix_scale, pauli,
 };
+use crate::higher_dimensional_fingerprint::{
+    DerivativeOperatorFingerprint, GaugeFingerprint, MultipletFingerprint, sha256_lines,
+};
 use num_rational::Ratio;
 use serde::Serialize;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
@@ -467,6 +470,146 @@ fn published_ct_l_matrices() -> [[[i8; 8]; 8]; 8] {
             result
         })
     })
+}
+
+fn field_label(field: Field) -> String {
+    match field {
+        Field::ScalarA => "A".into(),
+        Field::PseudoscalarB => "B".into(),
+        Field::AuxiliaryF => "F".into(),
+        Field::AuxiliaryG => "G".into(),
+        Field::TensorScalar => "phi".into(),
+        Field::TwoForm(mu, nu) => format!("B_{mu}{nu}"),
+        Field::Psi(component) => format!("psi_{component}"),
+        Field::Chi(component) => format!("chi_{component}"),
+    }
+}
+
+fn coefficient_label(value: GaussianRational) -> String {
+    format!(
+        "{}/{}+i*{}/{}",
+        value.real.numer(),
+        value.real.denom(),
+        value.imag.numer(),
+        value.imag.denom()
+    )
+}
+
+pub fn higher_dimensional_fingerprint() -> MultipletFingerprint {
+    let clifford = Clifford4D::build();
+    let fields = Field::all();
+    let charges: Vec<_> = (0..2)
+        .flat_map(|supersymmetry| {
+            (0..SPINORS).map(move |spinor| Charge {
+                supersymmetry,
+                spinor,
+            })
+        })
+        .collect();
+
+    let mut transformation_terms = 0;
+    let mut algebraic_terms = 0;
+    let mut temporal_derivative_terms = 0;
+    let mut spatial_derivative_terms = 0;
+    let mut relations_with_spatial_derivatives = 0;
+    let mut spatial_lines = Vec::new();
+    for (charge_index, &charge) in charges.iter().enumerate() {
+        for &target in &fields {
+            let polynomial = delta(charge, target, &clifford);
+            transformation_terms += polynomial.0.len();
+            let mut relation_has_spatial_term = false;
+            for (atom, coefficient) in &polynomial.0 {
+                let temporal = atom.derivatives[0] > 0;
+                let spatial = atom.derivatives[1..].iter().any(|&degree| degree > 0);
+                algebraic_terms += usize::from(!temporal && !spatial);
+                temporal_derivative_terms += usize::from(temporal);
+                spatial_derivative_terms += usize::from(spatial);
+                if spatial {
+                    relation_has_spatial_term = true;
+                    spatial_lines.push(format!(
+                        "q={charge_index};target={};source={};d={:?};c={}",
+                        field_label(target),
+                        field_label(atom.field),
+                        atom.derivatives,
+                        coefficient_label(*coefficient)
+                    ));
+                }
+            }
+            relations_with_spatial_derivatives += usize::from(relation_has_spatial_term);
+        }
+    }
+
+    let mut potential_closure_relations = 0;
+    let mut nonzero_gauge_residue_relations = 0;
+    let mut gauge_residue_terms = 0;
+    let mut gauge_temporal_terms = 0;
+    let mut gauge_spatial_terms = 0;
+    let mut gauge_lines = Vec::new();
+    let mut residue_source_fields = BTreeSet::new();
+    for left in 0..charges.len() {
+        for right in left..charges.len() {
+            for mu in 0..DIM {
+                for nu in (mu + 1)..DIM {
+                    potential_closure_relations += 1;
+                    let field = Field::TwoForm(mu, nu);
+                    let mut residue =
+                        published_tensor_closure(charges[left], charges[right], mu, nu, &clifford);
+                    residue.add_scaled(
+                        &translation(charges[left], charges[right], field, &clifford),
+                        GaussianRational::new(-1, 0),
+                    );
+                    nonzero_gauge_residue_relations += usize::from(!residue.0.is_empty());
+                    gauge_residue_terms += residue.0.len();
+                    for (atom, coefficient) in &residue.0 {
+                        let temporal = atom.derivatives[0] > 0;
+                        let spatial = atom.derivatives[1..].iter().any(|&degree| degree > 0);
+                        gauge_temporal_terms += usize::from(temporal);
+                        gauge_spatial_terms += usize::from(spatial);
+                        residue_source_fields.insert(field_label(atom.field));
+                        gauge_lines.push(format!(
+                            "pair={left},{right};target={};source={};d={:?};c={}",
+                            field_label(field),
+                            field_label(atom.field),
+                            atom.derivatives,
+                            coefficient_label(*coefficient)
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    MultipletFingerprint {
+        name: "chiral-tensor",
+        source: "arXiv:1405.0048 Eqs. (44)-(53)",
+        raw_component_fields: fields.len(),
+        worldline_bosons: 8,
+        worldline_fermions: 8,
+        derivative_operator: DerivativeOperatorFingerprint {
+            transformation_relations: charges.len() * fields.len(),
+            transformation_terms,
+            algebraic_terms,
+            temporal_derivative_terms,
+            spatial_derivative_terms,
+            relations_with_spatial_derivatives,
+            canonical_spatial_operator_sha256: sha256_lines(&spatial_lines),
+        },
+        gauge: GaugeFingerprint {
+            potential_form_degree: 2,
+            potential_components_before_gauge_fixing: 6,
+            temporal_gauge_components_removed: 3,
+            potential_components_after_temporal_gauge: 3,
+            field_strength_form_degree: 3,
+            gauge_parameter_form_degree: 1,
+            potential_closure_relations,
+            nonzero_gauge_residue_relations,
+            gauge_residue_terms,
+            temporal_derivative_terms: gauge_temporal_terms,
+            spatial_derivative_terms: gauge_spatial_terms,
+            residue_source_fields: residue_source_fields.into_iter().collect(),
+            canonical_gauge_residue_sha256: sha256_lines(&gauge_lines),
+        },
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]
