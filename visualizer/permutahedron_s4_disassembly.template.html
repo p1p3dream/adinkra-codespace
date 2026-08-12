@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>S4 Six-Quartet Ascending Separation</title>
+  <title>S4 Six-Quartet Separation</title>
   <style>
     :root {
       color-scheme:light; --paper:#f7f6f1; --panel:#fff; --ink:#121820; --muted:#5e6b78;
@@ -74,7 +74,7 @@
 </head>
 <body>
   <header>
-    <div><h1>S4 Six-Quartet Ascending Separation</h1><div class="subtitle">Each permutation read as a four-digit number, ascending, per HowardTLK.v2.pdf p. 61</div></div>
+    <div><h1>S4 Six-Quartet Separation</h1><div class="subtitle">Six quartets in HowardTLK.v2.pdf p. 61 order, members ascending within each</div></div>
     <div class="status">24 vertices · 36 edges · 6 quartets</div>
     <a class="button" href="permutahedron_s4_explorer.html">Full permutahedron</a>
     <button id="detailsButton">Hide details</button>
@@ -94,7 +94,7 @@
         </div>
       </section>
       <section>
-        <h2>Six quartets, ascending</h2>
+        <h2>Six quartets, p.61 order</h2>
         <div id="sectorButtons" class="sector-grid"></div>
         <div class="stack" style="margin-top:7px">
           <button id="drillButton">Drill into selected chain</button>
@@ -123,7 +123,7 @@
         <label class="check"><input id="edgesToggle" type="checkbox" checked> Permutahedron edges while assembled</label>
       </section>
       <div class="facts">
-        The assembled solid rests on the hexagonal face of the six permutations ending in 4. Each strand lists its quartet in ascending four-digit order, and the leg between consecutive members is a shortest path that never revisits a vertex. Exactly one member of every quartet lies on the base face; that is a highlight, not the ordering rule.
+        The assembled solid starts in the Howard p.64 view, fitted to the printed figure. The hexagon-down view is a camera preset. Each strand lists its quartet in ascending four-digit order, and the leg between consecutive members is a shortest path that never revisits a vertex. Exactly one member of every quartet lies on the base face; that is a highlight, not the ordering rule.
       </div>
     </aside>
 
@@ -139,7 +139,7 @@
       <section><h2>Selected quartet</h2><dl id="quartetFacts" class="kv"></dl><div id="pathMembers" class="path-grid" style="margin-top:9px"></div></section>
       <section><h2>Legs between consecutive members</h2><dl id="hopperFacts" class="kv"></dl></section>
       <section><h2>Signed representative</h2><select id="signingSelect" class="wide"></select><dl id="signingFacts" class="kv" style="margin-top:9px"></dl><div id="matrix"></div></section>
-      <section><h2>Boundary</h2><div class="facts">The six strands are the six S4/V4 quartets, each listed in ascending four-digit order. The strand segments are organizational guides, not single permutahedron edges. Each leg is a certified shortest path with no repeated vertex, and the six leg patterns are all different: 2,6,2 / 2,4,2 / 4,6,4 / 6,4,6 / 4,2,4 / 6,2,6.</div></section>
+      <section><h2>Boundary</h2><div class="facts">The six strands are the six S4/V4 quartets, each listed in ascending four-digit order. The strand segments are organizational guides, not single permutahedron edges. Each leg is a certified shortest path with no repeated vertex, and the six leg patterns are all different: 4,2,4 / 6,4,6 / 4,6,4 / 6,2,6 / 2,4,2 / 2,6,2.</div></section>
       <section><h2>Published erratum</h2><div class="facts" id="erratumNote"></div></section>
     </aside>
   </div>
@@ -184,7 +184,12 @@
     const state={orientation:"page64",chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false};
     // The acceptance harness runs the same code path, just faster, so a six
     // strand click-through completes inside a headless budget.
-    const CHECK_MODE=new URLSearchParams(location.search).has("phase3check");
+    const PARAMS=new URLSearchParams(location.search);
+    const CHECK_MODE=PARAMS.has("phase3check");
+    // Headless Chrome has no compositor, so requestAnimationFrame does not fire.
+    // ?timers=1 swaps the scheduler without running the pop-out harness, so
+    // animation-completion behaviour can be tested at all.
+    const TIMER_MODE=CHECK_MODE||PARAMS.has("timers");
     const SPEED=CHECK_MODE?14:1;
     const meanProgress=()=>state.chainProgress.reduce((total,value)=>total+value,0)/6;
     // The solid has to be fully out of the strand column as soon as the FIRST
@@ -242,9 +247,9 @@
       const t=smooth(peakProgress()),f=smooth(state.focus),vacated=vacatedPoints(width,height);
       if(exportMode){
         ctx.fillStyle="#121820";ctx.textAlign="center";ctx.font="800 44px system-ui";
-        ctx.fillText("S4 Six-Quartet Ascending Separation",width/2,56);
+        ctx.fillText("S4 Six-Quartet Separation",width/2,56);
         ctx.fillStyle="#5e6b78";ctx.font="22px system-ui";
-        ctx.fillText("24 permutations · six quartets, each in ascending four-digit order",width/2,94);
+        ctx.fillText("24 permutations · six quartets in Howard p.61 order",width/2,94);
       }
       // Link weight follows the sample on HowardTLK.v2.pdf p. 64 (SL21, SL29).
       // Edges are drawn on the fixed lattice, never between current node
@@ -263,7 +268,9 @@
           if(!exportMode&&vacancy>.99)state.drawn.greyEdges.push([a,b]);
         }
       }
-      // A blank white ball is left at every site a popped node vacated (L219).
+      // A white ball is left at every site a popped node vacated (L219). It keeps its
+      // permutation name: later journeys cross these sites constantly, so a strictly
+      // blank marker would make the last strands untraceable.
       for(let chain=0;chain<6;chain++){
         const progress=state.chainProgress[chain];
         if(progress<=.02)continue;
@@ -350,12 +357,12 @@
     }
 
     function render(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));context.setTransform(dpr,0,0,dpr,0,0);renderTo(context,rect.width,rect.height);updateBadge();$("cameraReadout").textContent=`X ${Math.round(state.pitch*180/Math.PI)}° · Y ${Math.round(state.yaw*180/Math.PI)}° · Z ${Math.round(state.roll*180/Math.PI)}° · zoom ${state.zoom.toFixed(2)}`;}
-    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Ascending four-digit order within and across quartets";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent=`${ORIENTATIONS[state.orientation].label} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands out`;$("modeText").textContent="Click to pop the next strand";}}
+    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Members ascend within each quartet; quartets follow p.61 order P[1] to P[6]";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";$("modeText").textContent=`${ORIENTATIONS[state.orientation].label} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands out`;$("modeText").textContent="Click to pop the next strand";}}
 
     // Headless Chrome has no compositor, so requestAnimationFrame does not fire
     // reliably there. The harness needs the same animation code to complete, so
     // fall back to a timer when running under the check flag.
-    const schedule=CHECK_MODE?(fn=>setTimeout(fn,16)):(fn=>requestAnimationFrame(fn));
+    const schedule=TIMER_MODE?(fn=>setTimeout(fn,16)):(fn=>requestAnimationFrame(fn));
     function animateField(field,to,duration=1050,after){const token=++state.animation,from=state[field],start=performance.now();const step=()=>{if(token!==state.animation)return;const t=Math.min(1,(performance.now()-start)/duration);state[field]=mix(from,to,smooth(t));render();if(t<1)schedule(step);else after?.();};schedule(step);}
     function animateChain(index,to,duration,after){const from=state.chainProgress[index],start=performance.now();const step=()=>{const t=Math.min(1,(performance.now()-start)/duration);state.chainProgress[index]=mix(from,to,smooth(t));syncSlider();render();if(t<1)schedule(step);else after?.();};schedule(step);}
     function syncSlider(){$("progressSlider").value=String(Math.round(meanProgress()*1000));}
@@ -380,11 +387,11 @@
     }
     function nextStrandIndex(){return state.chainProgress.findIndex(value=>value<=.01);}
     function popNext(){popStrand(nextStrandIndex());}
-    function reassemble(){if(state.busy)return;state.glow={chain:null,step:0};const finish=()=>{state.chainProgress.forEach((_,index)=>animateChain(index,0,1100));updateControls();};if(state.focus>.01)animateField("focus",0,450,()=>{state.focusChain=null;finish();});else finish();}
+    function reassemble(){if(state.busy)return;state.glow={chain:null,step:0};const finish=()=>{state.chainProgress.forEach((_,index)=>animateChain(index,0,1100,index===5?updateControls:undefined));updateControls();};if(state.focus>.01)animateField("focus",0,450,()=>{state.focusChain=null;finish();});else finish();}
     function separateAll(){if(state.busy)return;state.glow={chain:null,step:0};state.focus=0;state.focusChain=null;state.chainProgress.fill(1);syncSlider();updateControls();render();}
     function drill(){if(state.busy)return;state.focusChain=state.selectedChain;const focus=()=>animateField("focus",1,700);if(state.chainProgress[state.selectedChain]<.98)animateChain(state.selectedChain,1,900,()=>{updateControls();focus();});else focus();}
     function showAll(){animateField("focus",0,550,()=>{state.focusChain=null;render();});}
-    function updateControls(){const remaining=nextStrandIndex();$("playButton").textContent=remaining<0?"All six strands out":`Pop out strand ${poppedCount()+1} of 6`;$("playButton").disabled=remaining<0||state.busy;$("popReadout").textContent=`${poppedCount()} of 6 strands extracted`;updateSectorButtons();}
+    function updateControls(){const remaining=nextStrandIndex(),partial=state.chainProgress.some(v=>v>.01&&v<.99);$("playButton").textContent=partial?"Part-way separated":(remaining<0?"All six strands out":`Pop out strand ${poppedCount()+1} of 6`);$("playButton").disabled=remaining<0||state.busy;$("popReadout").textContent=partial?"slider position, not a strand count":`${poppedCount()} of 6 strands extracted`;updateSectorButtons();}
 
     function permutationMatrix(permutation){return Array.from({length:4},(_,row)=>Array.from({length:4},(_,column)=>column===permutation[row]-1?1:0));}
     function signedMatrix(permutation,factor){return permutationMatrix(permutation).map((row,index)=>row.map(value=>value*(factor&(1<<index)?-1:1)));}
@@ -470,11 +477,48 @@
     function showErratum(){
       const vm2=DISASSEMBLY.chains.find(chain=>chain.multiplet==="VM2");
       const vm3=DISASSEMBLY.chains.find(chain=>chain.multiplet==="VM3");
-      $("erratumNote").innerHTML=`arXiv:2408.09342 Tables 3 and 5 print <strong>3412</strong> for VM2. That address belongs to VM3 (shown here in strand ${vm3.position}). VM2 is <strong>3421</strong>, which is what arXiv:1210.0478 Eq. 5.2 lists and what the Garden algebra admits: 3412 gives 0 signings of 65,536 and 3421 gives 256. This tool shows VM2 as ${vm2.labels.join(", ")}.`;
+      $("erratumNote").innerHTML=`arXiv:2408.09342 Tables 3 and 5 print <strong>3412</strong> for VM2. That address belongs to VM3 (shown here in strand ${vm3.position}). VM2 is <strong>3421</strong>, which is what arXiv:1210.0478 Eq. 5.2 lists and what the Garden algebra admits: substituting 3412 into the VM2 quartet leaves 0 valid signings of 65,536, whereas 3421 gives 256. The address 3412 itself is perfectly valid; it belongs to VM3. This tool shows VM2 as ${vm2.labels.join(", ")}.`;
     }
     // Nothing auto-advances. These are lecture materials and he narrates over
     // them, so every pop-out waits for a click (L211-215).
+    // Checks the PIXELS, not the data. selfCheck above validates DISASSEMBLY, which
+    // stays correct even when the camera rotates the view away from the fitted
+    // orientation. A leftover preset pitch of 0.34 rad did exactly that and every
+    // data-level gate passed, so this measures the projected layout instead.
+    function checkRenderedGeometry(){
+      if(state.orientation!=="page64")return;
+      const problems=[],P=label=>state.screen[labels.indexOf(label)];
+      const ys=state.screen.map(point=>point.y);
+      // Screen y grows downward, so the lowest vertex has the LARGEST y.
+      if(labels[ys.indexOf(Math.max(...ys))]!=="1234")problems.push(`lowest rendered vertex is ${labels[ys.indexOf(Math.max(...ys))]}, expected 1234`);
+      if(labels[ys.indexOf(Math.min(...ys))]!=="4321")problems.push(`highest rendered vertex is ${labels[ys.indexOf(Math.min(...ys))]}, expected 4321`);
+      if(!(P("2134").x<P("1234").x))problems.push("2134 is not rendered left of 1234");
+      if(!(P("1243").x>P("1234").x))problems.push("1243 is not rendered right of 1234");
+      if(!(P("2143").x<P("1234").x&&P("2143").y<P("1234").y))problems.push("2143 is not rendered above and left of 1234");
+      // Any camera rotation on top of the fitted matrix silently rotates the view
+      // away from the figure, and a leftover preset pitch of 0.34 rad did exactly
+      // that. Guard it two ways.
+      // (a) the preset must contribute no rotation of its own
+      const preset=ORIENTATIONS.page64;
+      if(preset.pitch!==0||preset.yaw!==0)problems.push(`the p.64 preset carries pitch ${preset.pitch} yaw ${preset.yaw}; both must be 0 or the view leaves the fit`);
+      // (b) the rendered angle must equal the one the fitted matrix alone predicts.
+      // Computed here rather than hardcoded, because perspective compresses the far
+      // vertex and the projected angle is not the model-space angle.
+      const fitted=label=>{const p=matrixVector(preset.matrix,rawWorldPoints[labels.indexOf(label)]),k=1/(1-p[2]/13);return{x:p[0]*k,y:-p[1]*k};};
+      const ang=(a,b)=>Math.abs(Math.atan2(b.x-a.x,a.y-b.y)*180/Math.PI);
+      const want=ang(fitted("1234"),fitted("2143")),got=ang(P("1234"),P("2143"));
+      if(Math.abs(want-got)>1)problems.push(`1234 to 2143 renders ${got.toFixed(1)} deg off vertical, the fitted matrix alone predicts ${want.toFixed(1)}`);
+      if(problems.length)throw new Error("rendered geometry check failed: "+problems.join("; "));
+    }
     selfCheck();showErratum();updateDetails();updateControls();new ResizeObserver(render).observe($("stage"));render();
+    if(PARAMS.has("positions")){
+      const out={};labels.forEach((label,rank)=>{out[label]=[state.screen[rank].x,state.screen[rank].y];});
+      const node=document.createElement("pre");node.id="renderedPositions";node.hidden=true;
+      node.textContent=JSON.stringify(out);document.body.appendChild(node);
+    }
+    checkRenderedGeometry();
+    // Last statement in the script. Its presence proves nothing threw on the way here.
+    {const done=document.createElement('span');done.id='initComplete';done.hidden=true;document.body.appendChild(done);}
 
     // Acceptance harness. Inert unless ?phase3check=1 is present. It clicks the
     // real button six times and reports what the renderer drew, so the counts

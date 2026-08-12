@@ -19,24 +19,27 @@ scheduled against a clock.
 
 1. **Phases are sequential.** Each phase ends in an exit gate. The next phase
    does not start until the gate passes.
-2. **Exit gates must be able to fail.** The current `selfCheck()`
-   (`visualizer/permutahedron_s4_disassembly.template.html:253`) has ten
-   conditions; eight are bare reads of booleans baked in by the build script
-   (`visualizer/build_permutahedron_s4_disassembly.mjs:232-245`). A baked
-   boolean read at render time cannot fail, and that is how four review passes
+2. **Exit gates must be able to fail.** The `selfCheck()` shipped when this
+   plan was written (then at
+   `visualizer/permutahedron_s4_disassembly.template.html:253`) had ten
+   conditions; eight were bare reads of booleans baked in by the build script.
+   It has since been replaced per Phase 2 item 6, but the lesson stands: a
+   baked boolean read at render time cannot fail, and that is how four review passes
    cleared two false captions. Every new gate assertion must be recomputed from
    the rendered data or geometry at check time, and every new assertion must be
    proven falsifiable once: break the input deliberately, watch the gate fail,
    restore the input, watch it pass.
-3. **Verify quartets 4 and 6. Never spot-check quartet 1.** Quartet
+3. **Verify TM (strand 2) and VM1 (strand 4), the quartets whose base-face
+   member sits in 3rd position. Never spot-check VM3.** The VM3 quartet
    `1234, 2143, 3412, 4321` is identical under ascending weight, final-digit
    ordering, and hopper ordering. It is the Vierergruppe, so it is what
    everyone naturally checks, and three separate errors survived review because
    the one case checked is the one case that cannot fail. Any phase touching
-   the six quartets must verify quartets 4 (`1342, 2431, 3124, 4213`, base
-   member `3124` in 3rd position) and 6 (`1432, 2341, 3214, 4123`, base member
-   `3214` in 3rd position) specifically, and must not use quartet 1 as
-   evidence of anything.
+   the six quartets must verify TM (`1342, 2431, 3124, 4213`, base member `3124`
+   in 3rd position, strand 2 under p.61 order) and VM1 (`1432, 2341, 3214, 4123`,
+   base member `3214` in 3rd position, strand 4) specifically, and must not use
+   VM3 as evidence of anything. Note the strand numbers changed when the listing
+   moved to p.61 order; identify these by multiplet, not by position.
 4. **Each phase is independently deliverable.** If work stops after any phase,
    what exists is correct and showable.
 5. **Guard rails carried over from the superseded plan, still correct:**
@@ -94,18 +97,21 @@ coordinates; assert adjacency against the edges.
 ascending weight AND the preset animation enters each quartet at position 1,
 traversing 1 to 2 to 3 to 4 cumulatively, retracing and extending exactly as he
 demoed (L11-15, L43-55). The earlier idea that the journey enters at the
-base-face node is wrong and is deleted; it would make quartets 2, 4, 5, and 6
-fill out of order. Base-face membership is a highlight, not an ordering rule.
+base-face node is wrong and is deleted; it would make CM, TM, VM1, and VM2,
+the four quartets whose base member is not in position 1, fill out of order. Base-face membership is a highlight, not an ordering rule.
 One question remains for him (see Open questions): confirm entry at position 1
 versus the hexagon node.
 
 Jul 30 styling contract, previously undocumented, now pinned here so it cannot
 be lost: link segments thickened to roughly the weight shown on Howard talk
 page 64 (SL29; the page reference is SL21, and it is page 64, not 61), and node
-names rendered inside the node domains in white letters (SL7, SL31). He then
-said "Then that's all I need" (SL33). The current bubble renderer draws dark
-text on white spheres (`permutahedron_s4_disassembly.template.html:168`), which
-does not meet this contract.
+names rendered inside the node domains (SL7, SL31). He then said "Then that's
+all I need" (SL33).
+
+On the wording "white letters": the printed p.64 figure uses white digits on
+dark discs. Brandon decided on 2026-08-05 to keep the inverse, white spheres
+with dark text, which reads better on a light background. The delivered styling
+is therefore deliberate, not a gap. Raise it with him if he objects.
 
 ---
 
@@ -197,15 +203,19 @@ every quartet during the demo.
   increasing; (b) BFS leg distances match the reference table for all six
   quartets; (c) the base hexagon's consecutive pairs are graph-adjacent and
   its projected outline has no self-intersection.
-- Falsifiability proof: swap members 3 and 4 of quartet 6 in the input, gate
+- Falsifiability proof: swap members 3 and 4 of VM1 in the input, gate
   fails; restore, gate passes. Repeat with one leg-distance entry and one
   hexagon vertex.
-- Quartets 4 and 6 verified by hand against the reference table on the
-  rendered page. Quartet 1 not used as evidence.
+- TM and VM1 verified by hand against the reference table on the rendered
+  page. VM3 not used as evidence. (These were quartets 4 and 6 under the old
+  smallest-member listing; positions changed when the listing moved to p.61
+  order, so identify them by multiplet.)
 - At the window size used on the 08-04 call, all six strands show four nodes,
   and the erratum note is visible without scrolling tricks.
-- The exported PNG includes the strand panel (`exportPng`, `template:243`,
-  currently renders only the canvas scene) and is regenerated as proof.
+- The exported PNG includes the strand panel and is regenerated as proof.
+  (At planning time `exportPng` rendered only the canvas scene; the strands
+  are now laid out in screen space on the canvas itself, so the export
+  carries them.)
 - Page renders non-blank; the self-check throws before render, so a blank
   page is the failure mode to check for explicitly.
 
@@ -229,6 +239,14 @@ animation work; animating the wrong order would burn a second review.
    restarts from the entry node and extends.
 4. **Blank white ball left at each vacated position** (L219).
 
+   **Delivered deviation, deliberate:** the marker is a white ball, but it
+   keeps the permutation name in muted grey rather than going fully blank.
+   By the time the sixth strand extracts, 11 of the 15 nodes on its journey
+   are already vacated; with unnamed markers the final strands cannot be
+   traced. Only the quartet colour departs. If Gates wants literally blank
+   balls, dropping the grey label is a one-line change; raise it if he
+   objects.
+
    This only reads correctly if the permutahedron edges are drawn on the fixed
    lattice rather than between current node positions. Drawn the other way, an
    extracted strand drags its edges with it and the solid tears apart instead of
@@ -236,27 +254,32 @@ animation work; animating the wrong order would burn a second review.
    they come out, so the vacated lattice stays legible.
 5. **Hexagon at the floor** (L177), using the corrected cyclic order.
 6. **Jul 30 styling contract:** thick links per Howard page 64 (SL21, SL29);
-   node names inside the node domains in white letters (SL7, SL31).
+   node names inside the node domains (SL7, SL31). White spheres with dark
+   text is the chosen styling; see the note under the styling contract.
 
 **Exit gate:**
 - Scripted click-through: six clicks produce six pop-outs in listed order;
-  after pop k, exactly 4k white balls occupy vacated positions (counted from
-  render state, not from a flag).
+  after pop k, exactly 4k vacated-site markers (white balls carrying grey
+  names, per the deviation recorded in item 4) occupy vacated positions
+  (counted from render state, not from a flag).
 - Glow order assertion: the glow sequence for each strand equals the
-  recomputed shortest-path route for that strand's legs, checked on quartets
-  4 and 6 member by member. Quartet 1 is not evidence.
-- The glow paths for quartets 4 and 6 never revisit a node (backtrack check
-  recomputed from the route arrays).
+  recomputed shortest-path route for that strand's legs, checked on TM
+  (strand 2) and VM1 (strand 4) member by member. VM3 is not evidence.
+- The glow paths for TM (strand 2) and VM1 (strand 4), the quartets whose
+  base-face member sits in 3rd position, never revisit a node (backtrack
+  check recomputed from the route arrays).
 
   **Correction found while building this.** Choosing each leg independently
   satisfies the per-leg condition but produces a concatenated walk that revisits
-  a node in quartets 1 (VM3, revisits 4312) and 6 (VM1, revisits 3241). Gates
+  a node in VM3 (strand 6, revisits 4312) and VM1 (strand 4, revisits 3241). Gates
   applies the self-avoiding condition to the whole traversal, not to each leg,
   so the legs are now chosen jointly: the first combination of per-leg geodesics
   whose concatenation visits no node twice. All six quartets admit one. The
   emitted `journey_ranks` is that walk, and `member_stops` marks where the four
   members sit along it.
-- Styling: rendered label pixels inside node fill are white; link stroke
+- Styling: node names render inside the node domains, dark text on white
+  spheres, per the 2026-08-05 decision recorded under the styling contract
+  (not white-on-dark as p.64 prints them); link stroke
   width matches the Howard page 64 sample by side-by-side comparison. The
   Howard PDF was permission-blocked from this machine during planning; open
   `~/Documents/HowardTLK.v2.pdf` page 64 manually for the comparison and note
@@ -291,11 +314,11 @@ distance does, and the S8 substrate already exists
 `data/permutahedron_s8_atlas.json`).
 
 **Exit gate:**
-- Select the two endpoints of a known edge from quartet 6's route (for
+- Select the two endpoints of a known edge from VM1's route (strand 4; for
   example `3214` and `3124`): the edge highlights. Select two non-adjacent
   nodes: no edge highlights.
-- Select `1342` then `4213` (quartet 4 endpoints): link count equals the BFS
-  distance recomputed at check time.
+- Select `1342` then `4213` (the TM endpoints, strand 2): link count equals
+  the BFS distance recomputed at check time.
 - Construct a deliberate backtrack (`1234` to `2134` to `1234`): the flag
   fires. A shortest path does not fire it.
 - Extract path on a hand-built selection produces a new strand whose members
@@ -380,9 +403,10 @@ visualizer data already references these Appendix B signings
 **Exit gate:**
 - Garden algebra check (`four_color::garden_ok`) passes for all three
   generated sets.
-- Permutation supports equal Eq. (5.2d-f) exactly, verified on VM1 (quartet
-  6) and VM2 (quartet 2) member by member. VM3 is quartet 1, the case that
-  cannot fail; it does not count as verification.
+- Permutation supports equal Eq. (5.2d-f) exactly, verified on VM1 (strand
+  4 under p.61 order) and VM2 (strand 5) member by member. VM3 (strand 6) is
+  the Vierergruppe, the case that cannot fail; it does not count as
+  verification.
 - The Appendix B comparison is executed and its outcome (match or documented
   convention difference, per multiplet) appears in the output.
 - The 256-signings caveat text is present and visible in the rendered
@@ -419,8 +443,9 @@ the 256-signings caveat.
 VM2 neighborhood, and arXiv:2408.09342 Tables 3 and 5 print `3412` for VM2.
 He could confirm his own erratum off the wrong row. The tool's data is
 already correct (`3421`); only the disclosure is missing. The visible note
-(Phase 2, item 7): VM2 is shown as `3421`; the printed `3412` belongs to VM3
-and admits no Garden signing (0 of 65,536), while `3421` admits 256, matching
+(Phase 2, item 7): VM2 is shown as `3421`; the printed `3412` is itself a
+valid address that belongs to VM3, and substituting it into the VM2 quartet
+leaves 0 valid Garden signings of 65,536, while `3421` gives 256, matching
 all five other quartets. The correct VM2 support is confirmed independently
 by arXiv:1210.0478 Eq. (5.2e).
 
@@ -484,8 +509,9 @@ under final-digit ordering, and under hopper ordering. It is also the quartet
 anyone naturally spot-checks, being the Vierergruppe itself. Three separate
 errors (the ordering, the height key, the false captions) all passed review
 because the one case that was checked is the one case that cannot fail. The
-structural fix is ground rule 3 (verify quartets 4 and 6, never cite quartet
-1 as evidence) and ground rule 2 (assertions recomputed from rendered
+structural fix is ground rule 3 (verify TM and VM1, the quartets whose
+base-face member sits in 3rd position, and never cite VM3 as evidence) and
+ground rule 2 (assertions recomputed from rendered
 geometry, each proven falsifiable once). The same failure had a second root:
 `selfCheck()` read conclusions the build script had already baked in, so the
 page could not disagree with its own inputs. Checks that share provenance

@@ -21,8 +21,11 @@ if [ ! -f "$page" ]; then
   exit 1
 fi
 if [ ! -x "$chrome" ]; then
-  echo "SKIP: Chrome not found at $chrome. Set CHROME to override." >&2
-  exit 0
+  # A skip that exits 0 is a silent pass. If the browser is genuinely
+  # unavailable, set ALLOW_MISSING_CHROME=1 deliberately.
+  echo "FAIL: Chrome not found at $chrome. Set CHROME to override, or ALLOW_MISSING_CHROME=1 to skip on purpose." >&2
+  [ "${ALLOW_MISSING_CHROME:-}" = "1" ] && { echo "skipping by explicit request" >&2; exit 0; }
+  exit 1
 fi
 
 dom="$(mktemp)"
@@ -36,7 +39,7 @@ trap 'rm -f "$dom" "$stderr"' EXIT
     exit 1
   }
 
-if grep -qiE "uncaught|self-check failed" "$stderr"; then
+if grep -qiE "uncaught|self-check failed|geometry check failed" "$stderr"; then
   echo "FAIL: page raised an error during initialisation." >&2
   grep -iE "uncaught|self-check failed" "$stderr" >&2
   exit 1
@@ -73,6 +76,11 @@ for index, (multiplet, legs) in enumerate(expected):
         failures.append(f"strand {index + 1} does not name {multiplet}")
     if legs not in text:
         failures.append(f"strand {index + 1} does not show legs {legs}")
+
+# The page must reach the very end of its script. Panels populate early, so a
+# late throw leaves them filled and would otherwise read as success.
+if 'id="initComplete"' not in dom:
+    failures.append("the page script did not run to completion; something threw after the panels were filled")
 
 # Language that must not survive the ascending-weight conversion.
 for stale in ["H1-H4", "hopping operator", "root distance", "Hopper Separation"]:

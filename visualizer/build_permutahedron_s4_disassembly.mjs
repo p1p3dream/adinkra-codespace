@@ -306,9 +306,9 @@ const orientedBaseCentroid = matrixVector(hexFloorMatrix, baseCentroid);
 
 // Orientation B: the view printed on HowardTLK.v2.pdf p. 64.
 // This matrix was not hand-derived. It was fitted to the printed figure itself by
-// three independent methods that agree to 0.0064: disc detection with label OCR,
-// normalised cross-correlation template matching with OCR, and reading the 24
-// labels visually off tiled crops. Reprojection RMS came out at 1.75 to 3.30 px
+// five independent methods that agree to 0.63 degrees, among them disc detection
+// with label OCR, normalised cross-correlation template matching with OCR, and
+// reading the 24 labels visually off tiled crops. Reprojection RMS came out at 1.75 to 3.30 px
 // against a disc radius of about 55 px, which is the detection noise floor.
 //
 // Two findings from that fit, both of which defeated every hand attempt:
@@ -411,20 +411,22 @@ if (!journeysUseRealEdges) throw new Error("A quartet journey traverses somethin
 if (!journeysVisitMembersInOrder) throw new Error("A quartet journey does not pass through its four members in listed order.");
 if (!oneBaseMemberPerQuartet) throw new Error("A quartet does not contain exactly one base-face member.");
 if (!requestedFacePointsDown) throw new Error("The requested hexagonal face was not oriented downward.");
-if (!page64MatchesFigure) throw new Error("The square-face-down orientation is wrong: expected 1234 front, 2134 left, 1243 right, 2143 back, all four on the floor.");
+if (!page64MatchesFigure) throw new Error("The p.64 orientation is wrong: expected the solid tipped onto the 1234 corner (lowest, at the front) with 4321 at the top, 2134 left, 1243 right, and 2143 above and to the left of 1234; the bottom square face is tilted about 20 degrees, not level.");
 
 const disassembly = {
   schema_version: "s4-six-ascending-weight-quartets-v4",
   source: "HowardTLK.v2.pdf p. 61 for the quartet listing, p. 64 for link weight; Gates call 2026-08-04",
-  ordering: "each permutation read as a four-digit number, ascending; quartets ordered by smallest member",
-  orientation: "sits on the square face 1234/2134/2143/1243 with 1234 toward the viewer; the hexagon-down view is a preset",
+  ordering: "members ascend as four-digit numbers within each quartet; the quartets themselves follow p. 61 order P[1] to P[6]",
+  orientation: "starts in the HowardTLK.v2.pdf p. 64 view, fitted to the printed figure; the hexagon-down view is a preset",
   orientation_matrix: page64Matrix,
   // Each preset carries the camera tilt it is meant to be viewed at. The
   // hexagon-down view wants a three-quarter angle so the solid reads as a solid;
   // the p. 64 figure is drawn flat on, so it takes no extra rotation.
   orientations: {
     hex_floor: { label: "Hexagon at the floor", matrix: hexFloorMatrix, pitch: 0.48, yaw: -0.62 },
-    page64: { label: "Square face down, 1234 front", matrix: page64Matrix, pitch: 0.34, yaw: 0 },
+    // pitch and yaw MUST stay zero. The matrix is fitted to the printed figure, so
+    // any extra camera rotation here silently rotates the view away from the fit.
+    page64: { label: "Howard p.64 figure", matrix: page64Matrix, pitch: 0, yaw: 0 },
   },
   base_face_cycle: baseFaceCycle,
   chains,
