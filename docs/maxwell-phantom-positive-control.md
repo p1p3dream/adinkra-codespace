@@ -80,9 +80,8 @@ Artifacts and source hashes:
 
 The previously omitted gauge and phantom sector is now explicit for the
 Maxwell positive control, and the complete Eq. (5.11) gauge-enhancement gate
-passes. The next gate is to recover this known passer from the paper's
-four-color search procedure using only worldline input, followed by a stated
-generalization to the eight-color systems.
+passes. The known passer has also been recovered from worldline input alone.
+See `docs/maxwell-worldline-recovery.md`.
 
 ## Boundary
 

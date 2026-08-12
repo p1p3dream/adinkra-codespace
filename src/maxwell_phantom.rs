@@ -37,6 +37,19 @@ impl GaussianUnit {
 }
 
 type Linkage = [[[GaussianUnit; FERMIONS]; BOSONS]; CHARGES];
+pub(crate) type WorldlineLinkage = [[[i8; FERMIONS]; FERMIONS]; CHARGES];
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) struct GaugeGateSummary {
+    pub canonical_bosonic_residual_entries: usize,
+    pub fermionic_residual_entries: usize,
+}
+
+impl GaugeGateSummary {
+    pub(crate) fn passed(self) -> bool {
+        self.canonical_bosonic_residual_entries == 0 && self.fermionic_residual_entries == 0
+    }
+}
 
 #[derive(Clone, Debug, Serialize)]
 pub struct MaxwellPhantomArtifact {
@@ -155,6 +168,120 @@ fn build_linkages() -> (Linkage, Linkage, [Linkage; 3]) {
     (up_transpose, temporal_down, spatial_down)
 }
 
+pub(crate) fn source_maxwell_worldline() -> WorldlineLinkage {
+    let (_, temporal_down, _) = build_linkages();
+    std::array::from_fn(|charge| {
+        std::array::from_fn(|boson| {
+            std::array::from_fn(|fermion| real_entry(temporal_down[charge][boson][fermion]) as i8)
+        })
+    })
+}
+
+pub(crate) fn source_chiral_worldline() -> WorldlineLinkage {
+    let clifford = Clifford4D::build();
+    let identity: Matrix4 = std::array::from_fn(|row| {
+        std::array::from_fn(|column| GaussianRational::new(i64::from(row == column), 0))
+    });
+    let i_gamma5 = matrix_scale(&clifford.gamma5, GaussianRational::new(0, 1));
+    let i_gamma5_gamma0 = matrix_scale(&clifford.gamma5_gamma_up(0), GaussianRational::new(0, 1));
+    let rows = [identity, i_gamma5, clifford.gamma_up[0], i_gamma5_gamma0];
+    std::array::from_fn(|charge| {
+        std::array::from_fn(|boson| {
+            std::array::from_fn(|fermion| gaussian_unit(rows[boson][charge][fermion]).real)
+        })
+    })
+}
+
+fn provisional_linkages(worldline: &WorldlineLinkage) -> (Linkage, Linkage, [Linkage; 3]) {
+    let clifford = Clifford4D::build();
+    let mut up_transpose = [[[GaussianUnit::default(); FERMIONS]; BOSONS]; CHARGES];
+    let mut temporal_down = [[[GaussianUnit::default(); FERMIONS]; BOSONS]; CHARGES];
+    let mut spatial_down = [[[[GaussianUnit::default(); FERMIONS]; BOSONS]; CHARGES]; 3];
+
+    for charge in 0..CHARGES {
+        for boson in 0..FERMIONS {
+            for fermion in 0..FERMIONS {
+                let value = GaussianUnit {
+                    real: worldline[charge][boson][fermion],
+                    imag: 0,
+                };
+                up_transpose[charge][boson][fermion] = value;
+                temporal_down[charge][boson][fermion] = value;
+            }
+        }
+    }
+
+    let magnetic_pairs = [(2, 3), (3, 1), (1, 2)];
+    for charge in 0..CHARGES {
+        for fermion in 0..FERMIONS {
+            for (magnetic, &(mu, nu)) in magnetic_pairs.iter().enumerate() {
+                let commutator = lower_spinors(&clifford, &clifford.commutator_up(mu, nu));
+                up_transpose[charge][4 + magnetic][fermion] = gaussian_unit(
+                    commutator[charge][fermion].mul(&GaussianRational::from_ratio(
+                        Ratio::new(-1, 2),
+                        Ratio::from_integer(0),
+                    )),
+                );
+            }
+        }
+    }
+
+    for derivative in 0..3 {
+        let gamma0_gamma_a = matrix_mul(
+            &clifford.gamma_down[0],
+            &clifford.gamma_down[1 + derivative],
+        );
+        for charge in 0..CHARGES {
+            for fermion in 0..FERMIONS {
+                for visible in 0..FERMIONS {
+                    let mut value = GaussianUnit::default();
+                    for mixed_charge in 0..CHARGES {
+                        let coefficient = gaussian_unit(gamma0_gamma_a[charge][mixed_charge]);
+                        assert_eq!(coefficient.imag, 0);
+                        value.add_scaled(
+                            temporal_down[mixed_charge][visible][fermion],
+                            -coefficient.real,
+                        );
+                    }
+                    if visible < 3 {
+                        let correction = lower_spinors(
+                            &clifford,
+                            &clifford.commutator_up(1 + derivative, 1 + visible),
+                        );
+                        let correction = correction[charge][fermion].mul(
+                            &GaussianRational::from_ratio(Ratio::new(1, 2), Ratio::from_integer(0)),
+                        );
+                        let correction = gaussian_unit(correction);
+                        value.add_scaled(correction, 1);
+                    }
+                    spatial_down[derivative][charge][visible][fermion] = value;
+                }
+                for magnetic in 0..3 {
+                    let mut value = GaussianUnit::default();
+                    for electric in 0..3 {
+                        value.add_scaled(
+                            temporal_down[charge][electric][fermion],
+                            epsilon3([magnetic, derivative, electric]),
+                        );
+                    }
+                    spatial_down[derivative][charge][4 + magnetic][fermion] = value;
+                }
+            }
+        }
+    }
+    (up_transpose, temporal_down, spatial_down)
+}
+
+pub(crate) fn gauge_enhancement_gate(worldline: &WorldlineLinkage) -> GaugeGateSummary {
+    let (up_transpose, temporal_down, spatial_down) = provisional_linkages(worldline);
+    let (_, _, _, canonical_bosonic_residual_entries, fermionic_residual_entries) =
+        verify_omega(&up_transpose, &temporal_down, &spatial_down);
+    GaugeGateSummary {
+        canonical_bosonic_residual_entries,
+        fermionic_residual_entries,
+    }
+}
+
 fn real_entry(value: GaussianUnit) -> i16 {
     assert_eq!(value.imag, 0, "normalized Maxwell linkage must be real");
     i16::from(value.real)
@@ -181,7 +308,7 @@ fn verify_omega(
         for right in left..CHARGES {
             let mut bosonic_omega = [[[0_i16; BOSONS]; BOSONS]; 4];
             for mu in 0..4 {
-                let mut fermionic_product = [[0_i16; FERMIONS]; FERMIONS];
+                let mut fermionic_product_twice = [[0_i16; FERMIONS]; FERMIONS];
                 for row in 0..FERMIONS {
                     for column in 0..FERMIONS {
                         let numerator: i16 = (0..BOSONS)
@@ -192,16 +319,15 @@ fn verify_omega(
                                         * real_entry(down[mu][left][boson][column])
                             })
                             .sum();
-                        assert_eq!(numerator % 2, 0);
-                        fermionic_product[row][column] = numerator / 2;
+                        fermionic_product_twice[row][column] = numerator;
                     }
                 }
-                let lambda = fermionic_product[0][0];
+                let lambda_twice = fermionic_product_twice[0][0];
                 for row in 0..FERMIONS {
                     for column in 0..FERMIONS {
-                        let expected = if row == column { lambda } else { 0 };
+                        let expected = if row == column { lambda_twice } else { 0 };
                         fermionic_residual +=
-                            usize::from(fermionic_product[row][column] != expected);
+                            usize::from(fermionic_product_twice[row][column] != expected);
                     }
                 }
                 for row in 0..BOSONS {
@@ -214,10 +340,8 @@ fn verify_omega(
                                         * real_entry(up_transpose[left][column][fermion])
                             })
                             .sum();
-                        assert_eq!(numerator % 2, 0);
-                        let product = numerator / 2;
                         bosonic_omega[mu][row][column] =
-                            product - if row == column { lambda } else { 0 };
+                            numerator - if row == column { lambda_twice } else { 0 };
                         raw_bosonic_nonzero += usize::from(bosonic_omega[mu][row][column] != 0);
                     }
                 }
@@ -393,5 +517,14 @@ mod tests {
         assert_eq!(artifact.fermionic_omega_residual_entries, 0);
         assert!(artifact.equation_5_11_passed);
         assert!(artifact.passed);
+    }
+
+    #[test]
+    fn worldline_only_reconstruction_reproduces_the_source_linkages() {
+        let source = build_linkages();
+        let reconstructed = provisional_linkages(&source_maxwell_worldline());
+        assert_eq!(source, reconstructed);
+        assert!(gauge_enhancement_gate(&source_maxwell_worldline()).passed());
+        assert!(!gauge_enhancement_gate(&source_chiral_worldline()).passed());
     }
 }
