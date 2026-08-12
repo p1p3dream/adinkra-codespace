@@ -1,0 +1,1232 @@
+{
+  "schema_version": "maxwell-s8-subalgebra-scan-v1",
+  "title": "Maxwell classification of the embedded four-color blocks in the closing signed S8 recursion candidates",
+  "sources": [
+    "arXiv:2304.09830v2 Eqs. (2.17)-(2.25)",
+    "arXiv:0907.3605 Section 5.5 and Eq. (5.11)"
+  ],
+  "candidates": [
+    {
+      "id": "CM->TM:order-1234:mask-2",
+      "first_label": "CM",
+      "second_label": "TM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "TM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "CM->TM:order-1234:mask-6",
+      "first_label": "CM",
+      "second_label": "TM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": "CT",
+      "first_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "TM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "CM->VM:order-1234:mask-2",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "CM->VM:order-1234:mask-6",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "CM->VM:order-2143:mask-4",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": "CV",
+      "first_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          2,
+          1,
+          4,
+          3
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "CM->VM:order-2143:mask-8",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          2,
+          1,
+          4,
+          3
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "TM->CM:order-1234:mask-2",
+      "first_label": "TM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "TM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "TM->CM:order-1234:mask-6",
+      "first_label": "TM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "TM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM->CM:order-1234:mask-2",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM->CM:order-1234:mask-6",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM->CM:order-2143:mask-4",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          2,
+          1,
+          4,
+          3
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM->CM:order-2143:mask-8",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "CM",
+        "color_order_one_based": [
+          2,
+          1,
+          4,
+          3
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM1->VM2:order-1234:mask-2",
+      "first_label": "VM1",
+      "second_label": "VM2",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "VM2",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM1->VM2:order-1234:mask-6",
+      "first_label": "VM1",
+      "second_label": "VM2",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "VM2",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM1->VM3:order-1234:mask-2",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM1->VM3:order-1234:mask-6",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM1->VM3:order-3412:mask-4",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          3,
+          4,
+          1,
+          2
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM1->VM3:order-3412:mask-8",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "second_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          3,
+          4,
+          1,
+          2
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "VM2->VM1:order-1234:mask-2",
+      "first_label": "VM2",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM2",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "VM2->VM1:order-1234:mask-6",
+      "first_label": "VM2",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM2",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "VM3->VM1:order-1234:mask-2",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "VM3->VM1:order-1234:mask-6",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "VM3->VM1:order-3412:mask-4",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          3,
+          4,
+          1,
+          2
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    },
+    {
+      "id": "VM3->VM1:order-3412:mask-8",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "first_embedded_s4": {
+        "source_label": "VM3",
+        "color_order_one_based": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "garden_closes": true,
+        "chi0": 1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 0,
+        "passes_maxwell_gate": false
+      },
+      "second_embedded_s4": {
+        "source_label": "VM1",
+        "color_order_one_based": [
+          3,
+          4,
+          1,
+          2
+        ],
+        "garden_closes": true,
+        "chi0": -1,
+        "charge_zero_normalized_candidates": 384,
+        "maxwell_gauge_enhancing_frames": 8,
+        "passes_maxwell_gate": true
+      },
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ]
+    }
+  ],
+  "signature_counts": [
+    {
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "candidates": 12
+    },
+    {
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "candidates": 12
+    }
+  ],
+  "recursive_candidates_checked": 5760,
+  "closing_candidates": 24,
+  "embedded_s4_blocks_checked": 48,
+  "embedded_s4_blocks_closing": 48,
+  "embedded_gate_passes_if_and_only_if_chi0_is_minus_one": true,
+  "every_closer_pairs_opposite_chi0": true,
+  "every_closer_contains_exactly_one_maxwell_passing_block": true,
+  "maxwell_signature_is_exact_relabeling_of_ordered_chi0": true,
+  "distinct_ordered_signatures": 2,
+  "each_signature_mixes_parentage_categories": true,
+  "ct_ordered_maxwell_signature": [
+    false,
+    true
+  ],
+  "cv_ordered_maxwell_signature": [
+    false,
+    true
+  ],
+  "ct_and_cv_are_distinguished": false,
+  "passed": true,
+  "conclusion": "Every closer pairs one chi0=+1 block with one chi0=-1 block. The Maxwell gate selects exactly the chi0=-1 member, so it contributes no information beyond ordered chi0 on this finite library. Both ordered signatures mix named four-dimensional parents with sources having no stated parent, and the signature does not distinguish the published CT and CV anchors.",
+  "boundary": "Colors 1-4 are block diagonal in this recursion, so the two extracted 4-by-4 systems are genuine Garden subrepresentations of that four-color restriction. The full eight-color representation is irreducible and does not split into these blocks. No claim is made that either block alone determines higher-dimensional parentage of the complete N=8 system."
+}

@@ -47,6 +47,7 @@ mod minimal_supergravity_action;
 mod minimal_supergravity_curvatures;
 mod maxwell_phantom;
 mod maxwell_s4_atlas_scan;
+mod maxwell_s8_subalgebra_scan;
 mod maxwell_worldline_search;
 mod nauty_canonical;
 mod orientation;
@@ -153,6 +154,8 @@ fn main() {
         "maxwell-worldline-search-verify" => cmd_maxwell_worldline_search_verify(),
         "maxwell-s4-atlas-build" => cmd_maxwell_s4_atlas_build(&args),
         "maxwell-s4-atlas-verify" => cmd_maxwell_s4_atlas_verify(),
+        "maxwell-s8-subalgebra-build" => cmd_maxwell_s8_subalgebra_build(&args),
+        "maxwell-s8-subalgebra-verify" => cmd_maxwell_s8_subalgebra_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -831,6 +834,26 @@ fn cmd_maxwell_s4_atlas_build(args: &[String]) {
 
 fn cmd_maxwell_s4_atlas_verify() {
     let artifact = maxwell_s4_atlas_scan::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s8_subalgebra_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_s8_subalgebra_scan.json");
+    let artifact = maxwell_s8_subalgebra_scan::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s8_subalgebra_verify() {
+    let artifact = maxwell_s8_subalgebra_scan::build();
     println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
     if !artifact.passed {
         std::process::exit(2);

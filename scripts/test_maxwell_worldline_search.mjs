@@ -154,4 +154,74 @@ for(const sector of s4Atlas.sectors) for(const signing of sector.published_fiduc
   s4Passers+=Number(result.passed>0); s4Inputs++;
 }
 assert(s4Inputs===96&&s4Passers===48&&s4Report.passed,"S4 atlas summary mismatch");
-console.log("verified 14,598,144 additional signed frame pairs: all 96 published S4 signings, with 48 passers exactly at chi0=-1");
+
+const numericTranspose=(matrix)=>matrix[0].map((_,column)=>matrix.map((row)=>row[column]));
+const numericMultiply=(a,b)=>a.map((row)=>b[0].map((_,column)=>
+  row.reduce((sum,value,inner)=>sum+value*b[inner][column],0)));
+const numericTrace=(matrix)=>matrix.reduce((sum,row,index)=>sum+row[index],0);
+const parity=(permutation)=>{
+  let inversions=0;
+  for(let i=0;i<permutation.length;i++) for(let j=i+1;j<permutation.length;j++) inversions+=Number(permutation[i]>permutation[j]);
+  return inversions%2===0?1:-1;
+};
+function chi0(input) {
+  let antisymmetrized=0;
+  for(const order of permutations) {
+    const product=numericMultiply(
+      numericMultiply(
+        numericMultiply(input[order[0]],numericTranspose(input[order[1]])),
+        input[order[2]],
+      ),
+      numericTranspose(input[order[3]]),
+    );
+    antisymmetrized+=parity(order)*numericTrace(product);
+  }
+  assert(antisymmetrized%96===0,"nonintegral embedded chi0");
+  return antisymmetrized/96;
+}
+function gardenCloses(input) {
+  for(let left=0;left<4;left++) for(let right=left;right<4;right++) {
+    const sum=numericMultiply(input[left],numericTranspose(input[right])).map((row,i)=>row.map((value,j)=>
+      value+numericMultiply(input[right],numericTranspose(input[left]))[i][j]));
+    for(let row=0;row<4;row++) for(let column=0;column<4;column++) {
+      const expected=left===right&&row===column?2:0;
+      if(sum[row][column]!==expected) return false;
+    }
+  }
+  return true;
+}
+function embeddedBlock(candidate,offset) {
+  return Array.from({length:4},(_,color)=>Array.from({length:4},(_,row)=>Array.from({length:4},(_,column)=>{
+    const sourceRow=offset+row;
+    const target=candidate.permutations[color][sourceRow]-1;
+    assert(target>=offset&&target<offset+4,"S8 color 1-4 is not block diagonal");
+    return target-offset===column?((candidate.boolean_factors[color]&(1<<sourceRow))===0?1:-1):0;
+  })));
+}
+
+const s8Source=JSON.parse(fs.readFileSync("data/permutahedron_s8_signed_equivalence.json","utf8"));
+const s8Report=JSON.parse(fs.readFileSync("results/maxwell_s8_subalgebra_scan.json","utf8"));
+const s8ById=new Map(s8Report.candidates.map((candidate)=>[candidate.id,candidate]));
+let s8Blocks=0,s8PassingBlocks=0;
+for(const candidate of s8Source.closers) {
+  const reportCandidate=s8ById.get(candidate.id);
+  assert(reportCandidate,"missing S8 embedded-subalgebra record");
+  for(const [position,offset] of [0,4].entries()) {
+    const input=embeddedBlock(candidate,offset);
+    assert(gardenCloses(input),"extracted S8 four-color block does not close");
+    const exactChi0=chi0(input);
+    const result=search(input);
+    const block=position===0?reportCandidate.first_embedded_s4:reportCandidate.second_embedded_s4;
+    assert(exactChi0===block.chi0,"embedded chi0 mismatch");
+    assert(result.normalized===block.charge_zero_normalized_candidates,"embedded normalization count mismatch");
+    assert(result.passed===block.maxwell_gauge_enhancing_frames,"embedded Maxwell count mismatch");
+    assert((result.passed>0)===(exactChi0===-1),"embedded Maxwell gate and chi0 disagree");
+    s8PassingBlocks+=Number(result.passed>0);
+    s8Blocks++;
+  }
+}
+assert(s8Blocks===48&&s8PassingBlocks===24,"S8 embedded-block summary mismatch");
+assert(s8Report.distinct_ordered_signatures===2,"S8 ordered-signature count mismatch");
+assert(s8Report.ct_and_cv_are_distinguished===false,"CT/CV distinction mismatch");
+assert(s8Report.passed,"S8 embedded-subalgebra report failed");
+console.log("verified 21,676,032 signed frame pairs: three controls, 96 published S4 signings, and 48 S4 blocks retained by the 24 closing S8 recursion candidates");
