@@ -16,6 +16,9 @@ closing result under explicit signed equivalence relations.
 - arXiv:1712.07826, Eq. (2.33), gives the fixed-color nodal relation
   `L'_I = X L_I Y`, with signed permutation matrices acting on the two node
   levels.
+- `HowardTLK.v2.pdf`, pp. 61, 64, 73, 77, and 80-81, supplies the six-quartet
+  geometric base case, the 24-node permutahedron, and the hopping construction
+  that motivates the higher-color separation problem.
 
 ## Exhaustive scan
 
@@ -95,10 +98,11 @@ joint choice of representatives. It becomes evidence for a physical
 selection rule only if it is rare, stable under the declared equivalences,
 and predicts the named closing systems without being fitted to them.
 
-The next calculation should enumerate Gadget-orthonormal frames over the
-quotiented signing library and measure the number of inequivalent frames. It
-must retain the explicit transformations that align representatives before
-comparing frames.
+That calculation is complete in
+`docs/permutahedron-s4-gadget-frame-census.md`. Among the complete fixed-order
+Boolean library, 28,862,180,229,120 of 281,474,976,710,656 six-frames are
+orthonormal, a fraction of `105/1024`. Orthonormality is therefore a common
+joint convention in this library rather than a unique or rare selector.
 
 ## Reproduction
 
@@ -116,7 +120,7 @@ Artifacts:
 
 | Artifact | SHA256 |
 |---|---|
-| data | `886c3b3bdbc739e287a6feef8f4a68352d796fc645067a358d31ac42114f2a5a` |
+| data | `bc134b15bffb84db5ac1f280b26cf45345f42cd9e5abcbfcecfa2120e3e6a021` |
 | validation | `2cf78cb8ca1e91959a77ca44ef5921644cc82dd829a339b446a5c1528659da47` |
 
 The independent JavaScript audit reconstructs all 5,760 candidates from the

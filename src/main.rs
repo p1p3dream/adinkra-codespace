@@ -48,6 +48,7 @@ mod permutahedron;
 mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
+mod permutahedron_s4_gadget_frames;
 mod permutahedron_s4_supersymmetry;
 mod permutahedron_s8_conjugate_separation;
 mod permutahedron_s8_orbits;
@@ -116,6 +117,8 @@ fn main() {
         "perm-atlas-build" => cmd_perm_atlas_build(&args),
         "perm-atlas-verify" => cmd_perm_atlas_verify(),
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
+        "perm-s4-gadget-frames-build" => cmd_perm_s4_gadget_frames_build(&args),
+        "perm-s4-gadget-frames-verify" => cmd_perm_s4_gadget_frames_verify(),
         "perm-s4-susy-build" => cmd_perm_s4_susy_build(&args),
         "perm-s4-susy-verify" => cmd_perm_s4_susy_verify(),
         "perm-s8-conjugates-build" => cmd_perm_s8_conjugates_build(&args),
@@ -254,6 +257,9 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-atlas-verify       Verify graphs, paper correlators, cosets, and embeddings");
     eprintln!("  perm-garden-scan [json]");
     eprintln!("                          Solve Garden signs for all 5,040 R8 cosets");
+    eprintln!("  perm-s4-gadget-frames-build [data-json] [validation-json]");
+    eprintln!("                          Count exact Gadget-orthonormal six-frames");
+    eprintln!("  perm-s4-gadget-frames-verify");
     eprintln!("  perm-s4-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six signed S4 sectors and their Adinkras");
     eprintln!("  perm-s4-susy-verify     Verify all 96 published fiducial signings");
@@ -462,6 +468,36 @@ fn cmd_perm_garden_scan(args: &[String]) {
         report.normalizer.normalizer_order,
         report.passed
     );
+}
+
+fn cmd_perm_s4_gadget_frames_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s4_gadget_frames.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s4_gadget_frames_validation.json");
+    let report = permutahedron_s4_gadget_frames::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s4_gadget_frames_verify() {
+    let artifact = permutahedron_s4_gadget_frames::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
 }
 
 fn cmd_perm_s4_susy_build(args: &[String]) {

@@ -1,0 +1,29 @@
+{
+  "raw_boolean_assignments_checked": 393216,
+  "garden_closing_signings": 1536,
+  "signings_per_sector": [
+    256,
+    256,
+    256,
+    256,
+    256,
+    256
+  ],
+  "exact_pairwise_gadgets_checked": 983040,
+  "distinct_gadget_numerators_over_24": [
+    -8,
+    0,
+    8
+  ],
+  "literal_weighted_table5_frame_is_orthonormal": false,
+  "appendix_b_reference_frame_is_orthonormal": true,
+  "raw_orthonormal_frames": 28862180229120,
+  "total_fixed_order_frames": 281474976710656,
+  "orthonormal_frame_fraction_numerator": 105,
+  "orthonormal_frame_fraction_denominator": 1024,
+  "common_vertex_switching_orbits": 225485783040,
+  "common_vertex_switching_action_is_free": true,
+  "conservative_remaining_relabeling_group_bound": 110592,
+  "conservative_minimum_classes_after_standard_common_relabelings": 2038898,
+  "passed": true
+}

@@ -285,7 +285,7 @@ pub fn boolean_diagonal(factor: u8) -> [i8; 4] {
     result
 }
 
-fn build_rep(sector: usize, factors: [u8; 4]) -> AdinkraRep {
+pub(crate) fn build_rep(sector: usize, factors: [u8; 4]) -> AdinkraRep {
     let perms: Vec<Vec<usize>> = S4_ORDERED_QUARTETS[sector]
         .iter()
         .map(|p| p.iter().map(|&x| usize::from(x - 1)).collect())

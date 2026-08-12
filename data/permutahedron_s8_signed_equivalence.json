@@ -3,19 +3,24 @@
   "title": "Relative-color completion and exact signed equivalence of the S8 recursion",
   "sources": [
     {
-      "arxiv_id": "2304.09830",
+      "source": "arXiv:2304.09830",
       "locator": "Eqs. (2.17)-(2.25) and Sec. 2.2",
       "role": "unsigned block recursion, Boolean factors, cyclic flips, and Garden acceptance"
     },
     {
-      "arxiv_id": "2012.13308",
+      "source": "arXiv:2012.13308",
       "locator": "discussion surrounding the twenty-four color orderings",
       "role": "the color order is retained as explicit data rather than assumed immaterial"
     },
     {
-      "arxiv_id": "1712.07826",
+      "source": "arXiv:1712.07826",
       "locator": "Eq. (2.33) and the surrounding discussion of node flips and flops",
       "role": "fixed-color signed nodal equivalence"
+    },
+    {
+      "source": "HowardTLK.v2.pdf",
+      "locator": "pp. 61, 64, 73, 77, 80-81",
+      "role": "the six four-color quartets, permutahedron geometry, hopping operators, and the intended four-color base case"
     }
   ],
   "scan": [

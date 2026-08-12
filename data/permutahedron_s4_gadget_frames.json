@@ -1,0 +1,302 @@
+{
+  "schema_version": "permutahedron-s4-gadget-frames-v1",
+  "title": "Exact first-Gadget orthonormal-frame census for the six S4 quartets",
+  "sources": [
+    {
+      "source": "HowardTLK.v2.pdf",
+      "locator": "pp. 61, 64, 73, 77, 80-81",
+      "role": "six four-color quartets, permutahedron geometry, hopping operators, and the six-chain base case"
+    },
+    {
+      "source": "arXiv:1701.00304",
+      "locator": "Appendix B and the first Gadget",
+      "role": "published fiducial Boolean factors and Gadget definition"
+    },
+    {
+      "source": "arXiv:2408.09342",
+      "locator": "Eqs. (2.14)-(2.16) and the displayed 6 x 6 Gadget matrix",
+      "role": "weighted Table 5 representatives and the stated orthonormality to audit independently"
+    }
+  ],
+  "sectors": [
+    {
+      "label": "CM",
+      "garden_signings": 256,
+      "vertex_switching_classes": 2,
+      "chi0_positive": 128,
+      "chi0_negative": 128,
+      "compatibility_profile_types": 16
+    },
+    {
+      "label": "TM",
+      "garden_signings": 256,
+      "vertex_switching_classes": 2,
+      "chi0_positive": 128,
+      "chi0_negative": 128,
+      "compatibility_profile_types": 16
+    },
+    {
+      "label": "VM",
+      "garden_signings": 256,
+      "vertex_switching_classes": 2,
+      "chi0_positive": 128,
+      "chi0_negative": 128,
+      "compatibility_profile_types": 16
+    },
+    {
+      "label": "VM1",
+      "garden_signings": 256,
+      "vertex_switching_classes": 2,
+      "chi0_positive": 128,
+      "chi0_negative": 128,
+      "compatibility_profile_types": 16
+    },
+    {
+      "label": "VM2",
+      "garden_signings": 256,
+      "vertex_switching_classes": 2,
+      "chi0_positive": 128,
+      "chi0_negative": 128,
+      "compatibility_profile_types": 16
+    },
+    {
+      "label": "VM3",
+      "garden_signings": 256,
+      "vertex_switching_classes": 2,
+      "chi0_positive": 128,
+      "chi0_negative": 128,
+      "compatibility_profile_types": 16
+    }
+  ],
+  "literal_weighted_table5_frame": {
+    "source_description": "literal weighted signed representatives in arXiv:2408.09342, Table 5, with 3421 substituted for the printed VM2 entry 3412",
+    "appendix_b_indices_one_based_when_present": [
+      12,
+      16,
+      14,
+      null,
+      null,
+      null
+    ],
+    "boolean_factors": [
+      [
+        10,
+        12,
+        6,
+        0
+      ],
+      [
+        14,
+        4,
+        8,
+        2
+      ],
+      [
+        12,
+        10,
+        6,
+        0
+      ],
+      [
+        6,
+        3,
+        10,
+        0
+      ],
+      [
+        12,
+        9,
+        0,
+        10
+      ],
+      [
+        12,
+        5,
+        0,
+        6
+      ]
+    ],
+    "gadget_numerators_over_24": [
+      [
+        24,
+        0,
+        0,
+        0,
+        8,
+        0
+      ],
+      [
+        0,
+        24,
+        -8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        -8,
+        24,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        24,
+        0,
+        0
+      ],
+      [
+        8,
+        0,
+        0,
+        0,
+        24,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        24
+      ]
+    ],
+    "is_orthonormal": false
+  },
+  "appendix_b_orthonormal_reference_frame": {
+    "source_description": "first Appendix-B fiducial signing for each quartet in arXiv:1701.00304",
+    "appendix_b_indices_one_based_when_present": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "boolean_factors": [
+      [
+        0,
+        6,
+        12,
+        10
+      ],
+      [
+        0,
+        10,
+        6,
+        12
+      ],
+      [
+        0,
+        6,
+        10,
+        12
+      ],
+      [
+        0,
+        10,
+        12,
+        6
+      ],
+      [
+        0,
+        6,
+        10,
+        12
+      ],
+      [
+        0,
+        6,
+        12,
+        10
+      ]
+    ],
+    "gadget_numerators_over_24": [
+      [
+        24,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        24,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        24,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        24,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        24,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        24
+      ]
+    ],
+    "is_orthonormal": true
+  },
+  "validation": {
+    "raw_boolean_assignments_checked": 393216,
+    "garden_closing_signings": 1536,
+    "signings_per_sector": [
+      256,
+      256,
+      256,
+      256,
+      256,
+      256
+    ],
+    "exact_pairwise_gadgets_checked": 983040,
+    "distinct_gadget_numerators_over_24": [
+      -8,
+      0,
+      8
+    ],
+    "literal_weighted_table5_frame_is_orthonormal": false,
+    "appendix_b_reference_frame_is_orthonormal": true,
+    "raw_orthonormal_frames": 28862180229120,
+    "total_fixed_order_frames": 281474976710656,
+    "orthonormal_frame_fraction_numerator": 105,
+    "orthonormal_frame_fraction_denominator": 1024,
+    "common_vertex_switching_orbits": 225485783040,
+    "common_vertex_switching_action_is_free": true,
+    "conservative_remaining_relabeling_group_bound": 110592,
+    "conservative_minimum_classes_after_standard_common_relabelings": 2038898,
+    "passed": true
+  },
+  "interpretation": "The census tests whether first-Gadget orthonormality selects a rare joint Boolean assignment. Counts are given before and after common vertex switching, while keeping the six quartet labels and four color labels fixed.",
+  "boundary": "This is the complete fixed-color, fixed-quartet-order Boolean library. It does not yet quotient common color permutations or supercharge signs, include independently reordered colors, or identify Gadget orthonormality with four-dimensional physical parentage."
+}

@@ -26,7 +26,7 @@ const D: usize = 8;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SourceRecord {
-    pub arxiv_id: &'static str,
+    pub source: &'static str,
     pub locator: &'static str,
     pub role: &'static str,
 }
@@ -607,19 +607,24 @@ pub fn build() -> SignedEquivalenceArtifact {
         title: "Relative-color completion and exact signed equivalence of the S8 recursion",
         sources: vec![
             SourceRecord {
-                arxiv_id: "2304.09830",
+                source: "arXiv:2304.09830",
                 locator: "Eqs. (2.17)-(2.25) and Sec. 2.2",
                 role: "unsigned block recursion, Boolean factors, cyclic flips, and Garden acceptance",
             },
             SourceRecord {
-                arxiv_id: "2012.13308",
+                source: "arXiv:2012.13308",
                 locator: "discussion surrounding the twenty-four color orderings",
                 role: "the color order is retained as explicit data rather than assumed immaterial",
             },
             SourceRecord {
-                arxiv_id: "1712.07826",
+                source: "arXiv:1712.07826",
                 locator: "Eq. (2.33) and the surrounding discussion of node flips and flops",
                 role: "fixed-color signed nodal equivalence",
+            },
+            SourceRecord {
+                source: "HowardTLK.v2.pdf",
+                locator: "pp. 61, 64, 73, 77, 80-81",
+                role: "the six four-color quartets, permutahedron geometry, hopping operators, and the intended four-color base case",
             },
         ],
         scan,
@@ -705,9 +710,7 @@ mod tests {
         let transformed = dual(&rep);
         let identity = std::array::from_fn(|index| index);
         let witness = (0..D)
-            .find_map(|root| {
-                witness_for_color_map(&transformed, &rep, identity, root, true, true)
-            })
+            .find_map(|root| witness_for_color_map(&transformed, &rep, identity, root, true, true))
             .expect("duality witness");
         assert!(witness.source_dualized);
         assert!(verify_witness(&rep, &rep, &witness));
@@ -725,8 +728,15 @@ mod tests {
         assert!(artifact.validation.ct_exact_anchor_recovered);
         assert!(artifact.validation.cv_exact_anchor_recovered);
         assert!(artifact.validation.every_serialized_witness_verified);
-        assert_eq!(artifact.validation.equivalence_class_counts_by_layer, [1, 1, 1, 1]);
-        assert!(artifact.validation.all_closers_share_one_fixed_color_nodal_class);
+        assert_eq!(
+            artifact.validation.equivalence_class_counts_by_layer,
+            [1, 1, 1, 1]
+        );
+        assert!(
+            artifact
+                .validation
+                .all_closers_share_one_fixed_color_nodal_class
+        );
         assert!(artifact.validation.passed);
     }
 }
