@@ -46,7 +46,10 @@ JavaScript implementations verify all 612 component relations, including the
 vector gauge residue, and recover all 512 entries of the committed `CV` anchor.
 See `docs/chiral-vector-4d-positive-control.md`.
 
-The chiral-tensor positive control remains next.
+The chiral-tensor positive control is also complete. Exact Rust and independent
+JavaScript implementations verify all 684 component relations, including the
+two-form gauge residue, and recover all 512 entries of the committed `CT`
+anchor. See `docs/chiral-tensor-4d-positive-control.md`.
 
 ## Exact implementation order
 
@@ -60,10 +63,10 @@ The chiral-tensor positive control remains next.
    the vector gauge transformation.
 4. Completed: apply Eqs. (40)-(41), reduce to one temporal coordinate, and verify the
    resulting matrices against the committed `CV` anchor byte for byte.
-5. Repeat the component closure and reduction checks for `CT` using
+5. Completed: repeat the component closure and reduction checks for `CT` using
    Eqs. (44)-(53), including the two-form gauge transformation.
 6. Record the spatial linkage and gauge data that distinguish the two positive
-   controls despite their common one-dimensional signed class.
+controls despite their common `8|8` Garden size.
 7. Define the minimum additional data that a `VM1`, `VM2`, or `VM3` candidate
    would need before the same test is meaningful. Do not infer missing spatial
    transformations from a valise matrix alone.

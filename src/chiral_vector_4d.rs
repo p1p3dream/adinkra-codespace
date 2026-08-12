@@ -15,46 +15,46 @@ use std::path::Path;
 const SPINORS: usize = 4;
 const DIM: usize = 4;
 
-type Rat = Ratio<i64>;
+pub(crate) type Rat = Ratio<i64>;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-struct GaussianRational {
-    real: Rat,
-    imag: Rat,
+pub(crate) struct GaussianRational {
+    pub(crate) real: Rat,
+    pub(crate) imag: Rat,
 }
 
 impl GaussianRational {
-    fn new(real: i64, imag: i64) -> Self {
+    pub(crate) fn new(real: i64, imag: i64) -> Self {
         Self {
             real: Ratio::from_integer(real),
             imag: Ratio::from_integer(imag),
         }
     }
 
-    fn from_ratio(real: Rat, imag: Rat) -> Self {
+    pub(crate) fn from_ratio(real: Rat, imag: Rat) -> Self {
         Self { real, imag }
     }
 
-    fn add_assign(&mut self, other: &Self) {
+    pub(crate) fn add_assign(&mut self, other: &Self) {
         self.real += other.real;
         self.imag += other.imag;
     }
 
-    fn mul(&self, other: &Self) -> Self {
+    pub(crate) fn mul(&self, other: &Self) -> Self {
         Self::from_ratio(
             self.real * other.real - self.imag * other.imag,
             self.real * other.imag + self.imag * other.real,
         )
     }
 
-    fn is_zero(&self) -> bool {
+    pub(crate) fn is_zero(&self) -> bool {
         self.real == Ratio::from_integer(0) && self.imag == Ratio::from_integer(0)
     }
 }
 
-type Matrix4 = [[GaussianRational; 4]; 4];
+pub(crate) type Matrix4 = [[GaussianRational; 4]; 4];
 
-fn zero_matrix() -> Matrix4 {
+pub(crate) fn zero_matrix() -> Matrix4 {
     std::array::from_fn(|_| std::array::from_fn(|_| GaussianRational::default()))
 }
 
@@ -65,7 +65,7 @@ fn identity2() -> [[GaussianRational; 2]; 2] {
     ]
 }
 
-fn pauli(index: usize) -> [[GaussianRational; 2]; 2] {
+pub(crate) fn pauli(index: usize) -> [[GaussianRational; 2]; 2] {
     match index {
         1 => [
             [GaussianRational::new(0, 0), GaussianRational::new(1, 0)],
@@ -89,11 +89,11 @@ fn kronecker(left: [[GaussianRational; 2]; 2], right: [[GaussianRational; 2]; 2]
     })
 }
 
-fn matrix_scale(matrix: &Matrix4, coefficient: GaussianRational) -> Matrix4 {
+pub(crate) fn matrix_scale(matrix: &Matrix4, coefficient: GaussianRational) -> Matrix4 {
     std::array::from_fn(|row| std::array::from_fn(|column| matrix[row][column].mul(&coefficient)))
 }
 
-fn matrix_add(left: &Matrix4, right: &Matrix4) -> Matrix4 {
+pub(crate) fn matrix_add(left: &Matrix4, right: &Matrix4) -> Matrix4 {
     std::array::from_fn(|row| {
         std::array::from_fn(|column| {
             let mut value = left[row][column];
@@ -103,7 +103,7 @@ fn matrix_add(left: &Matrix4, right: &Matrix4) -> Matrix4 {
     })
 }
 
-fn matrix_mul(left: &Matrix4, right: &Matrix4) -> Matrix4 {
+pub(crate) fn matrix_mul(left: &Matrix4, right: &Matrix4) -> Matrix4 {
     let mut result = zero_matrix();
     for row in 0..4 {
         for inner in 0..4 {
@@ -117,15 +117,15 @@ fn matrix_mul(left: &Matrix4, right: &Matrix4) -> Matrix4 {
 }
 
 #[derive(Clone)]
-struct Clifford4D {
-    gamma_up: [Matrix4; DIM],
-    gamma_down: [Matrix4; DIM],
-    gamma5: Matrix4,
-    charge_conjugation: Matrix4,
+pub(crate) struct Clifford4D {
+    pub(crate) gamma_up: [Matrix4; DIM],
+    pub(crate) gamma_down: [Matrix4; DIM],
+    pub(crate) gamma5: Matrix4,
+    pub(crate) charge_conjugation: Matrix4,
 }
 
 impl Clifford4D {
-    fn build() -> Self {
+    pub(crate) fn build() -> Self {
         let identity = identity2();
         let sigma1 = pauli(1);
         let sigma2 = pauli(2);
@@ -154,15 +154,15 @@ impl Clifford4D {
         }
     }
 
-    fn lower_spinors(&self, matrix: &Matrix4) -> Matrix4 {
+    pub(crate) fn lower_spinors(&self, matrix: &Matrix4) -> Matrix4 {
         matrix_mul(matrix, &self.charge_conjugation)
     }
 
-    fn gamma5_gamma_up(&self, mu: usize) -> Matrix4 {
+    pub(crate) fn gamma5_gamma_up(&self, mu: usize) -> Matrix4 {
         matrix_mul(&self.gamma5, &self.gamma_up[mu])
     }
 
-    fn commutator_up(&self, mu: usize, nu: usize) -> Matrix4 {
+    pub(crate) fn commutator_up(&self, mu: usize, nu: usize) -> Matrix4 {
         matrix_add(
             &matrix_mul(&self.gamma_up[mu], &self.gamma_up[nu]),
             &matrix_scale(
@@ -172,7 +172,7 @@ impl Clifford4D {
         )
     }
 
-    fn verifies_source_conventions(&self) -> bool {
+    pub(crate) fn verifies_source_conventions(&self) -> bool {
         let identity = std::array::from_fn(|row| {
             std::array::from_fn(|column| GaussianRational::new(i64::from(row == column), 0))
         });

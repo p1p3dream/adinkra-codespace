@@ -20,6 +20,7 @@ mod bbbm_sixteen_source_audit;
 mod bbbm_source_audit;
 mod bbbm_worldline;
 mod canonical;
+mod chiral_tensor_4d;
 mod chiral_vector_4d;
 mod chromochar;
 mod chromotopology;
@@ -136,6 +137,8 @@ fn main() {
         "perm-s8-susy-verify" => cmd_perm_s8_susy_verify(),
         "chiral-vector-4d-build" => cmd_chiral_vector_4d_build(&args),
         "chiral-vector-4d-verify" => cmd_chiral_vector_4d_verify(),
+        "chiral-tensor-4d-build" => cmd_chiral_tensor_4d_build(&args),
+        "chiral-tensor-4d-verify" => cmd_chiral_tensor_4d_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -289,6 +292,9 @@ fn print_usage(prog: &str) {
     eprintln!("  chiral-vector-4d-build [data-json] [validation-json]");
     eprintln!("                          Reproduce 4D chiral-vector closure and its 1D reduction");
     eprintln!("  chiral-vector-4d-verify Verify Eqs. 32-41 of arXiv:1405.0048 exactly");
+    eprintln!("  chiral-tensor-4d-build [data-json] [validation-json]");
+    eprintln!("                          Reproduce 4D chiral-tensor closure and its 1D reduction");
+    eprintln!("  chiral-tensor-4d-verify Verify Eqs. 44-53 of arXiv:1405.0048 exactly");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -692,6 +698,33 @@ fn cmd_chiral_vector_4d_build(args: &[String]) {
 
 fn cmd_chiral_vector_4d_verify() {
     let report = chiral_vector_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_tensor_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/chiral_tensor_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/chiral_tensor_4d_validation.json");
+    let report = chiral_tensor_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_tensor_4d_verify() {
+    let report = chiral_tensor_4d::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);

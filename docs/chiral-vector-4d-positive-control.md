@@ -112,9 +112,10 @@ object. Its one-dimensional matrix class is not being treated as evidence of
 parentage. The verified spatial derivative terms, field strength, gauge
 residue, temporal gauge, and field-to-node map are the parentage data.
 
-The next pass is the chiral-tensor positive control from Eqs. (44)-(53) and
-Appendix C of arXiv:1405.0048. Its two-form gauge residue must be retained and
-its reduction must recover the committed `CT` matrices exactly.
+The chiral-tensor positive control from Eqs. (44)-(53) and Appendix C of
+arXiv:1405.0048 is now complete. Its two-form gauge residue is retained and its
+reduction recovers the committed `CT` matrices exactly. See
+`docs/chiral-tensor-4d-positive-control.md`.
 
 ## Boundary
 
