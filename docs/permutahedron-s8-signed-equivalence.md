@@ -89,6 +89,16 @@ after reduction to the minimal one-dimensional system. Their distinct
 higher-dimensional labels are not recovered by Garden closure and fixed-color
 nodal classification alone.
 
+This failure is not limited to the `CT` and `CV` names. Exactly 12 closing
+candidates are built from pairs among `CM`, `TM`, and `VM`, whose sources are
+Carroll reductions of named four-dimensional multiplets. The other 12 are
+built from pairs among `VM1`, `VM2`, and `VM3`, for which the source states no
+four-dimensional parent. All 24 occupy the same fixed-color nodal class.
+Therefore no invariant of that one-dimensional equivalence class can recover
+the source-parentage distinction. This does not show that the latter 12 lack
+a higher-dimensional parent. It shows that parentage is not determined by the
+one-dimensional signed class.
+
 ## Consequence for the Gadget test
 
 The result narrows the selection-rule question. A raw cross-Gadget matrix can
@@ -120,8 +130,8 @@ Artifacts:
 
 | Artifact | SHA256 |
 |---|---|
-| data | `bc134b15bffb84db5ac1f280b26cf45345f42cd9e5abcbfcecfa2120e3e6a021` |
-| validation | `2cf78cb8ca1e91959a77ca44ef5921644cc82dd829a339b446a5c1528659da47` |
+| data | `a128d7e74669dfbba4f5f00b11f8744d8f132e27af7985eee594db161749bad7` |
+| validation | `7dcd0987c7a9ab3df5fc36c04c4a77767f5e8921355a04b2d76759e46029f608` |
 
 The independent JavaScript audit reconstructs all 5,760 candidates from the
 six printed signed four-color words, recomputes all closure decisions, checks
@@ -134,3 +144,23 @@ The class IDs are canonical only within this finite scan. The result does not
 identify the nodal quotient with complete physical equivalence, prove
 four-dimensional enhancement, or enumerate arbitrary Garden signings outside
 the paper's cyclic-flip construction.
+
+## Remaining higher-dimensional gate
+
+The next discriminator cannot be computed from the common valise class alone.
+It requires data discarded by one-dimensional reduction:
+
+1. attach the four-dimensional field content, engineering heights, and gauge
+   identifications for the published `CT` and `CV` anchors;
+2. reconstruct or source the spatial linkage matrices and any gauge or phantom
+   corrections;
+3. verify the higher-dimensional supersymmetry algebra on those two positive
+   controls; and
+4. apply the same criterion to the closing systems built from `VM1`, `VM2`,
+   and `VM3` without inferring parentage from their one-dimensional names.
+
+`HowardTLK.v2.pdf` fixes the permutation geometry and hopping construction. It
+does not supply the spatial linkage or gauge data needed for this gate. Until
+those data are specified, the exact stopping statement is that the signed
+one-dimensional recursion is irreducible but does not determine
+four-dimensional parentage.

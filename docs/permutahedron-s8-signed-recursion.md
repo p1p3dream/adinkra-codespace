@@ -149,4 +149,9 @@ That gate is now complete in
 raise the exhaustive scan to 5,760 candidates. Exactly 24 close, the printed
 `CV` system is recovered at relative order `2143`, and all 24 closers lie in
 one fixed-color nodal signed-equivalence class. The next gate is the
-Gadget-orthonormal frame census over the quotiented signing library.
+Gadget-orthonormal frame census over the quotiented signing library. That
+census is now complete and finds that `105/1024` of all fixed-order six-frames
+are orthonormal. The Gadget therefore does not supply a rare selector by
+itself. A further distinction requires higher-dimensional parentage or an
+enhancement test, not another invariant of the common one-dimensional nodal
+class.

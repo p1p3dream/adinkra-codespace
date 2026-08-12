@@ -1,5 +1,5 @@
 {
-  "schema_version": "permutahedron-s8-signed-equivalence-v1",
+  "schema_version": "permutahedron-s8-signed-equivalence-v2",
   "title": "Relative-color completion and exact signed equivalence of the S8 recursion",
   "sources": [
     {
@@ -17891,6 +17891,9 @@
       1
     ],
     "all_closers_share_one_fixed_color_nodal_class": true,
+    "closers_built_from_two_named_four_dimensional_parents": 12,
+    "closers_built_from_sources_with_no_stated_four_dimensional_parent": 12,
+    "fixed_color_nodal_class_mixes_source_parentage_categories": true,
     "passed": true
   },
   "boundary": "The class IDs are canonical only within this finite scan. Fixed-color nodal equivalence, supercharge signs, color permutations, and boson-fermion duality are reported as separate layers. No layer is identified here with complete four-dimensional physical equivalence or enhancement."

@@ -16,5 +16,8 @@
     1
   ],
   "all_closers_share_one_fixed_color_nodal_class": true,
+  "closers_built_from_two_named_four_dimensional_parents": 12,
+  "closers_built_from_sources_with_no_stated_four_dimensional_parent": 12,
+  "fixed_color_nodal_class_mixes_source_parentage_categories": true,
   "passed": true
 }

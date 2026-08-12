@@ -20,7 +20,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 
-const SCHEMA_VERSION: &str = "permutahedron-s8-signed-equivalence-v1";
+const SCHEMA_VERSION: &str = "permutahedron-s8-signed-equivalence-v2";
 const N: usize = 8;
 const D: usize = 8;
 
@@ -113,6 +113,9 @@ pub struct ValidationRecord {
     pub every_serialized_witness_verified: bool,
     pub equivalence_class_counts_by_layer: Vec<usize>,
     pub all_closers_share_one_fixed_color_nodal_class: bool,
+    pub closers_built_from_two_named_four_dimensional_parents: usize,
+    pub closers_built_from_sources_with_no_stated_four_dimensional_parent: usize,
+    pub fixed_color_nodal_class_mixes_source_parentage_categories: bool,
     pub passed: bool,
 }
 
@@ -589,6 +592,20 @@ pub fn build() -> SignedEquivalenceArtifact {
         .collect();
     let one_fixed_color_class = equivalence_layers[0].classes.len() == 1
         && equivalence_layers[0].classes[0].members.len() == closers.len();
+    let named_parent_closers = closers
+        .iter()
+        .filter(|record| {
+            record.first_parentage == parentage(0) && record.second_parentage == parentage(0)
+        })
+        .count();
+    let no_stated_parent_closers = closers
+        .iter()
+        .filter(|record| {
+            record.first_parentage == parentage(3) && record.second_parentage == parentage(3)
+        })
+        .count();
+    let class_mixes_parentage =
+        one_fixed_color_class && named_parent_closers > 0 && no_stated_parent_closers > 0;
     let configurations = scan
         .iter()
         .filter(|record| !record.closing_start_positions_one_based.is_empty())
@@ -600,7 +617,10 @@ pub fn build() -> SignedEquivalenceArtifact {
         && cv_anchor
         && scalar
         && witnesses_verified
-        && one_fixed_color_class;
+        && one_fixed_color_class
+        && named_parent_closers == 12
+        && no_stated_parent_closers == 12
+        && class_mixes_parentage;
 
     SignedEquivalenceArtifact {
         schema_version: SCHEMA_VERSION,
@@ -643,6 +663,10 @@ pub fn build() -> SignedEquivalenceArtifact {
             every_serialized_witness_verified: witnesses_verified,
             equivalence_class_counts_by_layer: class_counts,
             all_closers_share_one_fixed_color_nodal_class: one_fixed_color_class,
+            closers_built_from_two_named_four_dimensional_parents: named_parent_closers,
+            closers_built_from_sources_with_no_stated_four_dimensional_parent:
+                no_stated_parent_closers,
+            fixed_color_nodal_class_mixes_source_parentage_categories: class_mixes_parentage,
             passed,
         },
         boundary: "The class IDs are canonical only within this finite scan. Fixed-color nodal equivalence, supercharge signs, color permutations, and boson-fermion duality are reported as separate layers. No layer is identified here with complete four-dimensional physical equivalence or enhancement.",
@@ -736,6 +760,23 @@ mod tests {
             artifact
                 .validation
                 .all_closers_share_one_fixed_color_nodal_class
+        );
+        assert_eq!(
+            artifact
+                .validation
+                .closers_built_from_two_named_four_dimensional_parents,
+            12
+        );
+        assert_eq!(
+            artifact
+                .validation
+                .closers_built_from_sources_with_no_stated_four_dimensional_parent,
+            12
+        );
+        assert!(
+            artifact
+                .validation
+                .fixed_color_nodal_class_mixes_source_parentage_categories
         );
         assert!(artifact.validation.passed);
     }

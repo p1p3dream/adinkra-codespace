@@ -245,6 +245,11 @@ The repository currently supplies:
 - the prescribed cyclic four-bit Boolean-factor scan for all 30 ordered
   distinct source pairs under the printed color order: 240 candidates, 16
   exact closures across 8 ordered pairs.
+- the extension through all 24 relative color orders: 5,760 candidates, 24
+  exact closures across 12 pair-alignment configurations;
+- exact signed-equivalence witnesses showing all 24 closers occupy one
+  fixed-color nodal class, with 12 built from named-parent source pairs and 12
+  built from source pairs for which no four-dimensional parent is stated.
 
 The original single-family scan classifies 21 unordered four-color pair
 labels. Applying the published distinct-factor restriction leaves:
@@ -280,12 +285,11 @@ recursive pair-to-family map is constant, not bijective.
 
 ### Not completed
 
-The present atlas does not yet contain:
-
-1. canonical signed equivalence classes with field relabeling, vertex
-   switching, color ordering, and duality stated explicitly;
-2. a higher-dimensional enhancement test assigning a four-dimensional
-   multiplet interpretation to the resulting one-dimensional systems.
+The present atlas does not yet contain a higher-dimensional enhancement test
+assigning a four-dimensional multiplet interpretation to the resulting
+one-dimensional systems. Signed equivalence is complete for the finite
+relative-color recursion scan, with field relabeling, vertex switching, color
+ordering, and duality reported as separate relations.
 
 ## What would close each gap
 
@@ -328,12 +332,12 @@ different questions:
 
 The first is transferred across the full conjugacy orbit by relabeling and
 has the published `2^19` count. The second has now been tested for all 30
-ordered distinct source pairs under the printed color order. Of 240 cyclic
-flip candidates, 16 close, carried by 8 ordered pairs. The two closing masks
-for each accepted pair are complementary and differ by reversing the signs of
-colors five through eight. The `CM -> TM` result reproduces the printed `CT`
-system exactly. Extending this result to alternative relative color orders and
-complete signed equivalence classes remains open.
+ordered distinct source pairs, all 24 relative color orders, and all eight
+cyclic masks. Of 5,760 candidates, 24 close. The scan recovers the printed
+`CT` and `CV` systems exactly. Explicit edge-by-edge witnesses place all 24 in
+one fixed-color nodal class. That class contains both named-parent source
+pairs and source pairs for which the papers state no four-dimensional parent,
+so the one-dimensional class does not determine parentage.
 
 ### Physical separation
 

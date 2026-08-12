@@ -110,7 +110,7 @@ function verifyWitness(source, target, witness) {
   return true;
 }
 
-assert(artifact.schema_version === "permutahedron-s8-signed-equivalence-v1", "schema mismatch");
+assert(artifact.schema_version === "permutahedron-s8-signed-equivalence-v2", "schema mismatch");
 const orders = permutations([0,1,2,3]);
 const expectedScan = new Map();
 const expectedClosers = new Map();
@@ -156,6 +156,21 @@ assert(cv?.exact_published_system_match === "CV", "CV source anchor missing");
 assert(JSON.stringify(ct.boolean_factors) === JSON.stringify([234,76,134,32,11,173,103,193]), "CT factors mismatch");
 assert(JSON.stringify(cv.boolean_factors) === JSON.stringify([170,204,6,96,210,180,126,24]), "CV factors mismatch");
 
+const namedParents = new Set(["CM", "TM", "VM"]);
+let namedParentClosers = 0;
+let noStatedParentClosers = 0;
+for (const id of expectedClosers.keys()) {
+  const [pair] = id.split(":");
+  const [first, second] = pair.split("->");
+  if (namedParents.has(first) && namedParents.has(second)) namedParentClosers++;
+  else if (!namedParents.has(first) && !namedParents.has(second)) noStatedParentClosers++;
+  else throw new Error(`unexpected mixed-parentage closer ${id}`);
+}
+assert(namedParentClosers === 12, "named-parent closer count mismatch");
+assert(noStatedParentClosers === 12, "no-stated-parent closer count mismatch");
+assert(artifact.validation.closers_built_from_two_named_four_dimensional_parents === namedParentClosers, "artifact named-parent count mismatch");
+assert(artifact.validation.closers_built_from_sources_with_no_stated_four_dimensional_parent === noStatedParentClosers, "artifact no-stated-parent count mismatch");
+
 let witnessCount = 0;
 for (const layer of artifact.equivalence_layers) for (const group of layer.classes) {
   const source = serialized.get(group.representative_id);
@@ -168,6 +183,7 @@ for (const layer of artifact.equivalence_layers) for (const group of layer.class
   }
 }
 assert(artifact.validation.equivalence_class_counts_by_layer.join(",") === "1,1,1,1", "equivalence hierarchy mismatch");
+assert(artifact.validation.fixed_color_nodal_class_mixes_source_parentage_categories === true, "fixed-color class must mix source-parentage categories");
 assert(artifact.validation.passed === true, "Rust validation failed");
 
 console.log(`verified ${checked} candidates, ${expectedClosers.size} closures, and ${witnessCount} exact signed-equivalence witnesses`);
