@@ -90,5 +90,60 @@ assert(JSON.stringify(record(phantom)) === JSON.stringify(artifact.phantom_matri
 assert(JSON.stringify(spatialDown.map(record)) === JSON.stringify(artifact.spatial_down), "spatial-down mismatch");
 const nonzero = phantom.flat(2).filter(([real, imag]) => real !== 0 || imag !== 0).length;
 assert(nonzero === 12 && artifact.nonzero_phantom_entries === 12, "phantom support count mismatch");
-assert(artifact.equation_5_8_residual_entries === 0 && artifact.passed, "artifact gate failed");
-console.log("verified the 12-entry Maxwell phantom sector and all Eq. 5.8 spatial rows");
+
+const realLinkage = (linkage) => linkage.map((charge) => charge.map((row) => row.map(([real, imag]) => {
+  assert(imag === 0, "normalized linkage is not real");
+  return real;
+})));
+const upReal = realLinkage(upTranspose);
+const downReal = [realLinkage(temporalDown), ...spatialDown.map(realLinkage)];
+let rawBosonic = 0, timeToSpace = 0, divergencePivots = 0, canonicalResidual = 0, fermionicResidual = 0;
+for (let left = 0; left < 4; left++) for (let right = left; right < 4; right++) {
+  const omega = Array.from({length: 4}, () => Array.from({length: 7}, () => Array(7).fill(0)));
+  for (let mu = 0; mu < 4; mu++) {
+    const fermionic = Array.from({length: 4}, (_, row) => Array.from({length: 4}, (_, column) => {
+      const numerator = Array.from({length: 7}, (_, boson) =>
+        upReal[left][boson][row] * downReal[mu][right][boson][column]
+        + upReal[right][boson][row] * downReal[mu][left][boson][column]).reduce((a, b) => a + b, 0);
+      assert(numerator % 2 === 0, "nonintegral fermion symmetrization");
+      return numerator / 2;
+    }));
+    const lambda = fermionic[0][0];
+    for (let row = 0; row < 4; row++) for (let column = 0; column < 4; column++) {
+      fermionicResidual += Number(fermionic[row][column] !== (row === column ? lambda : 0));
+    }
+    for (let row = 0; row < 7; row++) for (let column = 0; column < 7; column++) {
+      const numerator = Array.from({length: 4}, (_, fermion) =>
+        downReal[mu][left][row][fermion] * upReal[right][column][fermion]
+        + downReal[mu][right][row][fermion] * upReal[left][column][fermion]).reduce((a, b) => a + b, 0);
+      assert(numerator % 2 === 0, "nonintegral boson symmetrization");
+      omega[mu][row][column] = numerator / 2 - (row === column ? lambda : 0);
+      rawBosonic += Number(omega[mu][row][column] !== 0);
+    }
+  }
+  const timePhantom = Array.from({length: 7}, (_, row) => omega[0][row].slice(4, 7));
+  for (let row = 0; row < 7; row++) for (let magnetic = 0; magnetic < 3; magnetic++) {
+    timeToSpace += Number(timePhantom[row][magnetic] !== 0);
+    omega[0][row][4 + magnetic] = 0;
+  }
+  for (let derivative = 0; derivative < 3; derivative++) for (let electric = 0; electric < 3; electric++) {
+    for (let row = 0; row < 7; row++) for (let magnetic = 0; magnetic < 3; magnetic++) {
+      omega[1 + derivative][row][electric] += epsilon(derivative, electric, magnetic) * timePhantom[row][magnetic];
+    }
+  }
+  const pivot = Array.from({length: 7}, (_, row) => omega[1][row][4]);
+  for (let row = 0; row < 7; row++) {
+    divergencePivots += Number(pivot[row] !== 0);
+    omega[1][row][4] = 0;
+    omega[2][row][5] -= pivot[row];
+    omega[3][row][6] -= pivot[row];
+  }
+  canonicalResidual += omega.flat(2).filter((value) => value !== 0).length;
+}
+assert(rawBosonic === artifact.raw_bosonic_omega_nonzero_entries, "raw bosonic Omega count mismatch");
+assert(timeToSpace === artifact.bianchi_time_to_space_entries, "Bianchi time-to-space count mismatch");
+assert(divergencePivots === artifact.bianchi_divergence_pivot_entries, "Bianchi divergence count mismatch");
+assert(canonicalResidual === 0 && artifact.canonical_bosonic_omega_residual_entries === 0, "canonical bosonic Omega did not vanish");
+assert(fermionicResidual === 0 && artifact.fermionic_omega_residual_entries === 0, "fermionic Omega did not vanish");
+assert(artifact.equation_5_8_residual_entries === 0 && artifact.equation_5_11_passed && artifact.passed, "artifact gate failed");
+console.log("verified the 12-entry Maxwell phantom sector and the complete Eq. 5.11 gauge-enhancement gate");

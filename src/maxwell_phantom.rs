@@ -55,6 +55,13 @@ pub struct MaxwellPhantomArtifact {
     pub nonphantom_rows_are_zero: bool,
     pub magnetic_temporal_down_rows_are_zero: bool,
     pub equation_5_8_residual_entries: usize,
+    pub omega_matrix_count: usize,
+    pub raw_bosonic_omega_nonzero_entries: usize,
+    pub bianchi_time_to_space_entries: usize,
+    pub bianchi_divergence_pivot_entries: usize,
+    pub canonical_bosonic_omega_residual_entries: usize,
+    pub fermionic_omega_residual_entries: usize,
+    pub equation_5_11_passed: bool,
     pub passed: bool,
     pub boundary: &'static str,
 }
@@ -148,6 +155,120 @@ fn build_linkages() -> (Linkage, Linkage, [Linkage; 3]) {
     (up_transpose, temporal_down, spatial_down)
 }
 
+fn real_entry(value: GaussianUnit) -> i16 {
+    assert_eq!(value.imag, 0, "normalized Maxwell linkage must be real");
+    i16::from(value.real)
+}
+
+fn verify_omega(
+    up_transpose: &Linkage,
+    temporal_down: &Linkage,
+    spatial_down: &[Linkage; 3],
+) -> (usize, usize, usize, usize, usize) {
+    let down = [
+        temporal_down.clone(),
+        spatial_down[0],
+        spatial_down[1],
+        spatial_down[2],
+    ];
+    let mut raw_bosonic_nonzero = 0;
+    let mut time_to_space_entries = 0;
+    let mut divergence_pivot_entries = 0;
+    let mut canonical_bosonic_residual = 0;
+    let mut fermionic_residual = 0;
+
+    for left in 0..CHARGES {
+        for right in left..CHARGES {
+            let mut bosonic_omega = [[[0_i16; BOSONS]; BOSONS]; 4];
+            for mu in 0..4 {
+                let mut fermionic_product = [[0_i16; FERMIONS]; FERMIONS];
+                for row in 0..FERMIONS {
+                    for column in 0..FERMIONS {
+                        let numerator: i16 = (0..BOSONS)
+                            .map(|boson| {
+                                real_entry(up_transpose[left][boson][row])
+                                    * real_entry(down[mu][right][boson][column])
+                                    + real_entry(up_transpose[right][boson][row])
+                                        * real_entry(down[mu][left][boson][column])
+                            })
+                            .sum();
+                        assert_eq!(numerator % 2, 0);
+                        fermionic_product[row][column] = numerator / 2;
+                    }
+                }
+                let lambda = fermionic_product[0][0];
+                for row in 0..FERMIONS {
+                    for column in 0..FERMIONS {
+                        let expected = if row == column { lambda } else { 0 };
+                        fermionic_residual +=
+                            usize::from(fermionic_product[row][column] != expected);
+                    }
+                }
+                for row in 0..BOSONS {
+                    for column in 0..BOSONS {
+                        let numerator: i16 = (0..FERMIONS)
+                            .map(|fermion| {
+                                real_entry(down[mu][left][row][fermion])
+                                    * real_entry(up_transpose[right][column][fermion])
+                                    + real_entry(down[mu][right][row][fermion])
+                                        * real_entry(up_transpose[left][column][fermion])
+                            })
+                            .sum();
+                        assert_eq!(numerator % 2, 0);
+                        let product = numerator / 2;
+                        bosonic_omega[mu][row][column] =
+                            product - if row == column { lambda } else { 0 };
+                        raw_bosonic_nonzero += usize::from(bosonic_omega[mu][row][column] != 0);
+                    }
+                }
+            }
+
+            let time_phantom: [[i16; 3]; BOSONS] = std::array::from_fn(|row| {
+                std::array::from_fn(|magnetic| bosonic_omega[0][row][4 + magnetic])
+            });
+            for row in 0..BOSONS {
+                for magnetic in 0..3 {
+                    time_to_space_entries += usize::from(time_phantom[row][magnetic] != 0);
+                    bosonic_omega[0][row][4 + magnetic] = 0;
+                }
+            }
+            for derivative in 0..3 {
+                for electric in 0..3 {
+                    for row in 0..BOSONS {
+                        for magnetic in 0..3 {
+                            bosonic_omega[1 + derivative][row][electric] +=
+                                i16::from(epsilon3([derivative, electric, magnetic]))
+                                    * time_phantom[row][magnetic];
+                        }
+                    }
+                }
+            }
+
+            let divergence_pivot: [i16; BOSONS] =
+                std::array::from_fn(|row| bosonic_omega[1][row][4]);
+            for row in 0..BOSONS {
+                divergence_pivot_entries += usize::from(divergence_pivot[row] != 0);
+                bosonic_omega[1][row][4] = 0;
+                bosonic_omega[2][row][5] -= divergence_pivot[row];
+                bosonic_omega[3][row][6] -= divergence_pivot[row];
+            }
+            canonical_bosonic_residual += bosonic_omega
+                .iter()
+                .flatten()
+                .flatten()
+                .filter(|&&value| value != 0)
+                .count();
+        }
+    }
+    (
+        raw_bosonic_nonzero,
+        time_to_space_entries,
+        divergence_pivot_entries,
+        canonical_bosonic_residual,
+        fermionic_residual,
+    )
+}
+
 pub fn build() -> MaxwellPhantomArtifact {
     let (fermion_up_transpose, temporal_down, spatial_down) = build_linkages();
     let phantom_matrix = std::array::from_fn(|charge| {
@@ -197,11 +318,21 @@ pub fn build() -> MaxwellPhantomArtifact {
             }
         }
     }
+    let (
+        raw_bosonic_omega_nonzero_entries,
+        bianchi_time_to_space_entries,
+        bianchi_divergence_pivot_entries,
+        canonical_bosonic_omega_residual_entries,
+        fermionic_omega_residual_entries,
+    ) = verify_omega(&fermion_up_transpose, &temporal_down, &spatial_down);
+    let equation_5_11_passed =
+        canonical_bosonic_omega_residual_entries == 0 && fermionic_omega_residual_entries == 0;
     let passed = crate::chiral_vector_4d::verify().passed
         && nonphantom_rows_are_zero
         && magnetic_temporal_down_rows_are_zero
         && nonzero_phantom_entries > 0
-        && equation_5_8_residual_entries == 0;
+        && equation_5_8_residual_entries == 0
+        && equation_5_11_passed;
     MaxwellPhantomArtifact {
         schema_version: "maxwell-phantom-extraction-v1",
         title: "Maxwell phantom sector extracted from the verified chiral-vector system",
@@ -221,8 +352,15 @@ pub fn build() -> MaxwellPhantomArtifact {
         nonphantom_rows_are_zero,
         magnetic_temporal_down_rows_are_zero,
         equation_5_8_residual_entries,
+        omega_matrix_count: 4 * 10,
+        raw_bosonic_omega_nonzero_entries,
+        bianchi_time_to_space_entries,
+        bianchi_divergence_pivot_entries,
+        canonical_bosonic_omega_residual_entries,
+        fermionic_omega_residual_entries,
+        equation_5_11_passed,
         passed,
-        boundary: "This extracts and verifies the Maxwell magnetic phantom sector in one fixed source basis. It does not yet implement the canonical Omega reshuffling or search the eight-color representations for gauge enhancement.",
+        boundary: "This extracts the Maxwell magnetic phantom sector and verifies the complete p=1 gauge-enhancement condition in one fixed source basis. It does not search the eight-color representations or cover p>=2 gauge potentials.",
     }
 }
 
@@ -247,6 +385,13 @@ mod tests {
         assert!(artifact.magnetic_temporal_down_rows_are_zero);
         assert!(artifact.nonzero_phantom_entries > 0);
         assert_eq!(artifact.equation_5_8_residual_entries, 0);
+        assert_eq!(artifact.omega_matrix_count, 40);
+        assert_eq!(artifact.raw_bosonic_omega_nonzero_entries, 144);
+        assert_eq!(artifact.bianchi_time_to_space_entries, 36);
+        assert_eq!(artifact.bianchi_divergence_pivot_entries, 12);
+        assert_eq!(artifact.canonical_bosonic_omega_residual_entries, 0);
+        assert_eq!(artifact.fermionic_omega_residual_entries, 0);
+        assert!(artifact.equation_5_11_passed);
         assert!(artifact.passed);
     }
 }

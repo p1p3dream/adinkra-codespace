@@ -79,10 +79,11 @@ Exact Rust and independent JavaScript implementations extract the 12 nonzero
 phantom entries and verify every spatial magnetic row in Eq. (5.8) of
 arXiv:0907.3605. See `docs/maxwell-phantom-positive-control.md`.
 
-The next implementation gate is the canonical Bianchi reshuffling in
-Eqs. (5.4)-(5.5) and the complete gauge-enhancement condition in Eq. (5.11).
-That condition must reproduce the known Maxwell passer before it is generalized
-to the eight-color systems.
+The canonical Bianchi reshuffling in Eqs. (5.4)-(5.5) and the complete
+gauge-enhancement condition in Eq. (5.11) are now implemented. The known
+Maxwell source passes with 144 raw bosonic Omega entries reduced to zero, and
+zero fermionic residual entries. The next gate is to recover that passer from
+worldline input alone before generalizing the search to the eight-color systems.
 
 ## Acceptance gates
 

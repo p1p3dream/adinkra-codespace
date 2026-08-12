@@ -3112,6 +3112,13 @@
   "nonphantom_rows_are_zero": true,
   "magnetic_temporal_down_rows_are_zero": true,
   "equation_5_8_residual_entries": 0,
+  "omega_matrix_count": 40,
+  "raw_bosonic_omega_nonzero_entries": 144,
+  "bianchi_time_to_space_entries": 36,
+  "bianchi_divergence_pivot_entries": 12,
+  "canonical_bosonic_omega_residual_entries": 0,
+  "fermionic_omega_residual_entries": 0,
+  "equation_5_11_passed": true,
   "passed": true,
-  "boundary": "This extracts and verifies the Maxwell magnetic phantom sector in one fixed source basis. It does not yet implement the canonical Omega reshuffling or search the eight-color representations for gauge enhancement."
+  "boundary": "This extracts the Maxwell magnetic phantom sector and verifies the complete p=1 gauge-enhancement condition in one fixed source basis. It does not search the eight-color representations or cover p>=2 gauge potentials."
 }

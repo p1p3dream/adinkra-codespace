@@ -24,7 +24,9 @@ The implementation constructs:
 - the `7 x 4` transpose of the fermion-up linkage for each of four charges;
 - the temporal boson-down linkage;
 - the phantom matrix `P_A = u_tilde_A^T - Delta_A^0` from Eq. (5.1); and
-- all three spatial boson-down linkages.
+- all three spatial boson-down linkages;
+- the 40 bosonic and fermionic Omega matrices in Eq. (3.2); and
+- the canonical Bianchi reshuffling in Eqs. (5.4)-(5.5).
 
 The printed reduction phase `lambda = i Psi` is applied before comparing the up
 and down linkages. The result is:
@@ -37,6 +39,12 @@ and down linkages. The result is:
 | nonphantom rows of `P_A` | all zero |
 | temporal down-links from magnetic fields | all zero |
 | residual entries in Eq. (5.8) | 0 |
+| raw nonzero bosonic Omega entries | 144 |
+| time-to-space Bianchi entries used | 36 |
+| divergence-pivot entries used | 12 |
+| canonical bosonic Omega residual entries | 0 |
+| fermionic Omega residual entries | 0 |
+| complete Eq. (5.11) gate | pass |
 
 Equation (5.8),
 
@@ -57,27 +65,28 @@ node scripts/test_maxwell_phantom.mjs
 ```
 
 The JavaScript cross-check independently constructs the gamma matrices and all
-four linkage tensors. It compares every entry with the Rust artifact.
+four linkage tensors, builds the Omega matrices, performs both canonical Bianchi
+reshufflings, and compares its results with the Rust artifact.
 
 Artifacts and source hashes:
 
 | Item | SHA256 |
 |---|---|
-| `results/maxwell_phantom.json` | `d991c03b3e1336b1411e62a8319f96f978ae79edd3bbbc38a0ebaef30afcc984` |
+| `results/maxwell_phantom.json` | `85c4117722e239bdcffeae7aac1d5df7b7197b8e9310ebdb92173350ffd4e194` |
 | arXiv:0907.3605 PDF | `720e737ac980b346d41daac97219ec23f29fcdc044b471c3a292eaa808997668` |
 | arXiv:1405.0048 PDF | `8e666e70c9484033e1223fc80b16a5db562c0ec4e499721962277f6a3987ae20` |
 
 ## Consequence
 
 The previously omitted gauge and phantom sector is now explicit for the
-Maxwell positive control. The next gate is the canonical Bianchi reshuffling
-of Eqs. (5.4)-(5.5), followed by the complete gauge-enhancement condition in
-Eq. (5.11). Passing that gate on the known Maxwell shadow is required before
-testing eight-color candidates.
+Maxwell positive control, and the complete Eq. (5.11) gauge-enhancement gate
+passes. The next gate is to recover this known passer from the paper's
+four-color search procedure using only worldline input, followed by a stated
+generalization to the eight-color systems.
 
 ## Boundary
 
-This result verifies the phantom support and Eq. (5.8) in one fixed source
-basis. It does not yet verify the complete hatted Omega condition in Eq. (5.11)
-and does not establish gauge enhancement for any `VM1`, `VM2`, or `VM3`
-construction.
+This result verifies the phantom support and the complete hatted Omega
+condition in one fixed source basis. It does not yet implement the exhaustive
+worldline search and does not establish gauge enhancement for any `VM1`,
+`VM2`, or `VM3` construction.
