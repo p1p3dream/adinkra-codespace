@@ -73,6 +73,24 @@ Thus `CM` and `VM2` have cross-Gadget `+1/3`, while `TM` and `VM` have
 cross-Gadget `-1/3`. This leaves at least one additional sign or convention
 discrepancy between Table 5 and the stated orthonormality.
 
+An exact nearest-frame search shows that this is not repaired by one isolated
+bar or sign typo. The minimum distance from the literal Table 5 Boolean data
+to any orthonormal frame is eight Boolean-bit changes, and 80 frames attain
+that minimum. One deterministic minimum repair changes the factors from
+
+```text
+CM:  10,12, 6,0       VM: 12,10,6,0
+```
+
+to
+
+```text
+CM:   2, 4,14,8       VM:  3,10,6,0
+```
+
+while leaving `TM`, `VM1`, `VM2`, and `VM3` unchanged. This is a nearest
+algebraic repair, not an assertion about the authors' intended convention.
+
 The first Appendix-B fiducial signing for each quartet in arXiv:1701.00304
 does form a six-by-six identity. It is retained as a source-documented
 orthonormal reference frame, but it is not presented as the literal Table 5
@@ -147,7 +165,8 @@ node scripts/test_permutahedron_s4_gadget_frames.mjs
 
 The independent JavaScript implementation reconstructs all 393,216 Boolean
 assignments, recomputes the 1,536 closing systems and their exact Gadget
-profiles, and independently recovers 28,862,180,229,120 orthonormal frames.
+profiles, independently recovers 28,862,180,229,120 orthonormal frames, and
+confirms the eight-bit minimum repair distance and its 80 solutions.
 
 Artifacts:
 
@@ -156,7 +175,7 @@ Artifacts:
 
 | Artifact | SHA256 |
 |---|---|
-| data | `11d93f60718a71c64d0091c0cedb72b9ad078fa4d1c21850e8cbe29f8efe9d32` |
+| data | `09eec5a2596148fa3fc31f7adf615e9d0fc0ba8b878182646a4c81b5535a72a8` |
 | validation | `df62ebc46c5c42a0df38f93be8f0aefa9eb8bb6a7feb1d26075f0cb0858f6212` |
 
 ## Boundary

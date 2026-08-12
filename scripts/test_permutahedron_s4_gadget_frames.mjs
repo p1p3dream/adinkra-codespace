@@ -104,8 +104,10 @@ function profileTypes(sector) {
     });
     const key = profile.join(",");
     const current = types.get(key);
-    if (current) current.multiplicity++;
-    else types.set(key, {representative: index, multiplicity: 1n});
+    if (current) {
+      current.multiplicity++;
+      current.members.push(index);
+    } else types.set(key, {representative: index, multiplicity: 1n, members: [index]});
   });
   return [...types.values()];
 }
@@ -146,6 +148,39 @@ const expectedWeighted = [
   [0,0,0,24,0,0], [8,0,0,0,24,0], [0,0,0,0,0,24],
 ];
 assert(JSON.stringify(weightedMatrix) === JSON.stringify(expectedWeighted), "literal weighted Table 5 matrix mismatch");
+
+function factorDistance(left, right) {
+  return left.reduce((sum, value, color) => sum + (value ^ right[color]).toString(2).replaceAll("0", "").length, 0);
+}
+let bestRepair = Infinity;
+let bestRepairCount = 0n;
+function searchRepairs(sector, chosen, cost, count) {
+  if (sector === 6) {
+    if (cost < bestRepair) {
+      bestRepair = cost;
+      bestRepairCount = count;
+    } else if (cost === bestRepair) bestRepairCount += count;
+    return;
+  }
+  if (cost > bestRepair) return;
+  for (let type = 0; type < types[sector].length; type++) {
+    const candidate = library[sector][types[sector][type].representative];
+    if (!chosen.every(([otherSector, otherType]) =>
+      gadgetNumerator(candidate, library[otherSector][types[otherSector][otherType].representative]) === 0)) continue;
+    const distances = types[sector][type].members.map((member) =>
+      factorDistance(library[sector][member].factors, weightedFactors[sector]));
+    const minimum = Math.min(...distances);
+    const minimumCount = BigInt(distances.filter((distance) => distance === minimum).length);
+    chosen.push([sector, type]);
+    searchRepairs(sector + 1, chosen, cost + minimum, count * minimumCount);
+    chosen.pop();
+  }
+}
+searchRepairs(0, [], 0, 1n);
+assert(bestRepair === 8, "minimum Table 5 repair distance mismatch");
+assert(bestRepairCount === 80n, "minimum Table 5 repair count mismatch");
+assert(artifact.nearest_orthonormal_repair_of_literal_table5.total_boolean_bit_flips === bestRepair, "artifact repair distance mismatch");
+assert(BigInt(artifact.nearest_orthonormal_repair_of_literal_table5.minimum_repair_frames) === bestRepairCount, "artifact repair count mismatch");
 assert(artifact.validation.literal_weighted_table5_frame_is_orthonormal === false, "literal Table 5 frame must retain the discrepancy");
 assert(artifact.validation.appendix_b_reference_frame_is_orthonormal === true, "Appendix-B reference frame must be orthonormal");
 assert(artifact.validation.passed === true, "Rust validation failed");

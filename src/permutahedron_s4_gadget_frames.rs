@@ -57,6 +57,15 @@ pub struct FrameRecord {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct RepairRecord {
+    pub total_boolean_bit_flips: u32,
+    pub minimum_repair_frames: u128,
+    pub example_boolean_factors: [[u8; 4]; 6],
+    pub changed_sector_color_entries_one_based: Vec<[usize; 2]>,
+    pub example_gadget_numerators_over_24: [[i16; 6]; 6],
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct ValidationRecord {
     pub raw_boolean_assignments_checked: usize,
     pub garden_closing_signings: usize,
@@ -84,6 +93,7 @@ pub struct GadgetFrameArtifact {
     pub sectors: Vec<SectorRecord>,
     pub literal_weighted_table5_frame: FrameRecord,
     pub appendix_b_orthonormal_reference_frame: FrameRecord,
+    pub nearest_orthonormal_repair_of_literal_table5: RepairRecord,
     pub validation: ValidationRecord,
     pub interpretation: &'static str,
     pub boundary: &'static str,
@@ -162,6 +172,7 @@ fn switching_classes(signings: &[Signing]) -> usize {
 struct ProfileType {
     representative: usize,
     multiplicity: u128,
+    members: Vec<usize>,
 }
 
 fn profile_types(library: &[Vec<Signing>], sector: usize) -> Vec<ProfileType> {
@@ -178,15 +189,125 @@ fn profile_types(library: &[Vec<Signing>], sector: usize) -> Vec<ProfileType> {
                     .map(|other| gadget_numerator(&signing.holoraumy, &other.holoraumy)),
             );
         }
-        profiles
-            .entry(profile)
-            .and_modify(|entry| entry.multiplicity += 1)
-            .or_insert(ProfileType {
-                representative: candidate,
-                multiplicity: 1,
-            });
+        let entry = profiles.entry(profile).or_insert(ProfileType {
+            representative: candidate,
+            multiplicity: 0,
+            members: Vec::new(),
+        });
+        entry.multiplicity += 1;
+        entry.members.push(candidate);
     }
     profiles.into_values().collect()
+}
+
+#[derive(Default)]
+struct RepairSearch {
+    best_cost: u32,
+    count: u128,
+    example: Option<[[u8; 4]; 6]>,
+}
+
+struct RepairBranch {
+    chosen: Vec<(usize, usize)>,
+    factors: [[u8; 4]; 6],
+    cost: u32,
+    count: u128,
+}
+
+fn factor_distance(left: [u8; 4], right: [u8; 4]) -> u32 {
+    left.into_iter()
+        .zip(right)
+        .map(|(left, right)| (left ^ right).count_ones())
+        .sum()
+}
+
+fn search_repairs(
+    sector: usize,
+    branch: &mut RepairBranch,
+    types: &[Vec<ProfileType>],
+    library: &[Vec<Signing>],
+    target: &[[u8; 4]; 6],
+    result: &mut RepairSearch,
+) {
+    if sector == SECTORS {
+        if result.example.is_none() || branch.cost < result.best_cost {
+            result.best_cost = branch.cost;
+            result.count = branch.count;
+            result.example = Some(branch.factors);
+        } else if branch.cost == result.best_cost {
+            result.count += branch.count;
+            if branch.factors < result.example.expect("repair example") {
+                result.example = Some(branch.factors);
+            }
+        }
+        return;
+    }
+    if result.example.is_some() && branch.cost > result.best_cost {
+        return;
+    }
+    for (type_index, profile_type) in types[sector].iter().enumerate() {
+        let representative = &library[sector][profile_type.representative];
+        if !branch.chosen.iter().all(|&(other_sector, other_type)| {
+            let other = &library[other_sector][types[other_sector][other_type].representative];
+            gadget_numerator(&representative.holoraumy, &other.holoraumy) == 0
+        }) {
+            continue;
+        }
+        let minimum = profile_type
+            .members
+            .iter()
+            .map(|&member| factor_distance(library[sector][member].factors, target[sector]))
+            .min()
+            .expect("profile member");
+        let mut minimum_members: Vec<_> = profile_type
+            .members
+            .iter()
+            .copied()
+            .filter(|&member| {
+                factor_distance(library[sector][member].factors, target[sector]) == minimum
+            })
+            .collect();
+        minimum_members.sort_by_key(|&member| library[sector][member].factors);
+        branch.chosen.push((sector, type_index));
+        branch.factors[sector] = library[sector][minimum_members[0]].factors;
+        branch.cost += minimum;
+        branch.count *= minimum_members.len() as u128;
+        search_repairs(sector + 1, branch, types, library, target, result);
+        branch.count /= minimum_members.len() as u128;
+        branch.cost -= minimum;
+        branch.chosen.pop();
+    }
+}
+
+fn nearest_repair(
+    library: &[Vec<Signing>],
+    types: &[Vec<ProfileType>],
+    target: [[u8; 4]; 6],
+) -> RepairRecord {
+    let mut search = RepairSearch::default();
+    let mut branch = RepairBranch {
+        chosen: Vec::new(),
+        factors: [[0; 4]; 6],
+        cost: 0,
+        count: 1,
+    };
+    search_repairs(0, &mut branch, types, library, &target, &mut search);
+    let example = search.example.expect("at least one orthonormal repair");
+    let frame = frame_record(library, example, "nearest orthonormal repair");
+    let changed = (0..6)
+        .flat_map(|sector| {
+            (0..4).filter_map(move |color| {
+                (target[sector][color] != example[sector][color]).then_some([sector + 1, color + 1])
+            })
+        })
+        .collect();
+    RepairRecord {
+        total_boolean_bit_flips: search.best_cost,
+        minimum_repair_frames: search.count,
+        example_boolean_factors: example,
+        changed_sector_color_entries_one_based: changed,
+        example_gadget_numerators_over_24: frame.gadget_numerators_over_24,
+    }
 }
 
 fn count_type_frames(
@@ -308,6 +429,7 @@ pub fn build() -> GadgetFrameArtifact {
         appendix_factors,
         "first Appendix-B fiducial signing for each quartet in arXiv:1701.00304",
     );
+    let nearest_repair = nearest_repair(&library, &types, S4_RECURSION_BOOLEAN_FACTORS);
     let switching_action_free = library
         .iter()
         .all(|signings| switching_classes(signings) == 2);
@@ -327,6 +449,7 @@ pub fn build() -> GadgetFrameArtifact {
     let passed = signings_per_sector == [SIGNINGS; 6]
         && !literal_weighted.is_orthonormal
         && orthonormal_reference.is_orthonormal
+        && nearest_repair.total_boolean_bit_flips > 0
         && pairwise == 15 * SIGNINGS * SIGNINGS
         && switching_action_free
         && raw_frames.is_multiple_of(128);
@@ -354,6 +477,7 @@ pub fn build() -> GadgetFrameArtifact {
         sectors,
         literal_weighted_table5_frame: literal_weighted,
         appendix_b_orthonormal_reference_frame: orthonormal_reference,
+        nearest_orthonormal_repair_of_literal_table5: nearest_repair,
         validation: ValidationRecord {
             raw_boolean_assignments_checked: SECTORS * 65_536,
             garden_closing_signings: library.iter().map(Vec::len).sum(),
@@ -425,6 +549,29 @@ mod tests {
                 .validation
                 .conservative_minimum_classes_after_standard_common_relabelings,
             2_038_898
+        );
+        assert_eq!(
+            artifact
+                .nearest_orthonormal_repair_of_literal_table5
+                .total_boolean_bit_flips,
+            8
+        );
+        assert_eq!(
+            artifact
+                .nearest_orthonormal_repair_of_literal_table5
+                .minimum_repair_frames,
+            80
+        );
+        assert!(
+            artifact
+                .nearest_orthonormal_repair_of_literal_table5
+                .example_gadget_numerators_over_24
+                .iter()
+                .enumerate()
+                .all(|(row, values)| values
+                    .iter()
+                    .enumerate()
+                    .all(|(column, &value)| value == if row == column { 24 } else { 0 }))
         );
         assert!(artifact.validation.passed);
     }
