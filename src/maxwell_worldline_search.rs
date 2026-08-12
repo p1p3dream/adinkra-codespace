@@ -101,7 +101,24 @@ fn transform(
     })
 }
 
-fn search(input_name: &'static str, input: &WorldlineLinkage) -> SearchResult {
+fn charge_zero_matches(
+    input: &WorldlineLinkage,
+    boson: SignedFrame,
+    fermion: SignedFrame,
+    target: &[[i8; 4]; 4],
+) -> bool {
+    (0..4).all(|row| {
+        (0..4).all(|column| {
+            boson.signs[row]
+                * fermion.signs[column]
+                * input[0][boson.permutation_zero_based[row]]
+                    [fermion.permutation_zero_based[column]]
+                == target[row][column]
+        })
+    })
+}
+
+pub(crate) fn search_worldline(input_name: &'static str, input: &WorldlineLinkage) -> SearchResult {
     let frames = signed_frames();
     let target_charge_zero = source_maxwell_worldline()[0];
     let mut frame_pairs_examined = 0;
@@ -111,11 +128,11 @@ fn search(input_name: &'static str, input: &WorldlineLinkage) -> SearchResult {
     for &boson_frame in &frames {
         for &fermion_frame in &frames {
             frame_pairs_examined += 1;
-            let candidate = transform(input, boson_frame, fermion_frame);
-            if candidate[0] != target_charge_zero {
+            if !charge_zero_matches(input, boson_frame, fermion_frame, &target_charge_zero) {
                 continue;
             }
             charge_zero_normalized_candidates += 1;
+            let candidate = transform(input, boson_frame, fermion_frame);
             let gate = gauge_enhancement_gate(&candidate);
             if gate.passed() {
                 gauge_enhancing_candidates += 1;
@@ -156,12 +173,14 @@ fn scrambled_maxwell() -> WorldlineLinkage {
 }
 
 pub fn build() -> MaxwellWorldlineSearchArtifact {
-    let maxwell_source_basis = search("Maxwell source basis", &source_maxwell_worldline());
-    let maxwell_scrambled_basis = search(
+    let maxwell_source_basis =
+        search_worldline("Maxwell source basis", &source_maxwell_worldline());
+    let maxwell_scrambled_basis = search_worldline(
         "Maxwell deterministically scrambled basis",
         &scrambled_maxwell(),
     );
-    let chiral_negative_control = search("chiral negative control", &source_chiral_worldline());
+    let chiral_negative_control =
+        search_worldline("chiral negative control", &source_chiral_worldline());
     let source_and_scrambled_pass_counts_agree = maxwell_source_basis.gauge_enhancing_candidates
         == maxwell_scrambled_basis.gauge_enhancing_candidates;
     let maxwell_is_recovered = maxwell_source_basis.gauge_enhancing_candidates > 0

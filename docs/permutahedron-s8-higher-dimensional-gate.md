@@ -91,6 +91,16 @@ specification: Lorentz representations, gauge-potential and field-strength
 degrees, phantom inventory, and Bianchi complex. Those data are not determined
 by the eight-color valise matrices.
 
+The Maxwell gate has also been run across all 96 published fiducial signed S4
+quartets. Exactly the 48 signings with `chi0 = -1` pass; all 48 with
+`chi0 = +1` fail. Thus the complete four-color gauge calculation supplies no
+additional selector beyond `chi0` on this library. See
+`docs/maxwell-s4-published-signing-scan.md`.
+
+The next finite eight-color calculation is limited to the ordered pair of
+embedded four-color subalgebra classes. It does not claim a complete
+eight-supercharge gauge-enhancement test.
+
 ## Acceptance gates
 
 The positive-control implementation passes only if all of the following hold:

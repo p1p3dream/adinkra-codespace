@@ -46,6 +46,7 @@ mod lr_matrix;
 mod minimal_supergravity_action;
 mod minimal_supergravity_curvatures;
 mod maxwell_phantom;
+mod maxwell_s4_atlas_scan;
 mod maxwell_worldline_search;
 mod nauty_canonical;
 mod orientation;
@@ -150,6 +151,8 @@ fn main() {
         "maxwell-phantom-verify" => cmd_maxwell_phantom_verify(),
         "maxwell-worldline-search-build" => cmd_maxwell_worldline_search_build(&args),
         "maxwell-worldline-search-verify" => cmd_maxwell_worldline_search_verify(),
+        "maxwell-s4-atlas-build" => cmd_maxwell_s4_atlas_build(&args),
+        "maxwell-s4-atlas-verify" => cmd_maxwell_s4_atlas_verify(),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -315,6 +318,9 @@ fn print_usage(prog: &str) {
     eprintln!("  maxwell-worldline-search-build [json]");
     eprintln!("                          Recover the Maxwell passer from worldline data");
     eprintln!("  maxwell-worldline-search-verify Verify recovery and negative-control gates");
+    eprintln!("  maxwell-s4-atlas-build [json]");
+    eprintln!("                          Scan all 96 published signed S4 quartets");
+    eprintln!("  maxwell-s4-atlas-verify Verify the complete published-signing scan");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -805,6 +811,26 @@ fn cmd_maxwell_worldline_search_build(args: &[String]) {
 
 fn cmd_maxwell_worldline_search_verify() {
     let artifact = maxwell_worldline_search::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s4_atlas_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_s4_atlas_scan.json");
+    let artifact = maxwell_s4_atlas_scan::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s4_atlas_verify() {
+    let artifact = maxwell_s4_atlas_scan::build();
     println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
     if !artifact.passed {
         std::process::exit(2);

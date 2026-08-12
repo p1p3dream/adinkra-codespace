@@ -122,8 +122,13 @@ function search(input) {
   let examined=0,normalized=0,passed=0;
   for(const boson of frames) for(const fermion of frames) {
     examined++;
+    let chargeZeroMatches=true;
+    for(let row=0;row<4&&chargeZeroMatches;row++) for(let column=0;column<4;column++) {
+      if(boson.signs[row]*fermion.signs[column]*input[0][boson.permutation[row]][fermion.permutation[column]]!==sourceMaxwell[0][row][column]) { chargeZeroMatches=false; break; }
+    }
+    if(!chargeZeroMatches) continue;
     const candidate=transform(input,boson,fermion);
-    if(!equalMatrix(candidate[0],sourceMaxwell[0])) continue;
+    assert(equalMatrix(candidate[0],sourceMaxwell[0]),"charge-zero prefilter mismatch");
     normalized++;
     passed+=Number(gate(candidate));
   }
@@ -135,4 +140,18 @@ assert(sourceResult.examined===report.maxwell_source_basis.frame_pairs_examined&
 assert(scrambledResult.examined===report.maxwell_scrambled_basis.frame_pairs_examined&&scrambledResult.normalized===384&&scrambledResult.passed===8,"scrambled search mismatch");
 assert(chiralResult.examined===report.chiral_negative_control.frame_pairs_examined&&chiralResult.normalized===384&&chiralResult.passed===0,"chiral search mismatch");
 assert(report.passed,"Rust search report failed");
-console.log("verified 442,368 signed frame pairs: Maxwell 8 passers in two bases, chiral 0");
+
+const s4Atlas=JSON.parse(fs.readFileSync("data/permutahedron_s4_supersymmetry.json","utf8"));
+const s4Report=JSON.parse(fs.readFileSync("results/maxwell_s4_atlas_scan.json","utf8"));
+let s4Inputs=0,s4Passers=0;
+for(const sector of s4Atlas.sectors) for(const signing of sector.published_fiducial_signings) {
+  const input=signing.matrices.map((matrix)=>matrix.l);
+  const result=search(input);
+  const record=s4Report.signings[s4Inputs];
+  assert(result.examined===147456&&result.normalized===384,"S4 search inventory mismatch");
+  assert(result.passed===record.maxwell_gauge_enhancing_frames,"S4 gauge-pass count mismatch");
+  assert((result.passed>0)===(signing.chi0===-1),"S4 Maxwell gate and chi0 disagree");
+  s4Passers+=Number(result.passed>0); s4Inputs++;
+}
+assert(s4Inputs===96&&s4Passers===48&&s4Report.passed,"S4 atlas summary mismatch");
+console.log("verified 14,598,144 additional signed frame pairs: all 96 published S4 signings, with 48 passers exactly at chi0=-1");
