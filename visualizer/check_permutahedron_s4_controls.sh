@@ -47,8 +47,8 @@ required = [
     "Show permutahedron edges",
     "arXiv:1701.00304 Appendix B",
     "Howard p.61 order, with members ascending inside each quartet",
-    "One click moves one node. Every other node remains fixed",
-    "Move 1423 · strand 1, node 1 of 4",
+    "One click moves one strand. Every other node remains fixed",
+    "Separate strand 1 of 6",
 ]
 for text in required:
     if text not in dom:
@@ -63,8 +63,6 @@ for stale in [
     "progressSlider",
     "Assembly → six quartet strands",
     "Pop out strand",
-    "One click moves one strand",
-    "Separate strand 1 of 6",
 ]:
     if stale in dom:
         failures.append(f"stale or false wording survives: {stale}")
