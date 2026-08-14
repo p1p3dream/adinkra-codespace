@@ -1,0 +1,70 @@
+name: S4 disassembly validation
+
+on:
+  pull_request:
+    paths:
+      - "data/permutahedron_s4_atlas.json"
+      - "data/permutahedron_s4_supersymmetry.json"
+      - "visualizer/build_permutahedron_s4_disassembly.mjs"
+      - "visualizer/permutahedron_s4_disassembly.template.html"
+      - "visualizer/permutahedron_s4_disassembly.html"
+      - "visualizer/verify_permutahedron_s4_disassembly.mjs"
+      - "visualizer/smoke_permutahedron_s4_disassembly.sh"
+      - "visualizer/check_permutahedron_s4_controls.sh"
+      - "visualizer/check_permutahedron_s4_popout.sh"
+      - "visualizer/mutation_test_permutahedron_s4_orientation.sh"
+      - "visualizer/mutation_test_permutahedron_s4_data.sh"
+      - "visualizer/verify_s4_rendered_positions.py"
+      - ".github/workflows/s4-disassembly-ci.yml"
+  push:
+    branches: [main, s4-disassembly-build]
+    paths:
+      - "data/permutahedron_s4_atlas.json"
+      - "data/permutahedron_s4_supersymmetry.json"
+      - "visualizer/**"
+      - ".github/workflows/s4-disassembly-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: s4-disassembly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Locate Chrome
+        shell: bash
+        run: |
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || true)"
+          test -n "$chrome"
+          echo "CHROME=$chrome" >> "$GITHUB_ENV"
+
+      - name: Rebuild standalone HTML
+        run: node visualizer/build_permutahedron_s4_disassembly.mjs
+
+      - name: Reject generated-file drift
+        run: git diff --exit-code -- visualizer/permutahedron_s4_disassembly.html
+
+      - name: Recompute quartet data from the atlas
+        run: node visualizer/verify_permutahedron_s4_disassembly.mjs
+
+      - name: Prove the data verifier rejects defects
+        run: visualizer/mutation_test_permutahedron_s4_data.sh
+
+      - name: Load the page in Chrome
+        run: visualizer/smoke_permutahedron_s4_disassembly.sh
+
+      - name: Check camera restoration and state-dependent text
+        run: visualizer/check_permutahedron_s4_controls.sh
+
+      - name: Exercise all six pop-outs and rendered geometry
+        run: visualizer/check_permutahedron_s4_popout.sh
+
+      - name: Prove the orientation gate rejects defects
+        run: visualizer/mutation_test_permutahedron_s4_orientation.sh

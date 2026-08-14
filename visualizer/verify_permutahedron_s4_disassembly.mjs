@@ -35,9 +35,13 @@ const erratum = { wrong: "3412", belongsTo: "VM3", right: "3421", inMultiplet: "
 const failures = [];
 const check = (condition, message) => { if (!condition) failures.push(message); };
 
+const htmlPath = process.env.S4_DISASSEMBLY_HTML
+  ?? join(here, "permutahedron_s4_disassembly.html");
+const atlasPath = process.env.S4_ATLAS_JSON
+  ?? join(root, "data", "permutahedron_s4_atlas.json");
 const [html, atlasText] = await Promise.all([
-  readFile(join(here, "permutahedron_s4_disassembly.html"), "utf8"),
-  readFile(join(root, "data", "permutahedron_s4_atlas.json"), "utf8"),
+  readFile(htmlPath, "utf8"),
+  readFile(atlasPath, "utf8"),
 ]);
 
 const atlas = JSON.parse(atlasText);

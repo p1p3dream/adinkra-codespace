@@ -59,7 +59,8 @@ for probe, closing in [("sectorButtons", "div"), ("erratumNote", "div"),
     if not inner:
         failures.append(f"#{probe} is empty, so page initialisation aborted")
 
-# The six strands must render in ascending order with their distinct leg patterns.
+# The six strands must render in p.61 order, with ascending members and their
+# distinct leg patterns.
 buttons = re.search(r'id="sectorButtons"[^>]*>(.*?)</div>\s*<div class="stack"', dom, re.S)
 labels = re.findall(r'<button[^>]*>(.*?)</button>', buttons.group(1), re.S) if buttons else []
 if len(labels) != 6:
@@ -92,5 +93,5 @@ if failures:
     for failure in failures:
         print(f"  - {failure}")
     sys.exit(1)
-print("PASS: page initialised, six strands rendered in ascending order with distinct legs.")
+print("PASS: page initialised, six strands rendered in p.61 order with ascending members and distinct legs.")
 PY

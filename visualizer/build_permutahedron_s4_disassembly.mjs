@@ -466,7 +466,7 @@ if (output.includes("/*__ATLAS_JSON__*/") || output.includes("/*__SUPERSYMMETRY_
 
 await writeFile(outputPath, output);
 console.log(`Wrote ${outputPath}`);
-console.log("Verified six SUSY quartets in ascending four-digit order with shortest no-backtracking legs.");
+console.log("Verified six SUSY quartets in Howard p.61 order, with members ascending inside each quartet and shortest no-backtracking legs.");
 for (const chain of chains) {
   console.log(
     `  ${String(chain.position).padStart(2)}. ${chain.multiplet.padEnd(4)} ` +

@@ -1,9 +1,9 @@
 # S4 disassembly: phased build plan
 
-Written 2026-08-05 from the 2026-08-04 spec call
-(`plan-sources/gates-20260804-permutahedron-spec-call.txt`, line numbers cited
-as L*) and the 2026-07-30 styling call
-(`plan-sources/gates-20260730-styling-call-lines-1-77.txt`, cited as SL*).
+Written 2026-08-05 from the 2026-08-04 specification call, cited as L*, and
+the 2026-07-30 styling call, cited as SL*. The transcript extracts and the
+Howard PDF are local source records and are intentionally not tracked in this
+public repository.
 Supersedes the previous version of this file. The one open contradiction in
 that version (where the animation journey enters each quartet) is resolved
 below and the wrong branch is deleted.
@@ -20,8 +20,7 @@ scheduled against a clock.
 1. **Phases are sequential.** Each phase ends in an exit gate. The next phase
    does not start until the gate passes.
 2. **Exit gates must be able to fail.** The `selfCheck()` shipped when this
-   plan was written (then at
-   `visualizer/permutahedron_s4_disassembly.template.html:253`) had ten
+   plan was written had ten
    conditions; eight were bare reads of booleans baked in by the build script.
    It has since been replaced per Phase 2 item 6, but the lesson stands: a
    baked boolean read at render time cannot fail, and that is how four review passes
@@ -108,22 +107,20 @@ page 64 (SL29; the page reference is SL21, and it is page 64, not 61), and node
 names rendered inside the node domains (SL7, SL31). He then said "Then that's
 all I need" (SL33).
 
-On the wording "white letters": the printed p.64 figure uses white digits on
-dark discs. Brandon decided on 2026-08-05 to keep the inverse, white spheres
-with dark text, which reads better on a light background. The delivered styling
-is therefore deliberate, not a gap. Raise it with him if he objects.
+The printed p.64 figure uses white digits on dark discs. On the 2026-08-04
+call, the later instruction was white circles with black letters or numbers.
+The delivered white spheres with dark text follow that instruction.
 
 ---
 
 ## Phase 1: Preserve
 
-Everything else is blocked on this. A single `git clean -fd` currently
-destroys every artifact Gates has seen.
+**Status: complete.** The templates, builders, verifiers, and generated HTML
+are tracked. Local paper and transcript sources remain untracked by design.
 
 **Precondition:** none.
 
-**Work:** put the untracked visualizer work under version control. Verified
-untracked as of 2026-08-05 (`git status -s visualizer/`):
+**Historical work:** put the visualizer work under version control:
 
 - `visualizer/permutahedron_s4_disassembly.template.html`
 - `visualizer/permutahedron_s4_explorer.template.html`
@@ -137,39 +134,34 @@ untracked as of 2026-08-05 (`git status -s visualizer/`):
 - `visualizer/permutahedron_s8_explorer.html`
 
 Track the generated `.html` outputs too, not just the templates: they are the
-exact artifacts Gates has interacted with, and a rebuild is not guaranteed
-byte-identical. Record the SHA-256 of each generated file in the commit
-message so the delivered state is pinned. The input JSONs
+exact artifacts Gates has interacted with. The build is deterministic and CI
+requires the rebuilt file to match the committed output byte for byte. The input JSONs
 (`data/permutahedron_s4_atlas.json`, `data/permutahedron_s4_supersymmetry.json`)
-are already tracked. The untracked `viz/` directory (python 3D plot scripts
-and PNGs) is separate work; review and either track or gitignore it in the
-same pass so `git status` comes out clean.
+are already tracked. The separate `viz/` directory is outside this deliverable.
 
 **Exit gate:**
-- `git ls-files visualizer/` lists all ten files above.
+- `git ls-files visualizer/` lists every required source and generated file.
 - `git clean -fdn` (dry run) reports nothing under `visualizer/`.
 - `git status -s` shows no untracked files in `visualizer/`.
 
 ---
 
-## Phase 2: Correct what is currently shipped wrong
+## Phase 2: Correct the shipped ordering and captions
 
-The shipped build orders strands by hopper words, not ascending weight, and
-carries two false captions and a clipping bug that hid the 4th element of
-every quartet during the demo.
+**Status: complete.** The build follows the p.61 P[1] to P[6] listing, with
+members ascending inside each quartet. The old hopper ordering, false captions,
+and clipping behavior are gone.
 
 **Precondition:** Phase 1 gate passed.
 
-**Work:**
+**Historical work:**
 1. **Reorder every strand to ascending weight** per the fixed reference table.
-   The current chain seeds and hopper walk
-   (`build_permutahedron_s4_disassembly.mjs:19,23-28`) generate H1-H4 hopper
+   The old chain seeds and hopper walk generated H1-H4 hopper
    order with uniform 0,2,4,6 root distances; replace with the ascending
    listing and regenerate all leg distances by BFS on the atlas graph. Do not
    carry over any number from the previous ordering.
-2. **Replace the uniform-legs validation.** The build currently requires every
-   quartet to have consecutive distances `2,6,2`
-   (`build_permutahedron_s4_disassembly.mjs:211,220`). That is the hopper
+2. **Replace the uniform-legs validation.** The old build required every
+   quartet to have consecutive distances `2,6,2`. That is the hopper
    ordering's signature and is wrong under ascending weight. Replace with the
    per-quartet expected leg table above, keyed by first element.
 3. **Leave the base hexagon cyclic order alone.** It was already correct. Add
@@ -177,23 +169,23 @@ every quartet during the demo.
    and fails if any consecutive pair, including the wrap from last to first, is
    not an edge. See the correction under the reference table above.
 4. **Delete the two stale strings:** the page title "S4 Six-Quartet Ascending
-   Separation" (`permutahedron_s4_disassembly.template.html:6`) and the
-   subtitle "chains ascending P1-P6 and nodes ascending H1-H4"
-   (`permutahedron_s4_disassembly.template.html:72`). Both are false as
+   Separation" and the subtitle "chains ascending P1-P6 and nodes ascending
+   H1-H4". Both are false as
    printed. Regenerate captions from computed data rather than hand-writing
    them, so a caption cannot again disagree with the geometry. The export
-   header strings (`template:179,181`) and the H1/hopper vocabulary
-   throughout the panel text (`template:85,90,115,126-130`) must be reworked
+   header strings and the H1/hopper vocabulary throughout the panel text must
+   be reworked
    in the same pass; they all describe the hopper ordering.
-5. **Fix the clipping.** `overflow:hidden` on `html,body` (`template:15`) with
-   a 1140px minimum grid (`template:26`: 280 + 500 + 360) meant Gates never
+5. **Fix the clipping.** `overflow:hidden` on `html,body` with a 1140px
+   minimum grid meant Gates never
    saw the 4th element of any quartet, or any disclaimer, during the demo.
    The layout must degrade by scrolling or reflow, never by silent cropping.
-6. **Replace `selfCheck()`** (`template:253`) with assertions recomputed at
+6. **Replace `selfCheck()`** with assertions recomputed at
    render time from the delivered data: ascending order recomputed by reading
    each strand's four labels as integers, leg distances recomputed by BFS,
-   hexagon simplicity recomputed from projected coordinates (consecutive
-   pairs adjacent, no segment crossings).
+   base-face cyclicity recomputed from atlas adjacency. A projected
+   no-self-intersection assertion is intentionally excluded because free camera
+   rotation can change the projection without changing the graph cycle.
 7. **Add the VM2 erratum disclosure** as a visible, non-clippable note (see
    the erratum section below for exact content).
 
@@ -201,8 +193,7 @@ every quartet during the demo.
 - Rendered-geometry assertions, all recomputed at check time, none read from
   baked booleans: (a) each strand's labels read as integers are strictly
   increasing; (b) BFS leg distances match the reference table for all six
-  quartets; (c) the base hexagon's consecutive pairs are graph-adjacent and
-  its projected outline has no self-intersection.
+  quartets; (c) the base hexagon's consecutive pairs are graph-adjacent.
 - Falsifiability proof: swap members 3 and 4 of VM1 in the input, gate
   fails; restore, gate passes. Repeat with one leg-distance entry and one
   hexagon vertex.
@@ -225,6 +216,8 @@ every quartet during the demo.
 
 Everything he asked for on 08-04, plus the Jul 30 styling contract.
 
+**Status: complete and covered by browser CI.**
+
 **Precondition:** Phase 2 gate passed. Ordering is correct before any
 animation work; animating the wrong order would burn a second review.
 
@@ -232,7 +225,7 @@ animation work; animating the wrong order would burn a second review.
 1. **Horizontal strand panel** matching the demo screenshot layout.
 2. **Per-strand pop-out on click** (L211-215): six clicks, one per strand,
    nothing auto-advances. He narrates over it; these are lecture materials.
-   Remove or demote the current auto-play on load (`template:255`).
+   No pop-out runs on page load.
 3. **Sequential link glow along each journey** (L17-33): the preset enters at
    position 1 and retraces cumulatively (L11-15, L43-55); each link glows as
    the walk reaches it, the animation rests between members (L23), then
@@ -241,7 +234,7 @@ animation work; animating the wrong order would burn a second review.
 
    **Delivered deviation, deliberate:** the marker is a white ball, but it
    keeps the permutation name in muted grey rather than going fully blank.
-   By the time the sixth strand extracts, 11 of the 15 nodes on its journey
+   By the time the sixth strand extracts, 7 of the 11 nodes on its journey
    are already vacated; with unnamed markers the final strands cannot be
    traced. Only the quartet colour departs. If Gates wants literally blank
    balls, dropping the grey label is a one-line change; raise it if he
@@ -278,14 +271,41 @@ animation work; animating the wrong order would burn a second review.
   emitted `journey_ranks` is that walk, and `member_stops` marks where the four
   members sit along it.
 - Styling: node names render inside the node domains, dark text on white
-  spheres, per the 2026-08-05 decision recorded under the styling contract
-  (not white-on-dark as p.64 prints them); link stroke
-  width matches the Howard page 64 sample by side-by-side comparison. The
-  Howard PDF was permission-blocked from this machine during planning; open
-  `~/Documents/HowardTLK.v2.pdf` page 64 manually for the comparison and note
-  the measured width in the commit.
+  spheres, following the 2026-08-04 instruction; link stroke width matches the
+  Howard page 64 sample by side-by-side comparison.
 - Falsifiability proof: reverse one strand's route array, glow-order gate
   fails; restore, passes.
+
+### Continuous integration gate
+
+`.github/workflows/s4-disassembly-ci.yml` is the required gate for changes to
+the S4 data, builder, template, generated page, or checks. It performs:
+
+1. a deterministic rebuild and generated-file drift check;
+2. independent recomputation of memberships, p.61 order, legs, routes, base
+   cycle, and the VM2 source correction from the atlas;
+3. a real Chrome initialization smoke test;
+4. browser checks for camera-preset restoration and state-dependent text;
+5. all six pop-outs, including glow paths and 24 vacated-site markers;
+6. comparison of rendered node positions with the p.64 figure using rotation,
+   mean residual, and maximum per-node residual; and
+7. data mutation tests that must reject a quartet-order error, a wrong leg, and
+   a wrong base-face member; and
+8. rendered-geometry mutation tests that must reject a label swap, one
+   displaced node, a mirror, and a global rotation.
+
+This is intentionally visualizer-specific. The Rust suite is not required for
+an HTML-only change because the workflow rebuilds from already committed atlas
+and supersymmetry data. A change to the Rust generators or those data artifacts
+must run the relevant Rust tests before the generated files are updated.
+
+### Publishing boundary
+
+GitHub raw-file URLs serve the page as plain text and cannot be used as the
+interactive link. `.github/workflows/s4-disassembly-pages.yml` is manual-only
+and publishes an isolated artifact containing the disassembly page and the S4
+explorer. It does not publish the repository tree. Enabling GitHub Pages and
+running that workflow are deployment actions and require explicit approval.
 
 ---
 
@@ -340,15 +360,15 @@ visualizer before Phase 7).
 **What already exists, do not rebuild:** `src/four_color/` reproduces Tables
 7-13 of arXiv:2408.09342 at the matrix level with tests. `cm.rs`, `vm.rs`,
 `tm.rs` hold the L/R sets and the X/Y/Z/W hopper recursion; the convention is
-locked by the Garden-algebra test (`src/four_color/mod.rs:159-165`). Two
+locked by the Garden-algebra test. Two
 typos in the published paper are already proven in code and must surface as
 cited errata, never silently corrected:
 
 - Table 7 Chiral L1 prints `<1 4 -2 -3>`; that value fails the Garden algebra
-  and the internally consistent value is `<1 -4 2 -3>`
-  (`src/four_color/cm.rs:21-32`, test at `src/four_color/mod.rs:181-193`).
+  and the internally consistent value is `<1 -4 2 -3>`, covered by the
+  four-color source-audit tests.
 - Table 12 Tensor R4 prints `<3 -2 4 3>`, which is not a permutation; the
-  corrected value is `<3 -2 4 1>` (`src/four_color/mod.rs:196-204`).
+  corrected value is `<3 -2 4 1>`, also covered by the source-audit tests.
 
 **Work:** write the generator layer that turns the existing L/R matrices into
 rendered equations (HTML or LaTeX), one block per multiplet per color. No
@@ -375,8 +395,8 @@ CM/VM/TM is what makes the VM1-3 output defensible.
 
 **Finding that reshapes this phase (resolved during planning):** the claim
 that no VM1/VM2/VM3 matrices are published is false as an absolute. Signed
-L-matrix representatives for all three are published in arXiv:1210.0478
-(Chappell, Gates, Hubsch), Appendix B:
+L-matrix representatives for all three are published in arXiv:1701.00304,
+Appendix B:
 
 - VM1, Eq. (B.1): `(6)b<1432>, (3)b<2341>, (10)b<3214>, (0)b<4123>`
 - VM2, Eq. (B.2): `(12)b<1243>, (9)b<2134>, (0)b<3421>, (10)b<4312>`
@@ -386,8 +406,8 @@ What remains unpublished, in every locally held Gates paper, is the full
 Table 7-12 style treatment for VM1-3 (signed L AND R sets with the X/Y/Z/W
 tower). So this phase produces something new, but it also has a published
 gold standard to check one signing of each set against. The delivered
-visualizer data already references these Appendix B signings
-(`template:237`, "Appendix B #"), so the ingestion path exists.
+visualizer data already references these Appendix B signings with an explicit
+arXiv:1701.00304 attribution, so the ingestion path exists.
 
 **Work:**
 1. Run the Phase 5 generator on VM1, VM2, VM3, using the quartet supports of
@@ -424,8 +444,9 @@ known sensitivity. The equations must be reachable, never ambient.
 **Work:** per-strand drill-down (click a strand's multiplet identity to open
 its transformation laws, generated in Phases 5-6). Nothing renders until
 asked. CM/VM/TM blocks cite arXiv:2408.09342 Tables 7-12 with the two typo
-errata; VM1-3 blocks cite arXiv:1210.0478 Eq. (5.2), Appendix B, and carry
-the 256-signings caveat.
+errata; VM1-3 blocks cite arXiv:1210.0478 Eq. (5.2) for the supports and
+arXiv:1701.00304 Appendix B for the signed representatives, and carry the
+256-signings caveat.
 
 **Exit gate:**
 - With every drill-down closed, the rendered canvas is pixel-identical to
@@ -449,8 +470,8 @@ leaves 0 valid Garden signings of 65,536, while `3421` gives 256, matching
 all five other quartets. The correct VM2 support is confirmed independently
 by arXiv:1210.0478 Eq. (5.2e).
 
-**Two further typos in arXiv:2408.09342,** proven by tests in
-`src/four_color/mod.rs:181-204` and surfaced in Phase 5: Table 7 Chiral L1
+**Two further typos in arXiv:2408.09342,** proven by the four-color source-audit
+tests and surfaced in Phase 5: Table 7 Chiral L1
 and Table 12 Tensor R4 (details in Phase 5). Whether and how to flag these to
 Gates is an open question below.
 
