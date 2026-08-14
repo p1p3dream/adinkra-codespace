@@ -83,6 +83,21 @@ for index, observation in enumerate(observations, start=1):
         failures.append(f"click {index} popped strand {observation['strand']}")
     if observation["glowLinks"] < 1:
         failures.append(f"click {index} rendered no glow links")
+    if observation["untouchedNodesMoved"] != 0:
+        failures.append(
+            f"click {index} moved {observation['untouchedNodesMoved']} nodes outside the selected strand"
+        )
+    expected_progress = [1 if chain < index else 0 for chain in range(6)]
+    if observation["progress"] != expected_progress:
+        failures.append(
+            f"click {index} left strand progress {observation['progress']}, expected {expected_progress}"
+        )
+    if observation["strandLinkColors"] != ["#111111"] * index:
+        failures.append(
+            f"click {index} strand-link colors are {observation['strandLinkColors']}, expected black"
+        )
+    if index < 6 and "paused" not in observation["readout"]:
+        failures.append(f"click {index} did not stop in a visible pause state")
 
 if failures:
     print("FAIL: pop-out interaction gate")
@@ -91,6 +106,6 @@ if failures:
     sys.exit(1)
 
 order = " ".join(f"{o['strand']}:{o['multiplet']}({o['glowLinks']})" for o in observations)
-print("PASS: six clicks, six strands in order, 24 white balls, glow order matches each journey.")
+print("PASS: six clicks, one strand per click, all other nodes fixed, explicit pauses, black strand links, and 24 white balls.")
 print(f"      {order}")
 PY

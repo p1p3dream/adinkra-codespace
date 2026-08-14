@@ -47,6 +47,8 @@ required = [
     "Show permutahedron edges",
     "arXiv:1701.00304 Appendix B",
     "Howard p.61 order, with members ascending inside each quartet",
+    "One click moves one strand. Every other node remains fixed",
+    "Separate strand 1 of 6",
 ]
 for text in required:
     if text not in dom:
@@ -57,6 +59,10 @@ for stale in [
     "S4_six_quartets_ascending.png",
     "strands in ascending four-digit order",
     "Ringed nodes lie on the base hexagon",
+    "Separate all",
+    "progressSlider",
+    "Assembly → six quartet strands",
+    "Pop out strand",
 ]:
     if stale in dom:
         failures.append(f"stale or false wording survives: {stale}")
@@ -67,5 +73,5 @@ if failures:
         print(f"  - {failure}")
     sys.exit(1)
 
-print("PASS: both camera presets restore their fitted view, partial-slider instructions are truthful, and source labels are explicit.")
+print("PASS: both camera presets restore their fitted view, simultaneous separation controls are absent, and source labels are explicit.")
 PY

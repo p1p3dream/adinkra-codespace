@@ -86,11 +86,10 @@
       <section>
         <h2>Disassembly</h2>
         <div class="stack">
-          <button id="playButton" class="primary">Pop out strand 1 of 6</button>
-          <div id="popReadout" class="small">0 of 6 strands extracted</div>
-          <div class="row"><button id="assembleButton">Reassemble</button><button id="finishButton">Separate all</button></div>
-          <label class="small" for="progressSlider">Assembly → six quartet strands</label>
-          <input id="progressSlider" type="range" min="0" max="1000" value="0">
+          <button id="playButton" class="primary">Separate strand 1 of 6</button>
+          <div id="popReadout" class="small">0 of 6 strands separated</div>
+          <button id="assembleButton">Reassemble</button>
+          <div class="facts">One click moves one strand. Every other node remains fixed, and the app pauses until the next click.</div>
         </div>
       </section>
       <section>
@@ -185,7 +184,7 @@
     // Each strand extracts independently, so progress is per chain rather than
     // global. He clicks once per strand and narrates over it, so nothing here
     // advances on its own.
-    const state={orientation:"page64",cameraAdjusted:false,chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false};
+    const state={orientation:"page64",cameraAdjusted:false,chainProgress:new Array(6).fill(0),glow:{chain:null,step:0},focus:0,focusChain:null,selectedChain:0,selectedRank:paths[0][0],signing:0,labels:true,hoppers:true,guides:true,edges:true,screen:[],animation:0,yaw:0,pitch:0,roll:0,zoom:1,drag:null,busy:false,separationViolations:[]};
     // The acceptance harness runs the same code path, just faster, so a six
     // strand click-through completes inside a headless budget.
     const PARAMS=new URLSearchParams(location.search);
@@ -197,16 +196,13 @@
     const TIMER_MODE=CHECK_MODE||CONTROLS_CHECK_MODE||PARAMS.has("timers");
     const SPEED=CHECK_MODE?14:1;
     const meanProgress=()=>state.chainProgress.reduce((total,value)=>total+value,0)/6;
-    // The solid has to be fully out of the strand column as soon as the FIRST
-    // strand lands, not gradually as the average climbs. Driving the shift by
-    // the mean left the solid near centre with one or two strands out, and the
-    // strand slots are at fixed screen positions, so they overlapped it.
     const peakProgress=()=>Math.max(...state.chainProgress);
     const poppedCount=()=>state.chainProgress.filter(value=>value>.99).length;
 
-    // Strands stack on the right. The solid slides left as they come out, so the
-    // vacated lattice stays readable instead of sitting under the strands. The
-    // gap between the two is wide enough to read them as separate objects.
+    // Strands stack on the right. The solid stays fixed on the left for the
+    // entire demonstration, so separating one strand never moves any other
+    // node. The gap between the two remains wide enough to read them as
+    // separate objects.
     function rotatePoint(point,xAngle,yAngle,zAngle){let[x,y,z]=point;let c=Math.cos(xAngle),s=Math.sin(xAngle);[y,z]=[y*c-z*s,y*s+z*c];c=Math.cos(yAngle);s=Math.sin(yAngle);[x,z]=[x*c+z*s,-x*s+z*c];c=Math.cos(zAngle);s=Math.sin(zAngle);[x,y]=[x*c-y*s,x*s+y*c];return[x,y,z];}
     // A strand is a flat diagram, not part of the solid, so its slots are laid
     // out directly in screen space. Routed through the 3D pipeline they tilt
@@ -223,16 +219,11 @@
       }));
       return points;
     }
-    // The solid slides left in screen space as strands come out. Shifting it in
-    // model space instead would rotate the offset along with the camera.
-    const solidShift=width=>mix(0,-width*.315,smooth(peakProgress()));
-    // Each orientation preset carries its own viewing tilt, which eases to zero
-    // as the strands come out so the solid flattens while it empties.
-    // The viewing tilt is constant. It used to ease to zero as the solid
-    // flattened into rows, but the solid no longer flattens: it stays put and
-    // empties while the strands assemble beside it, so fading the tilt just made
-    // it collapse the moment the first strand popped.
-    function projectPoints(modelPoints,width,height){const t=smooth(peakProgress()),preset=ORIENTATIONS[state.orientation],basePitch=preset.pitch,baseYaw=preset.yaw,scale=Math.min(width,height)*mix(.115,.092,t)*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/PERSPECTIVE_DISTANCE);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
+    // The shift and scale are constant. Earlier versions changed both when the
+    // first strand moved, which made all twenty untouched nodes jump even though
+    // their strands had not been selected.
+    const solidShift=width=>-width*.315;
+    function projectPoints(modelPoints,width,height){const preset=ORIENTATIONS[state.orientation],basePitch=preset.pitch,baseYaw=preset.yaw,scale=Math.min(width,height)*.092*state.zoom,centerY=height*.5,shift=solidShift(width);return modelPoints.map(point=>{const rotated=rotatePoint(point,state.pitch+basePitch,state.yaw+baseYaw,state.roll),perspective=1/(1-rotated[2]/PERSPECTIVE_DISTANCE);return{x:width*.5+shift+rotated[0]*scale*perspective,y:centerY-rotated[1]*scale*perspective,depth:rotated[2],model:rotated};});}
     // The vacated permutahedron sites, projected with the same camera, so the
     // white markers sit exactly where the popped nodes used to be.
     function vacatedPoints(width,height){return projectPoints(worldPoints,width,height);}
@@ -245,7 +236,7 @@
       const points=currentPoints(width,height);
       // Record what this pass actually draws, so the acceptance harness counts
       // rendered markers and lit links rather than trusting a state flag.
-      if(!exportMode){state.screen=points;state.drawn={vacated:[],glow:[],greyEdges:[]};}
+      if(!exportMode){state.screen=points;state.drawn={vacated:[],glow:[],greyEdges:[],strandLinks:[]};}
       ctx.save();
       ctx.fillStyle=exportMode?"#fff":getComputedStyle(document.documentElement).getPropertyValue("--paper");
       ctx.fillRect(0,0,width,height);
@@ -325,12 +316,13 @@
           const active=state.focusChain===null||chain===state.focusChain;
           const alpha=chainProgress*(state.focusChain===null?1:active?1:1-f),path=paths[chain],first=points[path[0]],last=points[path[3]];
           const dx=last.x-first.x,dy=last.y-first.y,distance=Math.hypot(dx,dy)||1,ux=dx/distance,uy=dy/distance;
-          ctx.save();ctx.globalAlpha=alpha*.12;ctx.strokeStyle=color;ctx.lineWidth=exportMode?64:44;ctx.lineCap="round";
+          ctx.save();ctx.globalAlpha=alpha*.12;ctx.strokeStyle="#111111";ctx.lineWidth=exportMode?64:44;ctx.lineCap="round";
           ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();ctx.restore();
           if(state.guides){
-            ctx.save();ctx.globalAlpha=alpha*.92;ctx.strokeStyle=color;ctx.lineWidth=exportMode?10:5;ctx.lineCap="round";
+            ctx.save();ctx.globalAlpha=alpha*.92;ctx.strokeStyle="#111111";ctx.lineWidth=exportMode?10:5;ctx.lineCap="round";
             ctx.beginPath();path.forEach((rank,index)=>index?ctx.lineTo(points[rank].x,points[rank].y):ctx.moveTo(points[rank].x,points[rank].y));ctx.stroke();
             ctx.restore();
+            if(!exportMode)state.drawn.strandLinks.push({chain,color:"#111111"});
           }
           ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.font=`800 ${exportMode?24:13}px system-ui`;ctx.textAlign="center";ctx.textBaseline="middle";
           ctx.fillText(`${chainRecord.multiplet} · legs ${chainRecord.legs.join(",")}`,first.x-ux*(exportMode?110:78),first.y-uy*(exportMode?110:78));ctx.restore();
@@ -362,20 +354,19 @@
     }
 
     function render(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));context.setTransform(dpr,0,0,dpr,0,0);renderTo(context,rect.width,rect.height);updateBadge();$("cameraReadout").textContent=`X ${Math.round(state.pitch*180/Math.PI)}° · Y ${Math.round(state.yaw*180/Math.PI)}° · Z ${Math.round(state.roll*180/Math.PI)}° · zoom ${state.zoom.toFixed(2)}`;}
-    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Members ascend within each quartet; quartets follow p.61 order P[1] to P[6]";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";const view=ORIENTATIONS[state.orientation].label;$("modeText").textContent=`${state.cameraAdjusted?`Custom camera from ${view}`:view} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands out`;const partial=state.chainProgress.some(value=>value>.01&&value<.99);$("modeText").textContent=partial?"Part-way separated; use the slider or Reassemble":"Click to pop the next strand";}}
+    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Members ascend within each quartet; quartets follow p.61 order P[1] to P[6]";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";const view=ORIENTATIONS[state.orientation].label;$("modeText").textContent=`${state.cameraAdjusted?`Custom camera from ${view}`:view} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands separated`;const partial=state.chainProgress.some(value=>value>.01&&value<.99);$("modeText").textContent=partial?"Separating one strand; every other node remains fixed":"Paused. Click to separate the next strand.";}}
 
     // Headless Chrome has no compositor, so requestAnimationFrame does not fire
     // reliably there. The harness needs the same animation code to complete, so
     // fall back to a timer when running under the check flag.
     const schedule=TIMER_MODE?(fn=>setTimeout(fn,16)):(fn=>requestAnimationFrame(fn));
     function animateField(field,to,duration=1050,after){const token=++state.animation,from=state[field],start=performance.now();const step=()=>{if(token!==state.animation)return;const t=Math.min(1,(performance.now()-start)/duration);state[field]=mix(from,to,smooth(t));render();if(t<1)schedule(step);else after?.();};schedule(step);}
-    function animateChain(index,to,duration,after){const from=state.chainProgress[index],start=performance.now();const step=()=>{const t=Math.min(1,(performance.now()-start)/duration);state.chainProgress[index]=mix(from,to,smooth(t));syncSlider();render();if(t<1)schedule(step);else after?.();};schedule(step);}
-    function syncSlider(){$("progressSlider").value=String(Math.round(meanProgress()*1000));}
+    function animateChain(index,to,duration,after){const from=state.chainProgress[index],auditIsolation=to>from,others=state.chainProgress.map((value,other)=>other===index?null:value),start=performance.now();const step=()=>{const t=Math.min(1,(performance.now()-start)/duration);state.chainProgress[index]=mix(from,to,smooth(t));if(auditIsolation)others.forEach((value,other)=>{if(other!==index&&Math.abs(state.chainProgress[other]-value)>1e-9)state.separationViolations.push(`strand ${index+1} moved strand ${other+1}`);});render();if(t<1)schedule(step);else after?.();};schedule(step);}
     // One strand at a time. The journey glows link by link, rests on each member
     // it reaches, then the strand lifts out and leaves white balls behind.
     function popStrand(index){
       if(state.busy||index===undefined||index<0||state.chainProgress[index]>.01)return;
-      state.busy=true;state.focus=0;state.focusChain=null;
+      state.busy=true;state.focus=0;state.focusChain=null;updateControls();
       const chainRecord=DISASSEMBLY.chains[index],total=chainRecord.journey_ranks.length-1;
       state.glow={chain:index,step:0};render();
       const advance=()=>{
@@ -393,10 +384,9 @@
     function nextStrandIndex(){return state.chainProgress.findIndex(value=>value<=.01);}
     function popNext(){popStrand(nextStrandIndex());}
     function reassemble(){if(state.busy)return;state.glow={chain:null,step:0};const finish=()=>{state.chainProgress.forEach((_,index)=>animateChain(index,0,1100,index===5?updateControls:undefined));updateControls();};if(state.focus>.01)animateField("focus",0,450,()=>{state.focusChain=null;finish();});else finish();}
-    function separateAll(){if(state.busy)return;state.glow={chain:null,step:0};state.focus=0;state.focusChain=null;state.chainProgress.fill(1);syncSlider();updateControls();render();}
     function drill(){if(state.busy)return;state.focusChain=state.selectedChain;const focus=()=>animateField("focus",1,700);if(state.chainProgress[state.selectedChain]<.98)animateChain(state.selectedChain,1,900,()=>{updateControls();focus();});else focus();}
     function showAll(){animateField("focus",0,550,()=>{state.focusChain=null;render();});}
-    function updateControls(){const remaining=nextStrandIndex(),partial=state.chainProgress.some(v=>v>.01&&v<.99);$("playButton").textContent=partial?"Part-way separated":(remaining<0?"All six strands out":`Pop out strand ${poppedCount()+1} of 6`);$("playButton").disabled=remaining<0||state.busy;$("popReadout").textContent=partial?"slider position, not a strand count":`${poppedCount()} of 6 strands extracted`;updateSectorButtons();}
+    function updateControls(){const remaining=nextStrandIndex(),partial=state.chainProgress.some(v=>v>.01&&v<.99);$("playButton").textContent=state.busy?`Separating strand ${poppedCount()+1} of 6`:(remaining<0?"All six strands separated":poppedCount()===0?"Separate strand 1 of 6":`Next: separate strand ${poppedCount()+1} of 6`);$("playButton").disabled=remaining<0||state.busy;$("popReadout").textContent=partial?`${poppedCount()} of 6 strands separated · moving one strand`:`${poppedCount()} of 6 strands separated${poppedCount()>0&&poppedCount()<6?" · paused":""}`;updateSectorButtons();}
 
     function permutationMatrix(permutation){return Array.from({length:4},(_,row)=>Array.from({length:4},(_,column)=>column===permutation[row]-1?1:0));}
     function signedMatrix(permutation,factor){return permutationMatrix(permutation).map((row,index)=>row.map(value=>value*(factor&(1<<index)?-1:1)));}
@@ -409,7 +399,7 @@
     function nearestRank(x,y){let best=null,distance=22**2;state.screen.forEach((point,rank)=>{if(state.focus>.8&&chainByRank[rank]!==state.focusChain)return;const d=(point.x-x)**2+(point.y-y)**2;if(d<distance){distance=d;best=rank;}});return best;}
     function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);const record=DISASSEMBLY.chains[state.focusChain??state.selectedChain];link.download=state.focus>.5?`S4_quartet_${record.multiplet}.png`:`S4_six_quartets_p61_order.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
 
-    $("playButton").onclick=popNext;$("assembleButton").onclick=reassemble;$("finishButton").onclick=separateAll;$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("progressSlider").oninput=event=>{if(state.busy){syncSlider();return;}state.animation++;const value=Number(event.target.value)/1000;state.chainProgress.fill(value);state.focus=0;state.focusChain=null;state.glow={chain:null,step:0};updateControls();render();};$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};function toggleDetails(){const hidden=$("layout").classList.toggle("no-details");$("detailsButton").textContent=hidden?"Show details":"Hide details";$("detailsButton").classList.toggle("primary",hidden);render();}
+    $("playButton").onclick=popNext;$("assembleButton").onclick=reassemble;$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};function toggleDetails(){const hidden=$("layout").classList.toggle("no-details");$("detailsButton").textContent=hidden?"Show details":"Hide details";$("detailsButton").classList.toggle("primary",hidden);render();}
     $("detailsButton").onclick=toggleDetails;$("detailsCollapse").onclick=toggleDetails;$("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};$("exportButton").onclick=exportPng;
     document.querySelectorAll(".orientationButton").forEach(button=>button.onclick=()=>setOrientation(button.dataset.orientation));
     $("resetCameraButton").onclick=resetCamera;document.querySelectorAll(".axisButton").forEach(button=>button.onclick=()=>{state[button.dataset.axis]+=Math.PI/2;markCameraAdjusted();render();});
@@ -543,9 +533,10 @@
       if(state.yaw!==0||state.pitch!==0||state.roll!==0||state.zoom!==1||state.cameraAdjusted)failures.push("the hexagon-floor preset did not reset the camera");
       if(activePreset()!=="hex_floor")failures.push("the hexagon-floor preset is not marked active after restoration");
       document.querySelector('.orientationButton[data-orientation="page64"]').click();
-      const slider=$("progressSlider");slider.value="500";slider.dispatchEvent(new Event("input",{bubbles:true}));
-      if(!$("playButton").disabled)failures.push("the next-strand button remains enabled at a partial slider position");
-      if($("modeText").textContent!=="Part-way separated; use the slider or Reassemble")failures.push("the badge gives a false click instruction at a partial slider position");
+      if($("progress"+"Slider"))failures.push("the simultaneous six-strand slider still exists");
+      if($("finishButton"))failures.push("the simultaneous completion control still exists");
+      if(document.body.textContent.includes("Assembly → six quartet"+" strands"))failures.push("the simultaneous separation instruction still exists");
+      if(document.body.textContent.includes("Separate"+" all"))failures.push("the simultaneous separation label still exists");
       const node=document.createElement("pre");node.id="controlsCheckResult";node.textContent=JSON.stringify({failures});document.body.appendChild(node);
     }
 
@@ -561,8 +552,17 @@
           const index=nextStrandIndex();
           if(index<0){failures.push(`click ${click}: no strand left to pop`);break;}
           const record=DISASSEMBLY.chains[index];
+          const beforeProgress=[...state.chainProgress];
+          const beforePoints=state.screen.map(point=>({x:point.x,y:point.y}));
+          const untouched=new Set(Array.from({length:24},(_,rank)=>rank).filter(rank=>chainByRank[rank]!==index));
           $("playButton").click();
           await idle();
+          const movedUntouched=[...untouched].filter(rank=>Math.hypot(state.screen[rank].x-beforePoints[rank].x,state.screen[rank].y-beforePoints[rank].y)>1e-7);
+          if(movedUntouched.length)failures.push(`after pop ${click}, ${movedUntouched.length} nodes outside strand ${click} moved`);
+          state.chainProgress.forEach((value,chain)=>{
+            const expected=chain===index?1:beforeProgress[chain];
+            if(Math.abs(value-expected)>1e-9)failures.push(`after pop ${click}, strand ${chain+1} progress is ${value}, expected ${expected}`);
+          });
           const drawnVacated=state.drawn.vacated.length;
           if(drawnVacated!==click*4)failures.push(`after pop ${click}, renderer drew ${drawnVacated} white balls, expected ${click*4}`);
           const unnamed=state.drawn.vacated.filter(marker=>!marker.named).length;
@@ -576,6 +576,9 @@
           const shouldBeGrey=ATLAS.edges.filter(([a,b])=>state.chainProgress[chainByRank[a]]>.99||state.chainProgress[chainByRank[b]]>.99).length;
           if(state.drawn.greyEdges.length!==shouldBeGrey)failures.push(`after pop ${click}, ${state.drawn.greyEdges.length} edges rendered grey, expected ${shouldBeGrey}`);
           if(poppedCount()!==click)failures.push(`after pop ${click}, ${poppedCount()} strands are out`);
+          if(state.drawn.strandLinks.length!==click)failures.push(`after pop ${click}, renderer drew ${state.drawn.strandLinks.length} strand links, expected ${click}`);
+          const nonBlack=state.drawn.strandLinks.filter(link=>link.color!=="#111111");
+          if(nonBlack.length)failures.push(`after pop ${click}, ${nonBlack.length} separated strand links are not black`);
           if(record.position!==click)failures.push(`click ${click} popped strand ${record.position} (${record.multiplet}), expected strand ${click}`);
           const drawn=state.lastGlowDrawn;
           if(!drawn||drawn.chain!==index){failures.push(`click ${click}: no glow was rendered for ${record.multiplet}`);}
@@ -586,8 +589,10 @@
             const visited=[record.journey_ranks[0],...drawn.links.map(pair=>pair[1])];
             if(new Set(visited).size!==visited.length)failures.push(`click ${click} (${record.multiplet}) glow path revisits a node`);
           }
-          observations.push({click,strand:record.position,multiplet:record.multiplet,glowLinks:state.lastGlowDrawn?.links.length??0,whiteBalls:drawnVacated});
+          if(!$("popReadout").textContent.includes(click<6?"paused":"6 of 6 strands separated"))failures.push(`after pop ${click}, the app does not show the expected pause state`);
+          observations.push({click,strand:record.position,multiplet:record.multiplet,glowLinks:state.lastGlowDrawn?.links.length??0,whiteBalls:drawnVacated,untouchedNodesMoved:movedUntouched.length,progress:[...state.chainProgress],strandLinkColors:state.drawn.strandLinks.map(link=>link.color),readout:$("popReadout").textContent});
         }
+        if(state.separationViolations.length)failures.push(...state.separationViolations);
         const node=document.createElement("pre");
         node.id="phase3result";
         node.textContent=JSON.stringify({failures,observations},null,1);
