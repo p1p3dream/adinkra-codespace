@@ -63,7 +63,7 @@ jobs:
       - name: Check camera restoration and state-dependent text
         run: visualizer/check_permutahedron_s4_controls.sh
 
-      - name: Exercise all six pop-outs and rendered geometry
+      - name: Exercise all 24 node moves and rendered geometry
         run: visualizer/check_permutahedron_s4_popout.sh
 
       - name: Prove the orientation gate rejects defects

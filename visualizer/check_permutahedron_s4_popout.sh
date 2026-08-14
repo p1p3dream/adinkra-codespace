@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
-# Interaction gate for the six-strand pop-out.
+# Interaction gate for the 24-node separation sequence.
 #
 # smoke_permutahedron_s4_disassembly.sh checks that the page initialises. This
-# checks that clicking it six times does the right thing: strands leave in listed
-# order, the glow walks each quartet's journey link by link, and every vacated
-# permutahedron site gets a white ball.
+# checks that each of 24 clicks moves exactly one node, leaves every other node
+# fixed, pauses, and adds black strand links only as adjacent members arrive.
 #
 # The page carries a harness behind ?phase3check=1. It clicks the real button and
-# reports what the renderer drew, so the white-ball and glow counts come from the
-# draw path rather than from state flags. The browser self-check independently
-# validates each journey against the graph, so the harness is not merely
-# comparing the animation against its own input.
+# reports what the renderer drew, so white-ball and link counts come from the
+# draw path rather than from state flags.
 
 set -euo pipefail
 
@@ -70,33 +67,33 @@ report = json.loads(html.unescape(match.group(1)))
 failures = list(report["failures"])
 observations = report["observations"]
 
-if len(observations) != 6:
-    failures.append(f"expected 6 pop-outs, observed {len(observations)}")
+if len(observations) != 24:
+    failures.append(f"expected 24 node moves, observed {len(observations)}")
 
-# Every quartet vacates four sites, so the white balls accumulate 4 at a time.
+# One site is vacated per click. A completed quartet has three black links.
 for index, observation in enumerate(observations, start=1):
-    if observation["whiteBalls"] != index * 4:
+    if observation["whiteBalls"] != index:
         failures.append(
-            f"after pop {index} the renderer drew {observation['whiteBalls']} white balls, expected {index * 4}"
+            f"after click {index} the renderer drew {observation['whiteBalls']} white balls, expected {index}"
         )
-    if observation["strand"] != index:
-        failures.append(f"click {index} popped strand {observation['strand']}")
-    if observation["glowLinks"] < 1:
-        failures.append(f"click {index} rendered no glow links")
     if observation["untouchedNodesMoved"] != 0:
         failures.append(
-            f"click {index} moved {observation['untouchedNodesMoved']} nodes outside the selected strand"
+            f"click {index} moved {observation['untouchedNodesMoved']} other nodes"
         )
-    expected_progress = [1 if chain < index else 0 for chain in range(6)]
-    if observation["progress"] != expected_progress:
+    if observation["separatedNodes"] != index:
         failures.append(
-            f"click {index} left strand progress {observation['progress']}, expected {expected_progress}"
+            f"click {index} reports {observation['separatedNodes']} separated nodes"
         )
-    if observation["strandLinkColors"] != ["#111111"] * index:
+    expected_links = (index // 4) * 3 + max(0, index % 4 - 1)
+    if observation["strandLinks"] != expected_links:
+        failures.append(
+            f"click {index} rendered {observation['strandLinks']} strand links, expected {expected_links}"
+        )
+    if observation["strandLinkColors"] != ["#111111"] * expected_links:
         failures.append(
             f"click {index} strand-link colors are {observation['strandLinkColors']}, expected black"
         )
-    if index < 6 and "paused" not in observation["readout"]:
+    if index < 24 and "paused" not in observation["readout"]:
         failures.append(f"click {index} did not stop in a visible pause state")
 
 if failures:
@@ -105,7 +102,7 @@ if failures:
         print(f"  - {failure}")
     sys.exit(1)
 
-order = " ".join(f"{o['strand']}:{o['multiplet']}({o['glowLinks']})" for o in observations)
-print("PASS: six clicks, one strand per click, all other nodes fixed, explicit pauses, black strand links, and 24 white balls.")
+order = " ".join(f"{o['node']}[{o['strand']}.{o['slot']}]" for o in observations)
+print("PASS: 24 clicks move 24 nodes one at a time, all other nodes stay fixed, every click pauses, and strand links are black.")
 print(f"      {order}")
 PY
