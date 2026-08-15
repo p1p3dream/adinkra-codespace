@@ -41,6 +41,9 @@ mod exact_component_algebra;
 mod filters;
 mod four_color;
 mod higher_dimensional_fingerprint;
+#[allow(dead_code)]
+mod higher_dimensional_canonical;
+mod higher_dimensional_parentage;
 mod holoraumy;
 mod lorentz;
 mod lorentz_intertwiners;
@@ -195,6 +198,9 @@ fn main() {
         "chiral-tensor-4d-verify" => cmd_chiral_tensor_4d_verify(),
         "higher-dimensional-fingerprint-build" => cmd_higher_dimensional_fingerprint_build(&args),
         "higher-dimensional-fingerprint-verify" => cmd_higher_dimensional_fingerprint_verify(),
+        "higher-dimensional-parentage-build" => cmd_higher_dimensional_parentage_build(&args),
+        "higher-dimensional-parentage-verify" => cmd_higher_dimensional_parentage_verify(),
+        "higher-dimensional-parentage-query" => cmd_higher_dimensional_parentage_query(&args),
         "maxwell-phantom-build" => cmd_maxwell_phantom_build(&args),
         "maxwell-phantom-verify" => cmd_maxwell_phantom_verify(),
         "maxwell-worldline-search-build" => cmd_maxwell_worldline_search_build(&args),
@@ -432,6 +438,11 @@ fn print_usage(prog: &str) {
     eprintln!("  higher-dimensional-fingerprint-build [json]");
     eprintln!("                          Compare CV and CT spatial and gauge data");
     eprintln!("  higher-dimensional-fingerprint-verify Verify the CV/CT comparison gates");
+    eprintln!("  higher-dimensional-parentage-build [json]");
+    eprintln!("                          Build the invariant catalog and inference audit");
+    eprintln!("  higher-dimensional-parentage-verify Verify classification and mutations");
+    eprintln!("  higher-dimensional-parentage-query <query-json>");
+    eprintln!("                          Classify supplied physical decorations");
     eprintln!("  maxwell-phantom-build [json]");
     eprintln!("                          Verify Maxwell phantom and Bianchi linkage data");
     eprintln!("  maxwell-phantom-verify Verify the complete Maxwell Eq. 5.11 gate");
@@ -820,6 +831,43 @@ fn cmd_higher_dimensional_fingerprint_verify() {
     if !artifact.passed {
         std::process::exit(2);
     }
+}
+
+fn cmd_higher_dimensional_parentage_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/higher_dimensional_parentage.json");
+    let artifact = higher_dimensional_parentage::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_parentage_verify() {
+    let artifact = higher_dimensional_parentage::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_parentage_query(args: &[String]) {
+    let Some(path) = args.get(2) else {
+        eprintln!("higher-dimensional-parentage-query requires a query JSON path");
+        std::process::exit(1);
+    };
+    let reader = std::io::BufReader::new(
+        std::fs::File::open(path).expect("open higher-dimensional parentage query"),
+    );
+    let query: higher_dimensional_parentage::ParentageQuery =
+        serde_json::from_reader(reader).expect("parse higher-dimensional parentage query");
+    let result = higher_dimensional_parentage::infer(
+        &query,
+        &higher_dimensional_parentage::known_catalog(),
+    );
+    println!("{}", serde_json::to_string_pretty(&result).unwrap());
 }
 
 fn cmd_maxwell_phantom_build(args: &[String]) {

@@ -1,0 +1,647 @@
+{
+  "schema_version": "higher-dimensional-parentage-v1",
+  "equivalence_scope": [
+    "arbitrary invertible changes of basis within a fixed statistics, Lorentz, role, and engineering-level block",
+    "permutations and sign changes of component labels and supercharge labels",
+    "gauge-potential presentations with the same differential-form complex and reducibility depth",
+    "spatial orientation changes that preserve differential-form degree"
+  ],
+  "completeness_boundary": "The catalog invariants are exact discriminants for the four retained fixtures. They are not a complete canonical form for arbitrary tuples of derivative matrices, and no parent is inferred outside the catalog.",
+  "catalog": [
+    {
+      "parent_id": "chiral-vector",
+      "linear_class": "CV",
+      "source": "arXiv:1405.0048 Eqs. (32)-(41)",
+      "worldline_bosons": 8,
+      "worldline_fermions": 8,
+      "field_blocks": [
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "physical",
+          "irrep_multiplicity": 2,
+          "real_component_count": 2,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "auxiliary",
+          "irrep_multiplicity": 3,
+          "real_component_count": 3,
+          "engineering_level_twice": 2
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": {
+            "form_potential": {
+              "degree": 1
+            }
+          },
+          "role": "gauge_potential",
+          "irrep_multiplicity": 1,
+          "real_component_count": 4,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "fermion",
+          "lorentz_type": "majorana_spinor",
+          "role": "physical",
+          "irrep_multiplicity": 2,
+          "real_component_count": 8,
+          "engineering_level_twice": 1
+        }
+      ],
+      "gauge_complexes": [
+        {
+          "potential_degree": 1,
+          "parameter_degree": 0,
+          "reducibility_depth": 0,
+          "field_strength_degree": 2,
+          "bianchi_degree": 3,
+          "potential_components": 4,
+          "independent_gauge_directions": 1,
+          "quotient_components": 3
+        }
+      ],
+      "derivative_content": {
+        "maximum_spacetime_order": 1,
+        "scalar_gradient_multiplicity": 2,
+        "form_strength_coupling_degrees": [
+          2
+        ],
+        "algebraic_auxiliary_multiplicity": 3,
+        "temporal_linkage_present": true,
+        "spatial_linkage_present": true
+      },
+      "central": {
+        "local_stueckelberg_generators": 0,
+        "physical_worldline_generators": 0,
+        "bosonic_rank": 0,
+        "fermionic_rank": 0,
+        "commutes_with_all_supercharges": true,
+        "involutive_when_nonzero": false
+      },
+      "closure": {
+        "certification": "exact_four_dimensional_closure",
+        "component_relations_checked": 612,
+        "unexplained_residual_relations": 0,
+        "gauge_residues_retained": true
+      },
+      "nonlinear_composite_connection": false,
+      "requires_regular_background_patch": false,
+      "canonical_linear_key": "b350d847d8c52594ea254a72ba1ff564fcee1852411190041ec2cbfa53337ef9",
+      "canonical_completion_key": "3c83bccfabf15b839127d94e43ab62da2ba494b08109c29bb78e14f225933646"
+    },
+    {
+      "parent_id": "chiral-tensor",
+      "linear_class": "CT",
+      "source": "arXiv:1405.0048 Eqs. (44)-(53)",
+      "worldline_bosons": 8,
+      "worldline_fermions": 8,
+      "field_blocks": [
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "physical",
+          "irrep_multiplicity": 3,
+          "real_component_count": 3,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "auxiliary",
+          "irrep_multiplicity": 2,
+          "real_component_count": 2,
+          "engineering_level_twice": 2
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": {
+            "form_potential": {
+              "degree": 2
+            }
+          },
+          "role": "gauge_potential",
+          "irrep_multiplicity": 1,
+          "real_component_count": 6,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "fermion",
+          "lorentz_type": "majorana_spinor",
+          "role": "physical",
+          "irrep_multiplicity": 2,
+          "real_component_count": 8,
+          "engineering_level_twice": 1
+        }
+      ],
+      "gauge_complexes": [
+        {
+          "potential_degree": 2,
+          "parameter_degree": 1,
+          "reducibility_depth": 1,
+          "field_strength_degree": 3,
+          "bianchi_degree": 4,
+          "potential_components": 6,
+          "independent_gauge_directions": 3,
+          "quotient_components": 3
+        }
+      ],
+      "derivative_content": {
+        "maximum_spacetime_order": 1,
+        "scalar_gradient_multiplicity": 3,
+        "form_strength_coupling_degrees": [
+          3
+        ],
+        "algebraic_auxiliary_multiplicity": 2,
+        "temporal_linkage_present": true,
+        "spatial_linkage_present": true
+      },
+      "central": {
+        "local_stueckelberg_generators": 0,
+        "physical_worldline_generators": 0,
+        "bosonic_rank": 0,
+        "fermionic_rank": 0,
+        "commutes_with_all_supercharges": true,
+        "involutive_when_nonzero": false
+      },
+      "closure": {
+        "certification": "exact_four_dimensional_closure",
+        "component_relations_checked": 684,
+        "unexplained_residual_relations": 0,
+        "gauge_residues_retained": true
+      },
+      "nonlinear_composite_connection": false,
+      "requires_regular_background_patch": false,
+      "canonical_linear_key": "49a8be691718d811c40a3dd2741ef5d165fab13f650516be07db705440d471d9",
+      "canonical_completion_key": "ed761654245c90983ba809ec18082db8f3390c70fe39ff581cebbeb058fa5ac9"
+    },
+    {
+      "parent_id": "vector-tensor-one-z",
+      "linear_class": "VT-one-Z",
+      "source": "arXiv:1405.0048 Eqs. (59)-(61), (76)-(84); hep-th/9609016 Eqs. (4.5)-(4.6)",
+      "worldline_bosons": 8,
+      "worldline_fermions": 8,
+      "field_blocks": [
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "physical",
+          "irrep_multiplicity": 1,
+          "real_component_count": 1,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "auxiliary",
+          "irrep_multiplicity": 1,
+          "real_component_count": 1,
+          "engineering_level_twice": 2
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": {
+            "form_potential": {
+              "degree": 1
+            }
+          },
+          "role": "gauge_potential",
+          "irrep_multiplicity": 1,
+          "real_component_count": 4,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": {
+            "form_potential": {
+              "degree": 2
+            }
+          },
+          "role": "gauge_potential",
+          "irrep_multiplicity": 1,
+          "real_component_count": 6,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "fermion",
+          "lorentz_type": "majorana_spinor",
+          "role": "physical",
+          "irrep_multiplicity": 2,
+          "real_component_count": 8,
+          "engineering_level_twice": 1
+        }
+      ],
+      "gauge_complexes": [
+        {
+          "potential_degree": 1,
+          "parameter_degree": 0,
+          "reducibility_depth": 0,
+          "field_strength_degree": 2,
+          "bianchi_degree": 3,
+          "potential_components": 4,
+          "independent_gauge_directions": 1,
+          "quotient_components": 3
+        },
+        {
+          "potential_degree": 2,
+          "parameter_degree": 1,
+          "reducibility_depth": 1,
+          "field_strength_degree": 3,
+          "bianchi_degree": 4,
+          "potential_components": 6,
+          "independent_gauge_directions": 3,
+          "quotient_components": 3
+        }
+      ],
+      "derivative_content": {
+        "maximum_spacetime_order": 1,
+        "scalar_gradient_multiplicity": 1,
+        "form_strength_coupling_degrees": [
+          2,
+          3
+        ],
+        "algebraic_auxiliary_multiplicity": 1,
+        "temporal_linkage_present": true,
+        "spatial_linkage_present": true
+      },
+      "central": {
+        "local_stueckelberg_generators": 0,
+        "physical_worldline_generators": 1,
+        "bosonic_rank": 8,
+        "fermionic_rank": 8,
+        "commutes_with_all_supercharges": true,
+        "involutive_when_nonzero": true
+      },
+      "closure": {
+        "certification": "exact_four_dimensional_closure_without_central_bridge",
+        "component_relations_checked": 720,
+        "unexplained_residual_relations": 0,
+        "gauge_residues_retained": true
+      },
+      "nonlinear_composite_connection": false,
+      "requires_regular_background_patch": false,
+      "canonical_linear_key": "c2478cfe9e9767bb4a9ab7951a1a0694ad5f5d6f30d950f4a6c4aec39498dfaf",
+      "canonical_completion_key": "7a4034a54b02fe2afa62a2dc36ae033e4d9ad0be7c6ec0ed5f2aa0f60ee210c1"
+    },
+    {
+      "parent_id": "scalar-tensor-regular-tangent",
+      "linear_class": "CT-compatible",
+      "source": "arXiv:2412.16527v3 Eqs. (5.4), (5.11), (5.15), (5.19)",
+      "worldline_bosons": 8,
+      "worldline_fermions": 8,
+      "field_blocks": [
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "physical",
+          "irrep_multiplicity": 3,
+          "real_component_count": 3,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": "scalar",
+          "role": "auxiliary",
+          "irrep_multiplicity": 2,
+          "real_component_count": 2,
+          "engineering_level_twice": 2
+        },
+        {
+          "statistics": "boson",
+          "lorentz_type": {
+            "form_potential": {
+              "degree": 2
+            }
+          },
+          "role": "gauge_potential",
+          "irrep_multiplicity": 1,
+          "real_component_count": 6,
+          "engineering_level_twice": 0
+        },
+        {
+          "statistics": "fermion",
+          "lorentz_type": "majorana_spinor",
+          "role": "physical",
+          "irrep_multiplicity": 2,
+          "real_component_count": 8,
+          "engineering_level_twice": 1
+        }
+      ],
+      "gauge_complexes": [
+        {
+          "potential_degree": 2,
+          "parameter_degree": 1,
+          "reducibility_depth": 1,
+          "field_strength_degree": 3,
+          "bianchi_degree": 4,
+          "potential_components": 6,
+          "independent_gauge_directions": 3,
+          "quotient_components": 3
+        }
+      ],
+      "derivative_content": {
+        "maximum_spacetime_order": 1,
+        "scalar_gradient_multiplicity": 3,
+        "form_strength_coupling_degrees": [
+          3
+        ],
+        "algebraic_auxiliary_multiplicity": 2,
+        "temporal_linkage_present": true,
+        "spatial_linkage_present": true
+      },
+      "central": {
+        "local_stueckelberg_generators": 1,
+        "physical_worldline_generators": 0,
+        "bosonic_rank": 0,
+        "fermionic_rank": 0,
+        "commutes_with_all_supercharges": true,
+        "involutive_when_nonzero": false
+      },
+      "closure": {
+        "certification": "exact_tangent_preflight",
+        "component_relations_checked": 0,
+        "unexplained_residual_relations": 0,
+        "gauge_residues_retained": false
+      },
+      "nonlinear_composite_connection": true,
+      "requires_regular_background_patch": true,
+      "canonical_linear_key": "49a8be691718d811c40a3dd2741ef5d165fab13f650516be07db705440d471d9",
+      "canonical_completion_key": "7978caa84532bfc1ceafe6670e7cb0f498f91725b513dea30823fce28e75f1ec"
+    }
+  ],
+  "linear_classes": {
+    "CT": [
+      "chiral-tensor"
+    ],
+    "CT-compatible": [
+      "scalar-tensor-regular-tangent"
+    ],
+    "CV": [
+      "chiral-vector"
+    ],
+    "VT-one-Z": [
+      "vector-tensor-one-z"
+    ]
+  },
+  "worldline_only_query": {
+    "decision": "insufficient",
+    "compatible": [
+      {
+        "parent_id": "chiral-vector",
+        "linear_class": "CV",
+        "exact_four_dimensional_fixture": true,
+        "qualification": null,
+        "missing_information": [
+          "Lorentz field blocks and engineering levels",
+          "gauge complex and reducibility",
+          "covariant spatial and temporal derivative content",
+          "physical central-generator rank and local gauge distinction"
+        ]
+      },
+      {
+        "parent_id": "chiral-tensor",
+        "linear_class": "CT",
+        "exact_four_dimensional_fixture": true,
+        "qualification": null,
+        "missing_information": [
+          "Lorentz field blocks and engineering levels",
+          "gauge complex and reducibility",
+          "covariant spatial and temporal derivative content",
+          "physical central-generator rank and local gauge distinction"
+        ]
+      },
+      {
+        "parent_id": "vector-tensor-one-z",
+        "linear_class": "VT-one-Z",
+        "exact_four_dimensional_fixture": false,
+        "qualification": "4D closure and worldline central closure are exact separately; the source-normalization bridge remains partial",
+        "missing_information": [
+          "Lorentz field blocks and engineering levels",
+          "gauge complex and reducibility",
+          "covariant spatial and temporal derivative content",
+          "physical central-generator rank and local gauge distinction"
+        ]
+      },
+      {
+        "parent_id": "scalar-tensor-regular-tangent",
+        "linear_class": "CT-compatible",
+        "exact_four_dimensional_fixture": false,
+        "qualification": "structural tangent only; full 4D closure and an exact source-convention intertwiner remain unresolved",
+        "missing_information": [
+          "Lorentz field blocks and engineering levels",
+          "gauge complex and reducibility",
+          "covariant spatial and temporal derivative content",
+          "physical central-generator rank and local gauge distinction"
+        ]
+      }
+    ],
+    "rejected": [],
+    "unique_parent": null,
+    "unique_linear_class": null,
+    "interpretation": "The supplied data are insufficient; missing physical invariants are listed per candidate."
+  },
+  "chiral_vector_query": {
+    "decision": "identified",
+    "compatible": [
+      {
+        "parent_id": "chiral-vector",
+        "linear_class": "CV",
+        "exact_four_dimensional_fixture": true,
+        "qualification": null,
+        "missing_information": []
+      }
+    ],
+    "rejected": [
+      {
+        "candidate": "chiral-tensor",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "vector-tensor-one-z",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "scalar-tensor-regular-tangent",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      }
+    ],
+    "unique_parent": "chiral-vector",
+    "unique_linear_class": "CV",
+    "interpretation": "The supplied physical invariants identify one catalog parent."
+  },
+  "chiral_tensor_query": {
+    "decision": "identified",
+    "compatible": [
+      {
+        "parent_id": "chiral-tensor",
+        "linear_class": "CT",
+        "exact_four_dimensional_fixture": true,
+        "qualification": null,
+        "missing_information": []
+      }
+    ],
+    "rejected": [
+      {
+        "candidate": "chiral-vector",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "vector-tensor-one-z",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "scalar-tensor-regular-tangent",
+        "invariant": "central_structure",
+        "expected": "CentralStructure { local_stueckelberg_generators: 1, physical_worldline_generators: 0, bosonic_rank: 0, fermionic_rank: 0, commutes_with_all_supercharges: true, involutive_when_nonzero: false }",
+        "observed": "CentralStructure { local_stueckelberg_generators: 0, physical_worldline_generators: 0, bosonic_rank: 0, fermionic_rank: 0, commutes_with_all_supercharges: true, involutive_when_nonzero: false }"
+      }
+    ],
+    "unique_parent": "chiral-tensor",
+    "unique_linear_class": "CT",
+    "interpretation": "The supplied physical invariants identify one catalog parent."
+  },
+  "ct_structural_query": {
+    "decision": "insufficient",
+    "compatible": [
+      {
+        "parent_id": "chiral-tensor",
+        "linear_class": "CT",
+        "exact_four_dimensional_fixture": true,
+        "qualification": null,
+        "missing_information": [
+          "physical central-generator rank and local gauge distinction"
+        ]
+      },
+      {
+        "parent_id": "scalar-tensor-regular-tangent",
+        "linear_class": "CT-compatible",
+        "exact_four_dimensional_fixture": false,
+        "qualification": "structural tangent only; full 4D closure and an exact source-convention intertwiner remain unresolved",
+        "missing_information": [
+          "physical central-generator rank and local gauge distinction"
+        ]
+      }
+    ],
+    "rejected": [
+      {
+        "candidate": "chiral-vector",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "vector-tensor-one-z",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      }
+    ],
+    "unique_parent": null,
+    "unique_linear_class": null,
+    "interpretation": "The supplied data are insufficient; missing physical invariants are listed per candidate."
+  },
+  "vector_tensor_query": {
+    "decision": "compatible",
+    "compatible": [
+      {
+        "parent_id": "vector-tensor-one-z",
+        "linear_class": "VT-one-Z",
+        "exact_four_dimensional_fixture": false,
+        "qualification": "4D closure and worldline central closure are exact separately; the source-normalization bridge remains partial",
+        "missing_information": []
+      }
+    ],
+    "rejected": [
+      {
+        "candidate": "chiral-vector",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "chiral-tensor",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "scalar-tensor-regular-tangent",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      }
+    ],
+    "unique_parent": "vector-tensor-one-z",
+    "unique_linear_class": "VT-one-Z",
+    "interpretation": "One catalog candidate matches, subject to the candidate's stated qualification."
+  },
+  "scalar_tensor_completion_query": {
+    "decision": "compatible",
+    "compatible": [
+      {
+        "parent_id": "scalar-tensor-regular-tangent",
+        "linear_class": "CT-compatible",
+        "exact_four_dimensional_fixture": false,
+        "qualification": "structural tangent only; full 4D closure and an exact source-convention intertwiner remain unresolved",
+        "missing_information": []
+      }
+    ],
+    "rejected": [
+      {
+        "candidate": "chiral-vector",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      },
+      {
+        "candidate": "chiral-tensor",
+        "invariant": "central_structure",
+        "expected": "CentralStructure { local_stueckelberg_generators: 0, physical_worldline_generators: 0, bosonic_rank: 0, fermionic_rank: 0, commutes_with_all_supercharges: true, involutive_when_nonzero: false }",
+        "observed": "CentralStructure { local_stueckelberg_generators: 1, physical_worldline_generators: 0, bosonic_rank: 0, fermionic_rank: 0, commutes_with_all_supercharges: true, involutive_when_nonzero: false }"
+      },
+      {
+        "candidate": "vector-tensor-one-z",
+        "invariant": "lorentz_field_blocks",
+        "expected": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 1, real_component_count: 1, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 1 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 4, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]",
+        "observed": "[FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Physical, irrep_multiplicity: 3, real_component_count: 3, engineering_level_twice: 0 }, FieldBlock { statistics: Boson, lorentz_type: Scalar, role: Auxiliary, irrep_multiplicity: 2, real_component_count: 2, engineering_level_twice: 2 }, FieldBlock { statistics: Boson, lorentz_type: FormPotential { degree: 2 }, role: GaugePotential, irrep_multiplicity: 1, real_component_count: 6, engineering_level_twice: 0 }, FieldBlock { statistics: Fermion, lorentz_type: MajoranaSpinor, role: Physical, irrep_multiplicity: 2, real_component_count: 8, engineering_level_twice: 1 }]"
+      }
+    ],
+    "unique_parent": "scalar-tensor-regular-tangent",
+    "unique_linear_class": "CT-compatible",
+    "interpretation": "One catalog candidate matches, subject to the candidate's stated qualification."
+  },
+  "mutation_controls": [
+    {
+      "mutation": "replace CV one-form gauge complex with a two-form complex",
+      "rejected_parent": "chiral-vector",
+      "witness_invariant": "gauge_complex",
+      "passed": true
+    },
+    {
+      "mutation": "erase the vector-tensor physical central generator",
+      "rejected_parent": "vector-tensor-one-z",
+      "witness_invariant": "central_structure",
+      "passed": true
+    },
+    {
+      "mutation": "lower CT auxiliary scalars to the physical engineering level",
+      "rejected_parent": "chiral-tensor",
+      "witness_invariant": "lorentz_field_blocks",
+      "passed": true
+    }
+  ],
+  "passed": true
+}
