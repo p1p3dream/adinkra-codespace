@@ -20,10 +20,12 @@ mod bbbm_sixteen_source_audit;
 mod bbbm_source_audit;
 mod bbbm_worldline;
 mod canonical;
+mod chiral_tensor_4d;
+mod chiral_vector_4d;
 mod chromochar;
 mod chromotopology;
 mod code;
-mod four_color;
+mod coset_primed_lanczos;
 mod dashing;
 mod decompose;
 mod eleven_dimensional_bridge;
@@ -35,11 +37,18 @@ mod eleven_dimensional_spinor_bridge;
 mod eleven_dimensional_spinor_bridge_kernels;
 mod enhance;
 mod eval;
+mod exact_component_algebra;
 mod filters;
+mod four_color;
+mod higher_dimensional_fingerprint;
 mod holoraumy;
 mod lorentz;
 mod lorentz_intertwiners;
 mod lr_matrix;
+mod maxwell_phantom;
+mod maxwell_s4_atlas_scan;
+mod maxwell_s8_subalgebra_scan;
+mod maxwell_worldline_search;
 mod minimal_supergravity_action;
 mod minimal_supergravity_curvatures;
 mod nauty_canonical;
@@ -48,29 +57,51 @@ mod permutahedron;
 mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
+mod permutahedron_hypergraph;
+mod permutahedron_hypergraph_controls;
+mod permutahedron_hypergraph_higher_dimensional_gate;
+mod permutahedron_hypergraph_recursion_maxwell_bridge;
+mod permutahedron_hypergraph_resolution;
+mod permutahedron_hypergraph_signed;
+mod permutahedron_hypergraph_signed_equivalence;
 mod permutahedron_s4_supersymmetry;
 mod permutahedron_s8_conjugate_separation;
+mod permutahedron_s8_orbit_leakage;
 mod permutahedron_s8_orbits;
 mod permutahedron_s8_separation;
+mod permutahedron_s8_signed_recursion;
+mod permutahedron_s8_source_fixture_audit;
+mod permutahedron_s8_spectral_identifiability;
 mod permutahedron_s8_supersymmetry;
+mod permutahedron_s8_unrestricted_recursion;
+mod permutahedron_spectral;
+mod permutahedron_spectral_cli;
 mod pipeline;
 mod prepotential_curvature;
 mod prepotential_gauge;
+mod quotient_graph_analysis;
 mod ranking;
+mod s8_characters;
+mod scalar_tensor_tangent;
 mod search;
 mod signed_perm;
+mod spectral_lanczos;
 mod sr_hole;
 mod streamed_gadget;
 mod supercovariant_derivative;
 mod tendim_data;
 mod tendim_generate;
 mod vector_spinor_intertwiners;
+mod vector_tensor_4d;
+mod vector_tensor_central_atlas;
+mod vector_tensor_central_charge;
+mod vector_tensor_central_equivalence;
 mod viz_export;
 
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{DoublyEvenCode, enumerate_codes};
+use code::{enumerate_codes, DoublyEvenCode};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -114,6 +145,26 @@ fn main() {
         "perm-atlas-build" => cmd_perm_atlas_build(&args),
         "perm-atlas-verify" => cmd_perm_atlas_verify(),
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
+        "perm-hypergraph-build" => cmd_perm_hypergraph_build(&args),
+        "perm-hypergraph-verify" => cmd_perm_hypergraph_verify(),
+        "perm-hypergraph-controls-build" => cmd_perm_hypergraph_controls_build(&args),
+        "perm-hypergraph-controls-verify" => cmd_perm_hypergraph_controls_verify(),
+        "perm-hypergraph-higher-dimensional-build" => {
+            cmd_perm_hypergraph_higher_dimensional_build(&args)
+        }
+        "perm-hypergraph-higher-dimensional-verify" => {
+            cmd_perm_hypergraph_higher_dimensional_verify()
+        }
+        "perm-hypergraph-resolution-build" => cmd_perm_hypergraph_resolution_build(&args),
+        "perm-hypergraph-resolution-verify" => cmd_perm_hypergraph_resolution_verify(),
+        "perm-hypergraph-signed-build" => cmd_perm_hypergraph_signed_build(&args),
+        "perm-hypergraph-signed-verify" => cmd_perm_hypergraph_signed_verify(),
+        "perm-hypergraph-signed-equivalence-build" => {
+            cmd_perm_hypergraph_signed_equivalence_build(&args)
+        }
+        "perm-hypergraph-signed-equivalence-verify" => {
+            cmd_perm_hypergraph_signed_equivalence_verify()
+        }
         "perm-s4-susy-build" => cmd_perm_s4_susy_build(&args),
         "perm-s4-susy-verify" => cmd_perm_s4_susy_verify(),
         "perm-s8-conjugates-build" => cmd_perm_s8_conjugates_build(&args),
@@ -124,6 +175,51 @@ fn main() {
         "perm-s8-separation-verify" => cmd_perm_s8_separation_verify(),
         "perm-s8-susy-build" => cmd_perm_s8_susy_build(&args),
         "perm-s8-susy-verify" => cmd_perm_s8_susy_verify(),
+        "vector-tensor-central-charge-build" => cmd_vector_tensor_central_charge_build(&args),
+        "vector-tensor-central-charge-verify" => cmd_vector_tensor_central_charge_verify(),
+        "vector-tensor-central-equivalence-build" => {
+            cmd_vector_tensor_central_equivalence_build(&args)
+        }
+        "vector-tensor-central-equivalence-verify" => {
+            cmd_vector_tensor_central_equivalence_verify()
+        }
+        "vector-tensor-central-atlas-build" => cmd_vector_tensor_central_atlas_build(&args),
+        "vector-tensor-central-atlas-verify" => cmd_vector_tensor_central_atlas_verify(),
+        "vector-tensor-4d-build" => cmd_vector_tensor_4d_build(&args),
+        "vector-tensor-4d-verify" => cmd_vector_tensor_4d_verify(),
+        "scalar-tensor-tangent-build" => cmd_scalar_tensor_tangent_build(&args),
+        "scalar-tensor-tangent-verify" => cmd_scalar_tensor_tangent_verify(),
+        "chiral-vector-4d-build" => cmd_chiral_vector_4d_build(&args),
+        "chiral-vector-4d-verify" => cmd_chiral_vector_4d_verify(),
+        "chiral-tensor-4d-build" => cmd_chiral_tensor_4d_build(&args),
+        "chiral-tensor-4d-verify" => cmd_chiral_tensor_4d_verify(),
+        "higher-dimensional-fingerprint-build" => cmd_higher_dimensional_fingerprint_build(&args),
+        "higher-dimensional-fingerprint-verify" => cmd_higher_dimensional_fingerprint_verify(),
+        "maxwell-phantom-build" => cmd_maxwell_phantom_build(&args),
+        "maxwell-phantom-verify" => cmd_maxwell_phantom_verify(),
+        "maxwell-worldline-search-build" => cmd_maxwell_worldline_search_build(&args),
+        "maxwell-worldline-search-verify" => cmd_maxwell_worldline_search_verify(),
+        "maxwell-s4-atlas-build" => cmd_maxwell_s4_atlas_build(&args),
+        "maxwell-s4-atlas-verify" => cmd_maxwell_s4_atlas_verify(),
+        "maxwell-s8-subalgebra-build" => cmd_maxwell_s8_subalgebra_build(&args),
+        "maxwell-s8-subalgebra-verify" => cmd_maxwell_s8_subalgebra_verify(),
+        "perm-hypergraph-recursion-maxwell-build" => {
+            cmd_perm_hypergraph_recursion_maxwell_build(&args)
+        }
+        "perm-hypergraph-recursion-maxwell-verify" => {
+            cmd_perm_hypergraph_recursion_maxwell_verify()
+        }
+        "perm-s8-unrestricted-recursion-build" => cmd_perm_s8_unrestricted_recursion_build(&args),
+        "perm-s8-unrestricted-recursion-verify" => cmd_perm_s8_unrestricted_recursion_verify(),
+        "perm-s8-orbit-leakage-build" => cmd_perm_s8_orbit_leakage_build(&args),
+        "perm-s8-orbit-leakage-verify" => cmd_perm_s8_orbit_leakage_verify(),
+        "perm-s8-source-fixture-audit-build" => cmd_perm_s8_source_fixture_audit_build(&args),
+        "perm-s8-source-fixture-audit-verify" => cmd_perm_s8_source_fixture_audit_verify(),
+        "perm-s8-spectral-identifiability-build" => {
+            cmd_perm_s8_spectral_identifiability_build(&args)
+        }
+        "perm-s8-spectral-identifiability-verify" => cmd_perm_s8_spectral_identifiability_verify(),
+        "perm-spectral-probe" => permutahedron_spectral_cli::cmd_perm_spectral_probe(&args),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -241,15 +337,21 @@ fn print_usage(prog: &str) {
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
     eprintln!("  cls-g-full-build [side] [blocks] [threads] [cap] [json]");
     eprintln!("                          Full {{-1,0,1}} CLS G-matrix enumeration via the");
-    eprintln!("                          K=Q(sqrt(-3)) commutant reduction (side L|R, blocks 1..3)");
+    eprintln!(
+        "                          K=Q(sqrt(-3)) commutant reduction (side L|R, blocks 1..3)"
+    );
     eprintln!("  cls-g-full-verify [side] [blocks] [json]");
-    eprintln!("                          Re-verify the ladder and every stored sample of an artifact");
+    eprintln!(
+        "                          Re-verify the ladder and every stored sample of an artifact"
+    );
     eprintln!("  cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]");
     eprintln!("                          v2 slot-level CSP engine: correlated product boxes,");
     eprintln!("                          residual arc-consistency, MRV order (stride>1 = stratified sample)");
     eprintln!("  cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]");
     eprintln!("                          Durable sharded enumeration: one immutable shard per");
-    eprintln!("                          slot-0 prefix, atomic writes, skips existing valid shards");
+    eprintln!(
+        "                          slot-0 prefix, atomic writes, skips existing valid shards"
+    );
     eprintln!("  cls-g-csp-status [dir]");
     eprintln!("                          Live dashboard over a shard dir: coverage, checksum,");
     eprintln!("                          per-pod heartbeats, per-worker progress, ETA (read-only)");
@@ -271,6 +373,24 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-atlas-verify       Verify graphs, paper correlators, cosets, and embeddings");
     eprintln!("  perm-garden-scan [json]");
     eprintln!("                          Solve Garden signs for all 5,040 R8 cosets");
+    eprintln!("  perm-hypergraph-build [data-json] [validation-json]");
+    eprintln!("                          Discover exact S4/S8 unsigned constraint hypergraphs");
+    eprintln!("  perm-hypergraph-verify Verify the unlabeled clique and incidence calculation");
+    eprintln!("  perm-hypergraph-controls-build [data-json] [validation-json]");
+    eprintln!("                          Project published controls onto hypergraph families");
+    eprintln!("  perm-hypergraph-controls-verify Verify control membership and closure");
+    eprintln!("  perm-hypergraph-higher-dimensional-build [data-json] [validation-json]");
+    eprintln!("                          Run the sourced CV/CT control gate and stop audit");
+    eprintln!("  perm-hypergraph-higher-dimensional-verify Verify the bounded control gate");
+    eprintln!("  perm-hypergraph-resolution-build [data-json] [validation-json]");
+    eprintln!("                          Find and certify a minimum mixed-cover trade");
+    eprintln!("  perm-hypergraph-resolution-verify Verify the exact mixed-cover certificate");
+    eprintln!("  perm-hypergraph-signed-build [data-json] [validation-json]");
+    eprintln!("                          Transport Garden signs across all 151,200 octets");
+    eprintln!("  perm-hypergraph-signed-verify Verify all signed transports and affine ranks");
+    eprintln!("  perm-hypergraph-signed-equivalence-build [data-json] [validation-json]");
+    eprintln!("                          Classify the 30 signed identity representatives");
+    eprintln!("  perm-hypergraph-signed-equivalence-verify Verify every ledger witness");
     eprintln!("  perm-s4-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six signed S4 sectors and their Adinkras");
     eprintln!("  perm-s4-susy-verify     Verify all 96 published fiducial signings");
@@ -288,6 +408,57 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-s8-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six published signed S8 representations");
     eprintln!("  perm-s8-susy-verify     Verify closure, nonclosure, HYMN, and all m/n branches");
+    eprintln!("  vector-tensor-central-charge-build [data-json] [validation-json]");
+    eprintln!("                          Factor S8 residuals and certify central extensions");
+    eprintln!("  vector-tensor-central-charge-verify Verify the one-Z vector-tensor completion");
+    eprintln!("  vector-tensor-central-equivalence-build [json]");
+    eprintln!("                          Classify all 25 printed one-Z branches");
+    eprintln!("  vector-tensor-central-equivalence-verify Verify every enriched witness");
+    eprintln!("  vector-tensor-central-atlas-build [json]");
+    eprintln!("                          Transport one-Z closure to all 151,200 supports");
+    eprintln!("  vector-tensor-central-atlas-verify Verify complete one-Z support coverage");
+    eprintln!("  vector-tensor-4d-build [data-json] [validation-json]");
+    eprintln!("                          Build the corrected Eq. 78 component fixture");
+    eprintln!("  vector-tensor-4d-verify Verify the corrected Eq. 78 component closure");
+    eprintln!("  scalar-tensor-tangent-build [json]");
+    eprintln!("                          Derive the regular rigid tangent preflight");
+    eprintln!("  scalar-tensor-tangent-verify Verify composites, gauges, and 8+8 count");
+    eprintln!("  chiral-vector-4d-build [data-json] [validation-json]");
+    eprintln!("                          Reproduce 4D chiral-vector closure and reduction");
+    eprintln!("  chiral-vector-4d-verify Verify Eqs. 32-41 of arXiv:1405.0048 exactly");
+    eprintln!("  chiral-tensor-4d-build [data-json] [validation-json]");
+    eprintln!("                          Reproduce 4D chiral-tensor closure and reduction");
+    eprintln!("  chiral-tensor-4d-verify Verify Eqs. 44-53 of arXiv:1405.0048 exactly");
+    eprintln!("  higher-dimensional-fingerprint-build [json]");
+    eprintln!("                          Compare CV and CT spatial and gauge data");
+    eprintln!("  higher-dimensional-fingerprint-verify Verify the CV/CT comparison gates");
+    eprintln!("  maxwell-phantom-build [json]");
+    eprintln!("                          Verify Maxwell phantom and Bianchi linkage data");
+    eprintln!("  maxwell-phantom-verify Verify the complete Maxwell Eq. 5.11 gate");
+    eprintln!("  maxwell-worldline-search-build [json]");
+    eprintln!("                          Recover Maxwell from four-color worldline data");
+    eprintln!("  maxwell-worldline-search-verify Verify recovery and negative controls");
+    eprintln!("  maxwell-s4-atlas-build [json]");
+    eprintln!("                          Scan all 96 published four-color signings");
+    eprintln!("  maxwell-s4-atlas-verify Verify the complete four-color scan");
+    eprintln!("  maxwell-s8-subalgebra-build [json]");
+    eprintln!("                          Scan both embedded four-color blocks of S8 closers");
+    eprintln!("  maxwell-s8-subalgebra-verify Verify the embedded-block classification");
+    eprintln!("  perm-hypergraph-recursion-maxwell-build [json]");
+    eprintln!("                          Map S8 recursion closers and Maxwell classes");
+    eprintln!("  perm-hypergraph-recursion-maxwell-verify Verify the exact bridge");
+    eprintln!("  perm-s8-unrestricted-recursion-build [json]");
+    eprintln!("                          Exhaust all 256 masks and same-source controls");
+    eprintln!("  perm-s8-unrestricted-recursion-verify Verify the unrestricted census");
+    eprintln!("  perm-s8-orbit-leakage-build [json]");
+    eprintln!("                          Audit normalizer-orbit basis dependence");
+    eprintln!("  perm-s8-orbit-leakage-verify Verify node-relabeling reachability");
+    eprintln!("  perm-s8-source-fixture-audit-build [json]");
+    eprintln!("                          Classify physical controls by source provenance");
+    eprintln!("  perm-s8-source-fixture-audit-verify Verify source eligibility and stop gate");
+    eprintln!("  perm-s8-spectral-identifiability-build [json]");
+    eprintln!("                          Audit all 30 equitable R8 partitions");
+    eprintln!("  perm-s8-spectral-identifiability-verify Verify the spectral no-go result");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -475,6 +646,484 @@ fn cmd_perm_garden_scan(args: &[String]) {
     );
 }
 
+fn cmd_perm_hypergraph_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_constraint_hypergraphs.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_constraint_hypergraphs_validation.json");
+    let report = permutahedron_hypergraph::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_verify() {
+    let artifact = permutahedron_hypergraph::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_controls_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_physical_controls.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_physical_controls_validation.json");
+    let report = permutahedron_hypergraph_controls::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_controls_verify() {
+    let artifact = permutahedron_hypergraph_controls::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_higher_dimensional_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_higher_dimensional_gate.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_higher_dimensional_gate_validation.json");
+    let report = permutahedron_hypergraph_higher_dimensional_gate::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_higher_dimensional_verify() {
+    let artifact = permutahedron_hypergraph_higher_dimensional_gate::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_vector_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/chiral_vector_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/chiral_vector_4d_validation.json");
+    let report = chiral_vector_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_vector_4d_verify() {
+    let report = chiral_vector_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_tensor_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/chiral_tensor_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/chiral_tensor_4d_validation.json");
+    let report = chiral_tensor_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_tensor_4d_verify() {
+    let report = chiral_tensor_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_fingerprint_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/higher_dimensional_fingerprint.json");
+    let artifact = higher_dimensional_fingerprint::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_fingerprint_verify() {
+    let artifact = higher_dimensional_fingerprint::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_phantom_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_phantom.json");
+    let artifact = maxwell_phantom::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_phantom_verify() {
+    let artifact = maxwell_phantom::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_worldline_search_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_worldline_search.json");
+    let artifact = maxwell_worldline_search::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_worldline_search_verify() {
+    let artifact = maxwell_worldline_search::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s4_atlas_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_s4_atlas_scan.json");
+    let artifact = maxwell_s4_atlas_scan::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s4_atlas_verify() {
+    let artifact = maxwell_s4_atlas_scan::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s8_subalgebra_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_s8_subalgebra_scan.json");
+    let artifact = maxwell_s8_subalgebra_scan::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s8_subalgebra_verify() {
+    let artifact = maxwell_s8_subalgebra_scan::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_recursion_maxwell_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_recursion_maxwell_bridge.json");
+    let validation = permutahedron_hypergraph_recursion_maxwell_bridge::write_artifact(
+        std::path::Path::new(path),
+    );
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_recursion_maxwell_verify() {
+    let artifact = permutahedron_hypergraph_recursion_maxwell_bridge::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_unrestricted_recursion_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_unrestricted_recursion.json");
+    let validation =
+        permutahedron_s8_unrestricted_recursion::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_unrestricted_recursion_verify() {
+    let artifact = permutahedron_s8_unrestricted_recursion::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbit_leakage_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_orbit_leakage.json");
+    let validation = permutahedron_s8_orbit_leakage::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbit_leakage_verify() {
+    let artifact = permutahedron_s8_orbit_leakage::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_source_fixture_audit_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_source_fixture_audit.json");
+    let validation =
+        permutahedron_s8_source_fixture_audit::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_source_fixture_audit_verify() {
+    let artifact = permutahedron_s8_source_fixture_audit::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_spectral_identifiability_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_spectral_identifiability.json");
+    let validation =
+        permutahedron_s8_spectral_identifiability::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_spectral_identifiability_verify() {
+    let artifact = permutahedron_s8_spectral_identifiability::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_resolution_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_resolution.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_resolution_validation.json");
+    let report = permutahedron_hypergraph_resolution::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_resolution_verify() {
+    let artifact = permutahedron_hypergraph_resolution::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_signed_transport.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_signed_transport_validation.json");
+    let report = permutahedron_hypergraph_signed::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_verify() {
+    let artifact = permutahedron_hypergraph_signed::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_equivalence_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_signed_equivalence.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_signed_equivalence_validation.json");
+    let report = permutahedron_hypergraph_signed_equivalence::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_equivalence_verify() {
+    let artifact = permutahedron_hypergraph_signed_equivalence::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
 fn cmd_perm_s4_susy_build(args: &[String]) {
     let data_path = args
         .get(2)
@@ -636,6 +1285,127 @@ fn cmd_perm_s8_susy_verify() {
         "{}",
         serde_json::to_string_pretty(&artifact.separation).unwrap()
     );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_charge_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/vector_tensor_central_charge.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_central_charge_validation.json");
+    let report = vector_tensor_central_charge::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_charge_verify() {
+    let artifact = vector_tensor_central_charge::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.vector_tensor).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_equivalence_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_central_equivalence.json");
+    let report = vector_tensor_central_equivalence::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_equivalence_verify() {
+    let report = vector_tensor_central_equivalence::build();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_atlas_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_central_atlas.json");
+    let report = vector_tensor_central_atlas::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_atlas_verify() {
+    let report = vector_tensor_central_atlas::build();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_4d_verify() {
+    let report = vector_tensor_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/vector_tensor_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_4d_validation.json");
+    let report = vector_tensor_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_scalar_tensor_tangent_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/scalar_tensor_tangent.json");
+    let artifact = scalar_tensor_tangent::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_scalar_tensor_tangent_verify() {
+    let artifact = scalar_tensor_tangent::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
     if !artifact.validation.passed {
         std::process::exit(2);
     }
@@ -2287,7 +3057,7 @@ fn cmd_decompose_probe(args: &[String]) {
 }
 
 fn cmd_cls_g_full_build(args: &[String]) {
-    use four_color::gmatrix_full::{Side, run_build};
+    use four_color::gmatrix_full::{run_build, Side};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
@@ -2296,7 +3066,10 @@ fn cmd_cls_g_full_build(args: &[String]) {
             std::process::exit(1);
         }
     };
-    let m = args.get(3).and_then(|s| s.parse::<usize>().ok()).unwrap_or(3);
+    let m = args
+        .get(3)
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(3);
     if !(1..=3).contains(&m) {
         eprintln!("blocks must be 1..=3, got {m}");
         std::process::exit(1);
@@ -2320,7 +3093,7 @@ fn cmd_cls_g_full_build(args: &[String]) {
 }
 
 fn cmd_cls_g_full_verify(args: &[String]) {
-    use four_color::gmatrix_full::{Side, run_verify};
+    use four_color::gmatrix_full::{run_verify, Side};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
@@ -2329,7 +3102,10 @@ fn cmd_cls_g_full_verify(args: &[String]) {
             std::process::exit(1);
         }
     };
-    let m = args.get(3).and_then(|s| s.parse::<usize>().ok()).unwrap_or(3);
+    let m = args
+        .get(3)
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(3);
     let default_path = format!(
         "results/four_color_cls_gmatrix_full_{}_{}blocks.json",
         side.name(),

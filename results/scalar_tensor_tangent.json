@@ -1,0 +1,175 @@
+{
+  "schema_version": "scalar-tensor-rigid-tangent-v1",
+  "sources": [
+    {
+      "arxiv_id": "2412.16527v3",
+      "locator": "Eqs. (5.4), (5.11), (5.15), (5.19) and Table 3",
+      "role": "primary scalar-tensor transformations and composites",
+      "sha256": "76a0aa35c20af63eb00fcf2dd0db835d5f760a4c5ed25f6dac7983109568876d"
+    },
+    {
+      "arxiv_id": "2412.16527v3 source",
+      "locator": "scalar_tensor.tex",
+      "role": "primary TeX transcription audit",
+      "sha256": "a3646e398ae6ff101870422566e8c5a6606b0b2901aba9b5c6f09c1f7cc8c7de"
+    }
+  ],
+  "background": {
+    "xi_lower": [
+      [
+        1,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "x": [
+      0,
+      0
+    ],
+    "fermions_zero": true,
+    "two_form_zero": true,
+    "flat_weyl_background": true,
+    "eta_s_supersymmetry_zero": true,
+    "xi_norm_squared": 1,
+    "denominator_regular": true,
+    "preserves_rigid_q_supersymmetry": true
+  },
+  "denominator": {
+    "fluctuation_basis": [
+      "xi_1=1+a+i b",
+      "xi_2=c+i d"
+    ],
+    "xi_norm_squared_through_first_order": "rho=xi^i xi_i=1+2a+O(2)",
+    "reciprocal_through_first_order": "rho^{-1}=1-2a+O(2)",
+    "product_constant_coefficient": 1,
+    "product_linear_a_coefficient": 0,
+    "inverse_check_passed": true
+  },
+  "composites": {
+    "omega": [
+      "Omega_1=i slash(partial) psi_R+O(2)",
+      "Omega_2=-i slash(partial) theta_R+O(2)"
+    ],
+    "w": [
+      "h_a=-(i/3!) epsilon_abcd H^bcd",
+      "W_a=h_a-2 partial_a b+O(2)",
+      "D_a xi_1=partial_a a+(i/2)h_a+O(2)",
+      "D_a xi_2=partial_a(c+i d)+O(2)"
+    ],
+    "y": [
+      "Y_11=-2i box(c-i d)+O(2)",
+      "Y_12=2i box(a)+O(2)",
+      "Y_22=2i box(c+i d)+O(2)"
+    ],
+    "assumptions": [
+      "epsilon_12=+1 and epsilon_21=-1",
+      "upper scalar indices denote complex conjugation",
+      "all conformal-supergravity matter backgrounds vanish",
+      "products of two fluctuations are discarded"
+    ],
+    "source_equations": [
+      "arXiv:2412.16527 Eq. (5.4), composite Omega",
+      "arXiv:2412.16527 Eq. (5.11), composite Y",
+      "arXiv:2412.16527 Eq. (5.15), composite W"
+    ]
+  },
+  "central_gauge": {
+    "conventions": [
+      "delta_z xi_i=-(i/2)z xi_i",
+      "delta_z W_a=partial_a z",
+      "D_a xi_i=(partial_a+i W_a/2)xi_i on the rigid background"
+    ],
+    "delta_b_per_z": [
+      -1,
+      2
+    ],
+    "w_partial_b_coefficient": -2,
+    "delta_w_per_partial_z": 1,
+    "covariant_derivative_w_coefficient": [
+      1,
+      2
+    ],
+    "raw_imaginary_partial_b_coefficient": 1,
+    "induced_imaginary_partial_b_coefficient": -1,
+    "gauge_fixed_partial_b_coefficient": 0,
+    "surviving_dual_h_coefficient": [
+      1,
+      2
+    ],
+    "phase_slice": "Im(v^i q_i)=0",
+    "q_compensator": "alpha_Q=(2/r) Im[v^i(-bar(epsilon_i) theta_R+epsilon_ij bar(epsilon^j) psi_L)]",
+    "composite_connection_transforms_correctly": true,
+    "phase_mode_cancels_from_d_xi_1": true
+  },
+  "degrees": {
+    "complex_xi_components": 4,
+    "complex_x_components": 2,
+    "two_form_components": 6,
+    "tensor_gauge_redundancies": 3,
+    "central_u1_redundancies": 1,
+    "physical_bosons": 8,
+    "majorana_spinors": 2,
+    "fermionic_components": 8,
+    "balanced_8_plus_8": true,
+    "gauge_fixed_worldline_bosons": [
+      "a=Re(delta xi_1)",
+      "c=Re(delta xi_2)",
+      "d=Im(delta xi_2)",
+      "Re(X)",
+      "Im(X)",
+      "B_12",
+      "B_23",
+      "B_31"
+    ]
+  },
+  "ct_structural_map": {
+    "source_to_ct_roles": [
+      "Re(delta xi_2), Im(delta xi_2) -> CT chiral scalars A,B",
+      "Re(X), Im(X) -> CT chiral auxiliaries F,G",
+      "Re(delta xi_1) -> CT tensor scalar phi",
+      "B_mu_nu -> CT tensor potential B_mu_nu",
+      "Majorana realifications of psi_L, theta_R -> crossed CT fermions psi,chi"
+    ],
+    "crossed_q_couplings_matched": true,
+    "tensor_derivative_structure_matched": true,
+    "exact_four_dimensional_intertwiner_solved": false,
+    "holdout_decision": "reject as an independent S8 holdout unless an exact source-convention intertwiner disproves the CT correspondence"
+  },
+  "negative_controls": {
+    "singular_origin_rejected": true,
+    "nonzero_x_background_rejected": true,
+    "flipped_w_phase_sign_rejected": true,
+    "omitted_w_connection_rejected": true,
+    "wrong_inverse_sign_rejected": true,
+    "all_controls_passed": true
+  },
+  "closure_boundary": {
+    "direct_transcription_is_closed_fixture": false,
+    "source_warning": "The source states that composite Y can enter delta Omega and may be crucial for off-shell closure.",
+    "source_defect": "Eq. (5.19) has a gravitino SU(2)-index mismatch; Eq. (5.17) supplies the consistent contraction, and the term vanishes on the rigid tangent.",
+    "unresolved_items": [
+      "derive the Q variation of every linearized composite in one fixed Majorana convention",
+      "derive the field-dependent central-U(1) compensator preserving b=0",
+      "check all two-form gauge residues before temporal gauge",
+      "only then extract the 0-brane L and R matrices",
+      "solve the exact source-to-repository Majorana/Clifford intertwiner without using CT signs as input"
+    ],
+    "next_exact_gate": "an exhaustive four-dimensional tangent closure table, not an atlas-label fit"
+  },
+  "validation": {
+    "background_regular": true,
+    "background_supersymmetric": true,
+    "denominator_inverse_checked": true,
+    "composite_omega_linearized": true,
+    "composite_w_linearized": true,
+    "composite_y_linearized": true,
+    "central_gauge_covariance_checked": true,
+    "field_count_checked": true,
+    "full_component_closure_checked": false,
+    "passed": true
+  },
+  "interpretation": "A regular rigid tangent exists and has 8+8 gauge-reduced components, but source-faithful linkage extraction still requires the composite-variation closure gate."
+}

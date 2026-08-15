@@ -1,0 +1,1767 @@
+{
+  "schema_version": "vector-tensor-central-equivalence-v1",
+  "policy": "independent signed boson and fermion permutations, signed color permutations, and simultaneous Z/K orientation; no boson-fermion duality",
+  "central_branches": 25,
+  "equivalence_classes": 1,
+  "witnesses": [
+    {
+      "source_id": "CC:base",
+      "target_id": "CC:base",
+      "boson_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "boson_switches": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m0n0",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m0n2",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m1n1",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m1n3",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m2n0",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m2n2",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m3n1",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TT:m3n3",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        7,
+        5,
+        4,
+        6
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m0n1",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m0n3",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m1n0",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m1n2",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m2n1",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m2n3",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m3n0",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "TV:m3n2",
+      "boson_map_zero_based": [
+        0,
+        2,
+        3,
+        1,
+        5,
+        6,
+        7,
+        4
+      ],
+      "fermion_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        7,
+        6,
+        5,
+        4
+      ],
+      "boson_switches": [
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m0n0",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m0n2",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m1n1",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m1n3",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m2n0",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m2n2",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m3n1",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        1,
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    },
+    {
+      "source_id": "CC:base",
+      "target_id": "VV:m3n3",
+      "boson_map_zero_based": [
+        0,
+        3,
+        2,
+        1,
+        6,
+        5,
+        4,
+        7
+      ],
+      "fermion_map_zero_based": [
+        1,
+        0,
+        3,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "color_map_zero_based": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        4,
+        7,
+        6
+      ],
+      "boson_switches": [
+        -1,
+        -1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        -1
+      ],
+      "fermion_switches": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "supercharge_signs": [
+        1,
+        1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        1
+      ],
+      "central_generator_sign": 1,
+      "l_entries_verified": 64,
+      "z_boson_entries_verified": 8,
+      "z_fermion_entries_verified": 8,
+      "k_entries_verified": 8,
+      "verified": true
+    }
+  ],
+  "color_permutations_considered": 40320,
+  "k_compatible_color_permutations": 384,
+  "root_maps_considered": 25,
+  "l_entries_verified": 1600,
+  "central_entries_verified": 600,
+  "mutated_witness_rejected": true,
+  "passed": true,
+  "conclusion": "All 25 printed one-central-charge branches are one enriched signed-node/color equivalence class.",
+  "boundary": "This classifies the printed branches. Full transport to all 151,200 unsigned hyperedges is a separate atlas calculation."
+}

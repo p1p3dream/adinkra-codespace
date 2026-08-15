@@ -1,0 +1,17 @@
+{
+  "sectors_checked": 6,
+  "branches_checked": 51,
+  "residual_matrices_ranked": 776,
+  "ordinary_garden_branches": 2,
+  "one_central_charge_branches": 25,
+  "central_intertwining_checks": 400,
+  "extended_closure_checks": 3200,
+  "vector_tensor_odd_branches_completed": 8,
+  "vector_tensor_even_branches_rejected": 8,
+  "physical_worldline_operator_squared": true,
+  "appendix_f_entries_checked": 8192,
+  "appendix_f_mismatches": 0,
+  "vector_tensor_explicit_conjugators": 8,
+  "vector_tensor_source_omega_matches": 8,
+  "passed": true
+}

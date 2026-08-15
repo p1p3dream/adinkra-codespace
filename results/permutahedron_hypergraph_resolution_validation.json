@@ -1,0 +1,13 @@
+{
+  "discovered_families": 30,
+  "maximum_distinct_hyperedge_intersection": 2,
+  "trades_of_size_below_four_impossible": true,
+  "four_for_four_trade_found": true,
+  "removed_edges_are_disjoint": true,
+  "added_edges_are_disjoint": true,
+  "removed_and_added_unions_match": true,
+  "resulting_cover_is_exact": true,
+  "resulting_cover_differs_from_all_known_partitions": true,
+  "minimum_mixed_trade_size_is_four": true,
+  "passed": true
+}

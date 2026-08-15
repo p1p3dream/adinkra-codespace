@@ -1,0 +1,1840 @@
+{
+  "schema_version": "permutahedron-s8-unrestricted-recursion-v1",
+  "title": "Unrestricted Boolean-mask census of the aligned signed S8 recursion",
+  "method": [
+    "Scan all 256 row-sign masks for every relative S4 color order and every ordered source pair.",
+    "Include the six same-source ordered pairs as construction controls.",
+    "Require exact eight-color Garden closure before retaining a candidate.",
+    "Map every closing support to the complete constraint hypergraph and, for family zero, its normalizer-conjugacy orbit.",
+    "Evaluate orbit and source-category purity at the support level rather than treating repeated signings as independent samples."
+  ],
+  "supports": [
+    {
+      "hyperedge_ranks": [
+        5,
+        5169,
+        11534,
+        16698,
+        23621,
+        28785,
+        35150,
+        40314
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 5,
+      "normalizer_orbit_id": 1,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        9,
+        5165,
+        11538,
+        16694,
+        23625,
+        28781,
+        35154,
+        40310
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 9,
+      "normalizer_orbit_id": 4,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 43,
+          "boolean_mask_hex": "2b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 212,
+          "boolean_mask_hex": "d4",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        14,
+        5178,
+        11525,
+        16689,
+        23630,
+        28794,
+        35141,
+        40305
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 14,
+      "normalizer_orbit_id": 1,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 120,
+          "boolean_mask_hex": "78",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 135,
+          "boolean_mask_hex": "87",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        18,
+        5174,
+        11529,
+        16685,
+        23634,
+        28790,
+        35145,
+        40301
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 18,
+      "normalizer_orbit_id": 4,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 77,
+          "boolean_mask_hex": "4d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM3",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 178,
+          "boolean_mask_hex": "b2",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        125,
+        5049,
+        11654,
+        16578,
+        23741,
+        28665,
+        35270,
+        40194
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 125,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        129,
+        5045,
+        11658,
+        16574,
+        23745,
+        28661,
+        35274,
+        40190
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 129,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 39,
+          "boolean_mask_hex": "27",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 216,
+          "boolean_mask_hex": "d8",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        134,
+        5058,
+        11645,
+        16569,
+        23750,
+        28674,
+        35261,
+        40185
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 134,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 116,
+          "boolean_mask_hex": "74",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 139,
+          "boolean_mask_hex": "8b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        138,
+        5054,
+        11649,
+        16565,
+        23754,
+        28670,
+        35265,
+        40181
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 138,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 77,
+          "boolean_mask_hex": "4d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM2",
+          "second_label": "VM1",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 178,
+          "boolean_mask_hex": "b2",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        724,
+        6488,
+        10215,
+        15979,
+        24340,
+        30104,
+        33831,
+        39595
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 724,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        728,
+        6484,
+        10219,
+        15975,
+        24344,
+        30100,
+        33835,
+        39591
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 728,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 120,
+          "boolean_mask_hex": "78",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 135,
+          "boolean_mask_hex": "87",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        735,
+        6499,
+        10204,
+        15968,
+        24351,
+        30115,
+        33820,
+        39584
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 735,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 43,
+          "boolean_mask_hex": "2b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 212,
+          "boolean_mask_hex": "d4",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        739,
+        6495,
+        10208,
+        15964,
+        24355,
+        30111,
+        33824,
+        39580
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 739,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 77,
+          "boolean_mask_hex": "4d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 178,
+          "boolean_mask_hex": "b2",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        844,
+        6608,
+        10095,
+        15859,
+        24460,
+        30224,
+        33711,
+        39475
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 844,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        848,
+        6604,
+        10099,
+        15855,
+        24464,
+        30220,
+        33715,
+        39471
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 848,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 116,
+          "boolean_mask_hex": "74",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 139,
+          "boolean_mask_hex": "8b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        855,
+        6619,
+        10084,
+        15848,
+        24471,
+        30235,
+        33700,
+        39464
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 855,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 39,
+          "boolean_mask_hex": "27",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 216,
+          "boolean_mask_hex": "d8",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        859,
+        6615,
+        10088,
+        15844,
+        24475,
+        30231,
+        33704,
+        39460
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 859,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 77,
+          "boolean_mask_hex": "4d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "TM",
+          "second_label": "CM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 178,
+          "boolean_mask_hex": "b2",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1442,
+        5770,
+        10933,
+        15261,
+        25058,
+        29386,
+        34549,
+        38877
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1442,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1443,
+        5771,
+        10932,
+        15260,
+        25059,
+        29387,
+        34548,
+        38876
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1443,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": "CT"
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1450,
+        5762,
+        10941,
+        15253,
+        25066,
+        29378,
+        34557,
+        38869
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1450,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 120,
+          "boolean_mask_hex": "78",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": "CV"
+        },
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 135,
+          "boolean_mask_hex": "87",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1451,
+        5763,
+        10940,
+        15252,
+        25067,
+        29379,
+        34556,
+        38868
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1451,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 71,
+          "boolean_mask_hex": "47",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 184,
+          "boolean_mask_hex": "b8",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1452,
+        5780,
+        10923,
+        15251,
+        25068,
+        29396,
+        34539,
+        38867
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1452,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 114,
+          "boolean_mask_hex": "72",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 141,
+          "boolean_mask_hex": "8d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1453,
+        5781,
+        10922,
+        15250,
+        25069,
+        29397,
+        34538,
+        38866
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1453,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 77,
+          "boolean_mask_hex": "4d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 178,
+          "boolean_mask_hex": "b2",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1460,
+        5772,
+        10931,
+        15243,
+        25076,
+        29388,
+        34547,
+        38859
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1460,
+      "normalizer_orbit_id": 17,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 43,
+          "boolean_mask_hex": "2b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "TM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 212,
+          "boolean_mask_hex": "d4",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1461,
+        5773,
+        10930,
+        15242,
+        25077,
+        29389,
+        34546,
+        38858
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1461,
+      "normalizer_orbit_id": 7,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "named-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 43,
+          "boolean_mask_hex": "2b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "CM",
+          "second_label": "VM",
+          "same_source_pair": false,
+          "source_parentage_category": "named-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 212,
+          "boolean_mask_hex": "d4",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1560,
+        5887,
+        10816,
+        15143,
+        25176,
+        29503,
+        34432,
+        38759
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1560,
+      "normalizer_orbit_id": 1,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1561,
+        5886,
+        10817,
+        15142,
+        25177,
+        29502,
+        34433,
+        38758
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1561,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 30,
+          "boolean_mask_hex": "1e",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "boolean_mask_decimal": 225,
+          "boolean_mask_hex": "e1",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1566,
+        5881,
+        10822,
+        15137,
+        25182,
+        29497,
+        34438,
+        38753
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1566,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 114,
+          "boolean_mask_hex": "72",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 141,
+          "boolean_mask_hex": "8d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1567,
+        5880,
+        10823,
+        15136,
+        25183,
+        29496,
+        34439,
+        38752
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1567,
+      "normalizer_orbit_id": 4,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 77,
+          "boolean_mask_hex": "4d",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            2,
+            1,
+            4,
+            3
+          ],
+          "boolean_mask_decimal": 178,
+          "boolean_mask_hex": "b2",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1576,
+        5903,
+        10800,
+        15127,
+        25192,
+        29519,
+        34416,
+        38743
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1576,
+      "normalizer_orbit_id": 1,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 120,
+          "boolean_mask_hex": "78",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 135,
+          "boolean_mask_hex": "87",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": true,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1577,
+        5902,
+        10801,
+        15126,
+        25193,
+        29518,
+        34417,
+        38742
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1577,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 71,
+          "boolean_mask_hex": "47",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            3,
+            4,
+            1,
+            2
+          ],
+          "boolean_mask_decimal": 184,
+          "boolean_mask_hex": "b8",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1582,
+        5897,
+        10806,
+        15121,
+        25198,
+        29513,
+        34422,
+        38737
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1582,
+      "normalizer_orbit_id": 5,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 43,
+          "boolean_mask_hex": "2b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM2",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 212,
+          "boolean_mask_hex": "d4",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    },
+    {
+      "hyperedge_ranks": [
+        1583,
+        5896,
+        10807,
+        15120,
+        25199,
+        29512,
+        34423,
+        38736
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1583,
+      "normalizer_orbit_id": 4,
+      "closing_realizations": 2,
+      "source_parentage_categories": [
+        "unstated-parent pair"
+      ],
+      "realizations": [
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 43,
+          "boolean_mask_hex": "2b",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        },
+        {
+          "first_label": "VM1",
+          "second_label": "VM3",
+          "same_source_pair": false,
+          "source_parentage_category": "unstated-parent pair",
+          "second_color_order_one_based": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "boolean_mask_decimal": 212,
+          "boolean_mask_hex": "d4",
+          "boolean_mask_weight": 4,
+          "published_cyclic_mask": false,
+          "exact_published_system_match": null
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "source_labels": 6,
+    "ordered_pairs_checked": 36,
+    "ordered_distinct_pairs_checked": 30,
+    "ordered_same_source_pairs_checked": 6,
+    "relative_color_orders_checked_per_pair": 24,
+    "boolean_masks_checked_per_alignment": 256,
+    "candidates_checked": 221184,
+    "distinct_pair_candidates_checked": 184320,
+    "same_source_candidates_checked": 36864,
+    "closing_candidates": 64,
+    "closing_distinct_pair_candidates": 64,
+    "closing_same_source_candidates": 0,
+    "published_cyclic_distinct_pair_closers_recovered": 24,
+    "noncyclic_closers": 40,
+    "distinct_closing_supports": 32,
+    "additional_supports_beyond_published_cyclic_scan": 20,
+    "closing_realization_count_histogram": {
+      "2": 32
+    },
+    "family_histogram_by_support": {
+      "0": 32
+    },
+    "normalizer_orbit_histogram_by_support": {
+      "1": 4,
+      "4": 4,
+      "5": 8,
+      "7": 8,
+      "17": 8
+    },
+    "parentage_category_histogram_by_realization": {
+      "named-parent pair": 32,
+      "unstated-parent pair": 32
+    },
+    "parentage_category_histogram_by_support_incidence": {
+      "named-parent pair": 16,
+      "unstated-parent pair": 16
+    },
+    "normalizer_orbit_category_sets": {
+      "1": [
+        "unstated-parent pair"
+      ],
+      "4": [
+        "unstated-parent pair"
+      ],
+      "5": [
+        "unstated-parent pair"
+      ],
+      "7": [
+        "named-parent pair"
+      ],
+      "17": [
+        "named-parent pair"
+      ]
+    },
+    "normalizer_orbit_separates_source_parentage_categories": true,
+    "every_closer_maps_to_the_constraint_hypergraph": true,
+    "published_restricted_scan_reproduced_exactly": true,
+    "audit_passed": true
+  },
+  "findings": [
+    "The unrestricted audit checks all 221184 aligned candidates, including 36864 same-source controls.",
+    "Exact Garden closure retains 64 candidates on 32 unsigned supports.",
+    "The published cyclic restriction is reproduced with 24 closers on 12 supports; unrestricted masks add 20 supports.",
+    "Normalizer orbit category purity under unrestricted masks: true."
+  ],
+  "boundary": "This is an exhaustive audit of the aligned block-recursion ansatz, not of all 2^64 Garden sign assignments and not of all possible S8 constructions. Source-parentage categories describe the provenance labels of the S4 inputs; they are not independently verified higher-dimensional labels for VM1, VM2, or VM3."
+}

@@ -1,0 +1,18 @@
+{
+  "discovered_families": 30,
+  "translated_octets_checked": 151200,
+  "expected_octets": 151200,
+  "equation_rank_histogram": {
+    "45": 30
+  },
+  "nullity_histogram": {
+    "19": 30
+  },
+  "solution_count_histogram": {
+    "524288": 30
+  },
+  "transported_closures": 151200,
+  "all_families_passed": true,
+  "unsigned_symmetry_broken_by_garden_feasibility": false,
+  "passed": true
+}

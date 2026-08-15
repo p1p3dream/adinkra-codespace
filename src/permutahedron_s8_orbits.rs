@@ -199,6 +199,39 @@ fn rank_assignment(partition: &CosetPartitionReport) -> Vec<usize> {
     assignment
 }
 
+/// Normalizer-conjugacy orbit ID for each right R8 coset in canonical slice
+/// order. This structural projection omits the more expensive signed audits
+/// performed by [`build`].
+pub(crate) fn normalizer_orbit_assignment() -> Vec<u8> {
+    let subgroup = rana_r8();
+    let partition = coset_partition(&subgroup, CosetSide::Right).expect("R8 cosets");
+    let normalizer = normalizer(&subgroup);
+    let assignment = rank_assignment(&partition);
+    let mut covered = vec![false; partition.slice_count];
+    let mut orbit_by_coset = vec![u8::MAX; partition.slice_count];
+    let mut orbit_id = 0u8;
+    for seed_id in 0..partition.slice_count {
+        if covered[seed_id] {
+            continue;
+        }
+        let seed = Permutation::unrank(8, partition.slices[seed_id][0] as usize)
+            .expect("S8 representative");
+        let coset_ids: BTreeSet<usize> = normalizer
+            .iter()
+            .map(|&n| assignment[conjugate(n, seed).rank()])
+            .collect();
+        for coset_id in coset_ids {
+            assert!(!covered[coset_id], "normalizer orbits overlap");
+            covered[coset_id] = true;
+            orbit_by_coset[coset_id] = orbit_id;
+        }
+        orbit_id += 1;
+    }
+    assert_eq!(orbit_id, 20);
+    assert!(covered.into_iter().all(|value| value));
+    orbit_by_coset
+}
+
 fn left_right_coincident(slice: &[u32], subgroup: &[Permutation]) -> bool {
     let representative = Permutation::unrank(8, slice[0] as usize).expect("S8 rank");
     let mut other: Vec<u32> = subgroup

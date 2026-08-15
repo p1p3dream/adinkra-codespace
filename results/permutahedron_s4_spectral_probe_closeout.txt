@@ -1,0 +1,444 @@
+warning: constant `SCHEMA_VERSION` is never used
+  --> src/permutahedron_s8_signed_recursion.rs:20:7
+   |
+20 | const SCHEMA_VERSION: &str = "permutahedron-s8-signed-recursion-v1";
+   |       ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `S4_RECURSION_SIGNED_WORDS` is never used
+  --> src/permutahedron_s8_signed_recursion.rs:39:11
+   |
+39 | pub const S4_RECURSION_SIGNED_WORDS: [[[i8; 4]; 4]; 6] = [
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `SourceRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:49:12
+   |
+49 | pub struct SourceRecord {
+   |            ^^^^^^^^^^^^
+
+warning: struct `ClosureRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:57:12
+   |
+57 | pub struct ClosureRecord {
+   |            ^^^^^^^^^^^^^
+
+warning: struct `HymnRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:66:12
+   |
+66 | pub struct HymnRecord {
+   |            ^^^^^^^^^^
+
+warning: struct `FlipCandidateRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:75:12
+   |
+75 | pub struct FlipCandidateRecord {
+   |            ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `OrderedPairRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:91:12
+   |
+91 | pub struct OrderedPairRecord {
+   |            ^^^^^^^^^^^^^^^^^
+
+warning: struct `ClosingCandidateKey` is never constructed
+   --> src/permutahedron_s8_signed_recursion.rs:106:12
+    |
+106 | pub struct ClosingCandidateKey {
+    |            ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ValidationRecord` is never constructed
+   --> src/permutahedron_s8_signed_recursion.rs:112:12
+    |
+112 | pub struct ValidationRecord {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: struct `SignedRecursionArtifact` is never constructed
+   --> src/permutahedron_s8_signed_recursion.rs:133:12
+    |
+133 | pub struct SignedRecursionArtifact {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `s4_rep` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:153:4
+    |
+153 | fn s4_rep(index: usize) -> AdinkraRep {
+    |    ^^^^^^
+
+warning: function `source_signed_words_match_fixtures` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:165:4
+    |
+165 | fn source_signed_words_match_fixtures() -> bool {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `recursive_permutations` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:187:4
+    |
+187 | fn recursive_permutations(first: usize, second: usize) -> [[u8; 8]; 8] {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `recursive_boolean_factors` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:220:4
+    |
+220 | fn recursive_boolean_factors(first: usize, second: usize, mask: u8) -> [u8; 8] {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `multiply` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:255:4
+    |
+255 | fn multiply(left: &[Vec<i16>], right: &[Vec<i16>]) -> Vec<Vec<i16>> {
+    |    ^^^^^^^^
+
+warning: function `dense_l` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:271:4
+    |
+271 | fn dense_l(rep: &AdinkraRep, color: usize) -> Vec<Vec<i16>> {
+    |    ^^^^^^^
+
+warning: function `transpose` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:280:4
+    |
+280 | fn transpose(matrix: &[Vec<i16>]) -> Vec<Vec<i16>> {
+    |    ^^^^^^^^^
+
+warning: function `closure_record` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:287:15
+    |
+287 | pub(crate) fn closure_record(rep: &AdinkraRep) -> ClosureRecord {
+    |               ^^^^^^^^^^^^^^
+
+warning: function `hymn_record` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:328:15
+    |
+328 | pub(crate) fn hymn_record(rep: &AdinkraRep) -> HymnRecord {
+    |               ^^^^^^^^^^^
+
+warning: function `matrix_checksum` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:382:15
+    |
+382 | pub(crate) fn matrix_checksum(rep: &AdinkraRep) -> String {
+    |               ^^^^^^^^^^^^^^^
+
+warning: function `build` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:395:8
+    |
+395 | pub fn build() -> SignedRecursionArtifact {
+    |        ^^^^^
+
+warning: function `write_artifacts` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:596:8
+    |
+596 | pub fn write_artifacts(data_path: &Path, validation_path: &Path) -> ValidationRecord {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `labels_from_slices` is never used
+  --> src/permutahedron_spectral.rs:22:4
+   |
+22 | fn labels_from_slices(n_vertices: usize, slices: &[Vec<u32>]) -> Vec<usize> {
+   |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `quotient_adjacency_matrix` is never used
+  --> src/permutahedron_spectral.rs:43:8
+   |
+43 | pub fn quotient_adjacency_matrix(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CosetInvarianceDiagnostic` is never constructed
+  --> src/permutahedron_spectral.rs:64:12
+   |
+64 | pub struct CosetInvarianceDiagnostic {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `InvarianceReport` is never constructed
+  --> src/permutahedron_spectral.rs:74:12
+   |
+74 | pub struct InvarianceReport {
+   |            ^^^^^^^^^^^^^^^^
+
+warning: function `coset_subspace_invariance` is never used
+  --> src/permutahedron_spectral.rs:89:8
+   |
+89 | pub fn coset_subspace_invariance(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RegularityReport` is never constructed
+   --> src/permutahedron_spectral.rs:169:12
+    |
+169 | pub struct RegularityReport {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: function `quotient_regularity` is never used
+   --> src/permutahedron_spectral.rs:186:8
+    |
+186 | pub fn quotient_regularity(quotient: &[Vec<u32>]) -> RegularityReport {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `BaselineReport` is never constructed
+   --> src/permutahedron_spectral.rs:214:12
+    |
+214 | pub struct BaselineReport {
+    |            ^^^^^^^^^^^^^^
+
+warning: struct `Lcg` is never constructed
+   --> src/permutahedron_spectral.rs:233:8
+    |
+233 | struct Lcg {
+    |        ^^^
+
+warning: associated items `new`, `next`, and `shuffle` are never used
+   --> src/permutahedron_spectral.rs:238:8
+    |
+237 | impl Lcg {
+    | -------- associated items in this implementation
+238 |     fn new(seed: u64) -> Self {
+    |        ^^^
+...
+242 |     fn next(&mut self) -> u64 {
+    |        ^^^^
+...
+252 |     fn shuffle<T>(&mut self, slice: &mut [T]) {
+    |        ^^^^^^^
+
+warning: function `random_partition_baseline` is never used
+   --> src/permutahedron_spectral.rs:262:8
+    |
+262 | pub fn random_partition_baseline(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `S4ValidationReport` is never constructed
+   --> src/permutahedron_spectral.rs:328:12
+    |
+328 | pub struct S4ValidationReport {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: function `run_s4_validation` is never used
+   --> src/permutahedron_spectral.rs:342:8
+    |
+342 | pub fn run_s4_validation() -> S4ValidationReport {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: struct `S8ProbeReport` is never constructed
+   --> src/permutahedron_spectral.rs:407:12
+    |
+407 | pub struct S8ProbeReport {
+    |            ^^^^^^^^^^^^^
+
+warning: struct `SampledInvarianceReport` is never constructed
+   --> src/permutahedron_spectral.rs:423:12
+    |
+423 | pub struct SampledInvarianceReport {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `run_s8_probe` is never used
+   --> src/permutahedron_spectral.rs:439:8
+    |
+439 | pub fn run_s8_probe() -> S8ProbeReport {
+    |        ^^^^^^^^^^^^
+
+warning: function `sampled_coset_invariance` is never used
+   --> src/permutahedron_spectral.rs:493:4
+    |
+493 | fn sampled_coset_invariance(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `QuotientEigenFullReport` is never constructed
+  --> src/quotient_graph_analysis.rs:81:12
+   |
+81 | pub struct QuotientEigenFullReport {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `SpectralComparisonReport` is never constructed
+  --> src/quotient_graph_analysis.rs:92:12
+   |
+92 | pub struct SpectralComparisonReport {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LanczosFullResult` is never constructed
+   --> src/quotient_graph_analysis.rs:324:8
+    |
+324 | struct LanczosFullResult {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `adjacency_lanczos_full` is never used
+   --> src/quotient_graph_analysis.rs:338:4
+    |
+338 | fn adjacency_lanczos_full(matrix: &[Vec<u32>], m: usize) -> LanczosFullResult {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `quotient_eigen_full` is never used
+   --> src/quotient_graph_analysis.rs:601:8
+    |
+601 | pub fn quotient_eigen_full(quotient: &[Vec<u32>], max_vectors: usize) -> QuotientEigenFullReport {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `quotient_lift_embedding` is never used
+   --> src/quotient_graph_analysis.rs:664:8
+    |
+664 | pub fn quotient_lift_embedding(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `spectral_comparison` is never used
+   --> src/quotient_graph_analysis.rs:874:8
+    |
+874 | pub fn spectral_comparison(
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `gram_schmidt` is never used
+   --> src/spectral_lanczos.rs:880:4
+    |
+880 | fn gram_schmidt(vectors: &mut [Vec<f64>]) {
+    |    ^^^^^^^^^^^^
+
+warning: function `dense_eigen_jacobi` is never used
+   --> src/spectral_lanczos.rs:910:4
+    |
+910 | fn dense_eigen_jacobi(a: &[Vec<f64>]) -> (Vec<f64>, Vec<Vec<f64>>) {
+    |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `chebyshev_filter_apply` is never used
+    --> src/spectral_lanczos.rs:1026:8
+     |
+1026 | pub fn chebyshev_filter_apply(
+     |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `chebyshev_folded_apply` is never used
+    --> src/spectral_lanczos.rs:1079:4
+     |
+1079 | fn chebyshev_folded_apply(
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `chebyshev_filtered_subspace` is never used
+    --> src/spectral_lanczos.rs:1154:8
+     |
+1154 | pub fn chebyshev_filtered_subspace(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `adinkra-codespace` (bin "adinkra-codespace") generated 51 warnings
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/adinkra-codespace perm-spectral-probe s4 --baselines 10`
+[S4] Phase 1: building permutahedron graph ...
+[S4] graph: 24 vertices, 36 edges, degree 3 (0ms)
+=== S4 Permutahedron Spectral Probe ===
+
+Graph: |V|=24, |E|=36, degree=3
+[S4] Phase 2: computing V4 right-coset partition ...
+[S4] 6 cosets of size 4 (0ms)
+V4 cosets: 6 cosets x 4 elements = 24 (complete=true)
+
+[S4] Phase 3: building 6x6 quotient adjacency matrix ...
+[S4] quotient matrix built (0ms)
+Quotient adjacency matrix Q  (6x6):
+       0   1   2   3   4   5
+   0   0   8   4   0   0   0
+   1   8   0   0   0   4   0
+   2   4   0   0   8   0   0
+   3   0   0   8   0   0   4
+   4   0   4   0   0   0   8
+   5   0   0   0   4   8   0
+
+Regularity: PASS (row-sum range [12, 12], expected degree=12)
+
+[S4] Phase 4: testing coset-indicator subspace A-invariance ...
+[S4] invariance test complete (0ms)
+Subspace A-invariance: PASS (violations=0)
+
+[S4] Phase 5: Lanczos with m=24 (full S4 spectrum) ...
+[S4] Lanczos complete: 10 Ritz values (0ms)
+--- Lanczos eigendecomposition ---
+Distinct eigenspaces (10):
+  lambda =   0.0000  x1
+  lambda =   0.5858  x1
+  lambda =   1.2679  x1
+  lambda =   2.0000  x1
+  lambda =   2.5858  x1
+  lambda =   3.4142  x1
+  lambda =   4.0000  x1
+  lambda =   4.7321  x1
+  lambda =   5.4142  x1
+  lambda =   6.0000  x1
+
+[S4] Phase 5b: coset spectral scan ...
+[S4] coset scan complete (0ms)
+Coset energy by eigenspace (top 10):
+   0. lambda=  1.2679  energy=  8.0000  mult=6
+   1. lambda=  4.7321  energy=  8.0000  mult=6
+   2. lambda=  0.0000  energy=  4.0000  mult=6
+   3. lambda=  6.0000  energy=  4.0000  mult=6
+
+[S4] Phase 6: character-theoretic prediction ...
+[S4] characters complete (0ms)
+--- S4 character-theoretic prediction ---
+   partition   dim   chi_tr chi_coset    m   l_cent
+         [4]     1        1        1    1   0.0000
+      [3, 1]     3        1       -1    0   2.0000
+      [2, 2]     2        0        2    2   3.0000
+   [2, 1, 1]     3       -1       -1    0   4.0000
+[1, 1, 1, 1]     1       -1        1    1   6.0000
+Total m*d = 6
+
+[S4] Phase 7: quotient graph structure analysis ...
+=== Quotient Graph Analysis: S4 ===
+Quotient size: 6x6
+
+--- Eigendecomposition (0 ms) ---
+  eigenvalues found:  6
+  distinct (tol=0.001): 4
+    lambda =   -12.0000  x1
+    lambda =    -6.9282  x2
+    lambda =     6.9282  x2
+    lambda =    12.0000  x1
+  spectral gap:       5.0718
+  largest eigenvalue: 12.0000
+  smallest eigenvalue:-12.0000
+  bipartite:          true
+  row sum (degree):   12
+
+--- Distance Regularity (0 ms) ---
+  simple degree:      2
+  diameter:           3
+  distance-regular:   true
+  vertices sampled:   6
+  violations:         0
+  intersection array:
+    d=0: c=0, a=0, b=2
+    d=1: c=1, a=0, b=1
+    d=2: c=1, a=0, b=1
+    d=3: c=2, a=0, b=0
+  traditional: {2,1,1;1,1,2}
+
+--- Orbit Structure (0 ms) ---
+  distinct profiles:  1
+  vertex-transitive:  true
+  profile sizes:      [6]
+
+=== End Quotient Graph Analysis: S4 ===
+[S4] quotient analysis complete (0ms)
+
+[S4] Phase 8: targeted eigenspace clustering ...
+--- Targeted eigenspace clustering ---
+Extracted 4 eigenvectors from (2,2) eigenspace
+  lambda = 1.2679
+  lambda = 1.2679
+  lambda = 4.7321
+  lambda = 4.7321
+[S4] targeted clustering complete (0ms)
+k-means k=6: ARI = 1.0000 (1.0 = perfect recovery)
+
+[S4] Phase 9: running 10 random partition baselines ...
+--- Random partition baselines (10 trials) ---
+[S4] invariant partitions:  0/10 (0.0%)
+[S4] regular partitions:    10/10 (100.0%)
+[S4] violation stats:       min=15, max=18, mean=17.3
+[S4] coset partition (6 x 4) is DISTINGUISHED against random baseline
+[S4] baselines complete (0ms)
+
+=== S4 Summary ===
+  graph:       24 vertices, 36 edges
+  cosets:      6 x 4 (V4 right cosets)
+  quotient:    6x6, symmetric, regular=true
+  invariance:  PASS
+  clustering:  ARI = 1.0000
+  lanczos:     DONE
+  characters:  DONE
+  total time:  1ms

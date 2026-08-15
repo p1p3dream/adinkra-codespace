@@ -1,0 +1,14 @@
+{
+  "controls": 7,
+  "positive_controls": 3,
+  "negative_controls": 4,
+  "controls_mapped_uniquely": 7,
+  "control_family_count": 1,
+  "positive_control_family_count": 1,
+  "negative_control_family_count": 1,
+  "positive_and_negative_controls_share_a_family": true,
+  "all_unsigned_supports_are_signable": true,
+  "printed_closure_matches_published_status": true,
+  "family_membership_separates_published_closure": false,
+  "passed": true
+}

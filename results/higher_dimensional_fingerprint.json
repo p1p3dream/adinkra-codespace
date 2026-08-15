@@ -1,0 +1,97 @@
+{
+  "schema_version": "higher-dimensional-fingerprint-v1",
+  "title": "Four-dimensional fingerprints of the chiral-vector and chiral-tensor positive controls",
+  "chiral_vector": {
+    "name": "chiral-vector",
+    "source": "arXiv:1405.0048 Eqs. (32)-(41)",
+    "raw_component_fields": 17,
+    "worldline_bosons": 8,
+    "worldline_fermions": 8,
+    "derivative_operator": {
+      "transformation_relations": 136,
+      "transformation_terms": 328,
+      "algebraic_terms": 72,
+      "temporal_derivative_terms": 64,
+      "spatial_derivative_terms": 192,
+      "relations_with_spatial_derivatives": 88,
+      "canonical_spatial_operator_sha256": "0d477476173478eaa1597aa71651177142c2809a9993dcc4f3934cbbe48c76e0"
+    },
+    "gauge": {
+      "potential_form_degree": 1,
+      "potential_components_before_gauge_fixing": 4,
+      "temporal_gauge_components_removed": 1,
+      "potential_components_after_temporal_gauge": 3,
+      "field_strength_form_degree": 2,
+      "gauge_parameter_form_degree": 0,
+      "potential_closure_relations": 144,
+      "nonzero_gauge_residue_relations": 96,
+      "gauge_residue_terms": 128,
+      "temporal_derivative_terms": 32,
+      "spatial_derivative_terms": 96,
+      "residue_source_fields": [
+        "A",
+        "A_0",
+        "A_1",
+        "A_2",
+        "A_3",
+        "B"
+      ],
+      "canonical_gauge_residue_sha256": "5ca5a1a3bdb62f0752d2e1b3d59ca9475bc68aa0f8855a92edc7565df765a7aa"
+    }
+  },
+  "chiral_tensor": {
+    "name": "chiral-tensor",
+    "source": "arXiv:1405.0048 Eqs. (44)-(53)",
+    "raw_component_fields": 19,
+    "worldline_bosons": 8,
+    "worldline_fermions": 8,
+    "derivative_operator": {
+      "transformation_relations": 152,
+      "transformation_terms": 344,
+      "algebraic_terms": 88,
+      "temporal_derivative_terms": 64,
+      "spatial_derivative_terms": 192,
+      "relations_with_spatial_derivatives": 80,
+      "canonical_spatial_operator_sha256": "2670ba5f78f83126be375c8799ab9ff0f812a6d016f658b659f8974b1b9bc383"
+    },
+    "gauge": {
+      "potential_form_degree": 2,
+      "potential_components_before_gauge_fixing": 6,
+      "temporal_gauge_components_removed": 3,
+      "potential_components_after_temporal_gauge": 3,
+      "field_strength_form_degree": 3,
+      "gauge_parameter_form_degree": 1,
+      "potential_closure_relations": 216,
+      "nonzero_gauge_residue_relations": 176,
+      "gauge_residue_terms": 384,
+      "temporal_derivative_terms": 96,
+      "spatial_derivative_terms": 288,
+      "residue_source_fields": [
+        "A",
+        "B",
+        "B_01",
+        "B_02",
+        "B_03",
+        "B_12",
+        "B_13",
+        "B_23",
+        "phi"
+      ],
+      "canonical_gauge_residue_sha256": "6a3086cbf284517a5fe9ab70c9070dbfd7f384f77bec48628d90dc17f43b0504"
+    }
+  },
+  "same_worldline_size": true,
+  "reduced_matrices_identical_in_source_basis": false,
+  "spatial_operators_identical_in_source_basis": false,
+  "gauge_residues_identical_in_source_basis": false,
+  "minimum_candidate_data": [
+    "Lorentz representation assigned to every bosonic and fermionic component",
+    "complete spatial-derivative linkage coefficients in the source basis",
+    "gauge-potential form degree and complete gauge transformation",
+    "gauge-invariant field strength and any Bianchi identity",
+    "temporal gauge choice, surviving zero modes, and field-to-node reduction map",
+    "closure of every supercharge pair on every component, including gauge residues"
+  ],
+  "passed": true,
+  "boundary": "These fingerprints compare two published source-basis realizations. Their hashes are reproducibility identifiers, not basis-independent physical invariants. No four-dimensional parent is inferred for VM1, VM2, or VM3."
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": "vector-tensor-4d-artifact-v1",
+  "title": "Exact four-dimensional vector-tensor component closure",
+  "sources": [
+    {
+      "arxiv_id": "1405.0048",
+      "locator": "Sec. 3.6, Eqs. (59)-(61) and (76)-(84)",
+      "role": "component transformations and closure ledger",
+      "pdf_sha256": "8e666e70c9484033e1223fc80b16a5db562c0ec4e499721962277f6a3987ae20"
+    }
+  ],
+  "branch_coefficients": [
+    "m=1, n=0",
+    "a=i sigma_2",
+    "b=identity_2",
+    "c1=0",
+    "s1=1",
+    "c2_plus=0",
+    "c2_minus=-2"
+  ],
+  "source_corrections": [
+    "Eq. (78) scalar extension uses d, not the printed uncontracted partial_mu d",
+    "Eq. (80) second row is Phi_5 through Phi_8, not repeated Phi_2 through Phi_4 labels"
+  ],
+  "convention_translation": [
+    "epsilon_lower_0123=-1 and mostly-plus metric",
+    "the dual-H and dual-F signs are converted to the stored Clifford4D epsilon convention",
+    "antisymmetric tensor pairs are stored once and their summed coefficients are doubled"
+  ],
+  "report": {
+    "schema_version": "vector-tensor-4d-closure-v1",
+    "source": "arXiv:1405.0048 Eqs. (59)-(61) and (76)-(84)",
+    "branch": "m=1, n=0",
+    "gamma_conventions_verified": true,
+    "fields": 20,
+    "supercharges": 8,
+    "unordered_charge_pairs": 36,
+    "component_relations_checked": 720,
+    "scalar_relations_checked": 36,
+    "vector_potential_relations_checked": 144,
+    "two_form_potential_relations_checked": 216,
+    "auxiliary_relations_checked": 36,
+    "fermion_relations_checked": 288,
+    "residual_relations": 0,
+    "residual_terms": 0,
+    "scalar_residual_relations": 0,
+    "vector_residual_relations": 0,
+    "two_form_residual_relations": 0,
+    "auxiliary_residual_relations": 0,
+    "fermion_residual_relations": 0,
+    "corrected_scalar_typo_used": true,
+    "passed": true,
+    "boundary": "This checks the sourced 4D transformation composition, including the printed gauge residues and extension terms. It does not independently identify those terms with the hep-th/9609016 central-coordinate operator."
+  }
+}

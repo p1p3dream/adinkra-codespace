@@ -1,0 +1,130 @@
+{
+  "schema_version": "permutahedron-hypergraph-resolution-v1",
+  "title": "Exact mixed-cover resolution of the S8 constraint hypergraph",
+  "method": [
+    "Compute the intersection and generated-subgroup order for all 435 pairs of discovered identity octets.",
+    "Choose the lexicographically first pair with minimum generated-subgroup order.",
+    "Replace the base family's right cosets inside the generated subgroup by the replacement family's right cosets of the same 32 vertices.",
+    "Verify the resulting 5,040-octet cover vertex by vertex and compare it with all 30 subgroup partitions.",
+    "Use the exact global intersection bound of two vertices per distinct hyperedge to exclude trades of sizes one, two, and three."
+  ],
+  "family_pair_intersection_join_histogram": {
+    "intersection_1_join_20160": 120,
+    "intersection_1_join_96": 210,
+    "intersection_2_join_32": 105
+  },
+  "order_32_family_pairs": 105,
+  "certified_elementary_four_trades": 132300,
+  "certificate": {
+    "base_family": 0,
+    "replacement_family": 1,
+    "subgroup_intersection_order": 2,
+    "generated_subgroup_order": 32,
+    "removed_hyperedges": [
+      [
+        0,
+        5167,
+        11536,
+        16703,
+        23616,
+        28783,
+        35152,
+        40319
+      ],
+      [
+        7,
+        5160,
+        11543,
+        16696,
+        23623,
+        28776,
+        35159,
+        40312
+      ],
+      [
+        121,
+        5046,
+        11657,
+        16582,
+        23737,
+        28662,
+        35273,
+        40198
+      ],
+      [
+        126,
+        5041,
+        11662,
+        16577,
+        23742,
+        28657,
+        35278,
+        40193
+      ]
+    ],
+    "added_hyperedges": [
+      [
+        0,
+        5167,
+        11543,
+        16696,
+        23737,
+        28662,
+        35278,
+        40193
+      ],
+      [
+        7,
+        5160,
+        11536,
+        16703,
+        23742,
+        28657,
+        35273,
+        40198
+      ],
+      [
+        121,
+        5046,
+        11662,
+        16577,
+        23616,
+        28783,
+        35159,
+        40312
+      ],
+      [
+        126,
+        5041,
+        11657,
+        16582,
+        23623,
+        28776,
+        35152,
+        40319
+      ]
+    ],
+    "traded_vertex_count": 32,
+    "resulting_cover_hyperedges": 5040
+  },
+  "validation": {
+    "discovered_families": 30,
+    "maximum_distinct_hyperedge_intersection": 2,
+    "trades_of_size_below_four_impossible": true,
+    "four_for_four_trade_found": true,
+    "removed_edges_are_disjoint": true,
+    "added_edges_are_disjoint": true,
+    "removed_and_added_unions_match": true,
+    "resulting_cover_is_exact": true,
+    "resulting_cover_differs_from_all_known_partitions": true,
+    "minimum_mixed_trade_size_is_four": true,
+    "passed": true
+  },
+  "findings": [
+    "A four-for-four trade between discovered families 0 and 1 replaces four octets on the same 32 vertices and produces a new exact cover.",
+    "The mixed cover has 5,040 octets but is not any of the 30 subgroup-induced partitions.",
+    "No trade using fewer than four removed octets is possible because distinct hyperedges intersect in at most two vertices.",
+    "There are 105 family pairs generating order-32 subgroups, yielding 132300 translated elementary four-trade certificates."
+  ],
+  "boundary": "This proves that the 30 subgroup partitions are not the only exact covers and gives a minimum-size local mixed-cover trade. It does not enumerate all exact covers, count covers obtained by combining compatible trades, or attach signed or higher-dimensional physical data."
+}
