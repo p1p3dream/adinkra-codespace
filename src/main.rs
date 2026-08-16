@@ -20,6 +20,7 @@ mod bbbm_sixteen_source_audit;
 mod bbbm_source_audit;
 mod bbbm_worldline;
 mod canonical;
+mod central_hypermultiplet_4d;
 mod chiral_tensor_4d;
 mod chiral_vector_4d;
 mod chromochar;
@@ -43,6 +44,7 @@ mod four_color;
 mod higher_dimensional_fingerprint;
 #[allow(dead_code)]
 mod higher_dimensional_canonical;
+mod higher_dimensional_fixture_adapters;
 mod higher_dimensional_parentage;
 mod holoraumy;
 mod lorentz;
@@ -190,6 +192,8 @@ fn main() {
         "vector-tensor-central-atlas-verify" => cmd_vector_tensor_central_atlas_verify(),
         "vector-tensor-4d-build" => cmd_vector_tensor_4d_build(&args),
         "vector-tensor-4d-verify" => cmd_vector_tensor_4d_verify(),
+        "central-hypermultiplet-4d-build" => cmd_central_hypermultiplet_4d_build(&args),
+        "central-hypermultiplet-4d-verify" => cmd_central_hypermultiplet_4d_verify(),
         "scalar-tensor-tangent-build" => cmd_scalar_tensor_tangent_build(&args),
         "scalar-tensor-tangent-verify" => cmd_scalar_tensor_tangent_verify(),
         "chiral-vector-4d-build" => cmd_chiral_vector_4d_build(&args),
@@ -426,6 +430,9 @@ fn print_usage(prog: &str) {
     eprintln!("  vector-tensor-4d-build [data-json] [validation-json]");
     eprintln!("                          Build the corrected Eq. 78 component fixture");
     eprintln!("  vector-tensor-4d-verify Verify the corrected Eq. 78 component closure");
+    eprintln!("  central-hypermultiplet-4d-build [data-json] [validation-json]");
+    eprintln!("                          Build the exact Wess-Fayet one-Z holdout");
+    eprintln!("  central-hypermultiplet-4d-verify Verify its 4D closure and CC bridge");
     eprintln!("  scalar-tensor-tangent-build [json]");
     eprintln!("                          Derive the regular rigid tangent preflight");
     eprintln!("  scalar-tensor-tangent-verify Verify composites, gauges, and 8+8 count");
@@ -1430,6 +1437,33 @@ fn cmd_vector_tensor_4d_build(args: &[String]) {
         .map(String::as_str)
         .unwrap_or("results/vector_tensor_4d_validation.json");
     let report = vector_tensor_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_central_hypermultiplet_4d_verify() {
+    let report = central_hypermultiplet_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_central_hypermultiplet_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/central_hypermultiplet_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/central_hypermultiplet_4d_validation.json");
+    let report = central_hypermultiplet_4d::write_artifacts(
         std::path::Path::new(data_path),
         std::path::Path::new(validation_path),
     );

@@ -7,6 +7,12 @@
       "locator": "Sec. 3.6, Eqs. (59)-(61) and (76)-(84)",
       "role": "component transformations and closure ledger",
       "pdf_sha256": "8e666e70c9484033e1223fc80b16a5db562c0ec4e499721962277f6a3987ae20"
+    },
+    {
+      "arxiv_id": "hep-th/9609016",
+      "locator": "Sec. 4, repaired Eq. (4.5) and Eq. (4.6)",
+      "role": "intrinsic central-coordinate action and source field normalization",
+      "pdf_sha256": "3bf2549954d01e4da9e1fedc4af8e3a534bf17df3c6a27d45bdc8a9a80b8c2af"
     }
   ],
   "branch_coefficients": [
@@ -51,5 +57,29 @@
     "corrected_scalar_typo_used": true,
     "passed": true,
     "boundary": "This checks the sourced 4D transformation composition, including the printed gauge residues and extension terms. It does not independently identify those terms with the hep-th/9609016 central-coordinate operator."
+  },
+  "central_bridge": {
+    "schema_version": "vector-tensor-central-bridge-v1",
+    "source_field_map": [
+      "phi_1405=phi_960",
+      "A_mu_1405=V_mu_960",
+      "B_mu_nu_1405=B_mu_nu_960/6",
+      "d_1405=-D_960",
+      "Phi=(phi,2B12,2B23,2B31,A1,A2,A3,Phi8), dot(Phi8)=d"
+    ],
+    "zero_mode_policy": "Auxiliary lowering is defined on nonzero temporal modes, equivalently modulo the time-independent integration constant.",
+    "residual_gauge_policy": "Use strict zero spatial momentum and temporal gauge A0=B0i=0; residual time-independent gauge parameters act trivially on retained nodes.",
+    "bosonic_eq46_entries_checked": 64,
+    "fermionic_eq46_entries_checked": 64,
+    "omega_entries_checked": 64,
+    "fixed_one_sixth_normalization_matched": true,
+    "auxiliary_sign_matched": true,
+    "gauge_orbits_preserved": true,
+    "temporal_weyl_realification_exact": true,
+    "simultaneous_z_omega_orientation_exact": true,
+    "narrow_zero_brane_bridge_passed": true,
+    "repaired_eq45_reduced_to_appendix_f": false,
+    "full_four_dimensional_source_bridge_passed": false,
+    "boundary": "The exact Eq. (4.6) central bridge and its Omega orientation pass. A direct 512-entry reduction of repaired Eq. (4.5), including the coherent spatial frame, remains required for a full source-equivalence claim."
   }
 }

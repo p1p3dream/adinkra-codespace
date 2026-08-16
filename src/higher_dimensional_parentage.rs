@@ -178,12 +178,14 @@ pub struct ParentageArtifact {
     pub equivalence_scope: Vec<&'static str>,
     pub completeness_boundary: &'static str,
     pub catalog: Vec<PhysicalFingerprint>,
+    pub exact_source_adapters: crate::higher_dimensional_fixture_adapters::PositiveControlAdapters,
     pub linear_classes: BTreeMap<&'static str, Vec<&'static str>>,
     pub worldline_only_query: InferenceResult,
     pub chiral_vector_query: InferenceResult,
     pub chiral_tensor_query: InferenceResult,
     pub ct_structural_query: InferenceResult,
     pub vector_tensor_query: InferenceResult,
+    pub central_hypermultiplet_query: InferenceResult,
     pub scalar_tensor_completion_query: InferenceResult,
     pub mutation_controls: Vec<MutationControl>,
     pub passed: bool,
@@ -472,7 +474,39 @@ pub fn known_catalog() -> Vec<PhysicalFingerprint> {
         canonical_linear_key: String::new(),
         canonical_completion_key: String::new(),
     });
-    vec![cv, ct, vt, st]
+    let cc = finish(PhysicalFingerprint {
+        parent_id: "central-hypermultiplet-one-z",
+        linear_class: "CC-one-Z",
+        source: "arXiv:1405.0048 Sec. 3.1 Eqs. (13)-(31), Appendix A",
+        worldline_bosons: 8,
+        worldline_fermions: 8,
+        field_blocks: vec![
+            scalar_block(FieldRole::Physical, 4, 0),
+            scalar_block(FieldRole::Auxiliary, 4, 2),
+            fermion_block(),
+        ],
+        gauge_complexes: Vec::new(),
+        derivative_content: DerivativeContent {
+            maximum_spacetime_order: 1,
+            scalar_gradient_multiplicity: 4,
+            form_strength_coupling_degrees: Vec::new(),
+            algebraic_auxiliary_multiplicity: 4,
+            temporal_linkage_present: true,
+            spatial_linkage_present: true,
+        },
+        central: central_one_z(),
+        closure: ClosureCertificate {
+            certification: Certification::ExactFourDimensionalClosure,
+            component_relations_checked: 576,
+            unexplained_residual_relations: 0,
+            gauge_residues_retained: false,
+        },
+        nonlinear_composite_connection: false,
+        requires_regular_background_patch: false,
+        canonical_linear_key: String::new(),
+        canonical_completion_key: String::new(),
+    });
+    vec![cv, ct, vt, st, cc]
 }
 
 fn exact_4d(fingerprint: &PhysicalFingerprint) -> bool {
@@ -484,7 +518,7 @@ fn qualification(fingerprint: &PhysicalFingerprint) -> Option<&'static str> {
     match fingerprint.closure.certification {
         Certification::ExactFourDimensionalClosure => None,
         Certification::ExactFourDimensionalClosureWithoutCentralBridge => Some(
-            "4D closure and worldline central closure are exact separately; the source-normalization bridge remains partial",
+            "4D closure and the fixed Eq. (4.6) zero-brane central bridge are exact; the direct repaired Eq. (4.5) reduction to Appendix F remains open",
         ),
         Certification::ExactTangentPreflight => Some(
             "structural tangent only; full 4D closure and an exact source-convention intertwiner remain unresolved",
@@ -670,10 +704,13 @@ fn complete_query(fingerprint: &PhysicalFingerprint) -> ParentageQuery {
 
 pub fn build() -> ParentageArtifact {
     let catalog = known_catalog();
+    let exact_source_adapters = crate::higher_dimensional_fixture_adapters::build()
+        .expect("canonicalize exact higher-dimensional source fixtures");
     let cv = &catalog[0];
     let ct = &catalog[1];
     let vt = &catalog[2];
     let st = &catalog[3];
+    let cc = &catalog[4];
 
     let worldline_only_query = infer(
         &ParentageQuery {
@@ -688,6 +725,7 @@ pub fn build() -> ParentageArtifact {
     ct_structural.central = None;
     let ct_structural_query = infer(&ct_structural, &catalog);
     let vector_tensor_query = infer(&complete_query(vt), &catalog);
+    let central_hypermultiplet_query = infer(&complete_query(cc), &catalog);
     let mut scalar_completion = complete_query(st);
     scalar_completion.nonlinear_composite_connection = Some(true);
     scalar_completion.requires_regular_background_patch = Some(true);
@@ -748,8 +786,10 @@ pub fn build() -> ParentageArtifact {
         && crate::vector_tensor_central_charge::build()
             .validation
             .passed
+        && crate::central_hypermultiplet_4d::verify().passed
         && crate::scalar_tensor_tangent::build().validation.passed;
     let passed = control_fixtures_pass
+        && exact_source_adapters.validation_passed
         && catalog
             .iter()
             .all(|item| !item.canonical_linear_key.is_empty())
@@ -757,7 +797,7 @@ pub fn build() -> ParentageArtifact {
         && ct.canonical_linear_key == st.canonical_linear_key
         && ct.canonical_completion_key != st.canonical_completion_key
         && vt.central.physical_worldline_generators == 1
-        && worldline_only_query.compatible.len() == 4
+        && worldline_only_query.compatible.len() == 5
         && chiral_vector_query.unique_parent == Some("chiral-vector")
         && chiral_tensor_query.unique_parent == Some("chiral-tensor")
         && chiral_tensor_query.decision == InferenceDecision::Identified
@@ -765,6 +805,8 @@ pub fn build() -> ParentageArtifact {
         && ct_structural_query.compatible.len() == 2
         && vector_tensor_query.unique_parent == Some("vector-tensor-one-z")
         && vector_tensor_query.decision == InferenceDecision::Compatible
+        && central_hypermultiplet_query.unique_parent == Some("central-hypermultiplet-one-z")
+        && central_hypermultiplet_query.decision == InferenceDecision::Identified
         && scalar_tensor_completion_query.unique_parent == Some("scalar-tensor-regular-tangent")
         && scalar_tensor_completion_query.decision == InferenceDecision::Compatible
         && mutation_controls.iter().all(|control| control.passed);
@@ -777,14 +819,16 @@ pub fn build() -> ParentageArtifact {
             "gauge-potential presentations with the same differential-form complex and reducibility depth",
             "spatial orientation changes that preserve differential-form degree",
         ],
-        completeness_boundary: "The catalog invariants are exact discriminants for the four retained fixtures. They are not a complete canonical form for arbitrary tuples of derivative matrices, and no parent is inferred outside the catalog.",
+        completeness_boundary: "The catalog invariants are exact discriminants for the five retained fixtures. They are not a complete canonical form for arbitrary tuples of derivative matrices, and no parent is inferred outside the catalog.",
         catalog,
+        exact_source_adapters,
         linear_classes,
         worldline_only_query,
         chiral_vector_query,
         chiral_tensor_query,
         ct_structural_query,
         vector_tensor_query,
+        central_hypermultiplet_query,
         scalar_tensor_completion_query,
         mutation_controls,
         passed,
@@ -812,7 +856,7 @@ mod tests {
     fn physical_catalog_separates_linear_classes_and_completions() {
         let artifact = build();
         assert!(artifact.passed);
-        assert_eq!(artifact.worldline_only_query.compatible.len(), 4);
+        assert_eq!(artifact.worldline_only_query.compatible.len(), 5);
         assert_eq!(
             artifact.chiral_vector_query.unique_parent,
             Some("chiral-vector")
@@ -825,6 +869,10 @@ mod tests {
         assert_eq!(
             artifact.vector_tensor_query.unique_parent,
             Some("vector-tensor-one-z")
+        );
+        assert_eq!(
+            artifact.central_hypermultiplet_query.unique_parent,
+            Some("central-hypermultiplet-one-z")
         );
         assert_eq!(
             artifact.scalar_tensor_completion_query.unique_parent,

@@ -99,6 +99,29 @@ relying only on the signature. Its color coefficient matrix is checked directly
 against the surviving Eq. (81) Pauli tensor, up to the overall sign absorbed
 into the definition of `Z`.
 
+The companion 4D fixture now fixes the source normalization rather than choosing
+it dynamically:
+
+```text
+phi_1405 = phi_960
+A_1405 = V_960
+B_1405 = B_960 / 6
+d_1405 = -D_960
+```
+
+With `D_960 = d_t F`, the semantic bosonic basis above conjugates the extracted
+`TV:m1n0` operator exactly to `sigma_1 tensor I_4`. The Weyl-to-Majorana phase
+map also reproduces all 64 entries of `Z_F`. The component central action and
+the color tensor are simultaneously oriented against the committed convention,
+so their product in the extended algebra agrees exactly. Mutating the `1/6`
+two-form normalization is rejected.
+
+Gauge-orbit preservation is explicit. `Z A` depends only on `H=dB`, and `Z B`
+depends only on `F=dA`. At strict zero spatial momentum, temporal gauge is
+preserved. Residual time-independent gauge transformations act trivially on the
+spatial nodes, while lowering the auxiliary requires a declared treatment of
+the time-independent integration constant.
+
 ## Full six-sector census
 
 The exact residual scan covers all 51 published branches:
@@ -166,8 +189,11 @@ hyperedge.
 
 ```bash
 cargo test vector_tensor_central_charge --no-fail-fast
+cargo test vector_tensor_4d --no-fail-fast
 cargo run -- vector-tensor-central-charge-build
 cargo run -- vector-tensor-central-charge-verify
+cargo run -- vector-tensor-4d-build
+cargo run -- vector-tensor-4d-verify
 cargo run -- vector-tensor-central-equivalence-build
 cargo run -- vector-tensor-central-equivalence-verify
 cargo run -- vector-tensor-central-atlas-build
@@ -178,15 +204,21 @@ Artifacts:
 
 - `data/vector_tensor_central_charge.json`
 - `results/vector_tensor_central_charge_validation.json`
+- `data/vector_tensor_4d.json`
+- `results/vector_tensor_4d_validation.json`
 - `results/vector_tensor_central_equivalence.json`
 - `results/vector_tensor_central_atlas.json`
 
 ## Current boundary
 
-The companion 4D fixture now proves all 720 corrected Eq. (78) component
-relations, including the vector and two-form gauge residues. This document
-completes the independent source-to-worldline matrix bridge and exact central
-extension. The remaining source-level gate is a term-by-term normalization
-match between the 4D extension and the central-coordinate transformations in
-hep-th/9609016 Eq. (4.6). A direct transcription of that paper's Eq. (4.5) must
-also certify its three required SU(2)-index repairs.
+The companion 4D fixture proves all 720 corrected Eq. (78) component relations,
+including explicit vector and two-form gauge residues. The fixed Eq. (4.6)
+bosonic, fermionic, and simultaneous `Z`/`Omega` zero-brane bridge is exact.
+
+The remaining source-level gate is narrower: directly reduce the repaired
+hep-th/9609016 Eq. (4.5) transformations to the 512 Appendix F `L/R` entries.
+That transcription must certify the three required SU(2)-index repairs and the
+coherent spatial frame, epsilon, and supercharge conventions. Until it passes,
+the implementation claims an exact central bridge and exact closure on the
+1405 fixture side, not complete term-by-term equivalence of the two published
+4D presentations.

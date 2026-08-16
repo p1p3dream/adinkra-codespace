@@ -5,8 +5,16 @@
 
 #![allow(clippy::needless_range_loop)]
 
+use crate::higher_dimensional_canonical::{
+    BianchiIdentity as CanonicalBianchi, Component as CanonicalComponent,
+    ComponentRole as CanonicalRole, DerivativeMonomial as CanonicalDerivative,
+    GaugeTerm as CanonicalGaugeTerm, GaussianRational as CanonicalCoefficient,
+    LinearTerm as CanonicalLinearTerm, LinkageTerm as CanonicalLinkage, LorentzRep,
+    PhysicalFingerprint as CanonicalPhysicalFingerprint, Reality, Statistics,
+    Supercharge as CanonicalSupercharge,
+};
 use crate::higher_dimensional_fingerprint::{
-    sha256_lines, DerivativeOperatorFingerprint, GaugeFingerprint, MultipletFingerprint,
+    DerivativeOperatorFingerprint, GaugeFingerprint, MultipletFingerprint, sha256_lines,
 };
 use crate::lr_matrix::AdinkraRep;
 use num_rational::Ratio;
@@ -187,11 +195,7 @@ impl Clifford4D {
                     &matrix_mul(&self.gamma_up[nu], &self.gamma_up[mu]),
                 );
                 let eta = if mu == nu {
-                    if mu == 0 {
-                        -2
-                    } else {
-                        2
-                    }
+                    if mu == 0 { -2 } else { 2 }
                 } else {
                     0
                 };
@@ -623,6 +627,204 @@ fn pure_translation(
         }
     }
     result
+}
+
+fn canonical_coefficient(value: GaussianRational) -> CanonicalCoefficient {
+    CanonicalCoefficient::new(
+        *value.real.numer(),
+        *value.real.denom(),
+        *value.imag.numer(),
+        *value.imag.denom(),
+    )
+    .expect("source Gaussian rational is normalized and finite")
+}
+
+fn canonical_lorentz(left: u8, right: u8) -> LorentzRep {
+    LorentzRep {
+        left_twice_spin: left,
+        right_twice_spin: right,
+        reality: Reality::Real,
+    }
+}
+
+/// Exact source-basis adapter used by the canonical parentage engine.
+pub(crate) fn exact_canonical_fixture() -> CanonicalPhysicalFingerprint {
+    let clifford = Clifford4D::build();
+    let fields = Field::all();
+    let charges: Vec<_> = (0..2)
+        .flat_map(|supersymmetry| {
+            (0..SPINORS).map(move |spinor| Charge {
+                supersymmetry,
+                spinor,
+            })
+        })
+        .collect();
+
+    let mut components = Vec::new();
+    for &field in &fields {
+        let (statistics, lorentz, height_twice, role, form_degree) = match field {
+            Field::ScalarA | Field::PseudoscalarB => (
+                Statistics::Boson,
+                canonical_lorentz(0, 0),
+                0,
+                CanonicalRole::Propagating,
+                None,
+            ),
+            Field::AuxiliaryF | Field::AuxiliaryG | Field::AuxiliaryD => (
+                Statistics::Boson,
+                canonical_lorentz(0, 0),
+                2,
+                CanonicalRole::Auxiliary,
+                None,
+            ),
+            Field::Vector(_) => (
+                Statistics::Boson,
+                canonical_lorentz(1, 1),
+                0,
+                CanonicalRole::GaugePotential,
+                Some(1),
+            ),
+            Field::Psi(_) | Field::Lambda(_) => (
+                Statistics::Fermion,
+                canonical_lorentz(1, 0),
+                1,
+                CanonicalRole::Propagating,
+                None,
+            ),
+        };
+        components.push(CanonicalComponent {
+            label: field_label(field),
+            statistics,
+            lorentz,
+            height_twice,
+            role,
+            form_degree,
+        });
+    }
+    let field_indices: BTreeMap<_, _> = fields
+        .iter()
+        .enumerate()
+        .map(|(index, &field)| (field, index))
+        .collect();
+
+    let gauge_parameter = components.len();
+    components.push(CanonicalComponent {
+        label: "gauge_parameter".to_owned(),
+        statistics: Statistics::Boson,
+        lorentz: canonical_lorentz(0, 0),
+        height_twice: -2,
+        role: CanonicalRole::GaugeParameter { stage: 0 },
+        form_degree: Some(0),
+    });
+
+    let two_form_pairs: Vec<_> = (0..DIM)
+        .flat_map(|mu| ((mu + 1)..DIM).map(move |nu| (mu, nu)))
+        .collect();
+    let mut strength_indices = BTreeMap::new();
+    for &(mu, nu) in &two_form_pairs {
+        let index = components.len();
+        strength_indices.insert((mu, nu), index);
+        components.push(CanonicalComponent {
+            label: format!("field_strength_{mu}{nu}"),
+            statistics: Statistics::Boson,
+            // This denotes the realification containing both chiral two-form
+            // summands, rather than a complex self-dual field.
+            lorentz: canonical_lorentz(2, 0),
+            height_twice: 2,
+            role: CanonicalRole::FieldStrength,
+            form_degree: Some(2),
+        });
+    }
+
+    let supercharges = charges
+        .iter()
+        .map(|charge| CanonicalSupercharge {
+            label: format!("D{}_{}", charge.supersymmetry + 1, charge.spinor),
+            lorentz: canonical_lorentz(1, 0),
+            height_twice: 1,
+        })
+        .collect();
+
+    let mut linkage = Vec::new();
+    for (charge_index, &charge) in charges.iter().enumerate() {
+        for &source_field in &fields {
+            let source = field_indices[&source_field];
+            for (atom, coefficient) in delta(charge, source_field, &clifford).0 {
+                linkage.push(CanonicalLinkage {
+                    charge: charge_index,
+                    source,
+                    target: field_indices[&atom.field],
+                    derivative: CanonicalDerivative(atom.derivatives),
+                    coefficient: canonical_coefficient(coefficient),
+                });
+            }
+        }
+        for &(mu, nu) in &two_form_pairs {
+            for (atom, coefficient) in apply_delta(charge, &field_strength(mu, nu), &clifford).0 {
+                linkage.push(CanonicalLinkage {
+                    charge: charge_index,
+                    source: strength_indices[&(mu, nu)],
+                    target: field_indices[&atom.field],
+                    derivative: CanonicalDerivative(atom.derivatives),
+                    coefficient: canonical_coefficient(coefficient),
+                });
+            }
+        }
+    }
+
+    let gauge_complex = (0..DIM)
+        .map(|mu| CanonicalGaugeTerm {
+            parameter: gauge_parameter,
+            target: field_indices[&Field::Vector(mu)],
+            derivative: CanonicalDerivative(std::array::from_fn(|axis| u8::from(axis == mu))),
+            coefficient: CanonicalCoefficient::integer(1, 0),
+        })
+        .collect();
+
+    let mut bianchi_identities = Vec::new();
+    for mu in 0..DIM {
+        for nu in (mu + 1)..DIM {
+            for rho in (nu + 1)..DIM {
+                bianchi_identities.push(CanonicalBianchi {
+                    terms: vec![
+                        CanonicalLinearTerm {
+                            component: strength_indices[&(nu, rho)],
+                            derivative: CanonicalDerivative(std::array::from_fn(|axis| {
+                                u8::from(axis == mu)
+                            })),
+                            coefficient: CanonicalCoefficient::integer(1, 0),
+                        },
+                        CanonicalLinearTerm {
+                            component: strength_indices[&(mu, rho)],
+                            derivative: CanonicalDerivative(std::array::from_fn(|axis| {
+                                u8::from(axis == nu)
+                            })),
+                            coefficient: CanonicalCoefficient::integer(-1, 0),
+                        },
+                        CanonicalLinearTerm {
+                            component: strength_indices[&(mu, nu)],
+                            derivative: CanonicalDerivative(std::array::from_fn(|axis| {
+                                u8::from(axis == rho)
+                            })),
+                            coefficient: CanonicalCoefficient::integer(1, 0),
+                        },
+                    ],
+                });
+            }
+        }
+    }
+
+    CanonicalPhysicalFingerprint {
+        name: "chiral-vector-exact-source-adapter".to_owned(),
+        components,
+        supercharges,
+        linkage,
+        gauge_complex,
+        bianchi_identities,
+        central_generators: Vec::new(),
+        central_entries: Vec::new(),
+        central_occurrences: Vec::new(),
+    }
 }
 
 pub fn higher_dimensional_fingerprint() -> MultipletFingerprint {

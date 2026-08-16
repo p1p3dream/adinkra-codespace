@@ -45,20 +45,35 @@ parentage proofs.
 
 ## Phase 2: validated catalog
 
-The catalog contains four entries with different evidence levels:
+The catalog contains five entries with different evidence levels:
 
 | Entry | Result | Evidence boundary |
 | --- | --- | --- |
 | Chiral-vector, CV | Exact fixture | 612 of 612 component closure relations, including one-form gauge residues |
 | Chiral-tensor, CT | Exact fixture | 684 of 684 component closure relations, including reducible two-form gauge residues |
-| Vector-tensor, VT-one-Z | Qualified fixture | 720 component relations and the worldline one-Z extension pass separately; the term-by-term source-normalization bridge remains partial |
+| Vector-tensor, VT-one-Z | Qualified fixture | 720 component relations and the fixed Eq. (4.6) zero-brane central bridge pass; the repaired Eq. (4.5) to Appendix F reduction remains open |
 | Scalar-tensor regular tangent | Structural preflight | Regular 8+8 tangent is CT-compatible, but full component closure and an exact four-dimensional intertwiner have not been solved |
+| Central hypermultiplet, CC-one-Z | Exact fixture | 576 closure relations, 128 central commutators, 16 involution checks, and exact 512-entry worldline linkage plus 128-entry central bridge |
 
 The exact CV versus CT rejection is already visible in the gauge complex. CV
 has an irreducible one-form gauge potential, while CT has a reducible two-form
 gauge potential. VT is separated by simultaneous one-form and two-form content
 plus its physical rank-one central facet. The scalar-tensor tangent shares the
 CT linear aggregate key but has a distinct nonlinear completion key.
+
+The presentation-level adapters now encode exact Gaussian-rational source data
+for CV, CT, VT, and the central hypermultiplet. Their checked censuses are:
+
+| Fixture | Components | Linkage terms | Gauge arrows | Bianchi identities | Central entries | Central occurrences |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| CV | 24 | 424 | 4 | 4 | 0 | 0 |
+| CT | 28 | 440 | 16 | 1 | 0 | 0 |
+| VT | 36 | 544 | 20 | 5 | 71 | 4 |
+| CC-one-Z | 16 | 320 | 0 | 0 | 52 | 4 |
+
+The VT adapter uses independent curvature nodes for `F=dA` and `H=dB` rather
+than duplicating raw potential derivatives. This is why its exact central-action
+census is 71 rather than the incorrect raw-potential count of 121.
 
 Mutation controls verify that the classifier rejects:
 
@@ -77,10 +92,11 @@ Inference returns one of four decisions:
 - `unsupported`: no retained fixture matches, with a first mismatch witness for
   every rejected candidate
 
-A worldline-only 8+8 query is intentionally insufficient. Complete CV and CT
-queries identify their exact fixtures. VT returns qualified compatibility until
-the central source-normalization bridge is complete. The scalar-tensor tangent
-returns qualified compatibility, never a proof of CT equivalence.
+A worldline-only 8+8 query is intentionally insufficient and is compatible with
+all five catalog entries. Complete CV, CT, and central-hypermultiplet queries
+identify exact fixtures. VT returns qualified compatibility until the repaired
+Eq. (4.5) reduction is complete. The scalar-tensor tangent returns qualified
+compatibility, never a proof of CT equivalence.
 
 These decisions are relative to the checked-in catalog. A unique result means
 "unique among catalog entries," not "unique among all possible multiplets."
@@ -115,10 +131,14 @@ and mutation controls.
 
 ## Remaining research boundary
 
-The next rigorous extension is not another unsigned spectral test. It is a
-source-convention bridge that transports the exact four-dimensional VT central
-action to the extracted worldline generator term by term. After that, the
-presentation-level canonicalizer can be populated from exact Gaussian-rational
-linkage adapters for CV, CT, and VT and compared under explicitly generated
-finite basis groups. Arbitrary continuous equivalence of full derivative-matrix
-tuples remains a separate algebraic problem.
+The source-convention bridge is now exact for hep-th/9609016 Eq. (4.6), including
+the fixed two-form normalization, the fermion realification, and simultaneous
+central/color orientation. The remaining VT gate is a direct 512-entry reduction
+of the repaired Eq. (4.5) supersymmetry transformations to Appendix F.
+
+The exact presentation adapters are populated for CV, CT, VT, and CC-one-Z and
+can be compared under explicitly generated finite signed basis groups. Extending
+that equivalence to electromagnetic-duality rotations or arbitrary continuous
+field redefinitions remains a separate algebraic problem. The scalar-tensor
+tangent also remains a structural CT-compatible preflight rather than an exact
+positive control.

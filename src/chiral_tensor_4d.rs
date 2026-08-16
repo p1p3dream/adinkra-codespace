@@ -6,10 +6,18 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::chiral_vector_4d::{
-    matrix_mul, matrix_scale, pauli, Clifford4D, GaussianRational, Matrix4,
+    Clifford4D, GaussianRational, Matrix4, matrix_mul, matrix_scale, pauli,
+};
+use crate::higher_dimensional_canonical::{
+    BianchiIdentity as CanonicalBianchi, Component as CanonicalComponent,
+    ComponentRole as CanonicalRole, DerivativeMonomial as CanonicalDerivative,
+    GaugeTerm as CanonicalGaugeTerm, GaussianRational as CanonicalCoefficient,
+    LinearTerm as CanonicalLinearTerm, LinkageTerm as CanonicalLinkage, LorentzRep,
+    PhysicalFingerprint as CanonicalPhysicalFingerprint, Reality, Statistics,
+    Supercharge as CanonicalSupercharge,
 };
 use crate::higher_dimensional_fingerprint::{
-    sha256_lines, DerivativeOperatorFingerprint, GaugeFingerprint, MultipletFingerprint,
+    DerivativeOperatorFingerprint, GaugeFingerprint, MultipletFingerprint, sha256_lines,
 };
 use crate::lr_matrix::AdinkraRep;
 use num_rational::Ratio;
@@ -110,11 +118,7 @@ struct Charge {
 }
 
 fn metric_sign(index: usize) -> i64 {
-    if index == 0 {
-        -1
-    } else {
-        1
-    }
+    if index == 0 { -1 } else { 1 }
 }
 
 fn epsilon_lower(indices: [usize; 4]) -> i64 {
@@ -125,11 +129,7 @@ fn epsilon_lower(indices: [usize; 4]) -> i64 {
         .flat_map(|left| ((left + 1)..4).map(move |right| (left, right)))
         .filter(|&(left, right)| indices[left] > indices[right])
         .count();
-    if inversions.is_multiple_of(2) {
-        -1
-    } else {
-        1
-    }
+    if inversions.is_multiple_of(2) { -1 } else { 1 }
 }
 
 fn two_form(mu: usize, nu: usize) -> (Field, i64) {
@@ -512,6 +512,227 @@ fn coefficient_label(value: GaussianRational) -> String {
         value.imag.numer(),
         value.imag.denom()
     )
+}
+
+fn canonical_coefficient(value: GaussianRational) -> CanonicalCoefficient {
+    CanonicalCoefficient::new(
+        *value.real.numer(),
+        *value.real.denom(),
+        *value.imag.numer(),
+        *value.imag.denom(),
+    )
+    .expect("source Gaussian rational is normalized and finite")
+}
+
+fn canonical_lorentz(left: u8, right: u8) -> LorentzRep {
+    LorentzRep {
+        left_twice_spin: left,
+        right_twice_spin: right,
+        reality: Reality::Real,
+    }
+}
+
+/// Exact source-basis adapter used by the canonical parentage engine.
+pub(crate) fn exact_canonical_fixture() -> CanonicalPhysicalFingerprint {
+    let clifford = Clifford4D::build();
+    let fields = Field::all();
+    let charges: Vec<_> = (0..2)
+        .flat_map(|supersymmetry| {
+            (0..SPINORS).map(move |spinor| Charge {
+                supersymmetry,
+                spinor,
+            })
+        })
+        .collect();
+
+    let mut components = Vec::new();
+    for &field in &fields {
+        let (statistics, lorentz, height_twice, role, form_degree) = match field {
+            Field::ScalarA | Field::PseudoscalarB | Field::TensorScalar => (
+                Statistics::Boson,
+                canonical_lorentz(0, 0),
+                0,
+                CanonicalRole::Propagating,
+                None,
+            ),
+            Field::AuxiliaryF | Field::AuxiliaryG => (
+                Statistics::Boson,
+                canonical_lorentz(0, 0),
+                2,
+                CanonicalRole::Auxiliary,
+                None,
+            ),
+            Field::TwoForm(_, _) => (
+                Statistics::Boson,
+                canonical_lorentz(2, 0),
+                0,
+                CanonicalRole::GaugePotential,
+                Some(2),
+            ),
+            Field::Psi(_) | Field::Chi(_) => (
+                Statistics::Fermion,
+                canonical_lorentz(1, 0),
+                1,
+                CanonicalRole::Propagating,
+                None,
+            ),
+        };
+        components.push(CanonicalComponent {
+            label: field_label(field),
+            statistics,
+            lorentz,
+            height_twice,
+            role,
+            form_degree,
+        });
+    }
+    let field_indices: BTreeMap<_, _> = fields
+        .iter()
+        .enumerate()
+        .map(|(index, &field)| (field, index))
+        .collect();
+
+    let mut gauge_parameters = Vec::new();
+    for mu in 0..DIM {
+        gauge_parameters.push(components.len());
+        components.push(CanonicalComponent {
+            label: format!("gauge_parameter_{mu}"),
+            statistics: Statistics::Boson,
+            lorentz: canonical_lorentz(1, 1),
+            height_twice: -2,
+            role: CanonicalRole::GaugeParameter { stage: 0 },
+            form_degree: Some(1),
+        });
+    }
+    let reducibility_parameter = components.len();
+    components.push(CanonicalComponent {
+        label: "gauge_for_gauge_parameter".to_owned(),
+        statistics: Statistics::Boson,
+        lorentz: canonical_lorentz(0, 0),
+        height_twice: -4,
+        role: CanonicalRole::GaugeParameter { stage: 1 },
+        form_degree: Some(0),
+    });
+
+    let triples: Vec<_> = (0..DIM)
+        .flat_map(|mu| {
+            ((mu + 1)..DIM).flat_map(move |nu| ((nu + 1)..DIM).map(move |rho| (mu, nu, rho)))
+        })
+        .collect();
+    let mut strength_indices = BTreeMap::new();
+    for &(mu, nu, rho) in &triples {
+        let index = components.len();
+        strength_indices.insert((mu, nu, rho), index);
+        components.push(CanonicalComponent {
+            label: format!("field_strength_{mu}{nu}{rho}"),
+            statistics: Statistics::Boson,
+            // A real three-form is Lorentz-dual to a real vector.
+            lorentz: canonical_lorentz(1, 1),
+            height_twice: 2,
+            role: CanonicalRole::FieldStrength,
+            form_degree: Some(3),
+        });
+    }
+
+    let supercharges = charges
+        .iter()
+        .map(|charge| CanonicalSupercharge {
+            label: format!("D{}_{}", charge.supersymmetry + 1, charge.spinor),
+            lorentz: canonical_lorentz(1, 0),
+            height_twice: 1,
+        })
+        .collect();
+
+    let mut linkage = Vec::new();
+    for (charge_index, &charge) in charges.iter().enumerate() {
+        for &source_field in &fields {
+            let source = field_indices[&source_field];
+            for (atom, coefficient) in delta(charge, source_field, &clifford).0 {
+                linkage.push(CanonicalLinkage {
+                    charge: charge_index,
+                    source,
+                    target: field_indices[&atom.field],
+                    derivative: CanonicalDerivative(atom.derivatives),
+                    coefficient: canonical_coefficient(coefficient),
+                });
+            }
+        }
+        for &(mu, nu, rho) in &triples {
+            for (atom, coefficient) in
+                apply_delta(charge, &field_strength(mu, nu, rho), &clifford).0
+            {
+                linkage.push(CanonicalLinkage {
+                    charge: charge_index,
+                    source: strength_indices[&(mu, nu, rho)],
+                    target: field_indices[&atom.field],
+                    derivative: CanonicalDerivative(atom.derivatives),
+                    coefficient: canonical_coefficient(coefficient),
+                });
+            }
+        }
+    }
+
+    let mut gauge_complex = Vec::new();
+    for mu in 0..DIM {
+        gauge_complex.push(CanonicalGaugeTerm {
+            parameter: reducibility_parameter,
+            target: gauge_parameters[mu],
+            derivative: CanonicalDerivative(std::array::from_fn(|axis| u8::from(axis == mu))),
+            coefficient: CanonicalCoefficient::integer(1, 0),
+        });
+        for nu in (mu + 1)..DIM {
+            let target = field_indices[&Field::TwoForm(mu, nu)];
+            gauge_complex.push(CanonicalGaugeTerm {
+                parameter: gauge_parameters[nu],
+                target,
+                derivative: CanonicalDerivative(std::array::from_fn(|axis| u8::from(axis == mu))),
+                coefficient: CanonicalCoefficient::integer(1, 0),
+            });
+            gauge_complex.push(CanonicalGaugeTerm {
+                parameter: gauge_parameters[mu],
+                target,
+                derivative: CanonicalDerivative(std::array::from_fn(|axis| u8::from(axis == nu))),
+                coefficient: CanonicalCoefficient::integer(-1, 0),
+            });
+        }
+    }
+
+    let bianchi_identities = vec![CanonicalBianchi {
+        terms: vec![
+            CanonicalLinearTerm {
+                component: strength_indices[&(1, 2, 3)],
+                derivative: CanonicalDerivative([1, 0, 0, 0]),
+                coefficient: CanonicalCoefficient::integer(1, 0),
+            },
+            CanonicalLinearTerm {
+                component: strength_indices[&(0, 2, 3)],
+                derivative: CanonicalDerivative([0, 1, 0, 0]),
+                coefficient: CanonicalCoefficient::integer(-1, 0),
+            },
+            CanonicalLinearTerm {
+                component: strength_indices[&(0, 1, 3)],
+                derivative: CanonicalDerivative([0, 0, 1, 0]),
+                coefficient: CanonicalCoefficient::integer(1, 0),
+            },
+            CanonicalLinearTerm {
+                component: strength_indices[&(0, 1, 2)],
+                derivative: CanonicalDerivative([0, 0, 0, 1]),
+                coefficient: CanonicalCoefficient::integer(-1, 0),
+            },
+        ],
+    }];
+
+    CanonicalPhysicalFingerprint {
+        name: "chiral-tensor-exact-source-adapter".to_owned(),
+        components,
+        supercharges,
+        linkage,
+        gauge_complex,
+        bianchi_identities,
+        central_generators: Vec::new(),
+        central_entries: Vec::new(),
+        central_occurrences: Vec::new(),
+    }
 }
 
 pub fn higher_dimensional_fingerprint() -> MultipletFingerprint {
