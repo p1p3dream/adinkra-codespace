@@ -1,0 +1,1762 @@
+{
+  "schema_version": "adynkra-11d-hook-bianchi-artifact-v1",
+  "title": "Bounded representation-level continuation of the 11D level-17 (11000) hook",
+  "report": {
+    "schema_version": "adynkra-11d-hook-bianchi-v1",
+    "source_hook_dynkin_label": "11000",
+    "source_hook_dimension": 429,
+    "spinor_dimension": 32,
+    "tensor_product_dimension": 13728,
+    "target_dimension_sum": 13728,
+    "target_dimension_sum_matches": true,
+    "target_candidates": [
+      {
+        "target_dynkin_label": "01001",
+        "target_dimension": 1408,
+        "multiplicity_in_hook_tensor_spinor": 1,
+        "level18_source_channels": [
+          {
+            "source_dynkin_label": "00100",
+            "source_dimension": 165,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "00010",
+            "source_dimension": 330,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "02000",
+            "source_dimension": 1144,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "10100",
+            "source_dimension": 1430,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10010",
+            "source_dimension": 3003,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10002",
+            "source_dimension": 4290,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "01100",
+            "source_dimension": 5005,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "01010",
+            "source_dimension": 11583,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "01002",
+            "source_dimension": 17160,
+            "multiplicity": 5
+          }
+        ],
+        "level18_distinct_source_irreps": 9,
+        "level18_embedded_source_copies": 18,
+        "relaxed_composition_row_dimension": 7,
+        "exact_composition_compatible_row_dimension": 0,
+        "nonzero_representation_level_bianchi_row_survives": false,
+        "abstract_target_coupling_available": false,
+        "embedded_level18_source_kernels_available": false,
+        "embedded_composition_computed": false,
+        "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+      },
+      {
+        "target_dynkin_label": "10001",
+        "target_dimension": 320,
+        "multiplicity_in_hook_tensor_spinor": 1,
+        "level18_source_channels": [
+          {
+            "source_dynkin_label": "00100",
+            "source_dimension": 165,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "00010",
+            "source_dimension": 330,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "10100",
+            "source_dimension": 1430,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10010",
+            "source_dimension": 3003,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10002",
+            "source_dimension": 4290,
+            "multiplicity": 2
+          }
+        ],
+        "level18_distinct_source_irreps": 5,
+        "level18_embedded_source_copies": 8,
+        "relaxed_composition_row_dimension": 7,
+        "exact_composition_compatible_row_dimension": 0,
+        "nonzero_representation_level_bianchi_row_survives": false,
+        "abstract_target_coupling_available": false,
+        "embedded_level18_source_kernels_available": false,
+        "embedded_composition_computed": false,
+        "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+      },
+      {
+        "target_dynkin_label": "11001",
+        "target_dimension": 10240,
+        "multiplicity_in_hook_tensor_spinor": 1,
+        "level18_source_channels": [
+          {
+            "source_dynkin_label": "02000",
+            "source_dimension": 1144,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "10100",
+            "source_dimension": 1430,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10010",
+            "source_dimension": 3003,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10002",
+            "source_dimension": 4290,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "01100",
+            "source_dimension": 5005,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "20100",
+            "source_dimension": 7128,
+            "multiplicity": 3
+          },
+          {
+            "source_dynkin_label": "12000",
+            "source_dimension": 7150,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "01010",
+            "source_dimension": 11583,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "20010",
+            "source_dimension": 15400,
+            "multiplicity": 4
+          },
+          {
+            "source_dynkin_label": "01002",
+            "source_dimension": 17160,
+            "multiplicity": 5
+          },
+          {
+            "source_dynkin_label": "20002",
+            "source_dimension": 22275,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "11100",
+            "source_dimension": 33033,
+            "multiplicity": 3
+          },
+          {
+            "source_dynkin_label": "11010",
+            "source_dimension": 78650,
+            "multiplicity": 5
+          },
+          {
+            "source_dynkin_label": "11002",
+            "source_dimension": 117975,
+            "multiplicity": 6
+          }
+        ],
+        "level18_distinct_source_irreps": 14,
+        "level18_embedded_source_copies": 38,
+        "relaxed_composition_row_dimension": 7,
+        "exact_composition_compatible_row_dimension": 0,
+        "nonzero_representation_level_bianchi_row_survives": false,
+        "abstract_target_coupling_available": false,
+        "embedded_level18_source_kernels_available": false,
+        "embedded_composition_computed": false,
+        "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+      },
+      {
+        "target_dynkin_label": "20001",
+        "target_dimension": 1760,
+        "multiplicity_in_hook_tensor_spinor": 1,
+        "level18_source_channels": [
+          {
+            "source_dynkin_label": "10100",
+            "source_dimension": 1430,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10010",
+            "source_dimension": 3003,
+            "multiplicity": 1
+          },
+          {
+            "source_dynkin_label": "10002",
+            "source_dimension": 4290,
+            "multiplicity": 2
+          },
+          {
+            "source_dynkin_label": "20100",
+            "source_dimension": 7128,
+            "multiplicity": 3
+          },
+          {
+            "source_dynkin_label": "20010",
+            "source_dimension": 15400,
+            "multiplicity": 4
+          },
+          {
+            "source_dynkin_label": "20002",
+            "source_dimension": 22275,
+            "multiplicity": 2
+          }
+        ],
+        "level18_distinct_source_irreps": 6,
+        "level18_embedded_source_copies": 13,
+        "relaxed_composition_row_dimension": 7,
+        "exact_composition_compatible_row_dimension": 0,
+        "nonzero_representation_level_bianchi_row_survives": false,
+        "abstract_target_coupling_available": false,
+        "embedded_level18_source_kernels_available": false,
+        "embedded_composition_computed": false,
+        "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+      }
+    ],
+    "target_candidate_count": 4,
+    "level18_distinct_source_fixture_count": 16,
+    "level18_source_fixture_copy_count": 42,
+    "level14_hodge_dual_analogue_fixture_count": 27,
+    "level18_source_fixtures_present": 0,
+    "level18_source_target_embedded_copy_count": 77,
+    "level17_map": {
+      "input_artifact": "results/adynkra_11d_level17_derivative_matrix.json",
+      "input_sha256": "630fc8701ef7d93e9ce37cdd50be4863dba8b062b8c0112a5d88277d8ec4f5cd",
+      "input_schema_version": "adynkra-11d-level17-derivative-matrix-v1",
+      "source_columns": 12,
+      "hook_rows": 7,
+      "exact_rank": 7,
+      "exact_nullity": 5,
+      "recomputed_kernel_dimension": 5,
+      "committed_kernel_vectors": 5,
+      "committed_kernel_vectors_annihilated": 5,
+      "left_kernel_dimension": 0,
+      "source_basis_matches": true,
+      "hook_basis_matches": true,
+      "scalar_factorizing_direction_is_closed": true,
+      "passed": true
+    },
+    "cohomology": {
+      "field": "Q",
+      "complex": "Q^12 --d16--> Q^7 --d17--> 0 at the zero-momentum relaxed representation-symbol level",
+      "level16_dimension": 12,
+      "level16_to_level17_rank": 7,
+      "level16_kernel_dimension": 5,
+      "level16_cohomology_lower_bound": 0,
+      "level16_cohomology_upper_bound": 5,
+      "level16_incoming_image_known": false,
+      "level17_dimension": 7,
+      "forced_level17_to_level18_rank": 0,
+      "level17_kernel_dimension": 7,
+      "level17_image_dimension": 7,
+      "level17_bounded_cohomology_dimension": 0,
+      "level18_candidate_irreps": 4,
+      "level18_candidate_embedded_copies": 77,
+      "level18_cohomology_computed": false,
+      "interpretation": "The committed d16 is surjective. Therefore any rational row B satisfying B d16 = 0 is zero, even before restricting B to rows produced by B5 intertwiners. The bounded hook cohomology is consequently zero.",
+      "boundary": "The level16 kernel has dimension five, but its cohomology is only bounded between zero and five because the incoming map is not part of this artifact. No level18 or momentum-dependent cohomology is claimed."
+    },
+    "generated_work_items": 161,
+    "completeness": {
+      "committed_level17_matrix_reverified_exactly": true,
+      "hook_tensor_spinor_decomposition_complete": true,
+      "level18_inventory_incidence_complete": true,
+      "level14_hodge_dual_analogue_manifest_audited": true,
+      "hodge_duality_kernel_lift_verified": false,
+      "relaxed_representation_level_composition_solved_exactly": true,
+      "bounded_zero_momentum_level17_cohomology_computed": true,
+      "abstract_target_couplings_constructed": false,
+      "embedded_level18_highest_weight_kernels_present": false,
+      "embedded_next_bianchi_compositions_computed": false,
+      "momentum_corrected_complex_computed": false,
+      "gauge_quotient_computed": false,
+      "polynomial_module_cohomology_computed": false
+    },
+    "passed": true,
+    "result": "No nonzero next-Bianchi row survives the exact relaxed zero-momentum representation-level composition gate.",
+    "boundary": "This excludes a nonzero nilpotent outgoing row on the committed seven-copy hook multiplicity space. It does not assert that embedded level18 kernels exist, construct target Clebsch-Gordan coefficients, include the superspace momentum term, quotient gauge transformations, or prove physical exactness."
+  },
+  "worklist": [
+    {
+      "ordinal": 1,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "00010",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_00010_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 2,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "00010",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_00010_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 3,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "00100",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_00100_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 4,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "00100",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_00100_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 5,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01002",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01002_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 6,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01002",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01002_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 7,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01002",
+      "source_copy": 3,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01002_highest_weight_kernel_3.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 8,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01002",
+      "source_copy": 4,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01002_highest_weight_kernel_4.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 9,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01002",
+      "source_copy": 5,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01002_highest_weight_kernel_5.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 10,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01010",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01010_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 11,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01100",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01100_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 12,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "01100",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_01100_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 13,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "02000",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_02000_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 14,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "02000",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_02000_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 15,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "10002",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_10002_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 16,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "10002",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_10002_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 17,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "10010",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_10010_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 18,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "10100",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_10100_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 19,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11002",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11002_highest_weight_kernel_1.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 20,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11002",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11002_highest_weight_kernel_2.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 21,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11002",
+      "source_copy": 3,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11002_highest_weight_kernel_3.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 22,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11002",
+      "source_copy": 4,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11002_highest_weight_kernel_4.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 23,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11002",
+      "source_copy": 5,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11002_highest_weight_kernel_5.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 24,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11002",
+      "source_copy": 6,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11002_highest_weight_kernel_6.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 25,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11010",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11010_highest_weight_kernel_1.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 26,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11010",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11010_highest_weight_kernel_2.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 27,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11010",
+      "source_copy": 3,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11010_highest_weight_kernel_3.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 28,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11010",
+      "source_copy": 4,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11010_highest_weight_kernel_4.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 29,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11010",
+      "source_copy": 5,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11010_highest_weight_kernel_5.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 30,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11100",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11100_highest_weight_kernel_1.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 31,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11100",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11100_highest_weight_kernel_2.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 32,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "11100",
+      "source_copy": 3,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_11100_highest_weight_kernel_3.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 33,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "12000",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_12000_highest_weight_kernel_1.integer-le",
+      "blocked_by": "no level14 analogue exists and the level18 kernel generator is not exposed by the current shared machinery"
+    },
+    {
+      "ordinal": 34,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20002",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20002_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 35,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20002",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20002_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 36,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20010",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20010_highest_weight_kernel_1.i32le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 37,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20010",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20010_highest_weight_kernel_2.i32le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 38,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20010",
+      "source_copy": 3,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20010_highest_weight_kernel_3.i32le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 39,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20010",
+      "source_copy": 4,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20010_highest_weight_kernel_4.i32le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 40,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20100",
+      "source_copy": 1,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20100_highest_weight_kernel_1.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 41,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20100",
+      "source_copy": 2,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20100_highest_weight_kernel_2.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 42,
+      "stage": "level18_highest_weight_kernel",
+      "target_dynkin_label": null,
+      "source_dynkin_label": "20100",
+      "source_copy": 3,
+      "expected_artifact": "data/eleven_dimensional_spinor_bridge/level18_20100_highest_weight_kernel_3.i16le",
+      "blocked_by": "a level14 analogue exists, but the exact Hodge lift and level18 raising verification are not implemented"
+    },
+    {
+      "ordinal": 43,
+      "stage": "abstract_hook_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "11000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_target_01001_abstract.json",
+      "blocked_by": "the generic S tensor (11000) coupling builder is not public"
+    },
+    {
+      "ordinal": 44,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "00100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_00100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 45,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "00100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_00100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 46,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "00100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_00100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 47,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "00010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_00010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 48,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "00010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_00010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 49,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "00010",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_00010_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 50,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "02000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_02000_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 51,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "02000",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_02000_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 52,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "02000",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_02000_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 53,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 54,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 55,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 56,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 57,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 58,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 59,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "10002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_10002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 60,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 61,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 62,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 63,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 64,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 65,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 66,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 67,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 68,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01002_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 69,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_copy": 4,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01002_copy4.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 70,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": "01002",
+      "source_copy": 5,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_from_01002_copy5.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 71,
+      "stage": "exact_embedded_composition",
+      "target_dynkin_label": "01001",
+      "source_dynkin_label": null,
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_01001_composition.json",
+      "blocked_by": "both target and level18 source couplings must be constructed first"
+    },
+    {
+      "ordinal": 72,
+      "stage": "abstract_hook_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "11000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_target_10001_abstract.json",
+      "blocked_by": "the generic S tensor (11000) coupling builder is not public"
+    },
+    {
+      "ordinal": 73,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "00100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_00100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 74,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "00100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_00100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 75,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "00100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_00100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 76,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "00010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_00010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 77,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "00010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_00010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 78,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "00010",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_00010_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 79,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 80,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 81,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 82,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 83,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 84,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 85,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": "10002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_from_10002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 86,
+      "stage": "exact_embedded_composition",
+      "target_dynkin_label": "10001",
+      "source_dynkin_label": null,
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_10001_composition.json",
+      "blocked_by": "both target and level18 source couplings must be constructed first"
+    },
+    {
+      "ordinal": 87,
+      "stage": "abstract_hook_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_target_11001_abstract.json",
+      "blocked_by": "the generic S tensor (11000) coupling builder is not public"
+    },
+    {
+      "ordinal": 88,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "02000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_02000_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 89,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "02000",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_02000_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 90,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "02000",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_02000_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 91,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 92,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 93,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 94,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 95,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 96,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 97,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "10002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_10002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 98,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 99,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 100,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 101,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 102,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 103,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 104,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20100",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20100_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 105,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "12000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_12000_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 106,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "12000",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_12000_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 107,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 108,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 109,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 110,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 111,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20010",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20010_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 112,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20010",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20010_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 113,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20010",
+      "source_copy": 4,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20010_copy4.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 114,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 115,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 116,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 117,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01002",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01002_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 118,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01002",
+      "source_copy": 4,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01002_copy4.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 119,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "01002",
+      "source_copy": 5,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_01002_copy5.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 120,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 121,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 122,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "20002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_20002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 123,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 124,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 125,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 126,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11100",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11100_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 127,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 128,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 129,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11010",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11010_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 130,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11010",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11010_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 131,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11010",
+      "source_copy": 4,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11010_copy4.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 132,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11010",
+      "source_copy": 5,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11010_copy5.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 133,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 134,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 135,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 136,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 137,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": 4,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_copy4.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 138,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": 5,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_copy5.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 139,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": "11002",
+      "source_copy": 6,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_from_11002_copy6.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 140,
+      "stage": "exact_embedded_composition",
+      "target_dynkin_label": "11001",
+      "source_dynkin_label": null,
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_11001_composition.json",
+      "blocked_by": "both target and level18 source couplings must be constructed first"
+    },
+    {
+      "ordinal": 141,
+      "stage": "abstract_hook_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "11000",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_target_20001_abstract.json",
+      "blocked_by": "the generic S tensor (11000) coupling builder is not public"
+    },
+    {
+      "ordinal": 142,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 143,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 144,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 145,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 146,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 147,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 148,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "10002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_10002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 149,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20100",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20100_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 150,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20100",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20100_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 151,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20100",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20100_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 152,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20100",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20100_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 153,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20010",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20010_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 154,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20010",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20010_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 155,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20010",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20010_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 156,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20010",
+      "source_copy": 3,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20010_copy3.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 157,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20010",
+      "source_copy": 4,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20010_copy4.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 158,
+      "stage": "abstract_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20002",
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20002_abstract.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 159,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20002",
+      "source_copy": 1,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20002_copy1.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 160,
+      "stage": "embedded_level18_source_target_coupling",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": "20002",
+      "source_copy": 2,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_from_20002_copy2.json",
+      "blocked_by": "level18 embedded highest-weight kernels are unavailable"
+    },
+    {
+      "ordinal": 161,
+      "stage": "exact_embedded_composition",
+      "target_dynkin_label": "20001",
+      "source_dynkin_label": null,
+      "source_copy": null,
+      "expected_artifact": "results/adynkra_11d_hook_bianchi_20001_composition.json",
+      "blocked_by": "both target and level18 source couplings must be constructed first"
+    }
+  ]
+}

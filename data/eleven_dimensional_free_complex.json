@@ -1,0 +1,210 @@
+{
+  "schema_version": "adynkra-11d-free-complex-v1",
+  "title": "Exact free gauge-curvature-Bianchi and Euler-Lagrange complexes in 11D",
+  "sources": [
+    {
+      "arxiv_id": "0903.0259",
+      "locator": "Eqs. (1)-(3)",
+      "role": "free Pauli-Fierz, Abelian three-form, and Rarita-Schwinger actions; gauge transformations and second-stage three-form reducibility"
+    },
+    {
+      "arxiv_id": "hep-th/0410239",
+      "locator": "Sec. 2, light-cone physical-field formulation",
+      "role": "SO(9) on-shell target carried by the graviton, three-form, and gamma-traceless vector-spinor"
+    }
+  ],
+  "conventions": [
+    "mostly-plus eta=(-,+,...,+), covariant momentum components supplied to every builder",
+    "null representative p_a=(1,1,0,...,0), hence p^a=(-1,1,0,...,0)",
+    "unnormalized symmetrization and antisymmetrization; factorial changes are invertible row rescalings",
+    "R_ab|cd=p_a p_c h_bd-p_a p_d h_bc-p_b p_c h_ad+p_b p_d h_ac",
+    "F_4=p wedge A_3 and E_A=i_(p sharp) F_4",
+    "E_psi^a=Gamma^(abc) p_b psi_c, with Gamma^0=i gamma_E^0 and Gamma^i=gamma_E^i"
+  ],
+  "report": {
+    "schema_version": "adynkra-11d-free-complex-report-v1",
+    "spacetime_signature": "mostly plus (-,+,+,+,+,+,+,+,+,+,+)",
+    "null_momentum_covector": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "null_momentum_square": 0,
+    "graviton": {
+      "sector": "Pauli-Fierz graviton h_ab",
+      "reducibility_dimensions": [],
+      "gauge_dimensions": [
+        66,
+        11
+      ],
+      "curvature_dimensions": [
+        3025,
+        66
+      ],
+      "bianchi_dimensions": [
+        9075,
+        3025
+      ],
+      "euler_lagrange_dimensions": [
+        66,
+        66
+      ],
+      "noether_dimensions": [
+        11,
+        66
+      ],
+      "nonzero_entries": [
+        22,
+        399,
+        4950,
+        90,
+        22
+      ],
+      "reducibility_compositions_zero": true,
+      "curvature_after_gauge_zero": true,
+      "bianchi_after_curvature_zero": true,
+      "euler_lagrange_after_gauge_zero": true,
+      "noether_after_euler_lagrange_zero": true,
+      "cohomology": {
+        "sector": "Pauli-Fierz graviton h_ab",
+        "potential_dimension": 66,
+        "gauge_parameter_dimension": 11,
+        "gauge_rank": 11,
+        "euler_lagrange_rank": 11,
+        "on_shell_kernel_dimension": 55,
+        "gauge_image_lies_in_kernel": true,
+        "physical_cohomology_dimension": 44,
+        "expected_physical_dimension": 44,
+        "matched": true
+      },
+      "passed": true
+    },
+    "three_form": {
+      "sector": "Abelian three-form A_abc",
+      "reducibility_dimensions": [
+        [
+          11,
+          1
+        ],
+        [
+          55,
+          11
+        ]
+      ],
+      "gauge_dimensions": [
+        165,
+        55
+      ],
+      "curvature_dimensions": [
+        330,
+        165
+      ],
+      "bianchi_dimensions": [
+        462,
+        330
+      ],
+      "euler_lagrange_dimensions": [
+        165,
+        165
+      ],
+      "noether_dimensions": [
+        55,
+        165
+      ],
+      "nonzero_entries": [
+        90,
+        240,
+        420,
+        144,
+        90
+      ],
+      "reducibility_compositions_zero": true,
+      "curvature_after_gauge_zero": true,
+      "bianchi_after_curvature_zero": true,
+      "euler_lagrange_after_gauge_zero": true,
+      "noether_after_euler_lagrange_zero": true,
+      "cohomology": {
+        "sector": "Abelian three-form A_abc",
+        "potential_dimension": 165,
+        "gauge_parameter_dimension": 55,
+        "gauge_rank": 45,
+        "euler_lagrange_rank": 36,
+        "on_shell_kernel_dimension": 129,
+        "gauge_image_lies_in_kernel": true,
+        "physical_cohomology_dimension": 84,
+        "expected_physical_dimension": 84,
+        "matched": true
+      },
+      "passed": true
+    },
+    "gravitino": {
+      "sector": "massless Rarita-Schwinger gravitino psi_a",
+      "reducibility_dimensions": [],
+      "gauge_dimensions": [
+        352,
+        32
+      ],
+      "curvature_dimensions": [
+        1760,
+        352
+      ],
+      "bianchi_dimensions": [
+        5280,
+        1760
+      ],
+      "euler_lagrange_dimensions": [
+        352,
+        352
+      ],
+      "noether_dimensions": [
+        32,
+        352
+      ],
+      "nonzero_entries": [
+        64,
+        640,
+        2880,
+        2304,
+        64
+      ],
+      "reducibility_compositions_zero": true,
+      "curvature_after_gauge_zero": true,
+      "bianchi_after_curvature_zero": true,
+      "euler_lagrange_after_gauge_zero": true,
+      "noether_after_euler_lagrange_zero": true,
+      "cohomology": {
+        "sector": "massless Rarita-Schwinger gravitino psi_a",
+        "potential_dimension": 352,
+        "gauge_parameter_dimension": 32,
+        "gauge_rank": 32,
+        "euler_lagrange_rank": 192,
+        "on_shell_kernel_dimension": 160,
+        "gauge_image_lies_in_kernel": true,
+        "physical_cohomology_dimension": 128,
+        "expected_physical_dimension": 128,
+        "matched": true
+      },
+      "passed": true
+    },
+    "bosonic_physical_dimension": 128,
+    "fermionic_physical_dimension": 128,
+    "expected_bosonic_split": [
+      44,
+      84
+    ],
+    "expected_fermionic_dimension": 128,
+    "exact_symbol_samples_checked": 3,
+    "all_sampled_complex_compositions_zero": true,
+    "majorana_real_form_constructed": false,
+    "passed": true,
+    "boundary": "The bosonic complexes are exact real rational symbols. The Rarita-Schwinger rank is exact over Q(i) after Lorentzizing the repository's Euclidean B5 gamma basis and matches the complexification of the 128-state Majorana module, but this module does not construct the compatible Majorana conjugation or a supersymmetry map between the three sectors. Interactions and nonlinear equations are outside scope."
+  }
+}

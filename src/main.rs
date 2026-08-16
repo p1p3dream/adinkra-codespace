@@ -31,11 +31,15 @@ mod dashing;
 mod decompose;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
+mod eleven_dimensional_free_complex;
 mod eleven_dimensional_gauge;
+mod eleven_dimensional_hook_bianchi;
 mod eleven_dimensional_level16_couplings;
 mod eleven_dimensional_prepotential;
+mod eleven_dimensional_prepotential_gate;
 mod eleven_dimensional_spinor_bridge;
 mod eleven_dimensional_spinor_bridge_kernels;
+mod eleven_dimensional_top_down;
 mod enhance;
 mod eval;
 mod exact_component_algebra;
@@ -242,6 +246,10 @@ fn main() {
         "adynkra-minimal-action-verify" => cmd_adynkra_minimal_action_verify(),
         "adynkrafield-operator-verify" => cmd_adynkrafield_operator_verify(),
         "adynkra-11d-prepotential-verify" => cmd_adynkra_11d_prepotential_verify(),
+        "adynkra-11d-free-complex-build" => cmd_adynkra_11d_free_complex_build(&args),
+        "adynkra-11d-hook-bianchi-build" => cmd_adynkra_11d_hook_bianchi_build(&args),
+        "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
+        "adynkra-11d-top-down-build" => cmd_adynkra_11d_top_down_build(&args),
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
         "adynkra-11d-gauge-intertwiner-verify" => cmd_adynkra_11d_gauge_intertwiner_verify(),
         "adynkra-11d-gauge-composition-manifest" => cmd_adynkra_11d_gauge_composition_manifest(),
@@ -496,6 +504,13 @@ fn print_usage(prog: &str) {
     eprintln!(
         "  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories"
     );
+    eprintln!("  adynkra-11d-top-down-build [json] Build the bounded top-down gate report");
+    eprintln!("  adynkra-11d-free-complex-build [data-json] [validation-json]");
+    eprintln!("                          Build the exact complexified 44+84|128 free target complex");
+    eprintln!("  adynkra-11d-hook-bianchi-build [data-json] [validation-json]");
+    eprintln!("                          Build the bounded level-17 hook continuation gate");
+    eprintln!("  adynkra-11d-prepotential-gate-build [json]");
+    eprintln!("                          Build the exact 336-job source-side kill-gate work list");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!(
         "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
@@ -1596,6 +1611,72 @@ fn cmd_adynkra_11d_prepotential_verify() {
     let report = eleven_dimensional_prepotential::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_top_down_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_top_down.json");
+    let report = eleven_dimensional_top_down::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.bounded_gates_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_free_complex_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_free_complex.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_free_complex_validation.json");
+    let report = eleven_dimensional_free_complex::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_hook_bianchi_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_hook_bianchi.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_hook_bianchi_validation.json");
+    let report = eleven_dimensional_hook_bianchi::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_prepotential_gate_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_prepotential_gate.json");
+    let report = eleven_dimensional_prepotential_gate::write_json(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.worklist_consistent_with_current_exact_engine {
         std::process::exit(2);
     }
 }
