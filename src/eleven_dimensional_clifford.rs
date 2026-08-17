@@ -291,6 +291,18 @@ fn chevalley_basis_phases(gammas: &[Matrix]) -> ([i64; 32], usize, usize, usize,
     )
 }
 
+/// Diagonal signs taking Chevalley-aligned spinor-weight coordinates to the
+/// original complex Euclidean Clifford basis.
+pub(crate) fn spinor_chevalley_basis_phases() -> [i64; 32] {
+    let gammas = gamma_matrices();
+    let (phases, _, cartan_mismatches, lowering_actions, lowering_residuals) =
+        chevalley_basis_phases(&gammas);
+    assert_eq!(cartan_mismatches, 0);
+    assert_eq!(lowering_actions, 48);
+    assert_eq!(lowering_residuals, 0);
+    phases
+}
+
 pub(crate) fn translation_bilinears() -> Vec<Matrix> {
     let gammas = gamma_matrices();
     let charge = charge_conjugation(&gammas);

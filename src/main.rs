@@ -29,16 +29,22 @@ mod code;
 mod coset_primed_lanczos;
 mod dashing;
 mod decompose;
+mod eleven_dimensional_abstract_clifford_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
 mod eleven_dimensional_free_complex;
 mod eleven_dimensional_gauge;
 mod eleven_dimensional_hook_bianchi;
 mod eleven_dimensional_level16_couplings;
+mod eleven_dimensional_level18_momentum;
+mod eleven_dimensional_linear_susy;
+mod eleven_dimensional_majorana;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_prepotential_gate;
+mod eleven_dimensional_source_fixed_curvature;
 mod eleven_dimensional_spinor_bridge;
 mod eleven_dimensional_spinor_bridge_kernels;
+mod eleven_dimensional_target_stream;
 mod eleven_dimensional_top_down;
 mod enhance;
 mod eval;
@@ -248,7 +254,9 @@ fn main() {
         "adynkra-11d-prepotential-verify" => cmd_adynkra_11d_prepotential_verify(),
         "adynkra-11d-free-complex-build" => cmd_adynkra_11d_free_complex_build(&args),
         "adynkra-11d-hook-bianchi-build" => cmd_adynkra_11d_hook_bianchi_build(&args),
+        "adynkra-11d-level18-momentum-build" => cmd_adynkra_11d_level18_momentum_build(&args),
         "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
+        "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
         "adynkra-11d-top-down-build" => cmd_adynkra_11d_top_down_build(&args),
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
         "adynkra-11d-gauge-intertwiner-verify" => cmd_adynkra_11d_gauge_intertwiner_verify(),
@@ -509,8 +517,12 @@ fn print_usage(prog: &str) {
     eprintln!("                          Build the exact complexified 44+84|128 free target complex");
     eprintln!("  adynkra-11d-hook-bianchi-build [data-json] [validation-json]");
     eprintln!("                          Build the bounded level-17 hook continuation gate");
+    eprintln!("  adynkra-11d-level18-momentum-build [data-json] [validation-json]");
+    eprintln!("                          Build exact level-18 lifts and momentum source audit");
     eprintln!("  adynkra-11d-prepotential-gate-build [json]");
     eprintln!("                          Build the exact 336-job source-side kill-gate work list");
+    eprintln!("  adynkra-11d-target-stream-build [data-json] [validation-json]");
+    eprintln!("                          Build the target-resolved exact 11 by 32 stream");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!(
         "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
@@ -1659,6 +1671,50 @@ fn cmd_adynkra_11d_hook_bianchi_build(args: &[String]) {
         std::path::Path::new(data_path),
         std::path::Path::new(validation_path),
     );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_level18_momentum_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_level18_momentum.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_level18_momentum_validation.json");
+    let report = eleven_dimensional_level18_momentum::write_artifacts(
+        std::path::Path::new("data/eleven_dimensional_spinor_bridge"),
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.bounded_program_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_target_stream_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_target_stream.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_target_stream_validation.json");
+    eleven_dimensional_target_stream::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write target stream artifacts: {error}");
+        std::process::exit(2);
+    });
+    let report = eleven_dimensional_target_stream::verify();
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);

@@ -2,6 +2,7 @@
 //! source-to-vector-spinor coupling certificates.
 
 use num_bigint::BigInt;
+use num_complex::Complex;
 use num_rational::Ratio;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 use serde::{Deserialize, Serialize};
@@ -440,6 +441,25 @@ pub struct FirstMomentumGaugeCompositionEntry {
     pub exterior_mask: u32,
     pub real: i128,
     pub imaginary: i128,
+}
+
+/// One exact term of the target-resolved adjoint composition stream.
+///
+/// `target_vector_weight_index` uses the B5 weight basis
+/// `(+e_1,-e_1,...,+e_5,-e_5,0)`, not the Cartesian Clifford basis.  Terms
+/// with identical keys must be summed by the consumer.  The rational target
+/// dual-basis coefficient is multiplied into the Gaussian-integer source
+/// residual before emission.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TargetResolvedGaugeCompositionEntry {
+    pub target_basis_ordinal: usize,
+    pub target_vector_weight_index: usize,
+    pub target_spinor_weight_index: usize,
+    pub parameter_component_index: usize,
+    pub momentum_vector_weight_index: Option<usize>,
+    pub exterior_mask: u32,
+    pub real: Ratio<BigInt>,
+    pub imaginary: Ratio<BigInt>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -3096,6 +3116,644 @@ where
             maximum,
             sha256_bytes(fixture.bytes),
             emitted_nonzero_terms,
+        ))
+    }
+}
+
+fn selected_index(selected: Option<&[usize]>, index: usize) -> bool {
+    selected.is_none_or(|indices| indices.contains(&index))
+}
+
+fn emit_target_resolved_residual<F>(
+    target_basis_ordinal: usize,
+    dual_target: &crate::eleven_dimensional_bridge::VectorSpinorTargetBasisState,
+    parameter_component_index: usize,
+    momentum_vector_weight_index: Option<usize>,
+    exterior_mask: u32,
+    residual_real: i128,
+    residual_imaginary: i128,
+    emitted: &mut u64,
+    visit: &mut F,
+) -> io::Result<()>
+where
+    F: FnMut(TargetResolvedGaugeCompositionEntry) -> io::Result<()>,
+{
+    for target in &dual_target.raw_terms {
+        let scale = Ratio::new(
+            BigInt::from(target.numerator),
+            BigInt::from(target.denominator),
+        );
+        let real = scale.clone() * Ratio::from_integer(BigInt::from(residual_real));
+        let imaginary = scale * Ratio::from_integer(BigInt::from(residual_imaginary));
+        if real.is_zero() && imaginary.is_zero() {
+            continue;
+        }
+        *emitted = emitted
+            .checked_add(1)
+            .expect("target-resolved emitted-term count overflow");
+        visit(TargetResolvedGaugeCompositionEntry {
+            target_basis_ordinal,
+            target_vector_weight_index: target.vector_weight_index,
+            target_spinor_weight_index: target.spinor_weight_index,
+            parameter_component_index,
+            momentum_vector_weight_index,
+            exterior_mask,
+            real,
+            imaginary,
+        })?;
+    }
+    Ok(())
+}
+
+/// Stream the exact `D^17 Lambda` part of `A G_p` with the full target index.
+///
+/// The level-16 certificate constructs the adjoint embedding of `(10001)`.
+/// This visitor lowers that embedding through all requested target states and
+/// contracts it with the gauge variation.  The invariant-metric dual target
+/// basis converts the result back to the raw 11 by 32 target weight basis.  A
+/// single overall nonzero bridge normalization remains free, which cannot
+/// affect a zero/nonzero gauge-curvature test.
+pub fn visit_target_resolved_zero_momentum_gauge_composition_terms<F>(
+    gauge_form_degree: usize,
+    leading_ordinal: usize,
+    selected_parameter_components: Option<&[usize]>,
+    selected_target_basis_ordinals: Option<&[usize]>,
+    mut visit: F,
+) -> io::Result<(JointColumnSpec, Vec<Vec<usize>>, i128, String, u64)>
+where
+    F: FnMut(TargetResolvedGaugeCompositionEntry) -> io::Result<()>,
+{
+    assert!(gauge_form_degree <= 5);
+    let spec = joint_column_specs()
+        .get(leading_ordinal)
+        .unwrap_or_else(|| panic!("leading column ordinal {leading_ordinal} is outside 0..12"))
+        .clone();
+    assert_eq!(spec.kind, "leading");
+    let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+    let fixture = fixtures
+        .iter()
+        .find(|fixture| {
+            fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+        })
+        .unwrap();
+    let first = fixtures
+        .iter()
+        .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+        .unwrap();
+    let abstract_certificate = build_abstract_from_fixture(
+        LEVEL16_PROBLEM,
+        first.dynkin_label,
+        first.copy,
+        2,
+        first.bytes,
+    )
+    .0;
+    let (mut model, highest, mut maximum) =
+        materialize_coupled_highest(LEVEL16_PROBLEM, &abstract_certificate, fixture.bytes, 2);
+    let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
+    let target_basis = crate::eleven_dimensional_bridge::vector_spinor_target_basis_states();
+    let dual_target_basis =
+        crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states();
+    let gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+        .into_iter()
+        .filter(|(degree, _, _)| *degree == gauge_form_degree)
+        .collect::<Vec<_>>();
+    let parameter_basis = gauge_basis
+        .iter()
+        .map(|(_, indices, _)| indices.clone())
+        .collect::<Vec<_>>();
+    let mut emitted = 0_u64;
+    for target in &target_basis {
+        if !selected_index(selected_target_basis_ordinals, target.ordinal) {
+            continue;
+        }
+        let state = if target.pbw_word_simple_roots.is_empty() {
+            highest.clone()
+        } else {
+            coupled_state_for_word(
+                &mut model,
+                &highest,
+                &target.pbw_word_simple_roots,
+                &mut cache,
+                &mut maximum,
+            )
+        };
+        assert_eq!(state.total_weight, target.doubled_weight);
+        for (parameter_component_index, (_, _, matrix)) in gauge_basis.iter().enumerate() {
+            if !selected_index(selected_parameter_components, parameter_component_index) {
+                continue;
+            }
+            let mut accumulated = HashMap::<u32, (i128, i128)>::new();
+            for (&free_spinor, exterior) in &state.components {
+                let source_masks = model.space(exterior.weight).masks.clone();
+                for derivative_spinor in 0..32 {
+                    let bilinear = &matrix[free_spinor][derivative_spinor];
+                    if bilinear.re.is_zero() && bilinear.im.is_zero() {
+                        continue;
+                    }
+                    assert_eq!(*bilinear.re.denom(), 1);
+                    assert_eq!(*bilinear.im.denom(), 1);
+                    for (mask, source_coefficient) in
+                        source_masks.iter().copied().zip(&exterior.coefficients)
+                    {
+                        if *source_coefficient == 0 {
+                            continue;
+                        }
+                        let Some(wedge_sign) = right_wedge_sign(mask, derivative_spinor) else {
+                            continue;
+                        };
+                        let scale = i128::from(*source_coefficient) * wedge_sign;
+                        let value = accumulated
+                            .entry(mask | (1_u32 << derivative_spinor))
+                            .or_insert((0, 0));
+                        value.0 = value
+                            .0
+                            .checked_add(scale * i128::from(*bilinear.re.numer()))
+                            .expect("i128 overflow in target-resolved zero-momentum real part");
+                        value.1 = value
+                            .1
+                            .checked_add(scale * i128::from(*bilinear.im.numer()))
+                            .expect(
+                                "i128 overflow in target-resolved zero-momentum imaginary part",
+                            );
+                        maximum = maximum.max(value.0.abs()).max(value.1.abs());
+                    }
+                }
+            }
+            for (exterior_mask, (real, imaginary)) in accumulated {
+                if real == 0 && imaginary == 0 {
+                    continue;
+                }
+                emit_target_resolved_residual(
+                    target.ordinal,
+                    &dual_target_basis[target.ordinal],
+                    parameter_component_index,
+                    None,
+                    exterior_mask,
+                    real,
+                    imaginary,
+                    &mut emitted,
+                    &mut visit,
+                )?;
+            }
+        }
+    }
+    Ok((
+        spec,
+        parameter_basis,
+        maximum,
+        sha256_bytes(fixture.bytes),
+        emitted,
+    ))
+}
+
+/// Stream all six exact zero-momentum gauge channels for one leading source
+/// column while materializing its coupled highest state only once.
+///
+/// The callback receives the gauge-form degree before the typed target entry.
+/// This is equivalent to six calls to
+/// [`visit_target_resolved_zero_momentum_gauge_composition_terms`], but avoids
+/// rebuilding the degree-independent source representation six times.
+pub fn visit_target_resolved_zero_momentum_gauge_composition_terms_all_degrees<F>(
+    leading_ordinal: usize,
+    parameter_weights_by_degree: &[BTreeMap<usize, Complex<Ratio<i64>>>; 6],
+    selected_target_basis_ordinals: Option<&[usize]>,
+    mut visit: F,
+) -> io::Result<(
+    JointColumnSpec,
+    [Vec<Vec<usize>>; 6],
+    i128,
+    String,
+    [u64; 6],
+)>
+where
+    F: FnMut(usize, TargetResolvedGaugeCompositionEntry) -> io::Result<()>,
+{
+    let spec = joint_column_specs()
+        .get(leading_ordinal)
+        .unwrap_or_else(|| panic!("leading column ordinal {leading_ordinal} is outside 0..12"))
+        .clone();
+    assert_eq!(spec.kind, "leading");
+    let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+    let fixture = fixtures
+        .iter()
+        .find(|fixture| {
+            fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+        })
+        .unwrap();
+    let first = fixtures
+        .iter()
+        .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+        .unwrap();
+    let abstract_certificate = build_abstract_from_fixture(
+        LEVEL16_PROBLEM,
+        first.dynkin_label,
+        first.copy,
+        2,
+        first.bytes,
+    )
+    .0;
+    let (mut model, highest, mut maximum) =
+        materialize_coupled_highest(LEVEL16_PROBLEM, &abstract_certificate, fixture.bytes, 2);
+    let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
+    let target_basis = crate::eleven_dimensional_bridge::vector_spinor_target_basis_states();
+    let dual_target_basis =
+        crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states();
+    let all_gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis();
+    let gauge_basis_by_degree: [Vec<_>; 6] = std::array::from_fn(|degree| {
+        all_gauge_basis
+            .iter()
+            .filter(|(candidate_degree, _, _)| *candidate_degree == degree)
+            .collect()
+    });
+    let parameter_basis_by_degree = std::array::from_fn(|degree| {
+        gauge_basis_by_degree[degree]
+            .iter()
+            .map(|(_, indices, _)| indices.clone())
+            .collect::<Vec<_>>()
+    });
+    let combined_gauge_by_degree: [(Vec<Vec<(i128, i128)>>, i128); 6] =
+        std::array::from_fn(|degree| {
+            let mut combined = vec![vec![Complex::new(Ratio::zero(), Ratio::zero()); 32]; 32];
+            for (&component, weight) in &parameter_weights_by_degree[degree] {
+                let matrix = &gauge_basis_by_degree[degree][component].2;
+                for row in 0..32 {
+                    for column in 0..32 {
+                        combined[row][column] += matrix[row][column].clone() * weight.clone();
+                    }
+                }
+            }
+            let mut common_denominator = 1_i64;
+            let gcd = |mut left: i64, mut right: i64| {
+                while right != 0 {
+                    let remainder = left % right;
+                    left = right;
+                    right = remainder;
+                }
+                left.abs()
+            };
+            for value in combined.iter().flatten() {
+                for denominator in [*value.re.denom(), *value.im.denom()] {
+                    common_denominator = common_denominator
+                        .checked_mul(denominator / gcd(common_denominator, denominator))
+                        .expect("combined gauge-matrix denominator overflow");
+                }
+            }
+            let integer_matrix = combined
+                .into_iter()
+                .map(|row| {
+                    row.into_iter()
+                        .map(|value| {
+                            (
+                                i128::from(*value.re.numer())
+                                    * i128::from(common_denominator / *value.re.denom()),
+                                i128::from(*value.im.numer())
+                                    * i128::from(common_denominator / *value.im.denom()),
+                            )
+                        })
+                        .collect()
+                })
+                .collect();
+            (integer_matrix, i128::from(common_denominator))
+        });
+    let mut emitted_by_degree = [0_u64; 6];
+    for target in &target_basis {
+        if !selected_index(selected_target_basis_ordinals, target.ordinal) {
+            continue;
+        }
+        let state = if target.pbw_word_simple_roots.is_empty() {
+            highest.clone()
+        } else {
+            coupled_state_for_word(
+                &mut model,
+                &highest,
+                &target.pbw_word_simple_roots,
+                &mut cache,
+                &mut maximum,
+            )
+        };
+        assert_eq!(state.total_weight, target.doubled_weight);
+        for gauge_form_degree in 0..=5 {
+            let (matrix, common_denominator) = &combined_gauge_by_degree[gauge_form_degree];
+            let mut accumulated = HashMap::<u32, (i128, i128)>::new();
+            for (&free_spinor, exterior) in &state.components {
+                let source_masks = model.space(exterior.weight).masks.clone();
+                for derivative_spinor in 0..32 {
+                    let bilinear = matrix[free_spinor][derivative_spinor];
+                    if bilinear == (0, 0) {
+                        continue;
+                    }
+                    for (mask, source_coefficient) in
+                        source_masks.iter().copied().zip(&exterior.coefficients)
+                    {
+                        if *source_coefficient == 0 {
+                            continue;
+                        }
+                        let Some(wedge_sign) = right_wedge_sign(mask, derivative_spinor) else {
+                            continue;
+                        };
+                        let scale = i128::from(*source_coefficient) * wedge_sign;
+                        let value = accumulated
+                            .entry(mask | (1_u32 << derivative_spinor))
+                            .or_insert((0, 0));
+                        value.0 = value
+                            .0
+                            .checked_add(scale * bilinear.0)
+                            .expect("i128 overflow in all-degree zero-momentum real part");
+                        value.1 = value
+                            .1
+                            .checked_add(scale * bilinear.1)
+                            .expect("i128 overflow in all-degree zero-momentum imaginary part");
+                        maximum = maximum.max(value.0.abs()).max(value.1.abs());
+                    }
+                }
+            }
+            for (exterior_mask, (real, imaginary)) in accumulated {
+                if real == 0 && imaginary == 0 {
+                    continue;
+                }
+                emit_target_resolved_residual(
+                    target.ordinal,
+                    &dual_target_basis[target.ordinal],
+                    0,
+                    None,
+                    exterior_mask,
+                    real,
+                    imaginary,
+                    &mut emitted_by_degree[gauge_form_degree],
+                    &mut |mut entry| {
+                        entry.real /= BigInt::from(*common_denominator);
+                        entry.imaginary /= BigInt::from(*common_denominator);
+                        visit(gauge_form_degree, entry)
+                    },
+                )?;
+            }
+        }
+    }
+    Ok((
+        spec,
+        parameter_basis_by_degree,
+        maximum,
+        sha256_bytes(fixture.bytes),
+        emitted_by_degree,
+    ))
+}
+
+/// Stream the exact `p D^15 Lambda` part of `A G_p` with the full target
+/// vector-spinor index.  Both leading anticommutator terms and explicit
+/// first-momentum correction columns use the same target dual-basis contract.
+pub fn visit_target_resolved_first_momentum_gauge_composition_terms<F>(
+    gauge_form_degree: usize,
+    operator_ordinal: usize,
+    selected_parameter_components: Option<&[usize]>,
+    selected_target_basis_ordinals: Option<&[usize]>,
+    mut visit: F,
+) -> io::Result<(JointColumnSpec, Vec<Vec<usize>>, i128, String, u64)>
+where
+    F: FnMut(TargetResolvedGaugeCompositionEntry) -> io::Result<()>,
+{
+    assert!(gauge_form_degree <= 5);
+    let spec = joint_column_specs()
+        .get(operator_ordinal)
+        .unwrap_or_else(|| panic!("operator column ordinal {operator_ordinal} is outside 0..56"))
+        .clone();
+    let gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+        .into_iter()
+        .filter(|(degree, _, _)| *degree == gauge_form_degree)
+        .collect::<Vec<_>>();
+    let parameter_basis = gauge_basis
+        .iter()
+        .map(|(_, indices, _)| indices.clone())
+        .collect::<Vec<_>>();
+    let target_basis = crate::eleven_dimensional_bridge::vector_spinor_target_basis_states();
+    let dual_target_basis =
+        crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states();
+    let mut emitted = 0_u64;
+
+    if spec.kind == "leading" {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level16_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let abstract_certificate = build_abstract_from_fixture(
+            LEVEL16_PROBLEM,
+            first.dynkin_label,
+            first.copy,
+            2,
+            first.bytes,
+        )
+        .0;
+        let (mut model, highest, mut maximum) =
+            materialize_coupled_highest(LEVEL16_PROBLEM, &abstract_certificate, fixture.bytes, 2);
+        let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
+        let translation = translation_weight_basis_coefficients();
+        for target in &target_basis {
+            if !selected_index(selected_target_basis_ordinals, target.ordinal) {
+                continue;
+            }
+            let state = if target.pbw_word_simple_roots.is_empty() {
+                highest.clone()
+            } else {
+                coupled_state_for_word(
+                    &mut model,
+                    &highest,
+                    &target.pbw_word_simple_roots,
+                    &mut cache,
+                    &mut maximum,
+                )
+            };
+            assert_eq!(state.total_weight, target.doubled_weight);
+            for (parameter_component_index, (_, _, matrix)) in gauge_basis.iter().enumerate() {
+                if !selected_index(selected_parameter_components, parameter_component_index) {
+                    continue;
+                }
+                let mut accumulated = HashMap::<(usize, u32), (i128, i128)>::new();
+                for (&free_spinor, exterior) in &state.components {
+                    let source_masks = model.space(exterior.weight).masks.clone();
+                    for derivative_spinor in 0..32 {
+                        let gauge = &matrix[free_spinor][derivative_spinor];
+                        if gauge.re.is_zero() && gauge.im.is_zero() {
+                            continue;
+                        }
+                        let gauge_real = i128::from(*gauge.re.numer());
+                        let gauge_imaginary = i128::from(*gauge.im.numer());
+                        for (mask, source_coefficient) in
+                            source_masks.iter().copied().zip(&exterior.coefficients)
+                        {
+                            if *source_coefficient == 0 {
+                                continue;
+                            }
+                            let mut occupied = mask;
+                            while occupied != 0 {
+                                let contracted = occupied.trailing_zeros() as usize;
+                                occupied &= occupied - 1;
+                                let sign = right_contraction_sign(mask, contracted).unwrap();
+                                let output_mask = mask ^ (1_u32 << contracted);
+                                let source_scale = i128::from(*source_coefficient) * sign;
+                                for momentum in 0..11 {
+                                    let (translation_real, translation_imaginary) =
+                                        translation[contracted][derivative_spinor][momentum];
+                                    if translation_real == 0 && translation_imaginary == 0 {
+                                        continue;
+                                    }
+                                    let (real, imaginary) = multiply_gaussian_integers(
+                                        gauge_real,
+                                        gauge_imaginary,
+                                        i128::from(translation_real),
+                                        i128::from(translation_imaginary),
+                                    );
+                                    accumulate_first_momentum_gauge_entry(
+                                        &mut accumulated,
+                                        momentum,
+                                        output_mask,
+                                        source_scale * real,
+                                        source_scale * imaginary,
+                                        &mut maximum,
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+                for ((momentum, exterior_mask), (real, imaginary)) in accumulated {
+                    if real == 0 && imaginary == 0 {
+                        continue;
+                    }
+                    emit_target_resolved_residual(
+                        target.ordinal,
+                        &dual_target_basis[target.ordinal],
+                        parameter_component_index,
+                        Some(momentum),
+                        exterior_mask,
+                        real,
+                        imaginary,
+                        &mut emitted,
+                        &mut visit,
+                    )?;
+                }
+            }
+        }
+        Ok((
+            spec,
+            parameter_basis,
+            maximum,
+            sha256_bytes(fixture.bytes),
+            emitted,
+        ))
+    } else {
+        let fixtures = crate::eleven_dimensional_spinor_bridge_kernels::level14_fixtures();
+        let fixture = fixtures
+            .iter()
+            .find(|fixture| {
+                fixture.dynkin_label == spec.source_dynkin_label && fixture.copy == spec.source_copy
+            })
+            .unwrap();
+        let first = fixtures
+            .iter()
+            .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+            .unwrap();
+        let intermediate = spec.intermediate_dynkin_label.as_deref().unwrap();
+        let problem = first_momentum_problem(intermediate);
+        let abstract_certificate = build_abstract_from_fixture(
+            problem,
+            first.dynkin_label,
+            first.copy,
+            fixture_coefficient_width(first.artifact),
+            first.bytes,
+        )
+        .0;
+        let recouplings = crate::eleven_dimensional_bridge::first_momentum_recoupling_audits();
+        let recoupling = recouplings
+            .iter()
+            .find(|audit| audit.intermediate_dynkin_label == intermediate)
+            .unwrap();
+        let (mut model, highest, mut maximum) = build_first_momentum_correction_highest(
+            problem,
+            &abstract_certificate,
+            fixture.bytes,
+            fixture_coefficient_width(fixture.artifact),
+            recoupling,
+        );
+        let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
+        for target in &target_basis {
+            if !selected_index(selected_target_basis_ordinals, target.ordinal) {
+                continue;
+            }
+            let state = momentum_coupled_state_for_word(
+                &mut model,
+                &highest,
+                &target.pbw_word_simple_roots,
+                &mut cache,
+                &mut maximum,
+            );
+            assert_eq!(state.total_weight, target.doubled_weight);
+            for (parameter_component_index, (_, _, matrix)) in gauge_basis.iter().enumerate() {
+                if !selected_index(selected_parameter_components, parameter_component_index) {
+                    continue;
+                }
+                let mut accumulated = HashMap::<(usize, u32), (i128, i128)>::new();
+                for (&(momentum, free_spinor), exterior) in &state.components {
+                    let source_masks = model.space(exterior.weight).masks.clone();
+                    for derivative_spinor in 0..32 {
+                        let gauge = &matrix[free_spinor][derivative_spinor];
+                        if gauge.re.is_zero() && gauge.im.is_zero() {
+                            continue;
+                        }
+                        for (mask, source_coefficient) in
+                            source_masks.iter().copied().zip(&exterior.coefficients)
+                        {
+                            if *source_coefficient == 0 {
+                                continue;
+                            }
+                            let Some(sign) = right_wedge_sign(mask, derivative_spinor) else {
+                                continue;
+                            };
+                            accumulate_first_momentum_gauge_entry(
+                                &mut accumulated,
+                                momentum,
+                                mask | (1_u32 << derivative_spinor),
+                                i128::from(*source_coefficient)
+                                    * sign
+                                    * i128::from(*gauge.re.numer()),
+                                i128::from(*source_coefficient)
+                                    * sign
+                                    * i128::from(*gauge.im.numer()),
+                                &mut maximum,
+                            );
+                        }
+                    }
+                }
+                for ((momentum, exterior_mask), (real, imaginary)) in accumulated {
+                    if real == 0 && imaginary == 0 {
+                        continue;
+                    }
+                    emit_target_resolved_residual(
+                        target.ordinal,
+                        &dual_target_basis[target.ordinal],
+                        parameter_component_index,
+                        Some(momentum),
+                        exterior_mask,
+                        real,
+                        imaginary,
+                        &mut emitted,
+                        &mut visit,
+                    )?;
+                }
+            }
+        }
+        Ok((
+            spec,
+            parameter_basis,
+            maximum,
+            sha256_bytes(fixture.bytes),
+            emitted,
         ))
     }
 }

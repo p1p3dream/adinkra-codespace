@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra-11d-top-down-v1",
+  "schema_version": "adynkra-11d-top-down-v3",
   "free_complex": {
     "schema_version": "adynkra-11d-free-complex-report-v1",
     "spacetime_signature": "mostly plus (-,+,+,+,+,+,+,+,+,+,+)",
@@ -186,8 +186,280 @@
     "passed": true,
     "boundary": "The bosonic complexes are exact real rational symbols. The Rarita-Schwinger rank is exact over Q(i) after Lorentzizing the repository's Euclidean B5 gamma basis and matches the complexification of the 128-state Majorana module, but this module does not construct the compatible Majorana conjugation or a supersymmetry map between the three sectors. Interactions and nonlinear equations are outside scope."
   },
+  "target_stream": {
+    "schema_version": "adynkra-11d-target-resolved-composition-stream-v2",
+    "role": "exact 11 by 32 target-index API contract for the adjoint level-16 gauge-composition stream",
+    "source_references": [
+      "arXiv:2007.05097 Eq. (2.2): gamma-traceless conformal-graviton semi-prepotential",
+      "arXiv:2007.05097 Eq. (2.3): local gamma-trace symmetry",
+      "arXiv:2002.08502 Added Note in Proof, Eqs. (6.2)-(6.3): 320+32 split and conjectured spinor prepotential"
+    ],
+    "target_dynkin_label": "10001",
+    "target_dimension": 320,
+    "ambient_vector_spinor_dimension": 352,
+    "vector_weight_components": 11,
+    "spinor_weight_components": 32,
+    "target_basis_states": 320,
+    "target_distinct_weights": 192,
+    "raw_target_coordinates_touched": 352,
+    "maximum_weight_multiplicity": 5,
+    "target_dual_basis_states": 320,
+    "target_dual_has_only_exact_rational_coefficients": true,
+    "target_dual_kronecker_pairings_checked": 102400,
+    "target_dual_kronecker_pairing_residuals": 0,
+    "target_metric_chevalley_entries_checked": 619520,
+    "target_metric_chevalley_invariance_residuals": 0,
+    "zero_momentum_stream_api_available": true,
+    "first_momentum_stream_api_available": true,
+    "zero_momentum_bidegree": "D^17 Lambda",
+    "first_momentum_bidegree": "p D^15 Lambda",
+    "target_vector_basis_convention": "B5 vector weight basis (+e_1,-e_1,...,+e_5,-e_5,0); the Cartesian Clifford change of basis is not implicit",
+    "target_projection_convention": "invariant-metric dual of the deterministic 320-state PBW basis; vector zero-weight norm 2, nonzero vector-weight norms 1, spinor-weight norms 1",
+    "stream_record_contract": "(target basis ordinal, target vector-weight index, target spinor-weight index, parameter component, optional momentum vector-weight index, exterior mask, exact Gaussian-rational coefficient); consumers sum identical physical keys",
+    "source_operator_columns": 56,
+    "gauge_parameter_channels": 6,
+    "zero_momentum_job_count": 72,
+    "first_momentum_job_count": 336,
+    "full_job_count": 408,
+    "all_jobs_executed_and_hashed": false,
+    "physical_target_curvature_supplied": false,
+    "physical_gauge_law_selected": false,
+    "passed": true,
+    "boundary": "The exact APIs resolve requested source compositions into the full target vector-spinor weight basis and preserve exact rational arithmetic. Smoke tests cover a leading and a correction branch, but the 408 complete jobs are not materialized or content-hashed. The Gates-Hu sources do not supply a convention-fixed physical target gauge map K or curvature F, and they do not select one of the six source parameter channels. F A G_p = 0 remains a separate calculation."
+  },
+  "source_fixed_curvature": {
+    "schema_version": "adynkra-11d-source-fixed-curvature-scaffold-v1",
+    "source_locators": [
+      "arXiv:2007.05097 Eqs. (2.2)-(2.3), PDF p. 7: P_320 and K_tr",
+      "hep-th/0101037 Eqs. (24)-(29), PDF pp. 7-8: linearized frames and anholonomy",
+      "hep-th/0101037 Eqs. (39)-(40), PDF p. 11: X_[2], X_[5], and conventional hook constraints",
+      "hep-th/0101037 Eq. (44), PDF p. 14: W, X_[2], X_[5], and J definitions"
+    ],
+    "source_hashes": [
+      "3d40a1b32fa4491dee56b3e99802172d2c5039b2de198b987ce121a1bbb15cc3",
+      "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
+      "197604bc6b5c9e0dfb12044d981aae467920f46554ba9371f1eb9b6389d00a73"
+    ],
+    "p320_certificate": {
+      "ambient_dimension": 352,
+      "projector_rank": 320,
+      "gamma_trace_injection_rank": 32,
+      "clifford_residual_entries": 0,
+      "projector_idempotence_residual_entries": 0,
+      "projected_gamma_trace_residual_entries": 0,
+      "projector_times_trace_injection_residual_entries": 0,
+      "trace_left_inverse_residual_entries": 0,
+      "kernel_equals_trace_image": true,
+      "passed": true
+    },
+    "x2_certificate": {
+      "form_degree": 2,
+      "ambient_dimension": 605,
+      "trace_dimension": 11,
+      "exterior_dimension": 165,
+      "hook_dimension": 429,
+      "dynkin_label": "11000",
+      "idempotence_residual_entries": 0,
+      "trace_residual_entries": 0,
+      "total_antisymmetry_residual_entries": 0,
+      "operator_trace": "429",
+      "passed": true
+    },
+    "x5_certificate": {
+      "form_degree": 5,
+      "ambient_dimension": 5082,
+      "trace_dimension": 330,
+      "exterior_dimension": 462,
+      "hook_dimension": 4290,
+      "dynkin_label": "10002",
+      "idempotence_residual_entries": 0,
+      "trace_residual_entries": 0,
+      "total_antisymmetry_residual_entries": 0,
+      "operator_trace": "4290",
+      "passed": true
+    },
+    "transcribed_source_formulas": [
+      {
+        "rendered_equation": "(24)",
+        "source_tex_label": "eq:05",
+        "pdf_page": 7,
+        "formula_ascii": "E_alpha = D_alpha + (1/2)(Delta_alpha^gamma + Psi delta_alpha^gamma) D_gamma + H_alpha^c partial_c"
+      },
+      {
+        "rendered_equation": "(25)",
+        "source_tex_label": "eq:06",
+        "pdf_page": 7,
+        "formula_ascii": "E_a = partial_a + (i/32)[D_beta(gamma_a Delta)^(beta gamma) + (D_beta Psi)(gamma_a)^(beta gamma)]D_gamma + [(i/16)(gamma_a)^(alpha beta)D_alpha H_beta^c + delta_a^c Psi - Psi_a^c]partial_c"
+      },
+      {
+        "rendered_equation": "(26)",
+        "source_tex_label": "eq:13",
+        "pdf_page": 8,
+        "formula_ascii": "C_(alpha beta)^epsilon = (1/64)[(gamma^[2])_(alpha beta)(gamma_[2])^(gamma delta) - (1/60)(gamma^[5])_(alpha beta)(gamma_[5])^(gamma delta)][D_gamma Delta_delta^epsilon + delta_delta^epsilon D_gamma Psi]"
+      },
+      {
+        "rendered_equation": "(27)",
+        "source_tex_label": "eq:13A",
+        "pdf_page": 8,
+        "formula_ascii": "C_(alpha beta)^c = i(gamma^c)_(alpha beta) - (1/32)(gamma^de)_(alpha beta)[(gamma_de)^(gamma delta)D_gamma H_delta^c + 32 delta_d^c Psi_e - 16 Psi^c_de] + (i/1920)(gamma^[5])_(alpha beta)[i(gamma_[5])^(gamma delta)D_gamma H_delta^c + 40 delta_d1^c Psi_d2...d5 - (2/15)epsilon^c_d1...d5^[5] Psi_[5]]"
+      },
+      {
+        "rendered_equation": "(28)",
+        "source_tex_label": "eq:14",
+        "pdf_page": 8,
+        "formula_ascii": "C_alpha,b^gamma = (i/32)D_alpha D_delta(gamma_b Delta)^(delta gamma) - (1/2)partial_b Delta_alpha^gamma - (1/2)(partial_b Psi)delta_alpha^gamma + (i/32)(D_alpha D_delta Psi)(gamma_b)^(delta gamma); C_alpha,b^c = (i/16)(gamma_b)^(beta gamma)D_alpha D_beta H_gamma^c - partial_b H_alpha^c + (1/32)D_beta(gamma_b Delta gamma^c)^beta_alpha - D_alpha Psi_b^c + [(D_alpha Psi)delta_b^c - (1/32)(gamma^c gamma_b)_alpha^gamma D_gamma Psi]"
+      },
+      {
+        "rendered_equation": "(29)",
+        "source_tex_label": "eq:15",
+        "pdf_page": 8,
+        "formula_ascii": "C_ab^gamma = (i/32)[-D_beta(gamma_[a partial_b] Delta)^(beta gamma) + (D_beta partial_[a Psi)(gamma_b])^(beta gamma)]; C_ab^c = -(i/16)(gamma_[a)^(alpha beta)partial_b]D_alpha H_beta^c - partial_[a Psi_b]^c - delta_[a^c partial_b]Psi"
+      },
+      {
+        "rendered_equation": "(39)",
+        "source_tex_label": "X's",
+        "pdf_page": 11,
+        "formula_ascii": "X_ab^c = (1/16)[(gamma_ab)^(gamma delta)D_gamma H_delta^c + 16 delta_[a^c Psi_b] - 16 Psi_ab^c]; X_a1...a5^c = (1/16)[i(gamma_a1...a5)^(gamma delta)D_gamma H_delta^c + (1/3)delta_[a1^c Psi_a2...a5] - (2/15)epsilon^c_a1...a5^[5]Psi_[5]]"
+      },
+      {
+        "rendered_equation": "(40)",
+        "source_tex_label": "eq:043A",
+        "pdf_page": 11,
+        "formula_ascii": "X_ab^b = 0; X_[abc] = 0; X_a1...a4a5^a5 = 0; X_[a1...a5b] = 0"
+      },
+      {
+        "rendered_equation": "(44), linear part",
+        "source_tex_label": "eq:01Z",
+        "pdf_page": 14,
+        "formula_ascii": "W_abcd = (1/32)[i(gamma^e gamma_abcd)_gamma^alpha T_alpha,e^gamma - (1/3)(gamma_abcd)^(alpha beta)nabla_alpha T_beta,e^e]; X_ab^c = (1/32)(gamma_ab)^(alpha beta)T_alpha,beta^c; X_a1...a5^c = (i/32)(gamma_a1...a5)^(alpha beta)T_alpha,beta^c; J_alpha = (4/33)T_alpha,b^b"
+      }
+    ],
+    "equations_24_to_29_transcribed": true,
+    "equations_24_to_29_transcribed_as_operator": false,
+    "equations_39_to_40_hook_elimination_implemented": false,
+    "equations_39_to_40_hook_quotient_projection_implemented": true,
+    "equation_44_coefficients_implemented": false,
+    "equation_44_linear_w_j_coefficients_implemented": true,
+    "p1_p3_compensators_eliminated": false,
+    "p4_p5_compensators_eliminated": false,
+    "compensator_sectors_annihilated_by_hook_projection": true,
+    "p2_lorentz_compensator_treated_as_physical": false,
+    "typed_target_stream_join_available": false,
+    "typed_precontracted_target_stream_sink_available": true,
+    "target_weight_to_cartesian_clifford_join_implemented": false,
+    "full_h_hat_to_torsion_map_implemented": false,
+    "full_f_a_g_p_test_ready": false,
+    "passed": true,
+    "boundary": "The exact algebraic P_320 and K_tr certificates, X_[2] and X_[5] hook quotient projectors, and the linearized W and J coefficients are implemented. The hook projection annihilates the compensator representation sectors but does not explicitly solve the p=1,3,4,5 compensator fields. Eqs. (24)-(29) are transcribed but not implemented as a differential operator. The spin-connection solve, covariant-spinor/charge-conjugation alignment, B5-weight to Lorentz Cartesian join, and momentum-aware superspace derivative join remain open. This is not a complete F: H_hat -> curvature and does not establish F A G_p = 0."
+  },
+  "abstract_clifford_join": {
+    "schema_version": "adynkra-11d-abstract-b5-clifford-join-v1",
+    "source_references": [
+      "arXiv:2007.05097 Eqs. (2.2)-(2.3): gamma-traceless (10001) semi-prepotential and gamma-trace representative redundancy",
+      "hep-th/0101037 Eq. (39): the (1/16) Gamma_[2] D H leading term in X_[2]"
+    ],
+    "basis_convention": "B5 Chevalley weight bases: V=(+e1,-e1,...,+e5,-e5,0), S lexicographic sign weights, with simple-root string coefficients fixed intrinsically",
+    "gamma_weight_allowed_variables": 192,
+    "gamma_intertwining_equations": 736,
+    "raising_equations_by_simple_root": [
+      64,
+      64,
+      64,
+      64,
+      112
+    ],
+    "lowering_equations_by_simple_root": [
+      64,
+      64,
+      64,
+      64,
+      112
+    ],
+    "gamma_intertwining_rank": 191,
+    "gamma_intertwiner_dimension": 1,
+    "gamma_intertwining_residual_equations": 0,
+    "gamma_nonzero_coefficients": 192,
+    "gamma_nonintegral_coefficients": 0,
+    "gamma_trace_rank": 32,
+    "gamma_traceless_kernel_dimension": 320,
+    "target_basis_states_checked": 320,
+    "target_basis_terms_checked": 560,
+    "target_gamma_trace_residual_entries": 0,
+    "clifford_metric_rank": 11,
+    "clifford_residual_entries": 0,
+    "clifford_metric_nonzero_upper_triangle": [
+      {
+        "left_vector_weight_index": 0,
+        "right_vector_weight_index": 1,
+        "numerator": -1,
+        "denominator": 2
+      },
+      {
+        "left_vector_weight_index": 2,
+        "right_vector_weight_index": 3,
+        "numerator": 1,
+        "denominator": 2
+      },
+      {
+        "left_vector_weight_index": 4,
+        "right_vector_weight_index": 5,
+        "numerator": -1,
+        "denominator": 2
+      },
+      {
+        "left_vector_weight_index": 6,
+        "right_vector_weight_index": 7,
+        "numerator": 1,
+        "denominator": 2
+      },
+      {
+        "left_vector_weight_index": 8,
+        "right_vector_weight_index": 9,
+        "numerator": -1,
+        "denominator": 2
+      },
+      {
+        "left_vector_weight_index": 10,
+        "right_vector_weight_index": 10,
+        "numerator": 1,
+        "denominator": 1
+      }
+    ],
+    "invariant_spinor_bilinear_variables": 32,
+    "invariant_spinor_bilinear_equations": 96,
+    "invariant_spinor_bilinear_rank": 31,
+    "invariant_spinor_bilinear_dimension": 1,
+    "invariant_spinor_bilinear_antisymmetry_residuals": 0,
+    "gamma_two_matrices": 55,
+    "gamma_two_independent_matrices": 55,
+    "gamma_two_intertwining_entries_checked": 563200,
+    "gamma_two_intertwining_residual_entries": 0,
+    "gamma_two_raised_symmetry_residual_entries": 0,
+    "typed_gamma_two_d_h_contraction_available": true,
+    "typed_target_stream_derivative_visitor_available": true,
+    "abstract_x2_hook_projector_complete": true,
+    "abstract_x2_hook_projector_rank": 429,
+    "abstract_x2_hook_chevalley_commutator_residual_entries": 0,
+    "cartesian_hook_projector_join_complete": false,
+    "complete_typed_target_stream_application": false,
+    "physical_f_a_g_p_established": false,
+    "passed": true,
+    "boundary": "The unique abstract B5 gamma trace and invariant spinor bilinear are solved without a Cartesian basis conversion. All 320 deterministic (10001) target states are in the exact kernel. A typed visitor consumes target-resolved stream entries, appends one exterior derivative, applies the exact Gamma_[2] contraction, and joins the result to the exact Spin(11)-equivariant rank-429 abstract hook projector. The separate leading-X2 artifact applies this abstract pipeline to a bounded zero-momentum stream. The abstract weight output is not converted into the repository's Cartesian curvature and compensator pipeline, momentum and lower-symbol terms are absent, and no complete F A G_p identity is claimed."
+  },
+  "leading_x2_gauge": {
+    "artifact_path": "results/adynkra_11d_leading_x2_gauge_validation.json",
+    "artifact_present": true,
+    "artifact_sha256": "b8ebf4583e6841fd11f62386271cdbe89ba38490819a324b5687471538d716f9",
+    "schema_version": "adynkra-11d-leading-x2-gauge-v1",
+    "report_passed": true,
+    "leading_symbol_f0_a_g_established_by_job": false,
+    "exact_cross_operator_column_ranks_established": false,
+    "physical_operator_combination_selected": false,
+    "full_f_a_g_p_established": false,
+    "boundary": "This is a SHA-256-addressed summary of the standalone exact leading X_[2] artifact. The aggregate does not recompute it. A passing bounded leading-symbol computation does not select the physical operator or establish the leading or full first-momentum F A G_p identity."
+  },
   "prepotential_gate": {
-    "schema_version": "adynkra-11d-prepotential-gauge-curvature-worklist-v1",
+    "schema_version": "adynkra-11d-prepotential-gauge-curvature-worklist-v2",
     "role": "exact work-list certificate for F A G_p = 0 on the current 6 by 56 source compositions",
     "source_prepotential": "unconstrained spinor superfield Psi_alpha",
     "target_superfield": "gamma-traceless conformal-graviton semi-prepotential H_hat_alpha^a in (10001)",
@@ -262,7 +534,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 1,
@@ -283,7 +555,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 2,
@@ -304,7 +576,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 3,
@@ -325,7 +597,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 4,
@@ -346,7 +618,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 5,
@@ -367,7 +639,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 6,
@@ -388,7 +660,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 7,
@@ -409,7 +681,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 8,
@@ -430,7 +702,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 9,
@@ -451,7 +723,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 10,
@@ -472,7 +744,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 11,
@@ -493,7 +765,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 12,
@@ -512,7 +784,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 13,
@@ -531,7 +803,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 14,
@@ -550,7 +822,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 15,
@@ -569,7 +841,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 16,
@@ -588,7 +860,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 17,
@@ -607,7 +879,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 18,
@@ -626,7 +898,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 19,
@@ -645,7 +917,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 20,
@@ -664,7 +936,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 21,
@@ -683,7 +955,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 22,
@@ -702,7 +974,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 23,
@@ -721,7 +993,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 24,
@@ -740,7 +1012,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 25,
@@ -759,7 +1031,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 26,
@@ -778,7 +1050,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 27,
@@ -797,7 +1069,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 28,
@@ -816,7 +1088,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 29,
@@ -835,7 +1107,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 30,
@@ -854,7 +1126,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 31,
@@ -873,7 +1145,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 32,
@@ -892,7 +1164,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 33,
@@ -911,7 +1183,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 34,
@@ -930,7 +1202,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 35,
@@ -949,7 +1221,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 36,
@@ -968,7 +1240,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 37,
@@ -987,7 +1259,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 38,
@@ -1006,7 +1278,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 39,
@@ -1025,7 +1297,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 40,
@@ -1044,7 +1316,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 41,
@@ -1063,7 +1335,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 42,
@@ -1082,7 +1354,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 43,
@@ -1101,7 +1373,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 44,
@@ -1120,7 +1392,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 45,
@@ -1139,7 +1411,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 46,
@@ -1158,7 +1430,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 47,
@@ -1177,7 +1449,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 48,
@@ -1196,7 +1468,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 49,
@@ -1215,7 +1487,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 50,
@@ -1234,7 +1506,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 51,
@@ -1253,7 +1525,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 52,
@@ -1272,7 +1544,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 53,
@@ -1291,7 +1563,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 54,
@@ -1310,7 +1582,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 55,
@@ -1329,7 +1601,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 56,
@@ -1350,7 +1622,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 57,
@@ -1371,7 +1643,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 58,
@@ -1392,7 +1664,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 59,
@@ -1413,7 +1685,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 60,
@@ -1434,7 +1706,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 61,
@@ -1455,7 +1727,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 62,
@@ -1476,7 +1748,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 63,
@@ -1497,7 +1769,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 64,
@@ -1518,7 +1790,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 65,
@@ -1539,7 +1811,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 66,
@@ -1560,7 +1832,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 67,
@@ -1581,7 +1853,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 68,
@@ -1600,7 +1872,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 69,
@@ -1619,7 +1891,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 70,
@@ -1638,7 +1910,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 71,
@@ -1657,7 +1929,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 72,
@@ -1676,7 +1948,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 73,
@@ -1695,7 +1967,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 74,
@@ -1714,7 +1986,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 75,
@@ -1733,7 +2005,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 76,
@@ -1752,7 +2024,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 77,
@@ -1771,7 +2043,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 78,
@@ -1790,7 +2062,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 79,
@@ -1809,7 +2081,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 80,
@@ -1828,7 +2100,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 81,
@@ -1847,7 +2119,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 82,
@@ -1866,7 +2138,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 83,
@@ -1885,7 +2157,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 84,
@@ -1904,7 +2176,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 85,
@@ -1923,7 +2195,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 86,
@@ -1942,7 +2214,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 87,
@@ -1961,7 +2233,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 88,
@@ -1980,7 +2252,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 89,
@@ -1999,7 +2271,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 90,
@@ -2018,7 +2290,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 91,
@@ -2037,7 +2309,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 92,
@@ -2056,7 +2328,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 93,
@@ -2075,7 +2347,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 94,
@@ -2094,7 +2366,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 95,
@@ -2113,7 +2385,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 96,
@@ -2132,7 +2404,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 97,
@@ -2151,7 +2423,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 98,
@@ -2170,7 +2442,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 99,
@@ -2189,7 +2461,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 100,
@@ -2208,7 +2480,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 101,
@@ -2227,7 +2499,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 102,
@@ -2246,7 +2518,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 103,
@@ -2265,7 +2537,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 104,
@@ -2284,7 +2556,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 105,
@@ -2303,7 +2575,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 106,
@@ -2322,7 +2594,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 107,
@@ -2341,7 +2613,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 108,
@@ -2360,7 +2632,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 109,
@@ -2379,7 +2651,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 110,
@@ -2398,7 +2670,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 111,
@@ -2417,7 +2689,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 112,
@@ -2438,7 +2710,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 113,
@@ -2459,7 +2731,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 114,
@@ -2480,7 +2752,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 115,
@@ -2501,7 +2773,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 116,
@@ -2522,7 +2794,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 117,
@@ -2543,7 +2815,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 118,
@@ -2564,7 +2836,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 119,
@@ -2585,7 +2857,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 120,
@@ -2606,7 +2878,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 121,
@@ -2627,7 +2899,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 122,
@@ -2648,7 +2920,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 123,
@@ -2669,7 +2941,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 124,
@@ -2688,7 +2960,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 125,
@@ -2707,7 +2979,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 126,
@@ -2726,7 +2998,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 127,
@@ -2745,7 +3017,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 128,
@@ -2764,7 +3036,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 129,
@@ -2783,7 +3055,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 130,
@@ -2802,7 +3074,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 131,
@@ -2821,7 +3093,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 132,
@@ -2840,7 +3112,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 133,
@@ -2859,7 +3131,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 134,
@@ -2878,7 +3150,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 135,
@@ -2897,7 +3169,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 136,
@@ -2916,7 +3188,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 137,
@@ -2935,7 +3207,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 138,
@@ -2954,7 +3226,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 139,
@@ -2973,7 +3245,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 140,
@@ -2992,7 +3264,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 141,
@@ -3011,7 +3283,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 142,
@@ -3030,7 +3302,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 143,
@@ -3049,7 +3321,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 144,
@@ -3068,7 +3340,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 145,
@@ -3087,7 +3359,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 146,
@@ -3106,7 +3378,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 147,
@@ -3125,7 +3397,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 148,
@@ -3144,7 +3416,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 149,
@@ -3163,7 +3435,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 150,
@@ -3182,7 +3454,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 151,
@@ -3201,7 +3473,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 152,
@@ -3220,7 +3492,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 153,
@@ -3239,7 +3511,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 154,
@@ -3258,7 +3530,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 155,
@@ -3277,7 +3549,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 156,
@@ -3296,7 +3568,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 157,
@@ -3315,7 +3587,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 158,
@@ -3334,7 +3606,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 159,
@@ -3353,7 +3625,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 160,
@@ -3372,7 +3644,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 161,
@@ -3391,7 +3663,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 162,
@@ -3410,7 +3682,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 163,
@@ -3429,7 +3701,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 164,
@@ -3448,7 +3720,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 165,
@@ -3467,7 +3739,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 166,
@@ -3486,7 +3758,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 167,
@@ -3505,7 +3777,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 168,
@@ -3526,7 +3798,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 169,
@@ -3547,7 +3819,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 170,
@@ -3568,7 +3840,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 171,
@@ -3589,7 +3861,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 172,
@@ -3610,7 +3882,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 173,
@@ -3631,7 +3903,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 174,
@@ -3652,7 +3924,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 175,
@@ -3673,7 +3945,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 176,
@@ -3694,7 +3966,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 177,
@@ -3715,7 +3987,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 178,
@@ -3736,7 +4008,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 179,
@@ -3757,7 +4029,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 180,
@@ -3776,7 +4048,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 181,
@@ -3795,7 +4067,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 182,
@@ -3814,7 +4086,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 183,
@@ -3833,7 +4105,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 184,
@@ -3852,7 +4124,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 185,
@@ -3871,7 +4143,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 186,
@@ -3890,7 +4162,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 187,
@@ -3909,7 +4181,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 188,
@@ -3928,7 +4200,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 189,
@@ -3947,7 +4219,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 190,
@@ -3966,7 +4238,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 191,
@@ -3985,7 +4257,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 192,
@@ -4004,7 +4276,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 193,
@@ -4023,7 +4295,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 194,
@@ -4042,7 +4314,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 195,
@@ -4061,7 +4333,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 196,
@@ -4080,7 +4352,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 197,
@@ -4099,7 +4371,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 198,
@@ -4118,7 +4390,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 199,
@@ -4137,7 +4409,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 200,
@@ -4156,7 +4428,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 201,
@@ -4175,7 +4447,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 202,
@@ -4194,7 +4466,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 203,
@@ -4213,7 +4485,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 204,
@@ -4232,7 +4504,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 205,
@@ -4251,7 +4523,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 206,
@@ -4270,7 +4542,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 207,
@@ -4289,7 +4561,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 208,
@@ -4308,7 +4580,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 209,
@@ -4327,7 +4599,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 210,
@@ -4346,7 +4618,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 211,
@@ -4365,7 +4637,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 212,
@@ -4384,7 +4656,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 213,
@@ -4403,7 +4675,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 214,
@@ -4422,7 +4694,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 215,
@@ -4441,7 +4713,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 216,
@@ -4460,7 +4732,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 217,
@@ -4479,7 +4751,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 218,
@@ -4498,7 +4770,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 219,
@@ -4517,7 +4789,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 220,
@@ -4536,7 +4808,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 221,
@@ -4555,7 +4827,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 222,
@@ -4574,7 +4846,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 223,
@@ -4593,7 +4865,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 224,
@@ -4614,7 +4886,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 225,
@@ -4635,7 +4907,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 226,
@@ -4656,7 +4928,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 227,
@@ -4677,7 +4949,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 228,
@@ -4698,7 +4970,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 229,
@@ -4719,7 +4991,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 230,
@@ -4740,7 +5012,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 231,
@@ -4761,7 +5033,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 232,
@@ -4782,7 +5054,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 233,
@@ -4803,7 +5075,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 234,
@@ -4824,7 +5096,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 235,
@@ -4845,7 +5117,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 236,
@@ -4864,7 +5136,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 237,
@@ -4883,7 +5155,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 238,
@@ -4902,7 +5174,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 239,
@@ -4921,7 +5193,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 240,
@@ -4940,7 +5212,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 241,
@@ -4959,7 +5231,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 242,
@@ -4978,7 +5250,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 243,
@@ -4997,7 +5269,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 244,
@@ -5016,7 +5288,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 245,
@@ -5035,7 +5307,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 246,
@@ -5054,7 +5326,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 247,
@@ -5073,7 +5345,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 248,
@@ -5092,7 +5364,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 249,
@@ -5111,7 +5383,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 250,
@@ -5130,7 +5402,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 251,
@@ -5149,7 +5421,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 252,
@@ -5168,7 +5440,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 253,
@@ -5187,7 +5459,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 254,
@@ -5206,7 +5478,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 255,
@@ -5225,7 +5497,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 256,
@@ -5244,7 +5516,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 257,
@@ -5263,7 +5535,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 258,
@@ -5282,7 +5554,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 259,
@@ -5301,7 +5573,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 260,
@@ -5320,7 +5592,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 261,
@@ -5339,7 +5611,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 262,
@@ -5358,7 +5630,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 263,
@@ -5377,7 +5649,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 264,
@@ -5396,7 +5668,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 265,
@@ -5415,7 +5687,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 266,
@@ -5434,7 +5706,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 267,
@@ -5453,7 +5725,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 268,
@@ -5472,7 +5744,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 269,
@@ -5491,7 +5763,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 270,
@@ -5510,7 +5782,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 271,
@@ -5529,7 +5801,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 272,
@@ -5548,7 +5820,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 273,
@@ -5567,7 +5839,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 274,
@@ -5586,7 +5858,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 275,
@@ -5605,7 +5877,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 276,
@@ -5624,7 +5896,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 277,
@@ -5643,7 +5915,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 278,
@@ -5662,7 +5934,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 279,
@@ -5681,7 +5953,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 280,
@@ -5702,7 +5974,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 281,
@@ -5723,7 +5995,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 282,
@@ -5744,7 +6016,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 283,
@@ -5765,7 +6037,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 284,
@@ -5786,7 +6058,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 285,
@@ -5807,7 +6079,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 286,
@@ -5828,7 +6100,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 287,
@@ -5849,7 +6121,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 288,
@@ -5870,7 +6142,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 289,
@@ -5891,7 +6163,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 290,
@@ -5912,7 +6184,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 291,
@@ -5933,7 +6205,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 292,
@@ -5952,7 +6224,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 293,
@@ -5971,7 +6243,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 294,
@@ -5990,7 +6262,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 295,
@@ -6009,7 +6281,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 296,
@@ -6028,7 +6300,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 297,
@@ -6047,7 +6319,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 298,
@@ -6066,7 +6338,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 299,
@@ -6085,7 +6357,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 300,
@@ -6104,7 +6376,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 301,
@@ -6123,7 +6395,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 302,
@@ -6142,7 +6414,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 303,
@@ -6161,7 +6433,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 304,
@@ -6180,7 +6452,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 305,
@@ -6199,7 +6471,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 306,
@@ -6218,7 +6490,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 307,
@@ -6237,7 +6509,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 308,
@@ -6256,7 +6528,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 309,
@@ -6275,7 +6547,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 310,
@@ -6294,7 +6566,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 311,
@@ -6313,7 +6585,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 312,
@@ -6332,7 +6604,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 313,
@@ -6351,7 +6623,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 314,
@@ -6370,7 +6642,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 315,
@@ -6389,7 +6661,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 316,
@@ -6408,7 +6680,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 317,
@@ -6427,7 +6699,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 318,
@@ -6446,7 +6718,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 319,
@@ -6465,7 +6737,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 320,
@@ -6484,7 +6756,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 321,
@@ -6503,7 +6775,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 322,
@@ -6522,7 +6794,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 323,
@@ -6541,7 +6813,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 324,
@@ -6560,7 +6832,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 325,
@@ -6579,7 +6851,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 326,
@@ -6598,7 +6870,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 327,
@@ -6617,7 +6889,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 328,
@@ -6636,7 +6908,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 329,
@@ -6655,7 +6927,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 330,
@@ -6674,7 +6946,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 331,
@@ -6693,7 +6965,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 332,
@@ -6712,7 +6984,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 333,
@@ -6731,7 +7003,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 334,
@@ -6750,7 +7022,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       },
       {
         "ordinal": 335,
@@ -6769,7 +7041,7 @@
           "p^2 D^15 Lambda"
         ],
         "blocked_by_missing_target_operator": true,
-        "blocked_by_missing_target_resolved_stream": true
+        "blocked_by_missing_target_resolved_stream": false
       }
     ],
     "work_item_count": 336,
@@ -6820,13 +7092,13 @@
     },
     "source_channel_coefficients_can_cancel_across_irreps": false,
     "source_channel_support_rule": "The six Lambda_[p] are independent Lorentz-inequivalent parameter domains. Gauge invariance for arbitrary parameters requires F A G_p = 0 separately for every active p. A sum over c_p does not permit cross-degree cancellation unless a new Lorentz-covariant parameter-identification map is supplied.",
-    "current_composition_stream_boundary": "The public visitors emit a highest-weight target coefficient indexed by parameter component, exterior mask, and, at first momentum, momentum vector. They do not emit the 11 by 32 target vector-spinor component needed to apply a general component curvature operator.",
+    "current_composition_stream_boundary": "The exact visitor APIs emit the full 11 by 32 target vector-spinor weight-basis index, parameter component, exterior mask, optional momentum-vector weight index, and Gaussian-rational coefficient for both D^17 Lambda and p D^15 Lambda. Representative leading and correction branches are executed; all 408 jobs are not materialized or hashed. The Cartesian Clifford change of basis remains explicit rather than implicit.",
     "minimal_missing_scientific_input": "A convention-fixed linearized target superfield gauge map K and target torsion or curvature operator F on H_hat, including the exact identity F K = 0 and the intended relation between H_hat components and h_ab, C_abc, and psi_a.",
-    "minimal_missing_code_api": "A target-resolved exact composition visitor that emits (target_vector_index, target_spinor_index, parameter_component, momentum_monomial, exterior_mask, Gaussian-rational coefficient), followed by an exact sparse F application API.",
+    "minimal_missing_code_api": "An exact sparse F application API in the declared target basis, plus a convention-fixed change of basis if F is written in Cartesian rather than B5 vector-weight coordinates.",
     "exact_execution_sequence": [
       "freeze K and F, their component bases, derivative order, normal-form convention, and the identity F K = 0",
       "certify F K = 0 independently and mutation-test every nonzero block of F",
-      "lift all 12 leading and 44 first-momentum maps from the highest-weight output coordinate to the full 320-component target stream",
+      "execute and hash all 408 jobs exposed by the invariant-dual 320-component target-stream API",
       "apply F to the 72 D^17 and 336 p D^15 source-composition jobs, retaining any new bidegrees generated by F",
       "assemble exact per-channel matrices because the six parameter domains are independent",
       "solve each active-channel condition F A G_p = 0 for the 56 operator coefficients and report the leading projection rank",
@@ -6836,7 +7108,7 @@
     "physical_kill_gate_executed": false,
     "physical_kill_gate_passed": null,
     "status": "blocked_missing_target_superfield_gauge_curvature_complex",
-    "boundary": "This report certifies the source-channel and operator work list only. The component graviton, three-form, and gravitino complexes are physical reference complexes, not an inferred curvature operator on H_hat. No source channel is accepted or rejected by F A G_p = 0 until K, F, and the target-resolved stream exist."
+    "boundary": "This report certifies the source-channel work list, the exact target-resolved A G_p visitor API, and representative leading and correction branches. It does not certify execution of all 408 streams. The component graviton, three-form, and gravitino complexes are physical reference complexes, not an inferred curvature operator on H_hat. No source channel is accepted or rejected by F A G_p = 0 until convention-fixed K and F exist."
   },
   "hook_bianchi": {
     "schema_version": "adynkra-11d-hook-bianchi-v1",
@@ -7144,6 +7416,924 @@
     "passed": true,
     "result": "No nonzero next-Bianchi row survives the exact relaxed zero-momentum representation-level composition gate.",
     "boundary": "This excludes a nonzero nilpotent outgoing row on the committed seven-copy hook multiplicity space. It does not assert that embedded level18 kernels exist, construct target Clebsch-Gordan coefficients, include the superspace momentum term, quotient gauge transformations, or prove physical exactness."
+  },
+  "level18_momentum": {
+    "schema_version": "adynkra-11d-level18-momentum-v1",
+    "published_inventory_source": "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2002.08502, Appendix F",
+    "gauge_ansatz_source": "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2007.05097, conjectural one-spinor-derivative prepotential rule in the introduction",
+    "source_scope": "The cited papers supply the representation inventory and motivate the Lorentz-compatible gauge ansatz. They do not provide the level-18 embedded Clebsch-Gordan maps or a target gauge quotient.",
+    "level18": {
+      "required_distinct_irreps": 16,
+      "required_kernel_copies": 42,
+      "required_source_target_embedded_copies": 77,
+      "hodge_lifted_distinct_irreps": 12,
+      "hodge_lifted_kernel_copies": 27,
+      "exactly_verified_kernel_copies": 42,
+      "direct_solved_distinct_irreps": 4,
+      "direct_solved_kernel_copies": 15,
+      "direct_generation_report_sha256": "0474135a0159c12f34a805d0c6849944ef8853240201185a06416c99d0e9e986",
+      "direct_generation_rank_nullity_verified": true,
+      "missing_distinct_irreps": 0,
+      "missing_kernel_copies": 0,
+      "source_ready_embedded_copies": 77,
+      "source_ready_embedded_fraction": "77/77",
+      "embedded_couplings_computed": 0,
+      "hodge_convention": {
+        "spinor_dimension": 32,
+        "source_exterior_degree": 14,
+        "target_exterior_degree": 18,
+        "opposite_weight_pairing_is_complete": true,
+        "invariant_pairing_edge_checks": 48,
+        "invariant_pairing_edge_residuals": 0,
+        "hodge_square_sign": 1,
+        "expected_hodge_square_sign": 1,
+        "convention": "B(e_i,e_(31-i)) has signs propagated by B(E_r u,v)+B(u,E_r v)=0; exterior indices are ascending and alpha wedge star(alpha) uses the ascending 32-spinor volume orientation",
+        "passed": true
+      },
+      "kernels": [
+        {
+          "dynkin_label": "00010",
+          "copy": 1,
+          "source_artifact": "level14_00010_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_00010_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 280014,
+          "target_coefficients": 280014,
+          "nonzero_coefficients": 158013,
+          "output_sha256": "0f44032a1a0b21effcfa7de72e00b79892dbbbbb80fdda16cc431db5d1ccfa90",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "00010",
+          "copy": 2,
+          "source_artifact": "level14_00010_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_00010_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 280014,
+          "target_coefficients": 280014,
+          "nonzero_coefficients": 3003,
+          "output_sha256": "3b7c0b9504726d6b91a3d4346d91312be041efb9343c10fce28303871430fde6",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "00100",
+          "copy": 1,
+          "source_artifact": "level14_00100_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_00100_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 348240,
+          "target_coefficients": 348240,
+          "nonzero_coefficients": 275808,
+          "output_sha256": "4cda9f551ddad96d56a2d707b6bae9876cc318e02c1610cbe72c5e6b835859b5",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "00100",
+          "copy": 2,
+          "source_artifact": "level14_00100_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_00100_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 348240,
+          "target_coefficients": 348240,
+          "nonzero_coefficients": 6006,
+          "output_sha256": "d85dd3017f64d142dcb81a317204cec77cba85e251357bb0e3d0de292127e317",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01002",
+          "copy": 1,
+          "source_artifact": "level14_01002_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_01002_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 56758,
+          "target_coefficients": 56758,
+          "nonzero_coefficients": 13792,
+          "output_sha256": "e2da23c23f1e7dfbfa969401e4feeda57526eca304e627db55177b43a7bccb0b",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01002",
+          "copy": 2,
+          "source_artifact": "level14_01002_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_01002_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 56758,
+          "target_coefficients": 56758,
+          "nonzero_coefficients": 13812,
+          "output_sha256": "838529d070be2b095700159b0df0ea8bb58f531580b71b9ac073e90ad4465b4e",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01002",
+          "copy": 3,
+          "source_artifact": "level14_01002_highest_weight_kernel_3.i16le",
+          "output_artifact": "level18_01002_highest_weight_kernel_3.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 56758,
+          "target_coefficients": 56758,
+          "nonzero_coefficients": 47997,
+          "output_sha256": "446b11cfa011fd688f8fea6dbe821840869e1b16a8897c908a8c018f6a9ba3b4",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01002",
+          "copy": 4,
+          "source_artifact": "level14_01002_highest_weight_kernel_4.i16le",
+          "output_artifact": "level18_01002_highest_weight_kernel_4.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 56758,
+          "target_coefficients": 56758,
+          "nonzero_coefficients": 51344,
+          "output_sha256": "5ecc7cee1218dd8bf8808661a66d244ea99687d5aa460f9f4aca5c67d1471453",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01002",
+          "copy": 5,
+          "source_artifact": "level14_01002_highest_weight_kernel_5.i16le",
+          "output_artifact": "level18_01002_highest_weight_kernel_5.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 56758,
+          "target_coefficients": 56758,
+          "nonzero_coefficients": 54407,
+          "output_sha256": "6185dd3321c9f2e1fb1ac15d05bfc966fcaa9c6e9647402155273586d86134ba",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01010",
+          "copy": 1,
+          "source_artifact": "level14_01010_highest_weight_kernel.i16le",
+          "output_artifact": "level18_01010_highest_weight_kernel.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 72380,
+          "target_coefficients": 72380,
+          "nonzero_coefficients": 68970,
+          "output_sha256": "83812531db1d7a0bc1765a1b908d4647323fd98d70754709c70940c5ef6f4a3e",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01100",
+          "copy": 1,
+          "source_artifact": "level14_01100_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_01100_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 91936,
+          "target_coefficients": 91936,
+          "nonzero_coefficients": 89664,
+          "output_sha256": "a4038a1bd5332bf5500ea74df72bac99ce1256189926af518fe2812601f91725",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "01100",
+          "copy": 2,
+          "source_artifact": "level14_01100_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_01100_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 91936,
+          "target_coefficients": 91936,
+          "nonzero_coefficients": 3168,
+          "output_sha256": "6d737c04fdfbf6a46948c8c117faa7476cf7485aac9709a1b49db0ae05ad0dcf",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "02000",
+          "copy": 1,
+          "source_artifact": "level14_02000_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_02000_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 116328,
+          "target_coefficients": 116328,
+          "nonzero_coefficients": 112672,
+          "output_sha256": "207557b6a4be077db42d8b6658e9009feafef7a73bace91fb1aad7ff4754ffb2",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "02000",
+          "copy": 2,
+          "source_artifact": "level14_02000_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_02000_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 116328,
+          "target_coefficients": 116328,
+          "nonzero_coefficients": 6336,
+          "output_sha256": "c542b368e46fe53d7992fd9cbd27317e796510d56022e4e6759e8cb04295506a",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "10002",
+          "copy": 1,
+          "source_artifact": "level14_10002_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_10002_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 114758,
+          "target_coefficients": 114758,
+          "nonzero_coefficients": 108363,
+          "output_sha256": "d3b2bf84cd74c04505f85a9dc4cbe669ea4f6cce854e5ea2ee68e9e9dd860213",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "10002",
+          "copy": 2,
+          "source_artifact": "level14_10002_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_10002_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 114758,
+          "target_coefficients": 114758,
+          "nonzero_coefficients": 5544,
+          "output_sha256": "5e17ebbb14f25d6ff1dd10bd566c72c24787fab59d2d56dc983809dae21a185f",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "10010",
+          "copy": 1,
+          "source_artifact": "level14_10010_highest_weight_kernel.i16le",
+          "output_artifact": "level18_10010_highest_weight_kernel.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 144678,
+          "target_coefficients": 144678,
+          "nonzero_coefficients": 91450,
+          "output_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "10100",
+          "copy": 1,
+          "source_artifact": "level14_10100_highest_weight_kernel.i16le",
+          "output_artifact": "level18_10100_highest_weight_kernel.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 181748,
+          "target_coefficients": 181748,
+          "nonzero_coefficients": 153788,
+          "output_sha256": "1ba1482e16f7a8a5c4d1ff477d03e44fba2a9719f5d88a447940bcb51b447331",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20002",
+          "copy": 1,
+          "source_artifact": "level14_20002_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_20002_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 36608,
+          "target_coefficients": 36608,
+          "nonzero_coefficients": 35555,
+          "output_sha256": "7fbb2ea3a56ecab6c3288ed6b2080109304a1e62bb517c9c102906baa5595ea8",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20002",
+          "copy": 2,
+          "source_artifact": "level14_20002_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_20002_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 36608,
+          "target_coefficients": 36608,
+          "nonzero_coefficients": 22700,
+          "output_sha256": "2c3c262f1a0d68abb59b3af48b73dad78393b72fca33199d6ad2471a42ede68d",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20010",
+          "copy": 1,
+          "source_artifact": "level14_20010_highest_weight_kernel_1.i32le",
+          "output_artifact": "level18_20010_highest_weight_kernel_1.i32le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 47096,
+          "target_coefficients": 47096,
+          "nonzero_coefficients": 7140,
+          "output_sha256": "6cf887f519484fb0e26c6a6cadd2f46ddaddbbc7e9f7d8d659b310be4f0adad5",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20010",
+          "copy": 2,
+          "source_artifact": "level14_20010_highest_weight_kernel_2.i32le",
+          "output_artifact": "level18_20010_highest_weight_kernel_2.i32le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 47096,
+          "target_coefficients": 47096,
+          "nonzero_coefficients": 30164,
+          "output_sha256": "bca943b65f13f60f372813b3c19c26bc4d9eb3567326e7419bec5749c9e117fe",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20010",
+          "copy": 3,
+          "source_artifact": "level14_20010_highest_weight_kernel_3.i32le",
+          "output_artifact": "level18_20010_highest_weight_kernel_3.i32le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 47096,
+          "target_coefficients": 47096,
+          "nonzero_coefficients": 46086,
+          "output_sha256": "4aa8521805e558da435b5cacf813b69a53153675df8a04cebc20f78d1a4074b6",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20010",
+          "copy": 4,
+          "source_artifact": "level14_20010_highest_weight_kernel_4.i32le",
+          "output_artifact": "level18_20010_highest_weight_kernel_4.i32le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 47096,
+          "target_coefficients": 47096,
+          "nonzero_coefficients": 46094,
+          "output_sha256": "5bc2967e91510f252b2785903d80cfc1661b4ff63860e6f66f37e0a47d6b9b50",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20100",
+          "copy": 1,
+          "source_artifact": "level14_20100_highest_weight_kernel_1.i16le",
+          "output_artifact": "level18_20100_highest_weight_kernel_1.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 60298,
+          "target_coefficients": 60298,
+          "nonzero_coefficients": 13020,
+          "output_sha256": "812d533789c72068226a7b2507de002bce1da1c1e4aa420c845cd058d96fa5c4",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20100",
+          "copy": 2,
+          "source_artifact": "level14_20100_highest_weight_kernel_2.i16le",
+          "output_artifact": "level18_20100_highest_weight_kernel_2.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 60298,
+          "target_coefficients": 60298,
+          "nonzero_coefficients": 51528,
+          "output_sha256": "f32eacfb6b48a6de051a7bd6da4d7884ab16be8388630c0b30a6ee3f583b9f10",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "20100",
+          "copy": 3,
+          "source_artifact": "level14_20100_highest_weight_kernel_3.i16le",
+          "output_artifact": "level18_20100_highest_weight_kernel_3.i16le",
+          "construction": "exact B5-equivariant Hodge lift from the verified level-14 kernel",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 60298,
+          "target_coefficients": 60298,
+          "nonzero_coefficients": 54894,
+          "output_sha256": "b025e0a5e80cedbffd3a89ad5c9c075b7e05b0f8e0d588fd61ae918c88d67d54",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "12000",
+          "copy": 1,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_12000_highest_weight_kernel.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 37096,
+          "target_coefficients": 37096,
+          "nonzero_coefficients": 36008,
+          "output_sha256": "6d434fe451799fbe52897cc5c0ea333f3de5909b4198f8be844a521fab3b0f87",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11100",
+          "copy": 1,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11100_highest_weight_kernel_1.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 28732,
+          "target_coefficients": 28732,
+          "nonzero_coefficients": 4200,
+          "output_sha256": "ce87f8348c8659e33d3f3c1e66ae4102771973b78944a16a42f87b11fbd0fd9f",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11100",
+          "copy": 2,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11100_highest_weight_kernel_2.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 28732,
+          "target_coefficients": 28732,
+          "nonzero_coefficients": 28432,
+          "output_sha256": "4b58c1bcd3362faebdbc069923ef0f1312061c6d4dafed301540425b0762a63c",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11100",
+          "copy": 3,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11100_highest_weight_kernel_3.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 28732,
+          "target_coefficients": 28732,
+          "nonzero_coefficients": 28436,
+          "output_sha256": "18dc26bf3141203cc39a02cd16335f410c739e2f31ee05feade1478c173d33b7",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11010",
+          "copy": 1,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11010_highest_weight_kernel_1.i32le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 22150,
+          "target_coefficients": 22150,
+          "nonzero_coefficients": 2520,
+          "output_sha256": "860a04976cf0c4d52453a029582c18d6675ed1447a98801a91018133bd443764",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11010",
+          "copy": 2,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11010_highest_weight_kernel_2.i32le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 22150,
+          "target_coefficients": 22150,
+          "nonzero_coefficients": 21954,
+          "output_sha256": "fc9780fc9d16f9dd7a490f09807a14792c9cd94cd5e8fb64f776ebeb63559198",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11010",
+          "copy": 3,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11010_highest_weight_kernel_3.i32le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 22150,
+          "target_coefficients": 22150,
+          "nonzero_coefficients": 21970,
+          "output_sha256": "ae942cc32b7917fb2a4acd7d2f71a7ab6c5e21464efc9c7cd2c1a4a78308f534",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11010",
+          "copy": 4,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11010_highest_weight_kernel_4.i32le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 22150,
+          "target_coefficients": 22150,
+          "nonzero_coefficients": 12256,
+          "output_sha256": "2806238bcf7a7e5e7d1fa1ed873cbe7cfa65446a674d255f88761d61e832c0dd",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11010",
+          "copy": 5,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11010_highest_weight_kernel_5.i32le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 4,
+          "source_coefficients": 22150,
+          "target_coefficients": 22150,
+          "nonzero_coefficients": 22062,
+          "output_sha256": "796e81a445de59259bc46cc6227b7ba6b7fbcdfad39c1ed8bde747a83d15675a",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11002",
+          "copy": 1,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11002_highest_weight_kernel_1.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 16993,
+          "target_coefficients": 16993,
+          "nonzero_coefficients": 1470,
+          "output_sha256": "5d72043fe8e15b2720b40144d4897c893464895eb19cee7c38087901dc64d023",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11002",
+          "copy": 2,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11002_highest_weight_kernel_2.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 16993,
+          "target_coefficients": 16993,
+          "nonzero_coefficients": 15351,
+          "output_sha256": "d2daf9cd43e0d28f8c6b177dd3f0d8441903ea49842f66b86edf2a67abc416d2",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11002",
+          "copy": 3,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11002_highest_weight_kernel_3.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 16993,
+          "target_coefficients": 16993,
+          "nonzero_coefficients": 15375,
+          "output_sha256": "b589f552322ce1f7e60bed6681549c84f5427eddae3cd1bf40cd4df13505a238",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11002",
+          "copy": 4,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11002_highest_weight_kernel_4.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 16993,
+          "target_coefficients": 16993,
+          "nonzero_coefficients": 8894,
+          "output_sha256": "6b93c0d65a32f4539ecdbf7269893c76dcde8581a7a9c0709ffcd488529f2a77",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11002",
+          "copy": 5,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11002_highest_weight_kernel_5.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 16993,
+          "target_coefficients": 16993,
+          "nonzero_coefficients": 16622,
+          "output_sha256": "976bf2df0d77368dd846cde90ca76c9df6ee7adc37007040ac4867c65792b4cb",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        },
+        {
+          "dynkin_label": "11002",
+          "copy": 6,
+          "source_artifact": "results/adynkra_11d_level18_direct_kernel_generation.json",
+          "output_artifact": "level18_11002_highest_weight_kernel_6.i16le",
+          "construction": "direct exact sparse degree-18 raising-kernel solve with modular rank certificate and full integer residual verification",
+          "coefficient_width_bytes": 2,
+          "source_coefficients": 16993,
+          "target_coefficients": 16993,
+          "nonzero_coefficients": 16339,
+          "output_sha256": "a3a66e8c6711b4a031d72aaf7296293f65e3ad35e0cb8558471245bbf09b80cd",
+          "exact_level18_raising_verified": true,
+          "lowering_strings_verified": true,
+          "passed": true
+        }
+      ],
+      "missing_work": [],
+      "hodge_subset_complete": true,
+      "full_level18_kernel_inventory_complete": true,
+      "all_embedded_compositions_complete": false,
+      "passed": true,
+      "boundary": "All forty-two required level-18 source kernels are exact across sixteen irreps. The source inventory covers all seventy-seven source incidences in the target-resolved census, but it does not construct the seventy-seven embedded source-target Clebsch-Gordan maps."
+    },
+    "momentum_gauge": {
+      "summary_schema_version": "adynkra-11d-gauge-first-momentum-summary-v1",
+      "summary_sha256": "f05a7d297efc173d0c0e970ea570eee5e8e5e8d4d7e783b3841ba3a4c2e30c56",
+      "channels": [
+        {
+          "form_degree": 0,
+          "parameter_dynkin_label": "00000",
+          "zero_momentum_kernel_dimension": 11,
+          "zero_momentum_artifact_sha256": "184c3a683e47e4c8ec3763e1318fb2d200fe3f1c44e2d4eae6273da317064d40",
+          "first_momentum_screen_present": true,
+          "evaluated_parameter_components": [
+            0
+          ],
+          "parameter_projection_complete": true,
+          "parameterized_columns": 55,
+          "functional_rows": 512,
+          "functional_rank": 17,
+          "functional_nullity": 38,
+          "leading_projection_rank": 0,
+          "partial_parameter_screen_excludes_leading_projection": true,
+          "nonzero_leading_extension_excluded": true,
+          "first_momentum_artifact_sha256": "4b86b7803fdfe82e930b742ff85f3b6c2c050409e723f820869269e958c21718",
+          "artifact_hash_matches_summary": true,
+          "passed": true
+        },
+        {
+          "form_degree": 1,
+          "parameter_dynkin_label": "10000",
+          "zero_momentum_kernel_dimension": 1,
+          "zero_momentum_artifact_sha256": "b2cdb3733d4ca6eb156ba70a399fa0d4a05be8704d65e843ca97627c1c9babf9",
+          "first_momentum_screen_present": true,
+          "evaluated_parameter_components": [
+            0
+          ],
+          "parameter_projection_complete": false,
+          "parameterized_columns": 45,
+          "functional_rows": 512,
+          "functional_rank": 42,
+          "functional_nullity": 3,
+          "leading_projection_rank": 0,
+          "partial_parameter_screen_excludes_leading_projection": true,
+          "nonzero_leading_extension_excluded": false,
+          "first_momentum_artifact_sha256": "c2cf34d3b928f6bfb4f8c245d89f6fb955410b1a195da104342948a4f9270849",
+          "artifact_hash_matches_summary": true,
+          "passed": false
+        },
+        {
+          "form_degree": 2,
+          "parameter_dynkin_label": "01000",
+          "zero_momentum_kernel_dimension": 1,
+          "zero_momentum_artifact_sha256": "606f919a164049ffcd7bed03afb791abf3644c1395172bad45b25ab0500d8807",
+          "first_momentum_screen_present": true,
+          "evaluated_parameter_components": [
+            0
+          ],
+          "parameter_projection_complete": false,
+          "parameterized_columns": 45,
+          "functional_rows": 512,
+          "functional_rank": 33,
+          "functional_nullity": 12,
+          "leading_projection_rank": 0,
+          "partial_parameter_screen_excludes_leading_projection": true,
+          "nonzero_leading_extension_excluded": false,
+          "first_momentum_artifact_sha256": "a3165ebb89d6d160e39b08cc6880ebbd130f1168a046d5158b12921037bb95dd",
+          "artifact_hash_matches_summary": true,
+          "passed": false
+        },
+        {
+          "form_degree": 3,
+          "parameter_dynkin_label": "00100",
+          "zero_momentum_kernel_dimension": 0,
+          "zero_momentum_artifact_sha256": "c9f5ddf4372e43519e480ef6ddb986b347a208859171372e445b813f9c21479e",
+          "first_momentum_screen_present": false,
+          "evaluated_parameter_components": [],
+          "parameter_projection_complete": false,
+          "parameterized_columns": 0,
+          "functional_rows": 0,
+          "functional_rank": 0,
+          "functional_nullity": 0,
+          "leading_projection_rank": 0,
+          "partial_parameter_screen_excludes_leading_projection": false,
+          "nonzero_leading_extension_excluded": true,
+          "first_momentum_artifact_sha256": null,
+          "artifact_hash_matches_summary": true,
+          "passed": true
+        },
+        {
+          "form_degree": 4,
+          "parameter_dynkin_label": "00010",
+          "zero_momentum_kernel_dimension": 0,
+          "zero_momentum_artifact_sha256": "1ca023a678261b648deed824f3c6c3249a8ba96f0deb0dc98574fd23a6e5f841",
+          "first_momentum_screen_present": false,
+          "evaluated_parameter_components": [],
+          "parameter_projection_complete": false,
+          "parameterized_columns": 0,
+          "functional_rows": 0,
+          "functional_rank": 0,
+          "functional_nullity": 0,
+          "leading_projection_rank": 0,
+          "partial_parameter_screen_excludes_leading_projection": false,
+          "nonzero_leading_extension_excluded": true,
+          "first_momentum_artifact_sha256": null,
+          "artifact_hash_matches_summary": true,
+          "passed": true
+        },
+        {
+          "form_degree": 5,
+          "parameter_dynkin_label": "00002",
+          "zero_momentum_kernel_dimension": 1,
+          "zero_momentum_artifact_sha256": "a5bc727926fe9509aa72858fff151b15a6f26ef36f32cd403d828b7b8d31ddaa",
+          "first_momentum_screen_present": true,
+          "evaluated_parameter_components": [
+            0
+          ],
+          "parameter_projection_complete": false,
+          "parameterized_columns": 45,
+          "functional_rows": 512,
+          "functional_rank": 41,
+          "functional_nullity": 4,
+          "leading_projection_rank": 0,
+          "partial_parameter_screen_excludes_leading_projection": true,
+          "nonzero_leading_extension_excluded": false,
+          "first_momentum_artifact_sha256": "f129f072d9004e76659fdf66b262a0d1da86fe2e2f82942b0c19664610f39172",
+          "artifact_hash_matches_summary": true,
+          "passed": false
+        }
+      ],
+      "all_six_zero_momentum_channels_exact": true,
+      "zero_momentum_kernel_dimensions": [
+        11,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "form_3_and_4_excluded_at_zero_momentum": true,
+      "remaining_channels_excluded_at_first_momentum": false,
+      "every_nonempty_channel_subset_excluded_under_strict_source_invariance": false,
+      "momentum_corrected_strict_source_quotient_computed": false,
+      "target_gauge_maps_supplied": false,
+      "momentum_dependent_target_gauge_quotient_computed": false,
+      "polynomial_module_cohomology_computed": false,
+      "target_quotient_api": {
+        "target_stream_schema_version": "adynkra-11d-target-resolved-composition-stream-v2",
+        "source_fixed_curvature_schema_version": "adynkra-11d-source-fixed-curvature-scaffold-v1",
+        "target_stream_contract_passed": true,
+        "source_fixed_curvature_scaffold_passed": true,
+        "typed_target_stream_join_available": false,
+        "full_curvature_map_available": false,
+        "exact_sparse_image_containment_api_available": true,
+        "actual_target_maps_supplied": false,
+        "quotient_computed": false,
+        "boundary": "The exact image-containment API is ready to consume six source-fixed F A G_p maps and six target gauge maps with target-stream and curvature provenance hashes. The current source-fixed curvature scaffold has no complete differential join, so no maps are fabricated here."
+      },
+      "passed": false,
+      "result": "The scalar channel is excluded through first momentum and the three-form and four-form channels are excluded at zero momentum. The one-form, two-form, and five-form screens cover only parameter component zero, so the full six-channel exclusion remains open.",
+      "boundary": "The partial exact functionals for form degrees one, two, and five can screen the recorded component, but this aggregate fails closed until every parameter component is evaluated. No target gauge quotient or polynomial-module cohomology is computed."
+    },
+    "bounded_program_passed": false,
+    "full_requested_step_complete": false
+  },
+  "majorana": {
+    "schema_version": "adynkra-11d-majorana-real-form-v1",
+    "starting_basis": "32-dimensional complex Euclidean B5 weight basis over Q(i)",
+    "lorentz_signature": "mostly plus (-,+,+,+,+,+,+,+,+,+,+)",
+    "majorana_involution": "psi = B conjugate(psi), B = gamma^2 gamma^4 gamma^6 gamma^8 gamma^10",
+    "product_indices": [
+      2,
+      4,
+      6,
+      8,
+      10
+    ],
+    "intertwiner_nonzero_entries": 32,
+    "intertwiner_is_real_signed_permutation": true,
+    "involution_residual_entries": 0,
+    "gamma_intertwining_entries_checked": 11264,
+    "gamma_intertwining_residual_entries": 0,
+    "fixed_real_basis_dimension": 32,
+    "fixed_basis_pairs": 16,
+    "fixed_basis_residual_entries": 0,
+    "basis_inverse_residual_entries": 0,
+    "transformed_gamma_nonzero_entries": 352,
+    "transformed_gamma_nonreal_entries": 0,
+    "transformed_gamma_nonintegral_entries": 0,
+    "transformed_gamma_not_signed_permutation": 0,
+    "real_clifford_entries_checked": 123904,
+    "real_clifford_residual_entries": 0,
+    "majorana_real_form_constructed": true,
+    "linearized_susy_maps_constructed": false,
+    "passed": true,
+    "boundary": "this constructs the exact Lorentzian Majorana spinor real form. It does not by itself supply or certify the linearized 11D supergravity supersymmetry maps between h, A3, and psi"
+  },
+  "linear_susy": {
+    "schema_version": "adynkra-11d-linear-light-cone-susy-v1",
+    "component_transformation_source": "linearized limit of arXiv:0903.0259, equations (id6a), (tr3fcurb), and (trfullmajcurb); relative normalization validated by exact closure",
+    "representation_source": "physical 11D supergraviton little-group content 44+84|128",
+    "signature": "mostly plus (-,+,+,+,+,+,+,+,+,+,+)",
+    "momentum": [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "momentum_norm": 0,
+    "little_group": "SO(9)",
+    "slash_kernel_dimension": 16,
+    "transverse_vector_spinor_dimension": 144,
+    "gamma_trace_rank": 16,
+    "physical_fermion_dimension": 128,
+    "graviton_dimension": 44,
+    "three_form_dimension": 84,
+    "physical_boson_dimension": 128,
+    "supercharge_count": 32,
+    "bf_maps_constructed": 32,
+    "fb_maps_constructed": 32,
+    "nonzero_bf_maps_at_fixed_momentum": 16,
+    "nonzero_fb_maps_at_fixed_momentum": 16,
+    "translation_bilinear_rank": 16,
+    "translation_bilinear_rank_computed_exactly": true,
+    "public_sparse_map_api_available": true,
+    "public_map_api": "linear_susy_maps() exposes immutable ExactSparseMap values with deterministic entries() and exact apply()",
+    "bf_nonzero_entries": 7536,
+    "fb_nonzero_entries": 12016,
+    "gravity_coefficient": "-1/2",
+    "flux_coefficient": "1/6",
+    "raw_gravity_to_flux_ratio": "-3:1",
+    "unordered_charge_pairs_checked": 528,
+    "bosonic_closure_entries_checked": 8650752,
+    "bosonic_closure_residual_entries": 0,
+    "fermionic_closure_entries_checked": 8650752,
+    "fermionic_closure_residual_entries": 0,
+    "closure_identity": "BF_q FB_r + BF_r FB_q = FB_q BF_r + FB_r BF_q = 2 (C slash(p))_{qr} I",
+    "majorana_real_form_used": true,
+    "linearized_susy_maps_constructed": true,
+    "passed": true,
+    "boundary": "exact on-shell light-cone physical-state maps at one fixed nonzero null momentum. This does not provide an off-shell 11D multiplet, covariant auxiliary fields, or an irreducible scalar-superfield decomposition"
   },
   "superspace_cohomology": {
     "seed_occurrences": [
@@ -7591,21 +8781,24 @@
   },
   "linearized_equation": {
     "target_free_equations_constructed": true,
+    "lorentzian_majorana_real_form_constructed": true,
+    "physical_light_cone_susy_maps_constructed": true,
+    "physical_light_cone_susy_closure_checked": true,
     "source_to_target_superfield_map_constructed": false,
     "gauge_invariant_superfield_operator_constructed": false,
-    "supersymmetry_closure_checked": false,
+    "superfield_supersymmetry_closure_checked": false,
     "component_einstein_rarita_schwinger_three_form_match": false,
     "passed": false,
     "boundary": "The component target equations are exact, but no gauge-invariant operator from the conjectured spinor prepotential to those equations has been constructed."
   },
-  "bounded_gates_passed": true,
+  "bounded_gates_passed": false,
   "full_program_complete": false,
   "next_exact_steps": [
-    "construct a target-resolved 11x32 composition stream for every A composed with G_p job",
-    "supply the target superfield gauge map K and curvature F with F composed with K equal to zero",
-    "construct embedded level-18 hook-target kernels and the momentum-corrected next differential",
+    "complete the source-fixed H_hat to torsion differential join and certify F composed with K equals zero",
+    "apply F to the target-resolved D^17 Lambda and p D^15 Lambda streams independently for all six source channels",
+    "construct the 77 embedded level-18 source-target maps and the momentum-dependent target gauge quotient",
     "compute gauge-quotiented superspace cohomology and compare it with independent pure-spinor cohomology",
-    "solve for a gauge-invariant source-to-equation operator and verify all 32 supersymmetries"
+    "join the exact physical light-cone supersymmetry maps to a covariant source-to-equation superfield operator"
   ],
-  "boundary": "Passing this aggregate means the completed bounded gates agree. It does not select a physical spinor-prepotential gauge symmetry, compute the full superspace cohomology, derive an Adynkrafield equation, or address nonlinear eleven-dimensional supergravity."
+  "boundary": "Passing this aggregate means the completed bounded gates agree, including the Lorentzian Majorana form and on-shell light-cone 44+84|128 supersymmetry maps. It does not select a physical spinor-prepotential gauge symmetry, compute the full superspace cohomology, derive an Adynkrafield equation, construct an off-shell multiplet, or address nonlinear eleven-dimensional supergravity."
 }
