@@ -1,0 +1,11 @@
+[package]
+name = "adynkra-exact-sparse"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+sha2 = "0.10"
