@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 
 const CHECKPOINT: &str = "results/adynkra_11d_level12_second_momentum_kernel_generation.json";
 const CHECKPOINT_SCHEMA: &str = "adynkra-11d-level12-second-momentum-kernel-generation-v1";
-const COMPLETED_SYSTEMS: u64 = 18;
-const COMPLETED_KERNELS: u64 = 40;
+const COMPLETED_SYSTEMS: u64 = 19;
+const COMPLETED_KERNELS: u64 = 41;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Json {
@@ -312,6 +312,10 @@ fn verify_exact_integer_residual(label: &str, copy: u64, matrix: &CsrMatrix, ker
 
 fn stable_digests(label: &str) -> Option<(&'static str, &'static str)> {
     match label {
+        "00000" => Some((
+            "eacd8abca31f605cf1efd67e4d2965bdc9fdcd06751d5e2e18a244f707b51fd3",
+            "2b341e11998f78152bd715fc9d1d58cad2b13118cbca2c61a240f87dae7301d2",
+        )),
         "00100" => Some((
             "c89f30baa99c93a88ea8f7d4107b8bf661270cd812e2dfbf10fe7f7776d647ae",
             "e16a90108f63aef8aa688b1a2d451dc6a01539212055c5cbfc1a8ac034f698fa",
@@ -394,7 +398,7 @@ fn checkpoint_declares_the_completed_corpus_contract() {
     let artifact = checkpoint();
     assert_eq!(artifact.field("schema_version").as_str(), CHECKPOINT_SCHEMA);
     assert!(artifact.field("passed").as_bool());
-    assert!(!artifact.field("inventory_complete").as_bool());
+    assert!(artifact.field("inventory_complete").as_bool());
     assert_eq!(
         artifact.field("completed_systems").as_u64(),
         COMPLETED_SYSTEMS

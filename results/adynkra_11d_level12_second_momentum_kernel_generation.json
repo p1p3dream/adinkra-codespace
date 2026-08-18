@@ -4,6 +4,44 @@
   "method": "deterministic sparse echelon over 2^31-1, rational reconstruction, and full integer residual verification",
   "systems": [
     {
+      "dynkin_label": "00000",
+      "exterior_degree": 12,
+      "source_columns": 353120,
+      "raising_rows": 1194000,
+      "nonzero_entries": 4378928,
+      "prime": 2147483647,
+      "exact_modular_rank": 353119,
+      "exact_nullity": 1,
+      "free_columns": [
+        353119
+      ],
+      "maximum_pivot_width": 0,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_00000_highest_weight_kernel.i16le",
+          "sha256": "fcf4930e6732a0c4e046196d7dacc0c30c5f7d9d937b00f6acfd005609178cdb",
+          "bytes": 706240,
+          "nonzero_coefficients": 8008,
+          "maximum_absolute_coefficient": 1
+        }
+      ],
+      "seconds": {
+        "matrix": 0.319757,
+        "echelon": 469.792943,
+        "reconstruct_and_integer_verify": 2.296612,
+        "total": 472.40931199999994
+      },
+      "passed": true,
+      "deterministic_characteristic_zero_rank_certified": true,
+      "maximum_pivot_width_not_applicable": true,
+      "rank_proof": "exact-n-direction-bordered-CG",
+      "rank_proof_lane_count": 32,
+      "rank_proof_rounds": 353120,
+      "solver": "cuda-bordered-cg-v1"
+    },
+    {
       "dynkin_label": "00010",
       "exterior_degree": 12,
       "source_columns": 144678,
@@ -778,10 +816,10 @@
       "passed": true
     }
   ],
-  "completed_systems": 18,
-  "completed_kernel_copies": 40,
+  "completed_systems": 19,
+  "completed_kernel_copies": 41,
   "expected_systems": 19,
   "expected_kernel_copies": 41,
-  "inventory_complete": false,
+  "inventory_complete": true,
   "passed": true
 }

@@ -17,14 +17,18 @@ Current scope:
 - a versioned semantic matrix digest and pinned nonzero diagonal PRNG
 - an allocation-free CPU reference for 32-lane `A^T D A` blocks
 - an optional Linux CUDA backend with device-resident chained block32 operations
+- exact 32-lane bordered conjugate-gradient kernel recovery with breakdown tracking
+- SHA-256-protected GPU state checkpoints and deterministic seed replay
 - deterministic sparse echelon reduction with explicit fill and width budgets
 - rational reconstruction, primitive integer normalization, and exact integer residual certificates
+- crash-safe publication of externally certified kernels
 
 The implementation favors a compact, auditable representation: 32-bit offsets, indices,
 field elements, and signed coefficients. It rejects matrices with dimensions or nonzero
-counts that cannot be represented by that format. Parallel execution, structural
-reduction, Krylov iteration, checkpointing, and accelerators are deliberately out of
-scope for this first reference layer.
+counts that cannot be represented by that format. Parallel sparse elimination and
+structural pivot reordering remain future work. The CUDA path implements the exact
+Krylov recurrence, checkpointing, reconstruction, and CPU verification required by
+the largest level-12 system.
 
 Run:
 
@@ -61,4 +65,12 @@ ADYNKRA_CUDA_ARCH=sm_89 \
 cargo test --release \
   --manifest-path crates/exact-sparse-solver/Cargo.toml \
   --features cuda cuda::tests -- --nocapture
+
+# Exact nullspace solve with periodic durable checkpoints
+CUDA_HOME=/usr/local/cuda-12.6 \
+ADYNKRA_CUDA_ARCH=sm_89 \
+cargo run --release \
+  --manifest-path crates/exact-sparse-solver/Cargo.toml \
+  --features cuda --bin level12_cuda_null -- \
+  00000 --chunk 4096 --checkpoint level12_00000.cg.chk
 ```

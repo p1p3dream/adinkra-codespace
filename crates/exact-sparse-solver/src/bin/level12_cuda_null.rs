@@ -21,6 +21,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         GpuCgCheckpoint, initialize_seeded, pinned_border_block, validate_converged_lanes,
     };
     use adynkra_exact_sparse::level12::build_level12_matrix;
+    use std::fs::{File, OpenOptions};
+    use std::io::Write;
     use std::time::Instant;
 
     let options = Options::parse()?;
@@ -141,7 +143,38 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &level12.raising,
         std::slice::from_ref(&validated.canonical_modular),
     )?;
+    let rank_certificate = validated
+        .nullity_b_exactly_one
+        .then(|| integer.certify_characteristic_zero_rank(packed.columns() as usize - 1))
+        .transpose()?;
     let kernel = &integer.kernels[0];
+    let free_column = kernel
+        .coefficients
+        .iter()
+        .rposition(|coefficient| *coefficient != 0)
+        .ok_or("reconstructed kernel is zero")?;
+    if let Some(path) = &options.kernel_output {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let temporary = path.with_extension(format!(
+            "{}.tmp.{}",
+            path.extension()
+                .and_then(|extension| extension.to_str())
+                .unwrap_or("kernel"),
+            std::process::id()
+        ));
+        let mut output = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temporary)?;
+        output.write_all(&kernel.encoded_little_endian)?;
+        output.sync_all()?;
+        std::fs::rename(&temporary, path)?;
+        if let Some(parent) = path.parent() {
+            File::open(parent)?.sync_all()?;
+        }
+    }
     let transcripts = state
         .transcript
         .iter()
@@ -173,6 +206,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "  \"exact_nullity_one\": {},",
         validated.nullity_b_exactly_one
     );
+    println!(
+        "  \"characteristic_zero_rank\": {},",
+        rank_certificate
+            .as_ref()
+            .map(|certificate| certificate.characteristic_zero_rank)
+            .unwrap_or(0)
+    );
+    println!(
+        "  \"deterministic_characteristic_zero_rank_certified\": {},",
+        rank_certificate.is_some()
+    );
     println!("  \"gpu_Bx_zero\": true,");
     println!("  \"u_transpose_x_one\": true,");
     println!("  \"bordered_Cx_equals_u\": true,");
@@ -190,6 +234,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "  \"integer_kernel_max_abs\": {},",
         kernel.metadata.maximum_absolute_coefficient
     );
+    println!(
+        "  \"coefficient_width_bytes\": {},",
+        integer.coefficient_width_bytes
+    );
+    println!("  \"free_column\": {free_column},");
+    if let Some(path) = &options.kernel_output {
+        println!(
+            "  \"kernel_output\": \"{}\",",
+            escape_json(&path.display().to_string())
+        );
+    }
     println!("  \"rolling_transcript_u64_hex\": [{transcripts}],");
     println!(
         "  \"elapsed_seconds\": {:.6}",
@@ -207,6 +262,7 @@ struct Options {
     checkpoint_every: u32,
     benchmark_rounds: Option<u32>,
     checkpoint: Option<std::path::PathBuf>,
+    kernel_output: Option<std::path::PathBuf>,
     resume: bool,
     diagonal_seed: u64,
     border_seed: u64,
@@ -222,7 +278,7 @@ impl Options {
 
         let mut arguments = std::env::args().skip(1);
         let label = arguments.next().ok_or(
-            "usage: level12_cuda_null LABEL [--device N] [--chunk N] [--checkpoint PATH] [--checkpoint-every N] [--resume] [--diagonal-seed U64] [--border-seed U64] [--benchmark-rounds N]",
+            "usage: level12_cuda_null LABEL [--device N] [--chunk N] [--checkpoint PATH] [--checkpoint-every N] [--kernel-output PATH] [--resume] [--diagonal-seed U64] [--border-seed U64] [--benchmark-rounds N]",
         )?;
         let mut result = Self {
             label,
@@ -231,6 +287,7 @@ impl Options {
             checkpoint_every: 65_536,
             benchmark_rounds: None,
             checkpoint: None,
+            kernel_output: None,
             resume: false,
             diagonal_seed: DEFAULT_DIAGONAL_SEED,
             border_seed: DEFAULT_BORDER_SEED,
@@ -253,6 +310,11 @@ impl Options {
                 "--checkpoint" => {
                     result.checkpoint = Some(std::path::PathBuf::from(
                         arguments.next().ok_or("missing --checkpoint path")?,
+                    ))
+                }
+                "--kernel-output" => {
+                    result.kernel_output = Some(std::path::PathBuf::from(
+                        arguments.next().ok_or("missing --kernel-output path")?,
                     ))
                 }
                 "--resume" => result.resume = true,

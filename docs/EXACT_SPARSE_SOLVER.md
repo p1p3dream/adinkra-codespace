@@ -108,7 +108,9 @@ with maximum absolute coefficient 1 and SHA-256
 `5f78511aa24ab9ab779f3eea217e72f58dbe7a1d09c96d3e094b6f538bc982b2`.
 The full integer residual, kernel independence, and characteristic-zero rank
 bounds passed. Peak RSS was about 100 MB. Publication into the shared fixture
-manifest remains a separate locked step.
+manifest passed through the locked, checkpoint-last publisher. The subsequent
+`00100` exact elimination completed in 1,482.09 seconds and was published with
+rank 181,747 and nullity 1.
 
 On the M4 Pro, the packed block-width-32 `A^T D A` CPU reference measured:
 
@@ -118,12 +120,17 @@ On the M4 Pro, the packed block-width-32 `A^T D A` CPU reference measured:
 | `00100` | 30.64 ms | 140.7 MB |
 | `00000` | 63.90 ms | 289.2 MB |
 
-An RTX 4090 CUDA microbenchmark used the `00000` dimensions and nonzero count
-with a synthetic matching degree profile. Its exact packed block-width-32
-operator measured 0.361 ms for `D A X`, 0.517 ms for `A^T Y`, and 0.878 ms for
-the complete `A^T D A` application. A lane-zero CPU modular comparison passed.
-The feature-gated production backend then passed exact CPU parity and
-repeatability on small matrices and the real `30002` and `01002` matrices under
-CUDA 12.6 for `sm_89`. This remains a sparse-kernel floor, not an end-to-end
-solve time. Recurrence updates, checkpointing, reconstruction, and independent
-verification remain outside that number.
+On the real `00000` matrix, the RTX 4090 exact packed block-width-32 operator
+measured 0.669 ms per resident `A^T D A` application and matched the CPU result
+byte for byte. The production bordered conjugate-gradient recurrence measured
+1.332 ms per round, including reductions and vector updates.
+
+The full `00000` run completed all 353,120 exact rounds in 469.793 seconds. All
+32 independent bordered lanes converged after exactly 353,120 nonbreakdown
+directions and produced the same projective kernel. This supplies the modular
+rank lower bound 353,119. Rational reconstruction produced an integer kernel
+with 8,008 nonzero coefficients, maximum absolute coefficient 1, and SHA-256
+`fcf4930e6732a0c4e046196d7dacc0c30c5f7d9d937b00f6acfd005609178cdb`.
+The full 1,194,000-row integer residual passed. End-to-end solve and
+verification time was 472.409 seconds, completing the published level-12
+inventory at 19 systems and 41 kernel copies.
