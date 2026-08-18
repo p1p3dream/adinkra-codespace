@@ -5,11 +5,13 @@
 //! coordinate `i` occupy `i * block_width..(i + 1) * block_width`.
 
 pub mod accelerator;
+pub mod block32;
 pub mod certificate;
 #[cfg(feature = "cuda")]
 pub mod cuda;
 pub mod elimination;
 pub mod level12;
+pub mod publish;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};

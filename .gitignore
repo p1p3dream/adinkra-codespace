@@ -11,6 +11,7 @@ results/*.lock
 results/*.log
 results/**/status_*.jsonl
 results/**/*.rejected.*
+results/.level12-rust-staging/
 results/eleven_dimensional_first_momentum_fx_checkpoints/
 results/eleven_dimensional_first_momentum_fx_shared_checkpoints/
 
