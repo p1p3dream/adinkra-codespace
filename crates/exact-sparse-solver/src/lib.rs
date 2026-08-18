@@ -10,6 +10,8 @@ pub mod certificate;
 #[cfg(feature = "cuda")]
 pub mod cuda;
 pub mod elimination;
+#[cfg(feature = "cuda")]
+pub mod gpu_krylov;
 pub mod level12;
 pub mod publish;
 

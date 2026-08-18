@@ -13,7 +13,7 @@ use std::ptr::NonNull;
 use std::rc::Rc;
 
 const ERROR_CAPACITY: usize = 1024;
-pub const CUDA_ABI_VERSION: u32 = 1;
+pub const CUDA_ABI_VERSION: u32 = 2;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CudaError {
@@ -81,6 +81,95 @@ unsafe extern "C" {
         output: *mut c_char,
         capacity: usize,
     ) -> c_int;
+    fn adynkra_exact_cuda_cg_initialize(
+        operator: *mut RawCudaOperator,
+        border: *const u32,
+        block_entries: usize,
+        initial_rr: *const u32,
+        message: *mut c_char,
+        capacity: usize,
+    ) -> c_int;
+    fn adynkra_exact_cuda_cg_run(
+        operator: *mut RawCudaOperator,
+        rounds: u32,
+        total_rounds: *mut u64,
+        status: *mut u32,
+        lane_steps: *mut u32,
+        message: *mut c_char,
+        capacity: usize,
+    ) -> c_int;
+    fn adynkra_exact_cuda_cg_download_state(
+        operator: *mut RawCudaOperator,
+        x: *mut u32,
+        r: *mut u32,
+        p: *mut u32,
+        block_entries: usize,
+        rr: *mut u32,
+        status: *mut u32,
+        lane_steps: *mut u32,
+        transcript: *mut u64,
+        total_rounds: *mut u64,
+        message: *mut c_char,
+        capacity: usize,
+    ) -> c_int;
+    fn adynkra_exact_cuda_cg_upload_state(
+        operator: *mut RawCudaOperator,
+        border: *const u32,
+        x: *const u32,
+        r: *const u32,
+        p: *const u32,
+        block_entries: usize,
+        rr: *const u32,
+        status: *const u32,
+        lane_steps: *const u32,
+        transcript: *const u64,
+        total_rounds: u64,
+        message: *mut c_char,
+        capacity: usize,
+    ) -> c_int;
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(u32)]
+pub enum CudaCgLaneStatus {
+    Active = 0,
+    Converged = 1,
+    Broken = 2,
+}
+
+impl TryFrom<u32> for CudaCgLaneStatus {
+    type Error = CudaError;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Self::Active),
+            1 => Ok(Self::Converged),
+            2 => Ok(Self::Broken),
+            _ => Err(rust_error(
+                "cg_status",
+                format!("backend returned invalid CG lane status {value}"),
+            )),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CudaCgProgress {
+    pub total_rounds: u64,
+    pub status: [CudaCgLaneStatus; BLOCK_WIDTH],
+    pub lane_steps: [u32; BLOCK_WIDTH],
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CudaCgState {
+    pub x: Vec<u32>,
+    pub r: Vec<u32>,
+    pub p: Vec<u32>,
+    pub rr: [u32; BLOCK_WIDTH],
+    pub status: [CudaCgLaneStatus; BLOCK_WIDTH],
+    pub lane_steps: [u32; BLOCK_WIDTH],
+    pub transcript: [u64; BLOCK_WIDTH],
+    pub total_rounds: u64,
 }
 
 /// Owning CUDA normal operator. The marker deliberately keeps the stream and
@@ -250,6 +339,127 @@ impl CudaAtdaBlock32 {
         self.apply_steps(steps)?;
         self.download(output)
     }
+
+    /// Initialize 32 independent exact CG recurrences for
+    /// `(A^T D A + u_j u_j^T) x_j = u_j`.
+    ///
+    /// `initial_rr[j]` must equal `u_j^T u_j`. The CUDA boundary recomputes all
+    /// 32 values from `border` before accepting the state.
+    pub fn cg_initialize(
+        &mut self,
+        border: &[u32],
+        initial_rr: &[u32; BLOCK_WIDTH],
+    ) -> Result<(), CudaError> {
+        expect_block_length("cg_initialize", self.columns, border.len())?;
+        let mut message = error_buffer();
+        let code = unsafe {
+            adynkra_exact_cuda_cg_initialize(
+                self.raw.as_ptr(),
+                border.as_ptr(),
+                border.len(),
+                initial_rr.as_ptr(),
+                message.as_mut_ptr(),
+                message.len(),
+            )
+        };
+        check("cg_initialize", code, &message)
+    }
+
+    /// Run at most `rounds` more recurrence rounds. The backend rejects work
+    /// beyond the column dimension, which is also the maximum rank-proof span.
+    pub fn cg_run(&mut self, rounds: u32) -> Result<CudaCgProgress, CudaError> {
+        let mut total_rounds = 0_u64;
+        let mut raw_status = [0_u32; BLOCK_WIDTH];
+        let mut lane_steps = [0_u32; BLOCK_WIDTH];
+        let mut message = error_buffer();
+        let code = unsafe {
+            adynkra_exact_cuda_cg_run(
+                self.raw.as_ptr(),
+                rounds,
+                &mut total_rounds,
+                raw_status.as_mut_ptr(),
+                lane_steps.as_mut_ptr(),
+                message.as_mut_ptr(),
+                message.len(),
+            )
+        };
+        check("cg_run", code, &message)?;
+        Ok(CudaCgProgress {
+            total_rounds,
+            status: decode_statuses(raw_status)?,
+            lane_steps,
+        })
+    }
+
+    pub fn cg_download_state(&self) -> Result<CudaCgState, CudaError> {
+        let entries = block_entries(self.columns, "cg_download_state")?;
+        let mut state = CudaCgState {
+            x: vec![0; entries],
+            r: vec![0; entries],
+            p: vec![0; entries],
+            rr: [0; BLOCK_WIDTH],
+            status: [CudaCgLaneStatus::Active; BLOCK_WIDTH],
+            lane_steps: [0; BLOCK_WIDTH],
+            transcript: [0; BLOCK_WIDTH],
+            total_rounds: 0,
+        };
+        let mut raw_status = [0_u32; BLOCK_WIDTH];
+        let mut message = error_buffer();
+        let code = unsafe {
+            adynkra_exact_cuda_cg_download_state(
+                self.raw.as_ptr(),
+                state.x.as_mut_ptr(),
+                state.r.as_mut_ptr(),
+                state.p.as_mut_ptr(),
+                entries,
+                state.rr.as_mut_ptr(),
+                raw_status.as_mut_ptr(),
+                state.lane_steps.as_mut_ptr(),
+                state.transcript.as_mut_ptr(),
+                &mut state.total_rounds,
+                message.as_mut_ptr(),
+                message.len(),
+            )
+        };
+        check("cg_download_state", code, &message)?;
+        state.status = decode_statuses(raw_status)?;
+        Ok(state)
+    }
+
+    /// Restore recurrence vectors. A restored state can recover a kernel, but
+    /// its prior direction count is not standalone rank-proof evidence unless
+    /// the deterministic transcript is replayed from its original seed.
+    pub fn cg_upload_state(
+        &mut self,
+        border: &[u32],
+        state: &CudaCgState,
+    ) -> Result<(), CudaError> {
+        let expected = block_entries(self.columns, "cg_upload_state")?;
+        expect_exact_length("cg_upload_state x", expected, state.x.len())?;
+        expect_exact_length("cg_upload_state r", expected, state.r.len())?;
+        expect_exact_length("cg_upload_state p", expected, state.p.len())?;
+        expect_exact_length("cg_upload_state border", expected, border.len())?;
+        let raw_status = state.status.map(|status| status as u32);
+        let mut message = error_buffer();
+        let code = unsafe {
+            adynkra_exact_cuda_cg_upload_state(
+                self.raw.as_ptr(),
+                border.as_ptr(),
+                state.x.as_ptr(),
+                state.r.as_ptr(),
+                state.p.as_ptr(),
+                expected,
+                state.rr.as_ptr(),
+                raw_status.as_ptr(),
+                state.lane_steps.as_ptr(),
+                state.transcript.as_ptr(),
+                state.total_rounds,
+                message.as_mut_ptr(),
+                message.len(),
+            )
+        };
+        check("cg_upload_state", code, &message)
+    }
 }
 
 impl Debug for CudaAtdaBlock32 {
@@ -289,6 +499,35 @@ fn expect_block_length(
     }
 }
 
+fn block_entries(columns: u32, operation: &'static str) -> Result<usize, CudaError> {
+    (columns as usize)
+        .checked_mul(BLOCK_WIDTH)
+        .ok_or_else(|| rust_error(operation, "block32 length overflow".to_owned()))
+}
+
+fn expect_exact_length(
+    operation: &'static str,
+    expected: usize,
+    actual: usize,
+) -> Result<(), CudaError> {
+    if expected == actual {
+        Ok(())
+    } else {
+        Err(rust_error(
+            operation,
+            format!("requires length {expected}, got {actual}"),
+        ))
+    }
+}
+
+fn decode_statuses(raw: [u32; BLOCK_WIDTH]) -> Result<[CudaCgLaneStatus; BLOCK_WIDTH], CudaError> {
+    let mut result = [CudaCgLaneStatus::Active; BLOCK_WIDTH];
+    for (destination, value) in result.iter_mut().zip(raw) {
+        *destination = CudaCgLaneStatus::try_from(value)?;
+    }
+    Ok(result)
+}
+
 fn error_buffer() -> Vec<c_char> {
     vec![0; ERROR_CAPACITY]
 }
@@ -324,7 +563,7 @@ mod tests {
     use super::*;
     use crate::accelerator::{BlockWorkspace32, PackedSignedUnitMatrix, pinned_nonzero_diagonal};
     use crate::level12::build_level12_matrix;
-    use crate::{CsrMatrix, PRIME, Triplet};
+    use crate::{CsrMatrix, PRIME, Triplet, field_add, field_mul, field_sub};
 
     fn sample_matrix() -> CsrMatrix {
         CsrMatrix::from_triplets(
@@ -455,5 +694,184 @@ mod tests {
     #[test]
     fn cuda_level12_01002_matches_cpu_reference() {
         assert_level12_parity("01002", 0x0100_0201_0002_0100);
+    }
+
+    fn bordered_diagonal_matrix() -> CsrMatrix {
+        CsrMatrix::from_triplets(
+            3,
+            4,
+            vec![
+                Triplet {
+                    row: 0,
+                    column: 1,
+                    coefficient: 1,
+                },
+                Triplet {
+                    row: 1,
+                    column: 2,
+                    coefficient: 1,
+                },
+                Triplet {
+                    row: 2,
+                    column: 3,
+                    coefficient: 1,
+                },
+            ],
+        )
+        .unwrap()
+    }
+
+    fn inverse(value: u32) -> u32 {
+        let mut result = 1;
+        let mut base = value;
+        let mut exponent = PRIME - 2;
+        while exponent != 0 {
+            if exponent & 1 != 0 {
+                result = field_mul(result, base);
+            }
+            base = field_mul(base, base);
+            exponent >>= 1;
+        }
+        result
+    }
+
+    fn cpu_cg_step(
+        packed: &PackedSignedUnitMatrix,
+        diagonal: &[u32],
+        border: &[u32],
+        state: &mut CudaCgState,
+    ) {
+        let mut bp = vec![0; state.p.len()];
+        let mut workspace = BlockWorkspace32::new(packed).unwrap();
+        packed
+            .apply_atda_block32(diagonal, &state.p, &mut bp, &mut workspace)
+            .unwrap();
+        for lane in 0..BLOCK_WIDTH {
+            if state.status[lane] != CudaCgLaneStatus::Active {
+                continue;
+            }
+            let mut sigma = 0;
+            let mut p_bp = 0;
+            for coordinate in 0..packed.columns() as usize {
+                let index = coordinate * BLOCK_WIDTH + lane;
+                sigma = field_add(sigma, field_mul(border[index], state.p[index]));
+                p_bp = field_add(p_bp, field_mul(state.p[index], bp[index]));
+            }
+            let p_cp = field_add(p_bp, field_mul(sigma, sigma));
+            if state.rr[lane] == 0 || p_cp == 0 {
+                state.status[lane] = CudaCgLaneStatus::Broken;
+                continue;
+            }
+            let alpha = field_mul(state.rr[lane], inverse(p_cp));
+            for coordinate in 0..packed.columns() as usize {
+                let index = coordinate * BLOCK_WIDTH + lane;
+                let cp = field_add(bp[index], field_mul(border[index], sigma));
+                state.x[index] = field_add(state.x[index], field_mul(alpha, state.p[index]));
+                state.r[index] = field_sub(state.r[index], field_mul(alpha, cp));
+            }
+            state.lane_steps[lane] += 1;
+            let mut next_rr = 0;
+            let mut any_nonzero = false;
+            for coordinate in 0..packed.columns() as usize {
+                let value = state.r[coordinate * BLOCK_WIDTH + lane];
+                next_rr = field_add(next_rr, field_mul(value, value));
+                any_nonzero |= value != 0;
+            }
+            if !any_nonzero {
+                state.status[lane] = CudaCgLaneStatus::Converged;
+                state.rr[lane] = 0;
+            } else if next_rr == 0 {
+                state.status[lane] = CudaCgLaneStatus::Broken;
+                state.rr[lane] = 0;
+            } else {
+                let beta = field_mul(next_rr, inverse(state.rr[lane]));
+                state.rr[lane] = next_rr;
+                for coordinate in 0..packed.columns() as usize {
+                    let index = coordinate * BLOCK_WIDTH + lane;
+                    state.p[index] = field_add(state.r[index], field_mul(beta, state.p[index]));
+                }
+            }
+        }
+        state.total_rounds += 1;
+    }
+
+    fn assert_recurrence_equal(left: &CudaCgState, right: &CudaCgState) {
+        assert_eq!(left.x, right.x);
+        assert_eq!(left.r, right.r);
+        assert_eq!(left.p, right.p);
+        assert_eq!(left.rr, right.rr);
+        assert_eq!(left.status, right.status);
+        assert_eq!(left.lane_steps, right.lane_steps);
+        assert_eq!(left.total_rounds, right.total_rounds);
+    }
+
+    #[test]
+    fn cuda_bordered_cg_matches_cpu_breakdown_rank_and_restore() {
+        use crate::gpu_krylov::{lane_squared_norms, pinned_border_block};
+
+        let matrix = bordered_diagonal_matrix();
+        let packed = PackedSignedUnitMatrix::from_csr(&matrix).unwrap();
+        let diagonal = vec![1, 2, 3];
+        let mut border = pinned_border_block(packed.columns(), 0x1234).unwrap();
+        // Lane 0 is an early one-step kernel solve.
+        for coordinate in 0..4 {
+            border[coordinate * BLOCK_WIDTH] = u32::from(coordinate == 0);
+        }
+        // Lane 1 is nonzero but isotropic over the production field.
+        for (coordinate, value) in [1, 1, 1, 1_268_011_823].into_iter().enumerate() {
+            border[coordinate * BLOCK_WIDTH + 1] = value;
+        }
+        let rr = lane_squared_norms(&border).unwrap();
+        assert_eq!(rr[1], 0);
+
+        let mut gpu = CudaAtdaBlock32::new(&packed, &diagonal, 0).unwrap();
+        let mut wrong_rr = rr;
+        wrong_rr[0] = field_add(wrong_rr[0], 1);
+        assert!(gpu.cg_initialize(&border, &wrong_rr).is_err());
+        gpu.cg_initialize(&border, &rr).unwrap();
+        let initial = gpu.cg_run(0).unwrap();
+        assert_eq!(initial.status[1], CudaCgLaneStatus::Broken);
+
+        let entries = border.len();
+        let mut reference = CudaCgState {
+            x: vec![0; entries],
+            r: border.clone(),
+            p: border.clone(),
+            rr,
+            status: initial.status,
+            lane_steps: [0; BLOCK_WIDTH],
+            transcript: [0; BLOCK_WIDTH],
+            total_rounds: 0,
+        };
+        gpu.cg_run(1).unwrap();
+        cpu_cg_step(&packed, &diagonal, &border, &mut reference);
+        let after_one = gpu.cg_download_state().unwrap();
+        assert_recurrence_equal(&after_one, &reference);
+        assert_eq!(after_one.status[0], CudaCgLaneStatus::Converged);
+        assert_eq!(after_one.lane_steps[0], 1);
+
+        gpu.cg_run(1).unwrap();
+        cpu_cg_step(&packed, &diagonal, &border, &mut reference);
+        let checkpoint = gpu.cg_download_state().unwrap();
+        assert_recurrence_equal(&checkpoint, &reference);
+        gpu.cg_run(2).unwrap();
+        cpu_cg_step(&packed, &diagonal, &border, &mut reference);
+        cpu_cg_step(&packed, &diagonal, &border, &mut reference);
+        let final_state = gpu.cg_download_state().unwrap();
+        assert_recurrence_equal(&final_state, &reference);
+        assert!(
+            final_state
+                .status
+                .iter()
+                .zip(final_state.lane_steps)
+                .any(|(status, steps)| *status == CudaCgLaneStatus::Converged && steps == 4)
+        );
+        assert!(gpu.cg_run(1).is_err());
+
+        let mut restored = CudaAtdaBlock32::new(&packed, &diagonal, 0).unwrap();
+        restored.cg_upload_state(&border, &checkpoint).unwrap();
+        restored.cg_run(2).unwrap();
+        let restored_final = restored.cg_download_state().unwrap();
+        assert_eq!(restored_final, final_state);
     }
 }
