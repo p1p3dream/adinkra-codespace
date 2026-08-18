@@ -127,6 +127,27 @@ impl SparseExactMatrix {
         }
     }
 
+    /// Deterministic public snapshot of the nonzero coefficients.  This lets
+    /// companion exact-symbol modules lift a matrix without probing every
+    /// ambient zero entry.
+    pub fn nonzero_coefficients(&self) -> Vec<(usize, usize, ExactCoefficient)> {
+        self.entries
+            .iter()
+            .map(|(&(row, column), &value)| {
+                (
+                    row,
+                    column,
+                    ExactCoefficient {
+                        real_numerator: *value.real.numer(),
+                        real_denominator: *value.real.denom(),
+                        imaginary_numerator: *value.imaginary.numer(),
+                        imaginary_denominator: *value.imaginary.denom(),
+                    },
+                )
+            })
+            .collect()
+    }
+
     fn add_exact(&mut self, row: usize, column: usize, coefficient: ExactGaussian) {
         assert!(row < self.rows && column < self.columns);
         if coefficient.is_zero() {

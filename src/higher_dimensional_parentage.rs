@@ -85,7 +85,7 @@ pub struct CentralStructure {
 #[serde(rename_all = "snake_case")]
 pub enum Certification {
     ExactFourDimensionalClosure,
-    ExactFourDimensionalClosureWithoutCentralBridge,
+    ExactFourDimensionalClosureWithZeroBraneCentralBridge,
     ExactTangentPreflight,
 }
 
@@ -443,7 +443,7 @@ pub fn known_catalog() -> Vec<PhysicalFingerprint> {
         },
         central: central_one_z(),
         closure: ClosureCertificate {
-            certification: Certification::ExactFourDimensionalClosureWithoutCentralBridge,
+            certification: Certification::ExactFourDimensionalClosureWithZeroBraneCentralBridge,
             component_relations_checked: 720,
             unexplained_residual_relations: 0,
             gauge_residues_retained: true,
@@ -510,14 +510,17 @@ pub fn known_catalog() -> Vec<PhysicalFingerprint> {
 }
 
 fn exact_4d(fingerprint: &PhysicalFingerprint) -> bool {
-    fingerprint.closure.certification == Certification::ExactFourDimensionalClosure
-        && fingerprint.closure.unexplained_residual_relations == 0
+    matches!(
+        fingerprint.closure.certification,
+        Certification::ExactFourDimensionalClosure
+            | Certification::ExactFourDimensionalClosureWithZeroBraneCentralBridge
+    ) && fingerprint.closure.unexplained_residual_relations == 0
 }
 
 fn qualification(fingerprint: &PhysicalFingerprint) -> Option<&'static str> {
     match fingerprint.closure.certification {
         Certification::ExactFourDimensionalClosure => None,
-        Certification::ExactFourDimensionalClosureWithoutCentralBridge => Some(
+        Certification::ExactFourDimensionalClosureWithZeroBraneCentralBridge => Some(
             "4D closure and the fixed Eq. (4.6) zero-brane central bridge are exact; the direct repaired Eq. (4.5) reduction to Appendix F remains open",
         ),
         Certification::ExactTangentPreflight => Some(

@@ -132,7 +132,14 @@ fn hop(m: &[SignedPerm]) -> Vec<SignedPerm> {
 }
 
 /// Compute (X, Y, Z, W) from a length-4 list of base matrices (L or R).
-pub fn recursion(base: &[SignedPerm]) -> (Vec<SignedPerm>, Vec<SignedPerm>, Vec<SignedPerm>, Vec<SignedPerm>) {
+pub fn recursion(
+    base: &[SignedPerm],
+) -> (
+    Vec<SignedPerm>,
+    Vec<SignedPerm>,
+    Vec<SignedPerm>,
+    Vec<SignedPerm>,
+) {
     let x = hop(base);
     let y = hop(&x);
     let z = hop(&y);
@@ -140,15 +147,31 @@ pub fn recursion(base: &[SignedPerm]) -> (Vec<SignedPerm>, Vec<SignedPerm>, Vec<
     (x, y, z, w)
 }
 
-pub fn vm_x() -> Vec<SignedPerm> { recursion(&vm_l()).0 }
-pub fn vm_y() -> Vec<SignedPerm> { recursion(&vm_l()).1 }
-pub fn vm_z() -> Vec<SignedPerm> { recursion(&vm_l()).2 }
-pub fn vm_w() -> Vec<SignedPerm> { recursion(&vm_l()).3 }
+pub fn vm_x() -> Vec<SignedPerm> {
+    recursion(&vm_l()).0
+}
+pub fn vm_y() -> Vec<SignedPerm> {
+    recursion(&vm_l()).1
+}
+pub fn vm_z() -> Vec<SignedPerm> {
+    recursion(&vm_l()).2
+}
+pub fn vm_w() -> Vec<SignedPerm> {
+    recursion(&vm_l()).3
+}
 
-pub fn vm_x_primed() -> Vec<SignedPerm> { recursion(&vm_r()).0 }
-pub fn vm_y_primed() -> Vec<SignedPerm> { recursion(&vm_r()).1 }
-pub fn vm_z_primed() -> Vec<SignedPerm> { recursion(&vm_r()).2 }
-pub fn vm_w_primed() -> Vec<SignedPerm> { recursion(&vm_r()).3 }
+pub fn vm_x_primed() -> Vec<SignedPerm> {
+    recursion(&vm_r()).0
+}
+pub fn vm_y_primed() -> Vec<SignedPerm> {
+    recursion(&vm_r()).1
+}
+pub fn vm_z_primed() -> Vec<SignedPerm> {
+    recursion(&vm_r()).2
+}
+pub fn vm_w_primed() -> Vec<SignedPerm> {
+    recursion(&vm_r()).3
+}
 
 // ---------------------------------------------------------------------------
 // Report.

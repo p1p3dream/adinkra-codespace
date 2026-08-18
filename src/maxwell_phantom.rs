@@ -1,7 +1,7 @@
 //! Exact phantom-sector extraction from the N=1 Maxwell subsystem of the
 //! verified chiral-vector positive control.
 
-use crate::chiral_vector_4d::{matrix_mul, matrix_scale, Clifford4D, GaussianRational, Matrix4};
+use crate::chiral_vector_4d::{Clifford4D, GaussianRational, Matrix4, matrix_mul, matrix_scale};
 use num_rational::Ratio;
 use serde::Serialize;
 use std::fs::File;
@@ -99,11 +99,7 @@ fn epsilon3(indices: [usize; 3]) -> i8 {
     let inversions = usize::from(indices[0] > indices[1])
         + usize::from(indices[0] > indices[2])
         + usize::from(indices[1] > indices[2]);
-    if inversions.is_multiple_of(2) {
-        1
-    } else {
-        -1
-    }
+    if inversions.is_multiple_of(2) { 1 } else { -1 }
 }
 
 fn build_linkages() -> (Linkage, Linkage, [Linkage; 3]) {

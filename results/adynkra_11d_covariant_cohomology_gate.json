@@ -1,0 +1,89 @@
+{
+  "schema_version": "adynkra-11d-covariant-cohomology-entry-gate-v1",
+  "role": "exact degree-two pure-spinor nilpotence certificate and covariant off-shell dependency boundary",
+  "primary_sources": [
+    {
+      "source": "Howe, Weyl Superspace, arXiv:hep-th/9707184",
+      "source_archive_sha256": "2aa95c8072e75c6d6b2592f4880a8dbbd843a0036f7805613d911b99608e9482",
+      "executable_claim": "the standard dimension-zero torsion constraint T_{alpha beta}^c proportional to Gamma^c_{alpha beta}, together with superspace Bianchi identities, implies the 11D supergravity equations of motion",
+      "classification": "ordinary superspace, standard dimension-zero torsion constraint, on-shell consequence"
+    },
+    {
+      "source": "Cederwall, D=11 supergravity with manifest supersymmetry, arXiv:1001.0112",
+      "source_archive_sha256": "3a336bb229123da15da64c121f7620af6f3fd4e8a76377b1cbdbd8956b1dd525",
+      "executable_claim": "lambda Gamma^a lambda=0 and q=lambda D; the scalar pure-spinor superfield has BRST cohomology equal to the linearized supergravity multiplet, while Q Psi plus interactions is the equation of motion in a BV action",
+      "classification": "pure-spinor BV complex with manifest supersymmetry, not a traditional finite-auxiliary component multiplet"
+    },
+    {
+      "source": "Cederwall, Nilsson, Tsimpis, Spinorial cohomology and maximally supersymmetric theories, arXiv:hep-th/0110069",
+      "source_archive_sha256": "5d232edd240298530f8216a351e282f4261a0cfe3ec4cfa02c1eaa055f8e43ea",
+      "executable_claim": "the projected spinorial derivative defines a complex in undeformed 11D supergravity; nilpotence uses conventional constraints and torsion Bianchi identities, and the cohomology organizes gauge transformations, fields, equations, and deformations",
+      "classification": "spinorial cohomology about the undeformed on-shell supergravity background"
+    },
+    {
+      "source": "Tsimpis, 11D supergravity at O(l^3), arXiv:hep-th/0407271",
+      "source_archive_sha256": "013049a4da503cdee37a67447ab5adc17a30678e07430ecd43905fb0bdc47ee3",
+      "executable_claim": "H_F^{0,4}(phys) controls supersymmetric deformations after tau_0 cohomology and the physical-field coefficient restriction are imposed",
+      "classification": "deformation cohomology, not an off-shell component closure construction"
+    },
+    {
+      "source": "Gates, Hu, Mak, arXiv:2002.08502; Gates, Hu, arXiv:2007.05097 (10D Weyl/prepotential paper)",
+      "source_archive_sha256": "c09eecabbdc073c06b4681b46df146bb2644951bd9d173eb26d41a87a83e74b2; 3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7",
+      "executable_claim": "arXiv:2002.08502 supplies the scalar-superfield inventory and presents an unconstrained scalar prepotential as a conjecture; arXiv:2007.05097 studies 10D Weyl covariance and prepotential candidates rather than 11D spinorial cohomology; neither prints complete 11D covariant off-shell closure laws",
+      "classification": "11D representation inventory and conjectural prepotential, plus 10D Weyl/prepotential conventions; source-underdetermined 11D off-shell closure"
+    }
+  ],
+  "spinor_dimension": 32,
+  "symmetric_spinor_square_dimension": 528,
+  "symmetric_spinor_square_decomposition": "Sym^2(00001) = (10000) + (01000) + (00002), dimensions 11+55+462=528",
+  "pure_spinor_constraint_count": 11,
+  "pure_spinor_constraint_matrix_entries_checked": 11264,
+  "pure_spinor_constraint_symmetry_residual_entries": 0,
+  "pure_spinor_constraint_span_rank": 11,
+  "quadratic_quotient_dimension": 517,
+  "q_square_generators_checked": 11,
+  "q_square_ideal_membership_residual_entries": 0,
+  "flat_pure_spinor_brst_nilpotence_certified": true,
+  "standard_dimension_zero_torsion_constraint_is_on_shell": true,
+  "ordinary_superspace_bianchi_closure_computed": false,
+  "full_spinorial_cohomology_computed": false,
+  "pure_spinor_bv_master_equation_computed": false,
+  "finite_auxiliary_off_shell_closure_computed": false,
+  "current_gate_classification": "covariant algebraic BRST entry gate in flat superspace; necessary for pure-spinor cohomology but not sufficient for ordinary superspace Bianchi closure or off-shell component closure",
+  "missing_dependencies": [
+    {
+      "ordinal": 1,
+      "object": "relaxed dimension-zero torsion superfields X_[2]^c and X_[5]^c with complete conventional-constraint quotient",
+      "required_identity": "all conventional transformations are quotiented without imposing the physical equations of motion",
+      "why_current_data_are_insufficient": "the repository has representation hooks and candidate target maps, but no source-fixed nonlinear superspace torsion law on these superfields"
+    },
+    {
+      "ordinal": 2,
+      "object": "covariant spinorial differential d_F on the relaxed torsion modules",
+      "required_identity": "d_F squared vanishes modulo tau_0 exact terms before equations of motion are imposed",
+      "why_current_data_are_insufficient": "current exterior-level kernels encode Spin(11) representation content, not the connection, torsion, curvature, and momentum-dependent differential required by the superspace algebra"
+    },
+    {
+      "ordinal": 3,
+      "object": "complete torsion and four-form Bianchi tower",
+      "required_identity": "DT^A=E^B R_B^A, DR=0, and dG_4=0 close at every engineering dimension",
+      "why_current_data_are_insufficient": "only bounded algebraic hooks and free component complexes exist; the higher-dimensional superspace Bianchi maps are not implemented"
+    },
+    {
+      "ordinal": 4,
+      "object": "off-shell closure criterion and auxiliary-field sector",
+      "required_identity": "the 32 supersymmetries close covariantly without using Euler-Lagrange equations, modulo declared gauge transformations",
+      "why_current_data_are_insufficient": "Howe's standard constraint is on-shell and Cederwall's Q Psi equation is the BV equation of motion; neither supplies a finite traditional auxiliary completion"
+    },
+    {
+      "ordinal": 5,
+      "object": "pure-spinor interaction operators R^a and T in the repository's exact basis",
+      "required_identity": "the BV master equation (S,S)=0, including Q-exact R^a(lambda Gamma_ab lambda)R^b and T identities",
+      "why_current_data_are_insufficient": "the non-minimal pure-spinor variables, localization by eta, measure, R^a, and T are absent from the current finite Clifford and exterior-kernel infrastructure"
+    }
+  ],
+  "off_shell_dependency_certificate_complete": true,
+  "passed": true,
+  "result": "q^2 lies exactly in the quadratic pure-spinor ideal. The next covariant off-shell step is blocked by missing relaxed-torsion differential and Bianchi data, not by Clifford arithmetic.",
+  "boundary": "nilpotence modulo lambda Gamma^a lambda is not a proof of a finite off-shell 11D multiplet. The standard dimension-zero torsion constraint is on-shell; pure-spinor BV cohomology and spinorial deformation cohomology must not be relabeled as traditional auxiliary-field closure."
+}

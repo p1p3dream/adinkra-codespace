@@ -4,7 +4,7 @@
 //! signings, and closure of the published sign assignment separate.
 
 use crate::lr_matrix::AdinkraRep;
-use crate::permutahedron::{coset_partition, CosetSide, Permutation};
+use crate::permutahedron::{CosetSide, Permutation, coset_partition};
 use crate::permutahedron_fixtures::{R8_DIADEM_OCTET, S8_REPRESENTATION_OCTETS};
 use crate::permutahedron_garden::solve_garden_signing;
 use crate::permutahedron_hypergraph::identity_hyperedges;

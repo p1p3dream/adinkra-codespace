@@ -1,7 +1,7 @@
 //! Recover the Maxwell gauge-enhancement passer from worldline linkage data.
 
 use crate::maxwell_phantom::{
-    gauge_enhancement_gate, source_chiral_worldline, source_maxwell_worldline, WorldlineLinkage,
+    WorldlineLinkage, gauge_enhancement_gate, source_chiral_worldline, source_maxwell_worldline,
 };
 use serde::Serialize;
 use std::fs::File;

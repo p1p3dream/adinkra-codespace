@@ -296,11 +296,7 @@ pub fn tridiag_eigen(alpha: &[f64], beta: &[f64]) -> (Vec<f64>, Vec<Vec<f64>>) {
 
 /// Copy of libm copysign: return `a` with the sign of `b`.
 fn copysign(a: f64, b: f64) -> f64 {
-    if b >= 0.0 {
-        a.abs()
-    } else {
-        -a.abs()
-    }
+    if b >= 0.0 { a.abs() } else { -a.abs() }
 }
 
 // ── 4. Spectral density ─────────────────────────────────────────────────────
@@ -1868,6 +1864,151 @@ mod tests {
                 (rayleigh - eval).abs() < 0.01,
                 "eigenvector {i}: Rayleigh quotient {rayleigh:.6} != eigenvalue {eval:.6}"
             );
+        }
+    }
+
+    fn build_s8_test_data() -> (Vec<(usize, usize, usize)>, usize, usize, Vec<usize>, usize) {
+        let graph = crate::permutahedron::complete_graph(8).unwrap();
+        let edges: Vec<(usize, usize, usize)> = graph
+            .edges
+            .iter()
+            .map(|e| (e[0] as usize, e[1] as usize, 0))
+            .collect();
+        let r8 = crate::permutahedron::rana_r8();
+        let partition =
+            crate::permutahedron::coset_partition(&r8, crate::permutahedron::CosetSide::Right)
+                .unwrap();
+        let n_cosets = partition.slices.len();
+        let mut coset_labels = vec![0usize; graph.vertex_count];
+        for (i, sl) in partition.slices.iter().enumerate() {
+            for &v in sl {
+                coset_labels[v as usize] = i;
+            }
+        }
+        (
+            edges,
+            graph.degree,
+            graph.vertex_count,
+            coset_labels,
+            n_cosets,
+        )
+    }
+
+    #[test]
+    fn test_chebyshev_narrow_s8_low_window() {
+        let (edges, degree, n_verts, coset_labels, n_cosets) = build_s8_test_data();
+
+        for &n_vecs in &[20, 50, 100] {
+            let (evals, evecs) =
+                chebyshev_filtered_subspace(&edges, degree, n_verts, 6.3, 6.7, n_vecs, 40, 42);
+            println!(
+                "[6.3, 6.7] n_vectors={}: found {} eigenvalues",
+                n_vecs,
+                evals.len()
+            );
+            for (i, &ev) in evals.iter().enumerate().take(10) {
+                println!("  {:2}. lambda = {:.6}", i, ev);
+            }
+            if !evecs.is_empty() {
+                let dim = n_vecs.min(evecs.len());
+                let embedding: Vec<Vec<f64>> = (0..n_verts)
+                    .map(|v| evecs.iter().take(dim).map(|ev| ev[v]).collect())
+                    .collect();
+                let predicted = kmeans_clustering(&embedding, n_verts, n_cosets, 3, 50, 42);
+                let ari = adjusted_rand_index(&coset_labels, &predicted);
+                println!("  ARI = {:.6} (dim={})", ari, dim);
+            }
+        }
+    }
+
+    #[test]
+    fn test_chebyshev_narrow_s8_high_window() {
+        let (edges, degree, n_verts, coset_labels, n_cosets) = build_s8_test_data();
+
+        for &n_vecs in &[20, 50, 100] {
+            let (evals, evecs) =
+                chebyshev_filtered_subspace(&edges, degree, n_verts, 7.3, 7.7, n_vecs, 40, 42);
+            println!(
+                "[7.3, 7.7] n_vectors={}: found {} eigenvalues",
+                n_vecs,
+                evals.len()
+            );
+            for (i, &ev) in evals.iter().enumerate().take(10) {
+                println!("  {:2}. lambda = {:.6}", i, ev);
+            }
+            if !evecs.is_empty() {
+                let dim = n_vecs.min(evecs.len());
+                let embedding: Vec<Vec<f64>> = (0..n_verts)
+                    .map(|v| evecs.iter().take(dim).map(|ev| ev[v]).collect())
+                    .collect();
+                let predicted = kmeans_clustering(&embedding, n_verts, n_cosets, 3, 50, 42);
+                let ari = adjusted_rand_index(&coset_labels, &predicted);
+                println!("  ARI = {:.6} (dim={})", ari, dim);
+            }
+        }
+    }
+
+    #[test]
+    fn test_chebyshev_dual_window_s8() {
+        let (edges, degree, n_verts, coset_labels, n_cosets) = build_s8_test_data();
+
+        let n_vecs = 50;
+        println!("Extracting {} vectors from [6.3, 6.7]...", n_vecs);
+        let (evals_low, evecs_low) =
+            chebyshev_filtered_subspace(&edges, degree, n_verts, 6.3, 6.7, n_vecs, 40, 42);
+        println!("  Found {} eigenvalues in [6.3, 6.7]", evals_low.len());
+        for (i, &ev) in evals_low.iter().enumerate().take(5) {
+            println!("  {:2}. lambda = {:.6}", i, ev);
+        }
+
+        println!("Extracting {} vectors from [7.3, 7.7]...", n_vecs);
+        let (evals_high, evecs_high) =
+            chebyshev_filtered_subspace(&edges, degree, n_verts, 7.3, 7.7, n_vecs, 40, 123);
+        println!("  Found {} eigenvalues in [7.3, 7.7]", evals_high.len());
+        for (i, &ev) in evals_high.iter().enumerate().take(5) {
+            println!("  {:2}. lambda = {:.6}", i, ev);
+        }
+
+        let n_low = evecs_low.len().min(n_vecs);
+        let n_high = evecs_high.len().min(n_vecs);
+        let total_dim = n_low + n_high;
+        println!(
+            "Combined embedding: {} + {} = {} dimensions",
+            n_low, n_high, total_dim
+        );
+
+        let embedding: Vec<Vec<f64>> = (0..n_verts)
+            .map(|v| {
+                let mut coords = Vec::with_capacity(total_dim);
+                for ev in evecs_low.iter().take(n_low) {
+                    coords.push(ev[v]);
+                }
+                for ev in evecs_high.iter().take(n_high) {
+                    coords.push(ev[v]);
+                }
+                coords
+            })
+            .collect();
+
+        let predicted = kmeans_clustering(&embedding, n_verts, n_cosets, 3, 50, 42);
+        let ari = adjusted_rand_index(&coset_labels, &predicted);
+        println!("Combined dual-window ARI = {:.6} (dim={})", ari, total_dim);
+
+        if n_low > 0 {
+            let embed_low: Vec<Vec<f64>> = (0..n_verts)
+                .map(|v| evecs_low.iter().take(n_low).map(|ev| ev[v]).collect())
+                .collect();
+            let pred_low = kmeans_clustering(&embed_low, n_verts, n_cosets, 3, 50, 42);
+            let ari_low = adjusted_rand_index(&coset_labels, &pred_low);
+            println!("[6.3,6.7] alone ARI = {:.6}", ari_low);
+        }
+        if n_high > 0 {
+            let embed_high: Vec<Vec<f64>> = (0..n_verts)
+                .map(|v| evecs_high.iter().take(n_high).map(|ev| ev[v]).collect())
+                .collect();
+            let pred_high = kmeans_clustering(&embed_high, n_verts, n_cosets, 3, 50, 42);
+            let ari_high = adjusted_rand_index(&coset_labels, &pred_high);
+            println!("[7.3,7.7] alone ARI = {:.6}", ari_high);
         }
     }
 }

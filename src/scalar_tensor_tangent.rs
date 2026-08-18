@@ -240,8 +240,7 @@ pub fn build() -> ScalarTensorTangentArtifact {
         gauge_fixed_partial_b_coefficient,
         surviving_dual_h_coefficient: [1, 2],
         phase_slice: "Im(v^i q_i)=0",
-        q_compensator:
-            "alpha_Q=(2/r) Im[v^i(-bar(epsilon_i) theta_R+epsilon_ij bar(epsilon^j) psi_L)]",
+        q_compensator: "alpha_Q=(2/r) Im[v^i(-bar(epsilon_i) theta_R+epsilon_ij bar(epsilon^j) psi_L)]",
         composite_connection_transforms_correctly: delta_w_per_partial_z == 1,
         phase_mode_cancels_from_d_xi_1: gauge_fixed_partial_b_coefficient == 0,
     };

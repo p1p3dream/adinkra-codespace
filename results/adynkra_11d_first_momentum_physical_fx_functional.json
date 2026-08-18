@@ -1,0 +1,144 @@
+{
+  "schema_version": "adynkra-11d-first-momentum-partial-fx-functional-v3",
+  "role": "exact deterministic mask-summed functional lower bound for all-six first-momentum partial F_X A G_p on a declared target/parameter slice",
+  "curvature_artifact_sha256": "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f",
+  "coefficient_space": "five exact leading F_X-kernel coordinates plus 44 recorded first-momentum correction coordinates",
+  "coefficient_variables": 49,
+  "leading_kernel_variables": 5,
+  "first_momentum_correction_variables": 44,
+  "deterministic_hash_seeds": [
+    "243f6a8885a308d3",
+    "13198a2e03707344",
+    "a4093822299f31d0",
+    "082efa98ec4e6c89"
+  ],
+  "buckets_per_seed": 16,
+  "bounded_channel_concurrency": 1,
+  "operator_checkpoints_per_channel": 56,
+  "checkpoint_resume_enabled": true,
+  "channel_reports": [
+    {
+      "gauge_form_degree": 0,
+      "parameter_components_total": 1,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "operator_columns_composed": 56,
+      "emitted_target_terms": 88523712,
+      "x2_functional_rank_lower_bound": 11,
+      "x2_functional_nullity_upper_bound": 38,
+      "x5_functional_rank_lower_bound": 11,
+      "x5_functional_nullity_upper_bound": 38,
+      "joint_functional_rank_lower_bound": 11,
+      "joint_functional_nullity_upper_bound": 38
+    },
+    {
+      "gauge_form_degree": 1,
+      "parameter_components_total": 11,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "operator_columns_composed": 56,
+      "emitted_target_terms": 237044726,
+      "x2_functional_rank_lower_bound": 46,
+      "x2_functional_nullity_upper_bound": 3,
+      "x5_functional_rank_lower_bound": 46,
+      "x5_functional_nullity_upper_bound": 3,
+      "joint_functional_rank_lower_bound": 46,
+      "joint_functional_nullity_upper_bound": 3
+    },
+    {
+      "gauge_form_degree": 2,
+      "parameter_components_total": 55,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "operator_columns_composed": 56,
+      "emitted_target_terms": 130047382,
+      "x2_functional_rank_lower_bound": 34,
+      "x2_functional_nullity_upper_bound": 15,
+      "x5_functional_rank_lower_bound": 35,
+      "x5_functional_nullity_upper_bound": 14,
+      "joint_functional_rank_lower_bound": 35,
+      "joint_functional_nullity_upper_bound": 14
+    },
+    {
+      "gauge_form_degree": 3,
+      "parameter_components_total": 165,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "operator_columns_composed": 56,
+      "emitted_target_terms": 213912699,
+      "x2_functional_rank_lower_bound": 49,
+      "x2_functional_nullity_upper_bound": 0,
+      "x5_functional_rank_lower_bound": 49,
+      "x5_functional_nullity_upper_bound": 0,
+      "joint_functional_rank_lower_bound": 49,
+      "joint_functional_nullity_upper_bound": 0
+    },
+    {
+      "gauge_form_degree": 4,
+      "parameter_components_total": 330,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "operator_columns_composed": 56,
+      "emitted_target_terms": 131906109,
+      "x2_functional_rank_lower_bound": 48,
+      "x2_functional_nullity_upper_bound": 1,
+      "x5_functional_rank_lower_bound": 48,
+      "x5_functional_nullity_upper_bound": 1,
+      "joint_functional_rank_lower_bound": 48,
+      "joint_functional_nullity_upper_bound": 1
+    },
+    {
+      "gauge_form_degree": 5,
+      "parameter_components_total": 462,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "operator_columns_composed": 56,
+      "emitted_target_terms": 213109075,
+      "x2_functional_rank_lower_bound": 45,
+      "x2_functional_nullity_upper_bound": 4,
+      "x5_functional_rank_lower_bound": 45,
+      "x5_functional_nullity_upper_bound": 4,
+      "joint_functional_rank_lower_bound": 45,
+      "joint_functional_nullity_upper_bound": 4
+    }
+  ],
+  "all_six_channels_composed_on_declared_slice": true,
+  "full_parameter_projection_complete": false,
+  "full_target_projection_complete": false,
+  "global_x2_rank_lower_bound": 49,
+  "global_x2_nullity_upper_bound": 0,
+  "global_x5_rank_lower_bound": 49,
+  "global_x5_nullity_upper_bound": 0,
+  "global_joint_rank_lower_bound": 49,
+  "global_joint_nullity_upper_bound": 0,
+  "global_joint_rank_exact_by_dimension_saturation": true,
+  "surviving_leading_projection_rank_upper_bound": 0,
+  "mutation_detected": true,
+  "partial_fx_only": true,
+  "full_f_a_g_p_established": false,
+  "boundary": "Each reported rank is exact for the deterministic functional slice and is a rigorous lower bound on the full partial-F_X composition. The slice sums exterior-spinor masks before applying coordinate/sector/momentum hash functionals, which preserves lower-bound validity but can lower detected rank. Dimension saturation at rank 49 proves that the recorded leading-plus-first-momentum coefficient space has zero kernel. Without saturation, functional survivors are inconclusive. The selected slice is not a complete parameter or target projection, F_X omits J/W, and the 12+44 ansatz omits higher momentum descendants; full F A G_p remains false."
+}

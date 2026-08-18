@@ -8,7 +8,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::lr_matrix::AdinkraRep;
-use crate::permutahedron::{permutations, Permutation};
+use crate::permutahedron::{Permutation, permutations};
 use crate::permutahedron_garden::solve_garden_signing;
 use crate::permutahedron_hypergraph::identity_hyperedges;
 use serde::Serialize;

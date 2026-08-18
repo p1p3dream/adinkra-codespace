@@ -1,0 +1,320 @@
+{
+  "schema_version": "adynkra-11d-level18-embedded-maps-v1-abstract-v1",
+  "target_dynkin_label": "11001",
+  "source_dynkin_label": "10010",
+  "source_fixture_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05",
+  "reused_level14_abstract_certificate": false,
+  "certificate_sha256": "6d1e23b34729d51cc44c0ea6caebaccb5023df29ea10b4903e2111d609bedb5f",
+  "certificate": {
+    "schema_version": "adynkra-11d-level18-embedded-abstract-coupling-v1",
+    "role": "exact canonical abstract coupling into (11001)",
+    "source_dynkin_label": "10010",
+    "source_fixture_copy": 1,
+    "target_dynkin_label": "11001",
+    "basis_method": "lexicographic PBW lowering words with exact exterior-realization Gram rank",
+    "dependency_test": "exact rational rank of the integer Gram matrix; no modular acceptance",
+    "product_weight_domain_dimension": 9,
+    "source_weight_spaces_used": 7,
+    "source_weight_multiplicities": [
+      [
+        [
+          4,
+          2,
+          0,
+          0,
+          0
+        ],
+        3
+      ],
+      [
+        [
+          4,
+          2,
+          0,
+          0,
+          2
+        ],
+        1
+      ],
+      [
+        [
+          4,
+          2,
+          0,
+          2,
+          0
+        ],
+        1
+      ],
+      [
+        [
+          4,
+          2,
+          0,
+          2,
+          2
+        ],
+        1
+      ],
+      [
+        [
+          4,
+          2,
+          2,
+          0,
+          0
+        ],
+        1
+      ],
+      [
+        [
+          4,
+          2,
+          2,
+          0,
+          2
+        ],
+        1
+      ],
+      [
+        [
+          4,
+          2,
+          2,
+          2,
+          0
+        ],
+        1
+      ]
+    ],
+    "domain_basis": [
+      {
+        "free_spinor_index": 0,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "source_weight": [
+          4,
+          2,
+          0,
+          0,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          3,
+          5,
+          4,
+          5
+        ]
+      },
+      {
+        "free_spinor_index": 0,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "source_weight": [
+          4,
+          2,
+          0,
+          0,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          3,
+          5,
+          5,
+          4
+        ]
+      },
+      {
+        "free_spinor_index": 0,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "source_weight": [
+          4,
+          2,
+          0,
+          0,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          5,
+          5,
+          4,
+          3
+        ]
+      },
+      {
+        "free_spinor_index": 1,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "source_weight": [
+          4,
+          2,
+          0,
+          0,
+          2
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          3,
+          5,
+          4
+        ]
+      },
+      {
+        "free_spinor_index": 2,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "source_weight": [
+          4,
+          2,
+          0,
+          2,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          3,
+          5
+        ]
+      },
+      {
+        "free_spinor_index": 3,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          -1,
+          -1
+        ],
+        "source_weight": [
+          4,
+          2,
+          0,
+          2,
+          2
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          3
+        ]
+      },
+      {
+        "free_spinor_index": 4,
+        "free_spinor_weight": [
+          1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "source_weight": [
+          4,
+          2,
+          2,
+          0,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          4,
+          5
+        ]
+      },
+      {
+        "free_spinor_index": 5,
+        "free_spinor_weight": [
+          1,
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "source_weight": [
+          4,
+          2,
+          2,
+          0,
+          2
+        ],
+        "pbw_word_simple_roots": [
+          4
+        ]
+      },
+      {
+        "free_spinor_index": 6,
+        "free_spinor_weight": [
+          1,
+          1,
+          -1,
+          -1,
+          1
+        ],
+        "source_weight": [
+          4,
+          2,
+          2,
+          2,
+          0
+        ],
+        "pbw_word_simple_roots": []
+      }
+    ],
+    "gram_matrix_rank": 8,
+    "kernel_dimension": 1,
+    "primitive_domain_coefficients": [
+      3,
+      -2,
+      1,
+      -2,
+      2,
+      -4,
+      -2,
+      4,
+      -4
+    ],
+    "primitive_coefficient_gcd": 1,
+    "maximum_absolute_primitive_coefficient": 4,
+    "exact_raising_residual_terms_by_simple_root": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "maximum_absolute_checked_accumulator": 6600,
+    "storage_type": "i64 coefficients with checked i128 accumulation",
+    "exterior_action_storage": "precomputed CSR over sorted exterior-mask weight spaces",
+    "csr_actions_built": 53,
+    "csr_nonzero_entries": 22072536,
+    "multiplicity_one": true,
+    "passed": true
+  },
+  "passed": true
+}

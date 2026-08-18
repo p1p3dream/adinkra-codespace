@@ -2000,7 +2000,8 @@ pub fn verify() -> ElevenDimensionalGaugeIntertwinerReport {
             unit_coefficient_residuals,
             scalar_divergence_zero_at_zero_momentum,
             scalar_divergence_zero_at_generic_momentum,
-            physical_status: "complete Lorentz-compatible candidate; not selected as a physical gauge symmetry",
+            physical_status:
+                "complete Lorentz-compatible candidate; not selected as a physical gauge symmetry",
             passed,
         });
     }

@@ -12,8 +12,8 @@ use crate::lr_matrix::AdinkraRep;
 use crate::maxwell_phantom::WorldlineLinkage;
 use crate::maxwell_worldline_search::search_worldline;
 use crate::permutahedron_s8_signed_recursion::{
-    aligned_recursive_boolean_factors, aligned_recursive_permutations, build_rep, cyclic_mask,
-    exact_published_match, S4_RECURSION_LABELS,
+    S4_RECURSION_LABELS, aligned_recursive_boolean_factors, aligned_recursive_permutations,
+    build_rep, cyclic_mask, exact_published_match,
 };
 use serde::Serialize;
 use std::collections::BTreeMap;

@@ -188,8 +188,14 @@ mod tests {
             sp(&[3, -2, -4, 1]),
             sp(&[4, 1, 3, 2]),
         ];
-        assert!(!garden_ok(&printed), "printed Table 7 Chiral L1 must fail the Garden algebra");
-        assert!(garden_ok(&cm_l_matrices()), "corrected Chiral L-matrices satisfy the Garden algebra");
+        assert!(
+            !garden_ok(&printed),
+            "printed Table 7 Chiral L1 must fail the Garden algebra"
+        );
+        assert!(
+            garden_ok(&cm_l_matrices()),
+            "corrected Chiral L-matrices satisfy the Garden algebra"
+        );
     }
 
     #[test]
@@ -198,8 +204,14 @@ mod tests {
         // Table 12 prints Tensor R4 as <3 -2 4 3>: column 3 twice, column 1
         // missing, not a valid signed permutation. The corrected <3 -2 4 1> is.
         let printed = SignedPerm::from_parts(vec![2, 1, 3, 2], vec![1, -1, 1, 1]);
-        assert!(printed.is_err(), "printed Table 12 Tensor R4 must be an invalid permutation");
+        assert!(
+            printed.is_err(),
+            "printed Table 12 Tensor R4 must be an invalid permutation"
+        );
         let corrected = SignedPerm::from_parts(vec![2, 1, 3, 0], vec![1, -1, 1, 1]);
-        assert!(corrected.is_ok(), "corrected Tensor R4 <3 -2 4 1> is a valid signed permutation");
+        assert!(
+            corrected.is_ok(),
+            "corrected Tensor R4 <3 -2 4 1> is a valid signed permutation"
+        );
     }
 }

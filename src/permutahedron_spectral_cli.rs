@@ -15,7 +15,7 @@
 //!   - random partition baseline comparison
 
 use crate::permutahedron::{
-    complete_graph, coset_partition, rana_r8, vierergruppe, CosetSide, PermutahedronGraph,
+    CosetSide, PermutahedronGraph, complete_graph, coset_partition, rana_r8, vierergruppe,
 };
 use std::time::Instant;
 
@@ -973,8 +973,10 @@ fn run_s8_probe(n_baselines: usize) {
     );
     println!("  lanczos:     DONE");
     println!("  characters:  DONE");
-    println!("  clustering:  naive ARI={:.6}, coset-primed ARI={:.6}, quotient-lift ARI={:.6}, chebyshev ARI={:.6}",
-        naive_ari, primed_result.ari, lift_ari, cheb_ari);
+    println!(
+        "  clustering:  naive ARI={:.6}, coset-primed ARI={:.6}, quotient-lift ARI={:.6}, chebyshev ARI={:.6}",
+        naive_ari, primed_result.ari, lift_ari, cheb_ari
+    );
     println!("  total time:  {}", elapsed_label(overall));
 }
 

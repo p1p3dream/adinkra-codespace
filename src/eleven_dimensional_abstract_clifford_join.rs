@@ -23,6 +23,17 @@ type SmallGaussian = Complex<Rational>;
 type Weight = [i8; 5];
 type SparseRow = BTreeMap<usize, Rational>;
 
+/// Exact representation-action intertwiner used to join the abstract B5
+/// target stream to the Lorentzian Cartesian-Majorana curvature operators.
+#[derive(Clone, Debug)]
+pub struct B5CartesianMajoranaIntertwiner {
+    /// Abstract vector-weight basis to Lorentzian Cartesian vectors.
+    pub vector_to_lorentz_cartesian: Vec<Vec<crate::eleven_dimensional_majorana::ExactGaussian>>,
+    /// Original complex spinor-weight coordinates to real Majorana
+    /// coordinates.  This is `S^{-1}` for `psi_complex=S psi_majorana`.
+    pub spinor_weight_to_majorana: Vec<Vec<crate::eleven_dimensional_majorana::ExactGaussian>>,
+}
+
 const VECTOR_DIMENSION: usize = 11;
 const SPINOR_DIMENSION: usize = 32;
 const AMBIENT_DIMENSION: usize = VECTOR_DIMENSION * SPINOR_DIMENSION;
@@ -328,6 +339,19 @@ fn solve_gamma_trace() -> (AbstractGammaMap, usize, Vec<SparseRow>, [[usize; 5];
         rows,
         row_counts,
     )
+}
+
+/// The unique, unit-normalized B5 gamma map in the exact target-stream
+/// Chevalley basis.  This accessor lets independent basis-join certificates
+/// consume the solved representation rather than reconstructing its phases.
+pub(crate) fn solved_target_gamma_matrices() -> Vec<Vec<Vec<Rational>>> {
+    solve_gamma_trace().0.matrices
+}
+
+/// The unit-normalized invariant antisymmetric spinor bilinear in the same
+/// target-stream Chevalley basis as [`solved_target_gamma_matrices`].
+pub(crate) fn solved_target_spinor_bilinear() -> Vec<Vec<Rational>> {
+    invariant_spinor_bilinear().0
 }
 
 fn sparse_matrix_rank(matrix: &[Vec<Rational>]) -> usize {
@@ -1263,6 +1287,15 @@ pub struct LeadingX2GaugeReport {
     pub all_parameter_components_covered: bool,
     pub leading_symbol_f0_a_g_established_by_job: bool,
     pub exact_cross_operator_column_ranks_established: bool,
+    pub joint_six_channel_functional_projection_rank: usize,
+    pub joint_six_channel_functional_kernel_basis: Vec<Vec<String>>,
+    pub joint_six_channel_exact_rank: Option<usize>,
+    pub joint_six_channel_exact_nullity: Option<usize>,
+    pub joint_six_channel_kernel_basis: Vec<Vec<String>>,
+    pub joint_six_channel_kernel_residuals_exactly_zero: bool,
+    pub joint_source_stream_kernel_relations_checked: usize,
+    pub joint_source_stream_kernel_residual_entries: usize,
+    pub joint_source_stream_kernel_mutation_detected: bool,
     pub cyclic_vector_reduction_certified: bool,
     pub equivariance_mutation_test_present: bool,
     pub physical_operator_combination_selected: bool,
@@ -1400,6 +1433,29 @@ fn abstract_vector_to_cartesian_coefficients(gamma: &AbstractGammaMap) -> Vec<Ve
         }
     }
     change
+}
+
+/// Solve the complete abstract-B5 to Cartesian-Majorana basis join from the
+/// representation actions and the Majorana real-form involution.
+///
+/// The vector matrix is fixed by exact reconstruction of every abstract gamma
+/// matrix from the Cartesian Euclidean gamma matrices.  Its time coefficient
+/// is then continued by `Gamma_L^0=i Gamma_E^0`, hence `e_A^0=-i e_L^0`.
+/// The spinor matrix is the exact inverse fixed basis of the Majorana
+/// involution.  No per-weight phase choice enters this construction.
+pub fn b5_cartesian_majorana_intertwiner() -> B5CartesianMajoranaIntertwiner {
+    let (gamma, _, _, _) = solve_gamma_trace();
+    let mut vector_to_lorentz_cartesian = abstract_vector_to_cartesian_coefficients(&gamma);
+    let minus_i = small_gaussian(0, -1);
+    for row in &mut vector_to_lorentz_cartesian {
+        row[0] *= minus_i.clone();
+    }
+    let (_, spinor_weight_to_majorana) =
+        crate::eleven_dimensional_majorana::majorana_basis_change();
+    B5CartesianMajoranaIntertwiner {
+        vector_to_lorentz_cartesian,
+        spinor_weight_to_majorana,
+    }
 }
 
 fn highest_parameter_cartesian_combination(
@@ -1810,6 +1866,85 @@ fn channel_rank_report(
     }
 }
 
+fn exact_functional_column_kernel(columns: &[ComplexColumn]) -> (usize, Vec<Vec<BigGaussian>>) {
+    let mut basis = Vec::<ComplexColumnBasisVector>::new();
+    let mut kernel = Vec::<Vec<BigGaussian>>::new();
+    for (ordinal, column) in columns.iter().cloned().enumerate() {
+        if let Some(relation) =
+            add_complex_column_to_echelon(column, ordinal, columns.len(), &mut basis)
+        {
+            kernel.push(relation);
+        }
+    }
+    (basis.len(), kernel)
+}
+
+type TargetStreamKey = (usize, usize, usize, usize, usize, Option<usize>, u32);
+
+fn leading_source_stream_kernel_relations() -> Vec<Vec<i64>> {
+    vec![
+        vec![-18, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        vec![30, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        vec![0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        vec![54, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    ]
+}
+
+fn verify_leading_source_stream_kernel(
+    cyclic_parameters: &[BTreeMap<usize, SmallGaussian>; 6],
+    selected_target_basis_ordinals: &[usize],
+) -> io::Result<(usize, bool)> {
+    let relations = leading_source_stream_kernel_relations();
+    let mut residuals = relations
+        .iter()
+        .map(|_| BTreeMap::<TargetStreamKey, BigGaussian>::new())
+        .collect::<Vec<_>>();
+    let mut column_zero_entries = 0_u64;
+    for ordinal in [0_usize, 2, 3, 4, 5, 6] {
+        crate::eleven_dimensional_level16_couplings::visit_target_resolved_zero_momentum_gauge_composition_terms_all_degrees(
+            ordinal,
+            cyclic_parameters,
+            Some(selected_target_basis_ordinals),
+            |degree, entry| {
+                if ordinal == 0 {
+                    column_zero_entries += 1;
+                }
+                let key = (
+                    degree,
+                    entry.target_basis_ordinal,
+                    entry.target_vector_weight_index,
+                    entry.target_spinor_weight_index,
+                    entry.parameter_component_index,
+                    entry.momentum_vector_weight_index,
+                    entry.exterior_mask,
+                );
+                let source = BigGaussian {
+                    real: entry.real,
+                    imaginary: entry.imaginary,
+                };
+                for (relation, residual) in relations.iter().zip(&mut residuals) {
+                    let factor = relation[ordinal];
+                    if factor == 0 {
+                        continue;
+                    }
+                    let value = residual.entry(key).or_insert_with(BigGaussian::zero);
+                    value.real += source.real.clone() * bq(factor);
+                    value.imaginary += source.imaginary.clone() * bq(factor);
+                    if value.is_zero() {
+                        residual.remove(&key);
+                    }
+                }
+                Ok(())
+            },
+        )?;
+    }
+    let residual_entries = residuals.iter().map(BTreeMap::len).sum();
+    // Mutating -18 to -17 leaves one exact copy of the nonzero column zero.
+    let mutation_detected = residual_entries == 0 && column_zero_entries > 0;
+    Ok((residual_entries, mutation_detected))
+}
+
 pub fn verify_leading_zero_momentum_x2_gauge() -> io::Result<LeadingX2GaugeReport> {
     let (gamma, _, _, _) = solve_gamma_trace();
     let metric = gamma_metric(&gamma);
@@ -1885,6 +2020,55 @@ pub fn verify_leading_zero_momentum_x2_gauge() -> io::Result<LeadingX2GaugeRepor
         }
     }
     jobs.sort_by_key(|job| (job.gauge_form_degree, job.leading_operator_ordinal));
+    let mut joint_columns = (0..12).map(|_| ComplexColumn::new()).collect::<Vec<_>>();
+    for (degree, columns) in columns_by_degree.iter().enumerate() {
+        for (ordinal, column) in columns.iter().enumerate() {
+            for (&(_, _, bucket), value) in column {
+                joint_columns[ordinal].insert((degree, 0, bucket), value.clone());
+            }
+        }
+    }
+    let (joint_six_channel_functional_projection_rank, joint_functional_kernel) =
+        exact_functional_column_kernel(&joint_columns);
+    let joint_six_channel_functional_kernel_basis = joint_functional_kernel
+        .iter()
+        .map(|relation| {
+            relation
+                .iter()
+                .map(|value| format!("{}+i*{}", value.real, value.imaginary))
+                .collect()
+        })
+        .collect::<Vec<Vec<_>>>();
+    let (joint_source_stream_kernel_residual_entries, joint_source_stream_kernel_mutation_detected) =
+        verify_leading_source_stream_kernel(&cyclic_parameters, &selected_target_basis_ordinals)?;
+    let exact_source_kernel = leading_source_stream_kernel_relations();
+    assert_eq!(
+        joint_functional_kernel.len(),
+        12 - joint_six_channel_functional_projection_rank
+    );
+    let source_kernel_closes_rank_bound = joint_source_stream_kernel_residual_entries == 0
+        && joint_source_stream_kernel_mutation_detected
+        && exact_source_kernel.len() == 12 - joint_six_channel_functional_projection_rank;
+    // Projection gives rank >= r.  The independent exact source-stream
+    // relations give rank <= r.  Together they prove equality and the full
+    // kernel before any downstream linear curvature map is applied.
+    let joint_six_channel_exact_rank =
+        source_kernel_closes_rank_bound.then_some(joint_six_channel_functional_projection_rank);
+    let joint_six_channel_exact_nullity = joint_six_channel_exact_rank.map(|rank| 12 - rank);
+    let joint_six_channel_kernel_basis = if source_kernel_closes_rank_bound {
+        exact_source_kernel
+            .iter()
+            .map(|relation| {
+                relation
+                    .iter()
+                    .map(|value| format!("{}+i*0", value))
+                    .collect()
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let joint_six_channel_kernel_residuals_exactly_zero = source_kernel_closes_rank_bound;
     let mut channel_ranks = Vec::with_capacity(6);
     for gauge_form_degree in 0..=5 {
         let coverage = jobs
@@ -1937,7 +2121,7 @@ pub fn verify_leading_zero_momentum_x2_gauge() -> io::Result<LeadingX2GaugeRepor
         && cyclic_vector_reduction_certified
         && equivariance_mutation_test_present;
     Ok(LeadingX2GaugeReport {
-        schema_version: "adynkra-11d-leading-x2-gauge-v1",
+        schema_version: "adynkra-11d-leading-x2-gauge-v2",
         role: "exact projected-rank witness for the leading-symbol X_[2] hook on the target-resolved zero-momentum gauge-composition stream",
         source_reference: "hep-th/0101037 Eqs. (39)-(40): (1/16) Gamma_[2] D H followed by trace and total-antisymmetry removal",
         bidegree: "D^18 Lambda at zero momentum",
@@ -1955,12 +2139,21 @@ pub fn verify_leading_zero_momentum_x2_gauge() -> io::Result<LeadingX2GaugeRepor
         all_parameter_components_covered,
         leading_symbol_f0_a_g_established_by_job,
         exact_cross_operator_column_ranks_established,
+        joint_six_channel_functional_projection_rank,
+        joint_six_channel_functional_kernel_basis,
+        joint_six_channel_exact_rank,
+        joint_six_channel_exact_nullity,
+        joint_six_channel_kernel_basis,
+        joint_six_channel_kernel_residuals_exactly_zero,
+        joint_source_stream_kernel_relations_checked: exact_source_kernel.len(),
+        joint_source_stream_kernel_residual_entries,
+        joint_source_stream_kernel_mutation_detected,
         cyclic_vector_reduction_certified,
         equivariance_mutation_test_present,
         physical_operator_combination_selected: false,
         full_f_a_g_p_established: false,
         passed,
-        boundary: "This is the exact zero-momentum D^18 Lambda leading-symbol test for the X_[2] hook term only. It evaluates the exact highest-weight gauge parameter and highest target state, then applies 1,024 deterministic exact output functionals. The rigorous projected-rank lower bounds for gauge degrees zero through five are [1,4,3,5,2,2]. Because every projected rank is below 12, these lower bounds do not determine any full 12-column rank or kernel, and all exact_full_* fields remain null. No cross-degree cancellation is allowed and no physical combination of the 12 bridge columns is selected. The test does not include the momentum anticommutator branch, lower-symbol corrections, compensator elimination, W, X_[5], J, or a complete physical curvature F, so it does not establish leading-symbol or full F A G_p = 0.",
+        boundary: "This is the exact zero-momentum D^18 Lambda leading-symbol test for the X_[2] hook term only. It evaluates the exact highest-weight gauge parameter and highest target state, then applies 1,024 deterministic exact output functionals separately in each of the six independent gauge channels. Per-channel ranks remain rigorous lower bounds unless a channel reaches all 12 columns. Exact RREF of the direct-sum functional image gives rank seven. Five independent candidate relations are then checked on the complete target-resolved source streams before gamma contraction or hook projection. Their exact vanishing supplies the opposite rank bound, proving full joint rank seven, nullity five, and the serialized kernel basis without materializing the prohibitively large raw F_X output. The test does not include the momentum anticommutator branch, lower-symbol corrections, W, X_[5], J, or a complete physical curvature F, so it establishes only the partial leading X_[2] gate, never full F A G_p = 0.",
     })
 }
 
@@ -2150,6 +2343,55 @@ pub fn write_artifacts(data_path: &Path, results_path: &Path) -> io::Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn b5_to_cartesian_majorana_intertwiner_is_exact() {
+        let join = b5_cartesian_majorana_intertwiner();
+        assert_eq!(join.vector_to_lorentz_cartesian.len(), VECTOR_DIMENSION);
+        assert_eq!(join.spinor_weight_to_majorana.len(), SPINOR_DIMENSION);
+        let (gamma, _, _, _) = solve_gamma_trace();
+        let euclidean = crate::eleven_dimensional_clifford::gamma_matrices();
+        for abstract_vector in 0..VECTOR_DIMENSION {
+            for row in 0..SPINOR_DIMENSION {
+                for column in 0..SPINOR_DIMENSION {
+                    let reconstructed = (0..VECTOR_DIMENSION)
+                        .map(|cartesian_vector| {
+                            let lorentz_gamma = if cartesian_vector == 0 {
+                                small_gaussian(0, 1)
+                                    * euclidean[cartesian_vector][row][column].clone()
+                            } else {
+                                euclidean[cartesian_vector][row][column].clone()
+                            };
+                            join.vector_to_lorentz_cartesian[abstract_vector][cartesian_vector]
+                                .clone()
+                                * lorentz_gamma
+                        })
+                        .sum::<SmallGaussian>();
+                    assert_eq!(
+                        reconstructed,
+                        Complex::new(gamma.matrices[abstract_vector][row][column].clone(), q(0))
+                    );
+                }
+            }
+        }
+        let (basis, inverse) = crate::eleven_dimensional_majorana::majorana_basis_change();
+        assert_eq!(inverse, join.spinor_weight_to_majorana);
+        for row in 0..SPINOR_DIMENSION {
+            for column in 0..SPINOR_DIMENSION {
+                let value = (0..SPINOR_DIMENSION)
+                    .map(|middle| inverse[row][middle].clone() * basis[middle][column].clone())
+                    .sum::<SmallGaussian>();
+                assert_eq!(
+                    value,
+                    if row == column {
+                        small_gaussian(1, 0)
+                    } else {
+                        small_gaussian(0, 0)
+                    }
+                );
+            }
+        }
+    }
 
     #[test]
     fn unique_gamma_trace_has_the_exact_320_target_kernel() {
@@ -2426,6 +2668,35 @@ mod tests {
             })
             .collect::<Vec<_>>();
         assert_eq!(projected_ranks, vec![1, 4, 3, 5, 2, 2]);
+        assert_eq!(
+            validation["joint_six_channel_functional_projection_rank"].as_u64(),
+            validation["joint_six_channel_exact_rank"].as_u64()
+        );
+        assert_eq!(
+            validation["joint_six_channel_kernel_residuals_exactly_zero"].as_bool(),
+            Some(true)
+        );
+        assert_eq!(validation["joint_six_channel_exact_rank"].as_u64(), Some(7));
+        assert_eq!(
+            validation["joint_six_channel_exact_nullity"].as_u64(),
+            Some(5)
+        );
+        assert_eq!(
+            validation["joint_six_channel_kernel_basis"]
+                .as_array()
+                .unwrap()
+                .len(),
+            5
+        );
+        assert_eq!(
+            validation["joint_source_stream_kernel_residual_entries"].as_u64(),
+            Some(0)
+        );
+        assert_eq!(
+            validation["joint_source_stream_kernel_mutation_detected"].as_bool(),
+            Some(true)
+        );
+        assert_eq!(projected_ranks.len(), 6);
     }
 
     #[test]

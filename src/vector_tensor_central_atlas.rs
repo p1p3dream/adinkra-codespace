@@ -2,10 +2,10 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::permutahedron::{coset_partition, permutations, CosetSide, Permutation};
+use crate::permutahedron::{CosetSide, Permutation, coset_partition, permutations};
 use crate::permutahedron_hypergraph::identity_hyperedges;
 use crate::permutahedron_hypergraph_signed;
-use crate::vector_tensor_central_charge::{build as build_census, l_matrices, Matrix};
+use crate::vector_tensor_central_charge::{Matrix, build as build_census, l_matrices};
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;

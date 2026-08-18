@@ -185,7 +185,9 @@ fn col_dfs(j: usize, n: usize, a: &IntMat, g: &mut Vec<Vec<i32>>, out: &mut Vec<
         }
         return;
     }
-    let total = 3usize.checked_pow(n as u32).expect("column search space 3^n overflowed usize");
+    let total = 3usize
+        .checked_pow(n as u32)
+        .expect("column search space 3^n overflowed usize");
     for mut code in 0..total {
         for k in 0..n {
             g[k][j] = (code % 3) as i32 - 1;
@@ -291,7 +293,10 @@ pub fn report() -> String {
         cm,
         vm,
         tm,
-        block_split(&a_l).iter().map(|&(_, l)| l).collect::<Vec<_>>(),
+        block_split(&a_l)
+            .iter()
+            .map(|&(_, l)| l)
+            .collect::<Vec<_>>(),
         cls_l,
         cls_r,
     )
@@ -380,7 +385,10 @@ mod tests {
             let a = a_matrix(&ls);
             let gs = g_matrices_alt(&a);
             assert_eq!(gs.len(), 12, "{name} must have exactly 12 G-matrices");
-            assert!(verify_all_square(&a, &gs), "every {name} G must square to A");
+            assert!(
+                verify_all_square(&a, &gs),
+                "every {name} G must square to A"
+            );
         }
     }
 
@@ -478,7 +486,10 @@ mod tests {
             "block route count must be the product of per-block root counts"
         );
         // Every returned G squares to A, is block-diagonal, and unique.
-        assert!(verify_all_square(&a, &gs), "every combined G must square to A");
+        assert!(
+            verify_all_square(&a, &gs),
+            "every combined G must square to A"
+        );
         for g in &gs {
             for i in 0..6 {
                 for j in 0..6 {
@@ -567,35 +578,68 @@ mod tests {
         let my_r = g_matrices_alt(&a_r).len();
 
         // 1. Counts compared as integers (a file containing only "1728" fails here).
-        let art_l = v["block_diagonal_count_L"].as_u64().expect("block_diagonal_count_L") as usize;
-        let art_r = v["block_diagonal_count_R"].as_u64().expect("block_diagonal_count_R") as usize;
-        assert_eq!(art_l, my_l, "artifact A_(L) count {art_l} != independent {my_l}");
-        assert_eq!(art_r, my_r, "artifact A_(R) count {art_r} != independent {my_r}");
+        let art_l = v["block_diagonal_count_L"]
+            .as_u64()
+            .expect("block_diagonal_count_L") as usize;
+        let art_r = v["block_diagonal_count_R"]
+            .as_u64()
+            .expect("block_diagonal_count_R") as usize;
+        assert_eq!(
+            art_l, my_l,
+            "artifact A_(L) count {art_l} != independent {my_l}"
+        );
+        assert_eq!(
+            art_r, my_r,
+            "artifact A_(R) count {art_r} != independent {my_r}"
+        );
 
         // 2. The artifact's A matrices equal our independently computed A.
         let parse_mat = |val: &serde_json::Value| -> super::super::IntMat {
             val.as_array()
                 .unwrap()
                 .iter()
-                .map(|row| row.as_array().unwrap().iter().map(|x| {
-                    let n = x.as_i64().unwrap();
-                    assert!((i32::MIN as i64..=i32::MAX as i64).contains(&n), "artifact cell {n} out of i32 range");
-                    n as i32
-                }).collect())
+                .map(|row| {
+                    row.as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|x| {
+                            let n = x.as_i64().unwrap();
+                            assert!(
+                                (i32::MIN as i64..=i32::MAX as i64).contains(&n),
+                                "artifact cell {n} out of i32 range"
+                            );
+                            n as i32
+                        })
+                        .collect()
+                })
                 .collect()
         };
-        assert_eq!(parse_mat(&v["A_L"]), a_l, "artifact A_L matrix != independent A_L");
-        assert_eq!(parse_mat(&v["A_R"]), a_r, "artifact A_R matrix != independent A_R");
+        assert_eq!(
+            parse_mat(&v["A_L"]),
+            a_l,
+            "artifact A_L matrix != independent A_L"
+        );
+        assert_eq!(
+            parse_mat(&v["A_R"]),
+            a_r,
+            "artifact A_R matrix != independent A_R"
+        );
 
         // 3. Every sample G in the artifact actually squares to A (verify the data itself).
         let mut checked = 0usize;
         for (samples, a) in [(&v["g_sample_L"], &a_l), (&v["g_sample_R"], &a_r)] {
             for g in samples.as_array().unwrap() {
                 let gm = parse_mat(g);
-                assert_eq!(super::super::imm(&gm, &gm), *a, "an artifact sample G does not square to A");
+                assert_eq!(
+                    super::super::imm(&gm, &gm),
+                    *a,
+                    "an artifact sample G does not square to A"
+                );
                 checked += 1;
             }
         }
-        println!("artifact cross-check OK: counts {my_l}/{my_r}, A matrices match, {checked} samples square to A");
+        println!(
+            "artifact cross-check OK: counts {my_l}/{my_r}, A matrices match, {checked} samples square to A"
+        );
     }
 }

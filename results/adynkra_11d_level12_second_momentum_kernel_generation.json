@@ -1,0 +1,723 @@
+{
+  "schema_version": "adynkra-11d-level12-second-momentum-kernel-generation-v1",
+  "role": "exact level-12 source fixtures for p^2 D^12 second-momentum operators",
+  "method": "deterministic sparse echelon over 2^31-1, rational reconstruction, and full integer residual verification",
+  "systems": [
+    {
+      "dynkin_label": "01002",
+      "exterior_degree": 12,
+      "source_columns": 27054,
+      "raising_rows": 71767,
+      "nonzero_entries": 250644,
+      "prime": 2147483647,
+      "exact_modular_rank": 27050,
+      "exact_nullity": 4,
+      "free_columns": [
+        20144,
+        20145,
+        27052,
+        27053
+      ],
+      "maximum_pivot_width": 235,
+      "coefficient_width_bytes": 4,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_01002_highest_weight_kernel_1.i32le",
+          "sha256": "29f248eaf3d9b5c168d5c95b07f11a992bad5155187b06e31b08bfe469758b2a",
+          "bytes": 108216,
+          "nonzero_coefficients": 16438,
+          "maximum_absolute_coefficient": 660
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_01002_highest_weight_kernel_2.i32le",
+          "sha256": "9b51d478eea4c1fd87f12a6647c93aae22e3180a9459dcae3992e470d737d2ec",
+          "bytes": 108216,
+          "nonzero_coefficients": 16425,
+          "maximum_absolute_coefficient": 660
+        },
+        {
+          "copy": 3,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_01002_highest_weight_kernel_3.i32le",
+          "sha256": "b2e14144c725b04c5c92654ad2ad7536fc5d51e54f2e03b6d1bd93a42a8bc659",
+          "bytes": 108216,
+          "nonzero_coefficients": 26056,
+          "maximum_absolute_coefficient": 36120
+        },
+        {
+          "copy": 4,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_01002_highest_weight_kernel_4.i32le",
+          "sha256": "36cd868dff762b8d8d2ae4ce3d8a81a7aa3023e0edcecc733f96099384c75d27",
+          "bytes": 108216,
+          "nonzero_coefficients": 19821,
+          "maximum_absolute_coefficient": 660
+        }
+      ],
+      "seconds": {
+        "matrix": 0.24461817741394043,
+        "echelon": 74.51139998435974,
+        "reconstruct_and_integer_verify": 0.27044010162353516,
+        "total": 75.02645826339722
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "01100",
+      "exterior_degree": 12,
+      "source_columns": 44940,
+      "raising_rows": 124174,
+      "nonzero_entries": 451474,
+      "prime": 2147483647,
+      "exact_modular_rank": 44938,
+      "exact_nullity": 2,
+      "free_columns": [
+        43993,
+        43994
+      ],
+      "maximum_pivot_width": 668,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_01100_highest_weight_kernel_1.i16le",
+          "sha256": "8a8ae811af7683e12184a18ea3ce0899a7011bf41f7de0a59a7ce3963eadd2e1",
+          "bytes": 89880,
+          "nonzero_coefficients": 40812,
+          "maximum_absolute_coefficient": 1350
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_01100_highest_weight_kernel_2.i16le",
+          "sha256": "c3af585fe9f2cd8437cb3b0a0c3f58e26f3639943cb9523a3f82e3370427602e",
+          "bytes": 89880,
+          "nonzero_coefficients": 40776,
+          "maximum_absolute_coefficient": 1350
+        }
+      ],
+      "seconds": {
+        "matrix": 0.42592406272888184,
+        "echelon": 2083.7658429145813,
+        "reconstruct_and_integer_verify": 0.4265580177307129,
+        "total": 2084.618324995041
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "02000",
+      "exterior_degree": 12,
+      "source_columns": 57572,
+      "raising_rows": 165080,
+      "nonzero_entries": 591220,
+      "prime": 2147483647,
+      "exact_modular_rank": 57570,
+      "exact_nullity": 2,
+      "free_columns": [
+        57534,
+        57535
+      ],
+      "maximum_pivot_width": 340,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_02000_highest_weight_kernel_1.i16le",
+          "sha256": "9a710c509cfb011993ad9fc61f4df8819412a0afb6be32bd14574f7dbcbe619f",
+          "bytes": 115144,
+          "nonzero_coefficients": 55836,
+          "maximum_absolute_coefficient": 12600
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_02000_highest_weight_kernel_2.i16le",
+          "sha256": "0b230e7a6ce099653d93cd9fb80b67eb4d6340626fec8caccdeaa84089c804ad",
+          "bytes": 115144,
+          "nonzero_coefficients": 55780,
+          "maximum_absolute_coefficient": 12600
+        }
+      ],
+      "seconds": {
+        "matrix": 0.6066889762878418,
+        "echelon": 366.8730688095093,
+        "reconstruct_and_integer_verify": 0.48623013496398926,
+        "total": 367.9659879207611
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "10002",
+      "exterior_degree": 12,
+      "source_columns": 56758,
+      "raising_rows": 154042,
+      "nonzero_entries": 552140,
+      "prime": 2147483647,
+      "exact_modular_rank": 56756,
+      "exact_nullity": 2,
+      "free_columns": [
+        56263,
+        56264
+      ],
+      "maximum_pivot_width": 377,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_10002_highest_weight_kernel_1.i16le",
+          "sha256": "c3eb687d6d868cd08fcd90a0c741815681b3c68ca4cf3157ddd929df0aa42e28",
+          "bytes": 113516,
+          "nonzero_coefficients": 52670,
+          "maximum_absolute_coefficient": 15840
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_10002_highest_weight_kernel_2.i16le",
+          "sha256": "ec51e06970fcff1b7b719d7ee5c3d9a69775fdf6558334c400d1540dbd81c7a1",
+          "bytes": 113516,
+          "nonzero_coefficients": 3465,
+          "maximum_absolute_coefficient": 3
+        }
+      ],
+      "seconds": {
+        "matrix": 0.5312979221343994,
+        "echelon": 304.15559005737305,
+        "reconstruct_and_integer_verify": 0.4976320266723633,
+        "total": 305.1845200061798
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "11002",
+      "exterior_degree": 12,
+      "source_columns": 7540,
+      "raising_rows": 17120,
+      "nonzero_entries": 59166,
+      "prime": 2147483647,
+      "exact_modular_rank": 7535,
+      "exact_nullity": 5,
+      "free_columns": [
+        6446,
+        7299,
+        7331,
+        7537,
+        7539
+      ],
+      "maximum_pivot_width": 182,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11002_highest_weight_kernel_1.i16le",
+          "sha256": "dc6fe6e3081b2d409b91cf521ef8f6ee622ee2432201d22a1d712dc6dda1bc85",
+          "bytes": 15080,
+          "nonzero_coefficients": 5330,
+          "maximum_absolute_coefficient": 330
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11002_highest_weight_kernel_2.i16le",
+          "sha256": "4b65ec2f70da8d8da74213554032165f6c250781c23f203ae20d711c9e18bac4",
+          "bytes": 15080,
+          "nonzero_coefficients": 5593,
+          "maximum_absolute_coefficient": 330
+        },
+        {
+          "copy": 3,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11002_highest_weight_kernel_3.i16le",
+          "sha256": "12058e6f562408ed733bd3570d51af5ce440caef0e524fbb4bf5a0b595802b49",
+          "bytes": 15080,
+          "nonzero_coefficients": 7262,
+          "maximum_absolute_coefficient": 1680
+        },
+        {
+          "copy": 4,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11002_highest_weight_kernel_4.i16le",
+          "sha256": "aa9eb0392110a357ef5a1d8d87a42a41089255632f232bf45ce6ce637b374730",
+          "bytes": 15080,
+          "nonzero_coefficients": 7409,
+          "maximum_absolute_coefficient": 2208
+        },
+        {
+          "copy": 5,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11002_highest_weight_kernel_5.i16le",
+          "sha256": "cbc00af5700f6fbf5fb3d1cd86c4830ac8e26b68e9466738bc6fb832f0fd0d50",
+          "bytes": 15080,
+          "nonzero_coefficients": 7482,
+          "maximum_absolute_coefficient": 27600
+        }
+      ],
+      "seconds": {
+        "matrix": 0.09110021591186523,
+        "echelon": 10.141758918762207,
+        "reconstruct_and_integer_verify": 0.09787297248840332,
+        "total": 10.330732107162476
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "11010",
+      "exterior_degree": 12,
+      "source_columns": 9986,
+      "raising_rows": 23748,
+      "nonzero_entries": 84670,
+      "prime": 2147483647,
+      "exact_modular_rank": 9982,
+      "exact_nullity": 4,
+      "free_columns": [
+        9951,
+        9977,
+        9983,
+        9985
+      ],
+      "maximum_pivot_width": 457,
+      "coefficient_width_bytes": 4,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11010_highest_weight_kernel_1.i32le",
+          "sha256": "6499181f0221c7cf7f598e5e55c0196aed66ae7748cc4d200edd1c760c16f7f2",
+          "bytes": 39944,
+          "nonzero_coefficients": 1440,
+          "maximum_absolute_coefficient": 4
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11010_highest_weight_kernel_2.i32le",
+          "sha256": "20dc54ac2087c5d5651c59c1d3c9e7a69e7cec64be4c29cdf1c002381b04493d",
+          "bytes": 39944,
+          "nonzero_coefficients": 9870,
+          "maximum_absolute_coefficient": 11616
+        },
+        {
+          "copy": 3,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11010_highest_weight_kernel_3.i32le",
+          "sha256": "378bd955bb2d3ae10ba93608beaf1f0f15b2f1026a7b78d91444ebd551d7d4c5",
+          "bytes": 39944,
+          "nonzero_coefficients": 9900,
+          "maximum_absolute_coefficient": 2112
+        },
+        {
+          "copy": 4,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11010_highest_weight_kernel_4.i32le",
+          "sha256": "6291bb4ebdd0bf653c4aa8f65288337de04a743803f3f0be2de138af3e0347fc",
+          "bytes": 39944,
+          "nonzero_coefficients": 9884,
+          "maximum_absolute_coefficient": 36960
+        }
+      ],
+      "seconds": {
+        "matrix": 0.1041109561920166,
+        "echelon": 143.074294090271,
+        "reconstruct_and_integer_verify": 0.15737271308898926,
+        "total": 143.335777759552
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "11100",
+      "exterior_degree": 12,
+      "source_columns": 13152,
+      "raising_rows": 31640,
+      "nonzero_entries": 114028,
+      "prime": 2147483647,
+      "exact_modular_rank": 13149,
+      "exact_nullity": 3,
+      "free_columns": [
+        13086,
+        13115,
+        13151
+      ],
+      "maximum_pivot_width": 504,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11100_highest_weight_kernel_1.i16le",
+          "sha256": "5f868f5e8ec974b52a0f17a98fe6d1afe8ce6f1649ce59673316e9659ecc5417",
+          "bytes": 26304,
+          "nonzero_coefficients": 12424,
+          "maximum_absolute_coefficient": 750
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11100_highest_weight_kernel_2.i16le",
+          "sha256": "2de88017b94e9c63c180aba90d7bc789b2829bcdbf2f89ada41c8c6f1c04f1a2",
+          "bytes": 26304,
+          "nonzero_coefficients": 12628,
+          "maximum_absolute_coefficient": 750
+        },
+        {
+          "copy": 3,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_11100_highest_weight_kernel_3.i16le",
+          "sha256": "91b4d00bbe48eac0db49e7e832a9ddb206c535e75a523018f4b5801b8230a89f",
+          "bytes": 26304,
+          "nonzero_coefficients": 13052,
+          "maximum_absolute_coefficient": 1614
+        }
+      ],
+      "seconds": {
+        "matrix": 0.15155673027038574,
+        "echelon": 250.29655027389526,
+        "reconstruct_and_integer_verify": 0.1896519660949707,
+        "total": 250.63775897026062
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "12000",
+      "exterior_degree": 12,
+      "source_columns": 17232,
+      "raising_rows": 43552,
+      "nonzero_entries": 153752,
+      "prime": 2147483647,
+      "exact_modular_rank": 17231,
+      "exact_nullity": 1,
+      "free_columns": [
+        17231
+      ],
+      "maximum_pivot_width": 159,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_12000_highest_weight_kernel.i16le",
+          "sha256": "c972e06477b4f65e843f0539e591071123e2e684f9979bf2a7c5b4256f13eca5",
+          "bytes": 34464,
+          "nonzero_coefficients": 16680,
+          "maximum_absolute_coefficient": 1050
+        }
+      ],
+      "seconds": {
+        "matrix": 0.21105003356933594,
+        "echelon": 58.29202198982239,
+        "reconstruct_and_integer_verify": 0.05181384086608887,
+        "total": 58.55488586425781
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "20002",
+      "exterior_degree": 12,
+      "source_columns": 16993,
+      "raising_rows": 41416,
+      "nonzero_entries": 142838,
+      "prime": 2147483647,
+      "exact_modular_rank": 16991,
+      "exact_nullity": 2,
+      "free_columns": [
+        16960,
+        16992
+      ],
+      "maximum_pivot_width": 115,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20002_highest_weight_kernel_1.i16le",
+          "sha256": "50bd6c055777b69d693f9652bb3c3c096ad884f3db5a11ed665ad5877deede69",
+          "bytes": 33986,
+          "nonzero_coefficients": 15744,
+          "maximum_absolute_coefficient": 2640
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20002_highest_weight_kernel_2.i16le",
+          "sha256": "c2e83ef21cc0ea5d229ecc5d9c22bb5f5540b4c85ac7e22452e76e310b805e63",
+          "bytes": 33986,
+          "nonzero_coefficients": 11728,
+          "maximum_absolute_coefficient": 180
+        }
+      ],
+      "seconds": {
+        "matrix": 0.15456199645996094,
+        "echelon": 11.602353811264038,
+        "reconstruct_and_integer_verify": 0.08011817932128906,
+        "total": 11.837033987045288
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "20010",
+      "exterior_degree": 12,
+      "source_columns": 22150,
+      "raising_rows": 56109,
+      "nonzero_entries": 199788,
+      "prime": 2147483647,
+      "exact_modular_rank": 22147,
+      "exact_nullity": 3,
+      "free_columns": [
+        22123,
+        22143,
+        22149
+      ],
+      "maximum_pivot_width": 305,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20010_highest_weight_kernel_1.i16le",
+          "sha256": "09b85f220eb1d1cea0c0e5b53387d1a5b598fb64f8df82b76c3864e46f9ba482",
+          "bytes": 44300,
+          "nonzero_coefficients": 20906,
+          "maximum_absolute_coefficient": 1740
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20010_highest_weight_kernel_2.i16le",
+          "sha256": "47188dfead353dccc2445cf5347d23fefff52cda5d9ada676e44b47db1d21e56",
+          "bytes": 44300,
+          "nonzero_coefficients": 21214,
+          "maximum_absolute_coefficient": 5340
+        },
+        {
+          "copy": 3,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20010_highest_weight_kernel_3.i16le",
+          "sha256": "3e5d04fa9bfa6f1a943ff80a476de2d965a0357a607186a8fb515ab230e0263d",
+          "bytes": 44300,
+          "nonzero_coefficients": 21260,
+          "maximum_absolute_coefficient": 15420
+        }
+      ],
+      "seconds": {
+        "matrix": 0.20457816123962402,
+        "echelon": 147.13478302955627,
+        "reconstruct_and_integer_verify": 0.17118501663208008,
+        "total": 147.51054620742798
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "20100",
+      "exterior_degree": 12,
+      "source_columns": 28732,
+      "raising_rows": 73409,
+      "nonzero_entries": 264062,
+      "prime": 2147483647,
+      "exact_modular_rank": 28730,
+      "exact_nullity": 2,
+      "free_columns": [
+        28729,
+        28731
+      ],
+      "maximum_pivot_width": 404,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20100_highest_weight_kernel_1.i16le",
+          "sha256": "3d46b14a3564f4cb7b65914ca975062137fc2953d80231b06bd36a0be7f7e59b",
+          "bytes": 57464,
+          "nonzero_coefficients": 27004,
+          "maximum_absolute_coefficient": 2160
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_20100_highest_weight_kernel_2.i16le",
+          "sha256": "c1c5494d653b03f8c525aa326ed7fccf57e67fff35fecc4ef847525b5cbff829",
+          "bytes": 57464,
+          "nonzero_coefficients": 26904,
+          "maximum_absolute_coefficient": 2160
+        }
+      ],
+      "seconds": {
+        "matrix": 0.25620412826538086,
+        "echelon": 483.8810348510742,
+        "reconstruct_and_integer_verify": 0.17608022689819336,
+        "total": 484.3133192062378
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "30002",
+      "exterior_degree": 12,
+      "source_columns": 2892,
+      "raising_rows": 6169,
+      "nonzero_entries": 19549,
+      "prime": 2147483647,
+      "exact_modular_rank": 2889,
+      "exact_nullity": 3,
+      "free_columns": [
+        2816,
+        2829,
+        2891
+      ],
+      "maximum_pivot_width": 32,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_30002_highest_weight_kernel_1.i16le",
+          "sha256": "bef24d4ebe642c0b6507dee9706fea06742d6ed708d14adc9dd599a8061c28c6",
+          "bytes": 5784,
+          "nonzero_coefficients": 1858,
+          "maximum_absolute_coefficient": 56
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_30002_highest_weight_kernel_2.i16le",
+          "sha256": "0e42717e2cb9449f92257a60b7a35e3c8a501dea176db02aa2d0a714b8904908",
+          "bytes": 5784,
+          "nonzero_coefficients": 1120,
+          "maximum_absolute_coefficient": 2
+        },
+        {
+          "copy": 3,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_30002_highest_weight_kernel_3.i16le",
+          "sha256": "d3321a53f37acea6d3d8e4efc11022c037e0339a5e9a7cda87bdb003ca3b2945",
+          "bytes": 5784,
+          "nonzero_coefficients": 2738,
+          "maximum_absolute_coefficient": 1760
+        }
+      ],
+      "seconds": {
+        "matrix": 0.038178205490112305,
+        "echelon": 0.2501180171966553,
+        "reconstruct_and_integer_verify": 0.015301942825317383,
+        "total": 0.30359816551208496
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "30010",
+      "exterior_degree": 12,
+      "source_columns": 3918,
+      "raising_rows": 8827,
+      "nonzero_entries": 28999,
+      "prime": 2147483647,
+      "exact_modular_rank": 3916,
+      "exact_nullity": 2,
+      "free_columns": [
+        3904,
+        3917
+      ],
+      "maximum_pivot_width": 59,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_30010_highest_weight_kernel_1.i16le",
+          "sha256": "071d705e0093e459afef5af1c42bebd48fe1b39ae086efc57da33dd7bae2db0f",
+          "bytes": 7836,
+          "nonzero_coefficients": 3322,
+          "maximum_absolute_coefficient": 23
+        },
+        {
+          "copy": 2,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_30010_highest_weight_kernel_2.i16le",
+          "sha256": "97c02e148d0f4d951376b75996fc3cf63e49f0267667e48de67518edeb02033e",
+          "bytes": 7836,
+          "nonzero_coefficients": 1960,
+          "maximum_absolute_coefficient": 8
+        }
+      ],
+      "seconds": {
+        "matrix": 0.051245927810668945,
+        "echelon": 1.1100749969482422,
+        "reconstruct_and_integer_verify": 0.016041994094848633,
+        "total": 1.1773629188537598
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "30100",
+      "exterior_degree": 12,
+      "source_columns": 5272,
+      "raising_rows": 12040,
+      "nonzero_entries": 40080,
+      "prime": 2147483647,
+      "exact_modular_rank": 5271,
+      "exact_nullity": 1,
+      "free_columns": [
+        5263
+      ],
+      "maximum_pivot_width": 99,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_30100_highest_weight_kernel.i16le",
+          "sha256": "56d22bd3fddb7bebb8d02c9b1250640ba6d470eb975b7cf4967a3e61784096ae",
+          "bytes": 10544,
+          "nonzero_coefficients": 4472,
+          "maximum_absolute_coefficient": 72
+        }
+      ],
+      "seconds": {
+        "matrix": 0.06000804901123047,
+        "echelon": 2.8270809650421143,
+        "reconstruct_and_integer_verify": 0.01147913932800293,
+        "total": 2.8985681533813477
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "31000",
+      "exterior_degree": 12,
+      "source_columns": 7048,
+      "raising_rows": 16280,
+      "nonzero_entries": 54888,
+      "prime": 2147483647,
+      "exact_modular_rank": 7047,
+      "exact_nullity": 1,
+      "free_columns": [
+        7047
+      ],
+      "maximum_pivot_width": 82,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_31000_highest_weight_kernel.i16le",
+          "sha256": "fefad0548df0d13ad9160befd382158873d5d8b24b78c794b4763222390b94da",
+          "bytes": 14096,
+          "nonzero_coefficients": 4256,
+          "maximum_absolute_coefficient": 7
+        }
+      ],
+      "seconds": {
+        "matrix": 0.07665896415710449,
+        "echelon": 4.501492023468018,
+        "reconstruct_and_integer_verify": 0.014595985412597656,
+        "total": 4.59274697303772
+      },
+      "passed": true
+    },
+    {
+      "dynkin_label": "40000",
+      "exterior_degree": 12,
+      "source_columns": 9376,
+      "raising_rows": 23592,
+      "nonzero_entries": 76160,
+      "prime": 2147483647,
+      "exact_modular_rank": 9375,
+      "exact_nullity": 1,
+      "free_columns": [
+        9375
+      ],
+      "maximum_pivot_width": 31,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_40000_highest_weight_kernel.i16le",
+          "sha256": "8d53deee4109315fec26ff5e928822fa18a4ca5cf687ec5a918daf44560d5518",
+          "bytes": 18752,
+          "nonzero_coefficients": 5544,
+          "maximum_absolute_coefficient": 7
+        }
+      ],
+      "seconds": {
+        "matrix": 0.09905099868774414,
+        "echelon": 1.8890111446380615,
+        "reconstruct_and_integer_verify": 0.017215967178344727,
+        "total": 2.0052781105041504
+      },
+      "passed": true
+    }
+  ],
+  "completed_systems": 16,
+  "completed_kernel_copies": 38,
+  "expected_systems": 19,
+  "expected_kernel_copies": 41,
+  "inventory_complete": false,
+  "passed": true
+}

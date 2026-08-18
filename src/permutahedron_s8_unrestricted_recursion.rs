@@ -5,11 +5,11 @@
 //! adds same-source controls, and maps every exact Garden closer into the
 //! complete constraint hypergraph and the fixed-R8 normalizer orbit atlas.
 
-use crate::permutahedron::{coset_partition, CosetSide, Permutation};
+use crate::permutahedron::{CosetSide, Permutation, coset_partition};
 use crate::permutahedron_hypergraph::identity_hyperedges;
 use crate::permutahedron_s8_signed_recursion::{
-    aligned_recursive_boolean_factors, aligned_recursive_permutations, build_rep, cyclic_mask,
-    exact_published_match, S4_RECURSION_LABELS,
+    S4_RECURSION_LABELS, aligned_recursive_boolean_factors, aligned_recursive_permutations,
+    build_rep, cyclic_mask, exact_published_match,
 };
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};

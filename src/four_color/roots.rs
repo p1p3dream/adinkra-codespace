@@ -220,7 +220,10 @@ fn solve_signs(a: &SignedPerm, d: usize, layout: &[Vec<usize>], p: u32) -> Vec<S
         let m = cyc.len();
         let target: Vec<i8> = cyc.iter().map(|&idx| a.sign[idx]).collect();
         let mut valid = Vec::new();
-        assert!(m < 63, "sign-cycle length {m} exceeds the 2^m enumeration range");
+        assert!(
+            m < 63,
+            "sign-cycle length {m} exceeds the 2^m enumeration range"
+        );
         for bits in 0u64..(1u64 << m) {
             let g: Vec<i8> = (0..m)
                 .map(|k| if (bits >> k) & 1 == 1 { -1 } else { 1 })
@@ -407,11 +410,7 @@ fn set_partitions(n: usize) -> Vec<Vec<Vec<usize>>> {
 }
 
 fn gcd(a: u32, b: u32) -> u32 {
-    if b == 0 {
-        a
-    } else {
-        gcd(b, a % b)
-    }
+    if b == 0 { a } else { gcd(b, a % b) }
 }
 
 /// Reference oracle. Enumerate ALL 2^d * d! signed permutations of dimension d and
@@ -448,7 +447,10 @@ pub fn report() -> String {
     let cases: [(SignedPerm, u32); 3] = [
         (SignedPerm::identity(4), 4),
         (SignedPerm::identity(3), 2),
-        (SignedPerm::from_parts(vec![1, 2, 0], vec![1, -1, 1]).unwrap(), 3),
+        (
+            SignedPerm::from_parts(vec![1, 2, 0], vec![1, -1, 1]).unwrap(),
+            3,
+        ),
     ];
     for (a, p) in &cases {
         let structural: HashSet<SignedPerm> = pth_roots(a, *p).into_iter().collect();
@@ -518,7 +520,10 @@ mod tests {
         let ls = super::super::cm_l_matrices();
         let x1 = super::super::matmul(&ls[1], &ls[0].inverse());
         assert!(super::super::pow(&x1, 4).is_identity(), "X1^4 must be I");
-        assert!(super::super::pow(&x1, 2).is_neg_identity(), "X1^2 must be -I");
+        assert!(
+            super::super::pow(&x1, 2).is_neg_identity(),
+            "X1^2 must be -I"
+        );
 
         let d = x1.dim();
         let id = SignedPerm::identity(d);
@@ -556,7 +561,11 @@ mod tests {
 
         // Non-vacuity guard: p=1 always returns exactly {a}, so the solver is
         // actually producing a concrete root here (a zero-returning bug fails).
-        assert_eq!(pth_roots(&a, 1), vec![a.clone()], "p=1 must return exactly {{a}} at d=12");
+        assert_eq!(
+            pth_roots(&a, 1),
+            vec![a.clone()],
+            "p=1 must return exactly {{a}} at d=12"
+        );
         for p in [2u32, 3, 4, 6] {
             let roots = pth_roots(&a, p);
             for g in &roots {

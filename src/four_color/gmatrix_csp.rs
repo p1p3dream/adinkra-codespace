@@ -37,10 +37,10 @@
 //! directly comparable (m=2 target: count 15000, checksum 94e85bc1c8e786fd).
 
 use super::gmatrix_full::{
-    Alphabets, Coords, K, Side, build_alphabets, build_coords, cls_a_blocks, hash_intmat,
-    int_of_g, slot_int_of_g, slot_solutions, block_diagonal_via_coords,
+    Alphabets, Coords, K, Side, block_diagonal_via_coords, build_alphabets, build_coords,
+    cls_a_blocks, hash_intmat, int_of_g, slot_int_of_g, slot_solutions,
 };
-use super::{gmatrix, imm, IntMat};
+use super::{IntMat, gmatrix, imm};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -171,15 +171,78 @@ pub struct Shared {
     /// exact product P, the set of left values x with some partner y giving
     /// x*y = P, and symmetrically the right values. Diagonal pairs hold
     /// squares only (x, x). Measured at 352098 distinct products across all
-    /// 27 pairs for m=3, about 140MB.
-    pmaps: Vec<Option<HashMap<K2, (Bits, Bits)>>>,
+    /// 27 pairs for m=3, about 90MB in the flat PMap layout (the previous
+    /// HashMap form held ~140MB).
+    pmaps: Vec<Option<PMap>>,
     shared_table: bool,
     /// Per diagonal slot: per-value trace (re, im) as f64.
     tr_re: Vec<Vec<f64>>,
     tr_im: Vec<Vec<f64>>,
 }
 
-fn build_pair(a: &[K2], b: &[K2], square: bool) -> (PairTable, HashMap<K2, (Bits, Bits)>) {
+/// Compact total-order key for one exact K2 product: the 12 normalized
+/// fields (re, im, den for each of the 4 entries), narrowed to 32 bits each
+/// and packed 4 per u128. Every K value carries a canonical normalized
+/// triple, so distinct K2 give distinct keys, exactly like the derived Eq
+/// the HashMap form relied on. Slot values are products of small alphabet
+/// entries, so 32 bits per field is generous; the checked narrowing makes
+/// any violation a loud panic instead of a silent key collision.
+fn k2_key(p: &K2) -> [u128; 3] {
+    let mut key = [0u128; 3];
+    let mut i = 0usize;
+    for row in p {
+        for cell in row {
+            let (re, im, den) = cell.raw_parts();
+            for f in [re, im, den] {
+                let w = i32::try_from(f).expect("K field exceeds i32 in pmap key");
+                key[i / 4] |= (w as u32 as u128) << (32 * (i % 4));
+                i += 1;
+            }
+        }
+    }
+    key
+}
+
+/// Flat sorted replacement for the per-pair HashMap<K2, (Bits, Bits)>:
+/// identical content and lookup semantics (built by draining the finished
+/// HashMap, so the entry()-merge construction is untouched), but a probe is
+/// a branch-predictable binary search over contiguous 48-byte keys instead
+/// of SipHash over a 192-byte key plus a pointer-chasing bucket. Measured
+/// ~500 pmap probes per search node at m=3, so this is the hot path.
+struct PMap {
+    keys: Vec<[u128; 3]>,
+    xs: Vec<Bits>,
+    ys: Vec<Bits>,
+}
+
+impl PMap {
+    fn from_hash(map: HashMap<K2, (Bits, Bits)>) -> Self {
+        let mut rows: Vec<([u128; 3], Bits, Bits)> = map
+            .into_iter()
+            .map(|(k, (xs, ys))| (k2_key(&k), xs, ys))
+            .collect();
+        rows.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+        let mut keys = Vec::with_capacity(rows.len());
+        let mut xs = Vec::with_capacity(rows.len());
+        let mut ys = Vec::with_capacity(rows.len());
+        for (k, x, y) in rows {
+            keys.push(k);
+            xs.push(x);
+            ys.push(y);
+        }
+        Self { keys, xs, ys }
+    }
+
+    fn get(&self, k: &K2) -> Option<(Bits, Bits)> {
+        let key = k2_key(k);
+        self.keys
+            .binary_search(&key)
+            .ok()
+            .map(|i| (self.xs[i], self.ys[i]))
+    }
+}
+
+fn build_pair(a: &[K2], b: &[K2], square: bool) -> (PairTable, PMap) {
     let ny = b.len();
     let mut re = Vec::with_capacity(a.len() * ny);
     let mut im = Vec::with_capacity(a.len() * ny);
@@ -234,7 +297,7 @@ fn build_pair(a: &[K2], b: &[K2], square: bool) -> (PairTable, HashMap<K2, (Bits
             flo_im,
             fhi_im,
         },
-        pmap,
+        PMap::from_hash(pmap),
     )
 }
 
@@ -249,7 +312,7 @@ fn build_shared(coords: Coords, alph: &Alphabets) -> Shared {
     );
     let shared_table = slots.iter().all(|s| *s == slots[0]);
     let mut tables: Vec<Option<PairTable>> = (0..mm * mm).map(|_| None).collect();
-    let mut pmaps: Vec<Option<HashMap<K2, (Bits, Bits)>>> = (0..mm * mm).map(|_| None).collect();
+    let mut pmaps: Vec<Option<PMap>> = (0..mm * mm).map(|_| None).collect();
     if shared_table {
         let (t, pm) = build_pair(&slots[0], &slots[0], m == 1);
         tables[0] = Some(t);
@@ -273,16 +336,8 @@ fn build_shared(coords: Coords, alph: &Alphabets) -> Shared {
     let mut tr_im = Vec::with_capacity(m);
     for bi in 0..m {
         let s = &slots[bi * m + bi];
-        tr_re.push(
-            s.iter()
-                .map(|x| kf64(x[0][0].add(x[1][1])).0)
-                .collect(),
-        );
-        tr_im.push(
-            s.iter()
-                .map(|x| kf64(x[0][0].add(x[1][1])).1)
-                .collect(),
-        );
+        tr_re.push(s.iter().map(|x| kf64(x[0][0].add(x[1][1])).0).collect());
+        tr_im.push(s.iter().map(|x| kf64(x[0][0].add(x[1][1])).1).collect());
     }
     Shared {
         m,
@@ -304,7 +359,7 @@ impl Shared {
         self.tables[idx].as_ref().expect("pair table must exist")
     }
 
-    fn pmap(&self, l: usize, r: usize) -> &HashMap<K2, (Bits, Bits)> {
+    fn pmap(&self, l: usize, r: usize) -> &PMap {
         let mm = self.m * self.m;
         let idx = if self.shared_table { 0 } else { l * mm + r };
         self.pmaps[idx].as_ref().expect("pair map must exist")
@@ -328,8 +383,7 @@ fn det3(a: &[[i64; 4]; 4], r: [usize; 3], c: [usize; 3]) -> i64 {
 }
 
 fn det4(a: &[[i64; 4]; 4]) -> i64 {
-    a[0][0] * det3(a, [1, 2, 3], [1, 2, 3])
-        - a[0][1] * det3(a, [1, 2, 3], [0, 2, 3])
+    a[0][0] * det3(a, [1, 2, 3], [1, 2, 3]) - a[0][1] * det3(a, [1, 2, 3], [0, 2, 3])
         + a[0][2] * det3(a, [1, 2, 3], [0, 1, 3])
         - a[0][3] * det3(a, [1, 2, 3], [0, 1, 2])
 }
@@ -690,9 +744,11 @@ fn rss_mb() -> f64 {
         std::fs::read_to_string("/proc/self/status")
             .ok()
             .and_then(|s| {
-                s.lines()
-                    .find(|l| l.starts_with("VmRSS"))
-                    .and_then(|l| l.split_whitespace().nth(1).and_then(|v| v.parse::<f64>().ok()))
+                s.lines().find(|l| l.starts_with("VmRSS")).and_then(|l| {
+                    l.split_whitespace()
+                        .nth(1)
+                        .and_then(|v| v.parse::<f64>().ok())
+                })
             })
             .map(|kb| kb / 1024.0)
             .unwrap_or(0.0)
@@ -823,7 +879,9 @@ impl Heartbeat {
             s1_hit,
             live.tight.load(Ordering::Relaxed),
             rss_mb(),
-            eta_s.map(|e| format!("{:.1}h", e / 3600.0)).unwrap_or_else(|| "?".to_string()),
+            eta_s
+                .map(|e| format!("{:.1}h", e / 3600.0))
+                .unwrap_or_else(|| "?".to_string()),
         );
         if let Some(p) = &self.status_path {
             let line = serde_json::json!({
@@ -854,7 +912,11 @@ impl Heartbeat {
                     let _ = std::fs::rename(p, format!("{p}.1"));
                 }
             }
-            if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(p) {
+            if let Ok(mut f) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(p)
+            {
                 let _ = writeln!(f, "{line}");
             }
             // Atomic latest-snapshot alongside the log: readers get a
@@ -891,12 +953,14 @@ fn spawn_heartbeat(
         state: std::sync::Mutex::new((0, [0u64; 32], Instant::now())),
     });
     let hb_thread = Arc::clone(&hb);
-    std::thread::spawn(move || loop {
-        std::thread::sleep(std::time::Duration::from_secs(secs));
-        if done.load(Ordering::Relaxed) {
-            break;
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(std::time::Duration::from_secs(secs));
+            if done.load(Ordering::Relaxed) {
+                break;
+            }
+            hb_thread.emit();
         }
-        hb_thread.emit();
     });
     Some(hb)
 }
@@ -1065,7 +1129,11 @@ impl Search {
             let (l, r) = (bi * m + bk, bk * m + bj);
             let sl = b_singleton(&self.dom[l]);
             let sr = b_singleton(&self.dom[r]);
-            let assigned = if l == r { sl.is_some() } else { sl.is_some() && sr.is_some() };
+            let assigned = if l == r {
+                sl.is_some()
+            } else {
+                sl.is_some() && sr.is_some()
+            };
             if assigned {
                 let p = if l == r {
                     let x = &sh.slots[l][sl.unwrap()];
@@ -1160,7 +1228,7 @@ impl Search {
             live.stage1.fetch_add(1, Ordering::Relaxed);
         }
         let (xs, ys) = match sh.pmap(l, r).get(&resid) {
-            Some(xy) => *xy,
+            Some(xy) => xy,
             None => {
                 if let Some(live) = &self.live {
                     live.stage1_miss.fetch_add(1, Ordering::Relaxed);
@@ -1690,7 +1758,15 @@ const ENGINE_VERSION: &str = "gmatrix_csp.v2-ac3";
 fn mat_json(g: &IntMat) -> String {
     let rows: Vec<String> = g
         .iter()
-        .map(|r| format!("[{}]", r.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(",")))
+        .map(|r| {
+            format!(
+                "[{}]",
+                r.iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
+        })
         .collect();
     format!("[{}]", rows.join(","))
 }
@@ -1946,12 +2022,7 @@ fn install_shard(tmp: &str, path: &str, side: Side, m: usize, item: u64, sh: &Sh
     }
 }
 
-fn shard_json(
-    side: Side,
-    m: usize,
-    st: &ItemStat,
-    hist: &HashMap<ClassKey, ClassRec>,
-) -> String {
+fn shard_json(side: Side, m: usize, st: &ItemStat, hist: &HashMap<ClassKey, ClassRec>) -> String {
     format!(
         "{{\n  \"shard_id\": \"cls-g-csp-{}-m{}-item{:04}\",\n  \"engine\": \"{}\",\n  \"side\": \"{}\",\n  \"blocks\": {},\n  \"item\": {},\n  \"count\": {},\n  \"checksum\": \"{:016x}\",\n  \"nodes\": {},\n  \"seconds\": {:.3},\n  \"complete\": true,\n  \"classes\": {}\n}}\n",
         side.name(),
@@ -2109,7 +2180,11 @@ pub fn run_shards(
         ENGINE_VERSION,
         side.name(),
         m,
-        items.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(",")
+        items
+            .iter()
+            .map(|i| i.to_string())
+            .collect::<Vec<_>>()
+            .join(",")
     );
     let items_path = format!("{dir}/items.json");
     let pod = pod_name();
@@ -2170,8 +2245,15 @@ pub fn run_shards(
         .step_by(stride.max(1))
         .copied()
         .filter(|&x| {
-            shard_decode(&shard_path(dir, x as u32), side, m, x as u64, &sh.coords, &sh.slots[0])
-                .is_none()
+            shard_decode(
+                &shard_path(dir, x as u32),
+                side,
+                m,
+                x as u64,
+                &sh.coords,
+                &sh.slots[0],
+            )
+            .is_none()
         })
         .collect();
     println!(
@@ -2198,11 +2280,7 @@ pub fn run_shards(
     // restarted pod reusing the name), so each process gets its own.
     let status_path = format!("{dir}/status_{}.{}.jsonl", live.pod, std::process::id());
     println!("status: {status_path}");
-    let hb = spawn_heartbeat(
-        Arc::clone(&live),
-        Some(status_path),
-        Arc::clone(&done),
-    );
+    let hb = spawn_heartbeat(Arc::clone(&live), Some(status_path), Arc::clone(&done));
     std::thread::scope(|scope| {
         for wid in 0..threads.max(1).min(todo.len().max(1)) {
             let sh = Arc::clone(&sh);
@@ -2212,50 +2290,52 @@ pub fn run_shards(
             let base_dom = &base_dom;
             let todo = &todo;
             let pod = &pod;
-            scope.spawn(move || loop {
-                let i = next.fetch_add(1, Ordering::Relaxed);
-                if i as usize >= todo.len() {
-                    break;
+            scope.spawn(move || {
+                loop {
+                    let i = next.fetch_add(1, Ordering::Relaxed);
+                    if i as usize >= todo.len() {
+                        break;
+                    }
+                    let x0 = todo[i as usize];
+                    let (st, _samples, _tc, hist) = run_worker(
+                        Arc::clone(&sh),
+                        base_dom,
+                        x0,
+                        None,
+                        Some(Arc::clone(&live)),
+                        wid,
+                    );
+                    let json = shard_json(side, m, &st, &hist);
+                    let path = shard_path(dir, x0 as u32);
+                    // Fleet-safe durable install (see install_shard). Completion
+                    // is counted only after the shard is durable: item_done moves
+                    // the heartbeat's items counter, so it must follow the
+                    // install, not the search. A failed install leaves the item
+                    // uncounted; resume picks it up on the next run.
+                    let tmp = format!("{path}.tmp.{pod}.{}", std::process::id());
+                    if let Err(e) = std::fs::write(&tmp, &json) {
+                        eprintln!("shard {x0:04}: cannot write {tmp}: {e}; item left for resume");
+                        live.item_abandon(wid);
+                        continue;
+                    }
+                    if !install_shard(&tmp, &path, side, m, x0 as u64, &sh) {
+                        eprintln!("shard {x0:04}: install failed; item left for resume");
+                        live.item_abandon(wid);
+                        continue;
+                    }
+                    live.item_done(wid);
+                    let d = done_count.fetch_add(1, Ordering::Relaxed) + 1;
+                    eprintln!(
+                        "shard {:04} done ({}/{}): count={} nodes={} {:.1}s elapsed={:.0}s",
+                        x0,
+                        d,
+                        total,
+                        st.count,
+                        st.nodes,
+                        st.seconds,
+                        t0.elapsed().as_secs_f64()
+                    );
                 }
-                let x0 = todo[i as usize];
-                let (st, _samples, _tc, hist) = run_worker(
-                    Arc::clone(&sh),
-                    base_dom,
-                    x0,
-                    None,
-                    Some(Arc::clone(&live)),
-                    wid,
-                );
-                let json = shard_json(side, m, &st, &hist);
-                let path = shard_path(dir, x0 as u32);
-                // Fleet-safe durable install (see install_shard). Completion
-                // is counted only after the shard is durable: item_done moves
-                // the heartbeat's items counter, so it must follow the
-                // install, not the search. A failed install leaves the item
-                // uncounted; resume picks it up on the next run.
-                let tmp = format!("{path}.tmp.{pod}.{}", std::process::id());
-                if let Err(e) = std::fs::write(&tmp, &json) {
-                    eprintln!("shard {x0:04}: cannot write {tmp}: {e}; item left for resume");
-                    live.item_abandon(wid);
-                    continue;
-                }
-                if !install_shard(&tmp, &path, side, m, x0 as u64, &sh) {
-                    eprintln!("shard {x0:04}: install failed; item left for resume");
-                    live.item_abandon(wid);
-                    continue;
-                }
-                live.item_done(wid);
-                let d = done_count.fetch_add(1, Ordering::Relaxed) + 1;
-                eprintln!(
-                    "shard {:04} done ({}/{}): count={} nodes={} {:.1}s elapsed={:.0}s",
-                    x0,
-                    d,
-                    total,
-                    st.count,
-                    st.nodes,
-                    st.seconds,
-                    t0.elapsed().as_secs_f64()
-                );
             });
         }
     });
@@ -2376,7 +2456,9 @@ pub fn run_status(dir: &str) -> bool {
                             .as_u64()
                             .map(|b| b.to_string())
                             .unwrap_or_else(|| "?".into()),
-                        expected.map(|e| e.to_string()).unwrap_or_else(|| "?".into()),
+                        expected
+                            .map(|e| e.to_string())
+                            .unwrap_or_else(|| "?".into()),
                     );
                 } else {
                     manifest_bad = true;
@@ -2454,13 +2536,17 @@ pub fn run_status(dir: &str) -> bool {
             // Canonical shard names only: shard_{item:04}.json, and the
             // embedded item must match the filename. A copied or renamed
             // shard must never be double-counted into the aggregate.
-            let Some(stem) = name.strip_prefix("shard_").and_then(|s| s.strip_suffix(".json"))
+            let Some(stem) = name
+                .strip_prefix("shard_")
+                .and_then(|s| s.strip_suffix(".json"))
             else {
                 continue;
             };
-            let Some(name_item) = stem.parse::<u64>().ok().filter(|_| {
-                !stem.is_empty() && stem.chars().all(|c| c.is_ascii_digit())
-            }) else {
+            let Some(name_item) = stem
+                .parse::<u64>()
+                .ok()
+                .filter(|_| !stem.is_empty() && stem.chars().all(|c| c.is_ascii_digit()))
+            else {
                 continue;
             };
             if name != format!("shard_{name_item:04}.json") {
@@ -2493,8 +2579,7 @@ pub fn run_status(dir: &str) -> bool {
                     // Checksum wraps by construction (splitmix64 sum), same
                     // as solve/merge; count/nodes saturate instead.
                     checksum = checksum.wrapping_add(
-                        u64::from_str_radix(v["checksum"].as_str().unwrap_or("0"), 16)
-                            .unwrap_or(0),
+                        u64::from_str_radix(v["checksum"].as_str().unwrap_or("0"), 16).unwrap_or(0),
                     );
                     slowest.push((name_item, v["seconds"].as_f64().unwrap_or(0.0)));
                 }
@@ -2685,9 +2770,7 @@ pub fn run_merge(side: Side, m: usize, dir: &str, out_path: &str) -> bool {
                     // A duplicated item would double-count its shard while
                     // the class-consistency check still passed (both totals
                     // double together), so duplicates are fatal here.
-                    Some(x) if x <= u32::MAX as u64 && seen.insert(x as u32) => {
-                        out.push(x as u32)
-                    }
+                    Some(x) if x <= u32::MAX as u64 && seen.insert(x as u32) => out.push(x as u32),
                     _ => {
                         bad = true;
                         break;
@@ -2695,7 +2778,9 @@ pub fn run_merge(side: Side, m: usize, dir: &str, out_path: &str) -> bool {
                 }
             }
             if bad {
-                eprintln!("items.json: items array contains non-numeric, out-of-range, or duplicate values");
+                eprintln!(
+                    "items.json: items array contains non-numeric, out-of-range, or duplicate values"
+                );
                 return false;
             }
             out
@@ -2709,8 +2794,7 @@ pub fn run_merge(side: Side, m: usize, dir: &str, out_path: &str) -> bool {
     // canonical work-item set for (side, m), recomputed here. A shrunken
     // manifest must never yield a "complete" artifact.
     let canon = canonical_run(side, m);
-    let canon_set: std::collections::HashSet<u64> =
-        canon.items.iter().map(|&x| x as u64).collect();
+    let canon_set: std::collections::HashSet<u64> = canon.items.iter().map(|&x| x as u64).collect();
     let man_set: std::collections::HashSet<u64> = items.iter().map(|&x| x as u64).collect();
     if canon_set != man_set {
         eprintln!(
@@ -2727,8 +2811,14 @@ pub fn run_merge(side: Side, m: usize, dir: &str, out_path: &str) -> bool {
     let mut items_detail: Vec<ItemStat> = Vec::new();
     for &item in &items {
         let path = shard_path(dir, item);
-        let Some(sd) = shard_decode(&path, side, m, item as u64, &canon.sh.coords, &canon.sh.slots[0])
-        else {
+        let Some(sd) = shard_decode(
+            &path,
+            side,
+            m,
+            item as u64,
+            &canon.sh.coords,
+            &canon.sh.slots[0],
+        ) else {
             eprintln!("MISSING or INVALID shard for item {item}: {path}");
             ok = false;
             continue;
@@ -2787,7 +2877,11 @@ pub fn run_merge(side: Side, m: usize, dir: &str, out_path: &str) -> bool {
     // Same total order as classes_to_json: the samples selection must be as
     // deterministic as the classes array or merged artifacts differ by run.
     by_count.sort_by(class_order);
-    let sample_json: Vec<String> = by_count.iter().take(8).map(|(_, r)| mat_json(&r.rep)).collect();
+    let sample_json: Vec<String> = by_count
+        .iter()
+        .take(8)
+        .map(|(_, r)| mat_json(&r.rep))
+        .collect();
     let json = format!(
         "{{\n  \"source\": \"arXiv:2408.09342 Eq 8.2, CLS Appendix C basis; full enumeration via K=Q(sqrt(-3)) commutant reduction, v2 slot-level CSP engine (src/four_color/gmatrix_csp.rs), merged from durable shards\",\n  \"engine\": \"{}\",\n  \"side\": \"{}\",\n  \"blocks\": {},\n  \"dim\": {},\n  \"count\": {},\n  \"checksum_splitmix64_sum\": \"{:016x}\",\n  \"nodes\": {},\n  \"shard_seconds\": {:.3},\n  \"complete\": true,\n  \"work_items\": {},\n  \"note\": \"Merged from {} immutable per-prefix shards after full coverage verification; every class representative independently re-verified against G^2 = A at merge time. Checksum identical in construction to gmatrix_full.\",\n  \"items_detail\": [{}],\n  \"classes\": {},\n  \"samples\": [{}]\n}}\n",
         ENGINE_VERSION,
@@ -2828,7 +2922,14 @@ pub fn run_merge(side: Side, m: usize, dir: &str, out_path: &str) -> bool {
 // CLI entry: build + artifact (same JSON schema as gmatrix_full)
 // ===========================================================================
 
-pub fn run_build(side: Side, m: usize, threads: usize, cap: Option<u64>, stride: usize, path: &str) {
+pub fn run_build(
+    side: Side,
+    m: usize,
+    threads: usize,
+    cap: Option<u64>,
+    stride: usize,
+    path: &str,
+) {
     println!(
         "cls-g-csp: side={} blocks={} threads={} cap={:?} stride={}",
         side.name(),
@@ -2846,7 +2947,10 @@ pub fn run_build(side: Side, m: usize, threads: usize, cap: Option<u64>, stride:
     for s in 0..m {
         let sols = slot_solutions(&coords, &alph, s);
         let expect = gmatrix::g_matrices(&blocks[s]).len();
-        println!("slot {s}: M_2(K) solutions = {} (gmatrix per-block = {expect})", sols.len());
+        println!(
+            "slot {s}: M_2(K) solutions = {} (gmatrix per-block = {expect})",
+            sols.len()
+        );
         assert_eq!(sols.len(), expect, "slot {s} M_2(K) count mismatch");
     }
     let bd = block_diagonal_via_coords(&coords, &alph);
@@ -2857,7 +2961,12 @@ pub fn run_build(side: Side, m: usize, threads: usize, cap: Option<u64>, stride:
     let stats = solve(sh, threads, cap, stride);
     println!(
         "DONE: count={} checksum={:016x} nodes={} seconds={:.1} complete={} tight_boxes={}",
-        stats.count, stats.checksum, stats.nodes, stats.seconds, stats.complete, stats.tight_computes
+        stats.count,
+        stats.checksum,
+        stats.nodes,
+        stats.seconds,
+        stats.complete,
+        stats.tight_computes
     );
 
     let sample_json: Vec<String> = stats
@@ -2866,7 +2975,15 @@ pub fn run_build(side: Side, m: usize, threads: usize, cap: Option<u64>, stride:
         .map(|g| {
             let rows: Vec<String> = g
                 .iter()
-                .map(|r| format!("[{}]", r.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(",")))
+                .map(|r| {
+                    format!(
+                        "[{}]",
+                        r.iter()
+                            .map(|v| v.to_string())
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    )
+                })
                 .collect();
             format!("[{}]", rows.join(","))
         })
@@ -2979,7 +3096,10 @@ mod tests {
             "94e85bc1c8e786fd",
             "m=2 checksum must match v1"
         );
-        assert_eq!(st.nodes, 15211, "m=2 node count must match the validated tree");
+        assert_eq!(
+            st.nodes, 15211,
+            "m=2 node count must match the validated tree"
+        );
     }
 
     /// Round-6 regression for the copied-shard attack: a valid shard whose

@@ -43,6 +43,10 @@ const FIRST_MOMENTUM_SUMMARY: &str =
     include_str!("../results/adynkra_11d_gauge_first_momentum_summary.json");
 const DIRECT_GENERATION_REPORT: &str =
     include_str!("../results/adynkra_11d_level18_direct_kernel_generation.json");
+const TARGET_STREAM_VALIDATION: &str =
+    include_str!("../results/adynkra_11d_target_stream_validation.json");
+const SOURCE_FIXED_CURVATURE_VALIDATION: &str =
+    include_str!("../results/eleven_dimensional_source_fixed_curvature_validation.json");
 const ZERO_MOMENTUM_REPORTS: [&str; 6] = [
     include_str!("../results/adynkra_11d_gauge_zero_momentum_form_0.json"),
     include_str!("../results/adynkra_11d_gauge_zero_momentum_form_1.json"),
@@ -51,22 +55,26 @@ const ZERO_MOMENTUM_REPORTS: [&str; 6] = [
     include_str!("../results/adynkra_11d_gauge_zero_momentum_form_4.json"),
     include_str!("../results/adynkra_11d_gauge_zero_momentum_form_5.json"),
 ];
-const FIRST_MOMENTUM_REPORTS: [(usize, &str); 4] = [
+const FIRST_MOMENTUM_REPORTS: [(usize, &str, &str); 4] = [
     (
         0,
         include_str!("../results/adynkra_11d_gauge_first_momentum_functional_form_0.json"),
+        "4b86b7803fdfe82e930b742ff85f3b6c2c050409e723f820869269e958c21718",
     ),
     (
         1,
-        include_str!("../results/adynkra_11d_gauge_first_momentum_functional_form_1.json"),
+        include_str!("../results/adynkra_11d_first_momentum_gauge_functional_p1.json"),
+        "f183def003a71cd08b7516ad5a666e589eff20629706bdda64bb5d0eb4e3b62c",
     ),
     (
         2,
-        include_str!("../results/adynkra_11d_gauge_first_momentum_functional_form_2.json"),
+        include_str!("../results/adynkra_11d_first_momentum_gauge_functional_p2.json"),
+        "9177fe087728bced2df21a984020a1d7d5c485a59e01f9ac1094673ccc32a7cd",
     ),
     (
         5,
-        include_str!("../results/adynkra_11d_gauge_first_momentum_functional_form_5.json"),
+        include_str!("../results/adynkra_11d_first_momentum_gauge_functional_p5.json"),
+        "281999a56b85ab59b7fa50a40c4b2f6afa645f4c2cb24fc6563d60c621b272c2",
     ),
 ];
 
@@ -172,26 +180,30 @@ struct ZeroMomentumArtifact {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-struct FirstMomentumScreen {
-    form_degree: usize,
+struct CompleteFirstMomentumArtifact {
+    schema_version: String,
+    passed: bool,
+    gauge_form_degree: usize,
+    parameter_dynkin_label: String,
     parameter_components: usize,
     evaluated_parameter_components: Vec<usize>,
+    parameter_projection_is_complete: bool,
+    zero_momentum_kernel_dimension: usize,
     parameterized_columns: usize,
     functional_rows: usize,
-    functional_rank: usize,
-    functional_nullity: usize,
-    leading_projection_rank: usize,
-    nonzero_leading_extension_excluded: bool,
-    report_sha256: String,
+    exact_functional_rank: usize,
+    exact_functional_nullity: usize,
+    functional_kernel_leading_projection_rank: usize,
+    nonzero_leading_extension_excluded_by_functionals: bool,
+    functional_kernel_residuals_exactly_zero: bool,
+    source_artifact_sha256: Vec<String>,
+    zero_momentum_kernel_report_sha256: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 struct FirstMomentumSummary {
     schema_version: String,
-    passed: bool,
-    answer: bool,
     zero_momentum_kernel_dimensions_by_form_degree: Vec<usize>,
-    first_momentum_screens: Vec<FirstMomentumScreen>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -211,7 +223,8 @@ pub struct GaugeChannelMomentumAudit {
     pub partial_parameter_screen_excludes_leading_projection: bool,
     pub nonzero_leading_extension_excluded: bool,
     pub first_momentum_artifact_sha256: Option<String>,
-    pub artifact_hash_matches_summary: bool,
+    pub artifact_hash_matches_pinned_complete_projection: bool,
+    pub complete_projection_artifact_provenance_verified: bool,
     pub passed: bool,
 }
 
@@ -229,6 +242,7 @@ pub struct MomentumGaugeReport {
     pub target_gauge_maps_supplied: bool,
     pub momentum_dependent_target_gauge_quotient_computed: bool,
     pub polynomial_module_cohomology_computed: bool,
+    pub generic_momentum_quotient_computed: bool,
     pub target_quotient_api: TargetGaugeQuotientReadiness,
     pub passed: bool,
     pub result: &'static str,
@@ -244,6 +258,8 @@ pub struct TargetGaugeQuotientReadiness {
     pub typed_target_stream_join_available: bool,
     pub full_curvature_map_available: bool,
     pub exact_sparse_image_containment_api_available: bool,
+    pub exact_level18_embedded_maps_available: bool,
+    pub exact_level18_embedded_map_count: usize,
     pub actual_target_maps_supplied: bool,
     pub quotient_computed: bool,
     pub boundary: &'static str,
@@ -331,6 +347,40 @@ struct LiftedKernel {
     width: usize,
     bytes: Vec<u8>,
     source_coefficients: usize,
+}
+
+/// One exact highest-weight source embedding in `Lambda^18 S`.
+///
+/// The owned byte vector is intentional: twenty-seven entries are produced by
+/// the verified Hodge lift at runtime, while fifteen are committed direct
+/// solves.  Consumers therefore receive one uniform representation.
+#[derive(Clone, Debug)]
+pub struct Level18SourceFixture {
+    pub dynkin_label: String,
+    pub copy: usize,
+    pub artifact: String,
+    pub coefficient_width_bytes: usize,
+    pub bytes: Vec<u8>,
+}
+
+/// Return all forty-two exact level-18 source embeddings.
+pub fn level18_source_fixtures() -> Vec<Level18SourceFixture> {
+    static FIXTURES: OnceLock<Vec<Level18SourceFixture>> = OnceLock::new();
+    FIXTURES
+        .get_or_init(|| {
+            let (_, kernels) = verify_level18();
+            kernels
+                .into_iter()
+                .map(|kernel| Level18SourceFixture {
+                    dynkin_label: kernel.label,
+                    copy: kernel.copy,
+                    artifact: kernel.output_artifact,
+                    coefficient_width_bytes: kernel.width,
+                    bytes: kernel.bytes,
+                })
+                .collect()
+        })
+        .clone()
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -908,11 +958,13 @@ fn exact_dense_map(input: &ExactSparseMapInput) -> Result<Vec<Vec<Ratio<BigInt>>
 pub fn evaluate_target_gauge_quotient(
     input: &TargetGaugeQuotientInput,
 ) -> Result<TargetGaugeQuotientResult, String> {
+    let (target_stream_sha256, source_fixed_curvature_sha256) =
+        target_gauge_quotient_provenance_hashes();
     if input.target_stream_schema_version != "adynkra-11d-target-resolved-composition-stream-v2"
         || input.source_fixed_curvature_schema_version
             != "adynkra-11d-source-fixed-curvature-scaffold-v1"
-        || input.target_stream_content_sha256.len() != 64
-        || input.source_fixed_curvature_content_sha256.len() != 64
+        || input.target_stream_content_sha256 != target_stream_sha256
+        || input.source_fixed_curvature_content_sha256 != source_fixed_curvature_sha256
         || input.channels.len() != 6
     {
         return Err("target quotient input provenance or channel census is incomplete".to_string());
@@ -969,62 +1021,114 @@ pub fn evaluate_target_gauge_quotient(
     })
 }
 
+pub fn target_gauge_quotient_provenance_hashes() -> (String, String) {
+    (
+        format!("{:x}", Sha256::digest(TARGET_STREAM_VALIDATION)),
+        format!("{:x}", Sha256::digest(SOURCE_FIXED_CURVATURE_VALIDATION)),
+    )
+}
+
 fn verify_momentum_gauge() -> MomentumGaugeReport {
     let summary: FirstMomentumSummary =
         serde_json::from_str(FIRST_MOMENTUM_SUMMARY).expect("parse first-momentum summary");
-    let screen_by_degree = summary
-        .first_momentum_screens
-        .iter()
-        .map(|screen| (screen.form_degree, screen))
-        .collect::<BTreeMap<_, _>>();
     let report_by_degree = FIRST_MOMENTUM_REPORTS
         .iter()
-        .map(|(degree, bytes)| (*degree, *bytes))
+        .map(|(degree, bytes, pinned_sha256)| (*degree, (*bytes, *pinned_sha256)))
         .collect::<BTreeMap<_, _>>();
+    let is_sha256 = |value: &str| {
+        value.len() == 64
+            && value
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    };
     let mut channels = Vec::new();
     for (degree, bytes) in ZERO_MOMENTUM_REPORTS.iter().enumerate() {
         let zero: ZeroMomentumArtifact =
             serde_json::from_str(bytes).expect("parse zero-momentum gauge artifact");
         assert_eq!(degree, zero.gauge_form_degree);
         let zero_momentum_kernel_dimension = zero.primitive_integer_kernel_basis.len();
-        let screen = screen_by_degree.get(&degree).copied();
-        let first_bytes = report_by_degree.get(&degree).copied();
-        let first_hash = first_bytes.map(|artifact| format!("{:x}", Sha256::digest(artifact)));
-        let artifact_hash_matches_summary = match (screen, &first_hash) {
-            (Some(screen), Some(hash)) => screen.report_sha256 == *hash,
-            (None, None) => true,
-            _ => false,
-        };
-        let parameter_projection_complete = screen.is_some_and(|screen| {
-            screen.evaluated_parameter_components.len() == screen.parameter_components
-        });
+        let zero_hash = format!("{:x}", Sha256::digest(bytes));
+        let complete = report_by_degree
+            .get(&degree)
+            .map(|(artifact, pinned_sha256)| {
+                let parsed: CompleteFirstMomentumArtifact = serde_json::from_str(artifact)
+                    .expect("parse complete first-momentum projection artifact");
+                let actual_sha256 = format!("{:x}", Sha256::digest(artifact));
+                let expected_components = [1, 11, 55, 165, 330, 462][degree];
+                let provenance_verified = parsed.schema_version
+                    == "adynkra-11d-first-momentum-gauge-functional-merge-v1"
+                    && parsed.passed
+                    && actual_sha256 == *pinned_sha256
+                    && parsed.gauge_form_degree == degree
+                    && parsed.parameter_dynkin_label == zero.parameter_dynkin_label
+                    && parsed.parameter_components == expected_components
+                    && parsed.evaluated_parameter_components
+                        == (0..expected_components).collect::<Vec<_>>()
+                    && parsed.parameter_projection_is_complete
+                    && parsed.zero_momentum_kernel_dimension == zero_momentum_kernel_dimension
+                    && parsed.zero_momentum_kernel_report_sha256 == zero_hash
+                    && parsed.exact_functional_rank + parsed.exact_functional_nullity
+                        == parsed.parameterized_columns
+                    && parsed.functional_kernel_leading_projection_rank == 0
+                    && parsed.nonzero_leading_extension_excluded_by_functionals
+                    && parsed.functional_kernel_residuals_exactly_zero
+                    && parsed.source_artifact_sha256.len() == 56
+                    && parsed
+                        .source_artifact_sha256
+                        .iter()
+                        .all(|hash| is_sha256(hash));
+                (parsed, actual_sha256, provenance_verified)
+            });
+        let parameter_projection_complete =
+            complete.as_ref().is_some_and(|(artifact, _, valid)| {
+                *valid && artifact.parameter_projection_is_complete
+            });
         let partial_parameter_screen_excludes_leading_projection =
-            screen.is_some_and(|screen| screen.nonzero_leading_extension_excluded);
+            complete.as_ref().is_some_and(|(artifact, _, valid)| {
+                *valid && artifact.nonzero_leading_extension_excluded_by_functionals
+            });
         let excluded = zero_momentum_kernel_dimension == 0
             || (parameter_projection_complete
                 && partial_parameter_screen_excludes_leading_projection);
+        let complete_projection_artifact_provenance_verified = match complete.as_ref() {
+            Some((_, _, provenance_verified)) => *provenance_verified,
+            None => true,
+        };
         channels.push(GaugeChannelMomentumAudit {
             form_degree: degree,
             parameter_dynkin_label: zero.parameter_dynkin_label,
             zero_momentum_kernel_dimension,
-            zero_momentum_artifact_sha256: format!("{:x}", Sha256::digest(bytes)),
-            first_momentum_screen_present: screen.is_some(),
-            evaluated_parameter_components: screen
-                .map(|screen| screen.evaluated_parameter_components.clone())
+            zero_momentum_artifact_sha256: zero_hash,
+            first_momentum_screen_present: complete.is_some(),
+            evaluated_parameter_components: complete
+                .as_ref()
+                .map(|(artifact, _, _)| artifact.evaluated_parameter_components.clone())
                 .unwrap_or_default(),
             parameter_projection_complete,
-            parameterized_columns: screen.map_or(0, |screen| screen.parameterized_columns),
-            functional_rows: screen.map_or(0, |screen| screen.functional_rows),
-            functional_rank: screen.map_or(0, |screen| screen.functional_rank),
-            functional_nullity: screen.map_or(0, |screen| screen.functional_nullity),
-            leading_projection_rank: screen.map_or(0, |screen| screen.leading_projection_rank),
+            parameterized_columns: complete
+                .as_ref()
+                .map_or(0, |(artifact, _, _)| artifact.parameterized_columns),
+            functional_rows: complete
+                .as_ref()
+                .map_or(0, |(artifact, _, _)| artifact.functional_rows),
+            functional_rank: complete
+                .as_ref()
+                .map_or(0, |(artifact, _, _)| artifact.exact_functional_rank),
+            functional_nullity: complete
+                .as_ref()
+                .map_or(0, |(artifact, _, _)| artifact.exact_functional_nullity),
+            leading_projection_rank: complete.as_ref().map_or(0, |(artifact, _, _)| {
+                artifact.functional_kernel_leading_projection_rank
+            }),
             partial_parameter_screen_excludes_leading_projection,
             nonzero_leading_extension_excluded: excluded,
-            first_momentum_artifact_sha256: first_hash,
-            artifact_hash_matches_summary,
+            first_momentum_artifact_sha256: complete.as_ref().map(|(_, hash, _)| hash.clone()),
+            artifact_hash_matches_pinned_complete_projection:
+                complete_projection_artifact_provenance_verified,
+            complete_projection_artifact_provenance_verified,
             passed: zero.schema_version == "adynkra-11d-zero-momentum-gauge-kernel-v1"
                 && zero.passed
-                && artifact_hash_matches_summary
+                && complete_projection_artifact_provenance_verified
                 && excluded,
         });
     }
@@ -1040,14 +1144,13 @@ fn verify_momentum_gauge() -> MomentumGaugeReport {
             && channels[*degree].parameter_projection_complete
             && channels[*degree].leading_projection_rank == 0
             && channels[*degree].nonzero_leading_extension_excluded
-            && channels[*degree].artifact_hash_matches_summary
+            && channels[*degree].complete_projection_artifact_provenance_verified
     });
-    let every_nonempty_channel_subset_excluded_under_strict_source_invariance = summary.passed
-        && !summary.answer
-        && form_3_and_4_excluded_at_zero_momentum
-        && remaining_channels_excluded_at_first_momentum;
+    let every_nonempty_channel_subset_excluded_under_strict_source_invariance =
+        form_3_and_4_excluded_at_zero_momentum && remaining_channels_excluded_at_first_momentum;
     let target_stream = crate::eleven_dimensional_target_stream::verify();
     let source_fixed_curvature = crate::eleven_dimensional_source_fixed_curvature::verify();
+    let embedded = crate::eleven_dimensional_level18_embedded::verify();
     let target_quotient_api = TargetGaugeQuotientReadiness {
         target_stream_schema_version: target_stream.schema_version.to_string(),
         source_fixed_curvature_schema_version: source_fixed_curvature.schema_version.to_string(),
@@ -1057,9 +1160,11 @@ fn verify_momentum_gauge() -> MomentumGaugeReport {
             .typed_target_stream_join_available,
         full_curvature_map_available: source_fixed_curvature.full_f_a_g_p_test_ready,
         exact_sparse_image_containment_api_available: true,
+        exact_level18_embedded_maps_available: embedded.all_77_embedded_maps_complete,
+        exact_level18_embedded_map_count: embedded.exact_embedded_maps,
         actual_target_maps_supplied: false,
         quotient_computed: false,
-        boundary: "The exact image-containment API is ready to consume six source-fixed F A G_p maps and six target gauge maps with target-stream and curvature provenance hashes. The current source-fixed curvature scaffold has no complete differential join, so no maps are fabricated here.",
+        boundary: "All seventy-seven exact level-18 source-target representation maps and the exact image-containment API are available. The physical gate remains false because convention-fixed F A G_p variations and physical target gauge-image maps have not both been supplied.",
     };
     MomentumGaugeReport {
         summary_schema_version: summary.schema_version,
@@ -1075,21 +1180,26 @@ fn verify_momentum_gauge() -> MomentumGaugeReport {
         target_gauge_maps_supplied: false,
         momentum_dependent_target_gauge_quotient_computed: false,
         polynomial_module_cohomology_computed: false,
+        generic_momentum_quotient_computed: false,
         target_quotient_api,
         passed: all_six_zero_momentum_channels_exact
             && every_nonempty_channel_subset_excluded_under_strict_source_invariance,
-        result: "The scalar channel is excluded through first momentum and the three-form and four-form channels are excluded at zero momentum. The one-form, two-form, and five-form screens cover only parameter component zero, so the full six-channel exclusion remains open.",
-        boundary: "The partial exact functionals for form degrees one, two, and five can screen the recorded component, but this aggregate fails closed until every parameter component is evaluated. No target gauge quotient or polynomial-module cohomology is computed.",
+        result: "The exact bounded first-momentum screen excludes every nonempty subset of the six candidate source-gauge channels under strict source invariance A G_p = 0.",
+        boundary: "The complete coordinate projections prove a bounded first-momentum negative result for strict source invariance. They do not compute a generic polynomial-momentum quotient, do not test F A G_p modulo physical target gauge images, and do not establish superspace cohomology.",
     }
 }
 
 fn compute_report() -> Level18MomentumReport {
-    let (level18, _) = verify_level18();
+    let (mut level18, _) = verify_level18();
+    let embedded = crate::eleven_dimensional_level18_embedded::verify();
+    level18.embedded_couplings_computed = embedded.exact_embedded_maps;
+    level18.all_embedded_compositions_complete = embedded.all_77_embedded_maps_complete;
+    level18.boundary = "All forty-two level-18 source kernels and all seventy-seven exact source-target representation maps are complete. The physical target gauge quotient remains separate and is not claimed here.";
     let momentum_gauge = verify_momentum_gauge();
     Level18MomentumReport {
         schema_version: SCHEMA_VERSION,
         published_inventory_source: "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2002.08502, Appendix F",
-        gauge_ansatz_source: "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2007.05097, conjectural one-spinor-derivative prepotential rule in the introduction",
+        gauge_ansatz_source: "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2007.05097, a 10D Weyl/prepotential paper whose introduction states a conjectural high-dimensional one-spinor-derivative rule; not an 11D cohomology source",
         source_scope: "The cited papers supply the representation inventory and motivate the Lorentz-compatible gauge ansatz. They do not provide the level-18 embedded Clebsch-Gordan maps or a target gauge quotient.",
         bounded_program_passed: level18.passed && momentum_gauge.passed,
         full_requested_step_complete: level18.full_level18_kernel_inventory_complete
@@ -1119,7 +1229,11 @@ pub fn write_artifacts(
     data_path: &Path,
     validation_path: &Path,
 ) -> Level18MomentumReport {
-    let (level18, lifted) = verify_level18();
+    let (mut level18, lifted) = verify_level18();
+    let embedded = crate::eleven_dimensional_level18_embedded::verify();
+    level18.embedded_couplings_computed = embedded.exact_embedded_maps;
+    level18.all_embedded_compositions_complete = embedded.all_77_embedded_maps_complete;
+    level18.boundary = "All forty-two level-18 source kernels and all seventy-seven exact source-target representation maps are complete. The physical target gauge quotient remains separate and is not claimed here.";
     fs::create_dir_all(kernel_directory).expect("create level-18 kernel directory");
     for kernel in lifted {
         let path = kernel_directory.join(&kernel.output_artifact);
@@ -1132,7 +1246,7 @@ pub fn write_artifacts(
     let report = Level18MomentumReport {
         schema_version: SCHEMA_VERSION,
         published_inventory_source: "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2002.08502, Appendix F",
-        gauge_ansatz_source: "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2007.05097, conjectural one-spinor-derivative prepotential rule in the introduction",
+        gauge_ansatz_source: "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2007.05097, a 10D Weyl/prepotential paper whose introduction states a conjectural high-dimensional one-spinor-derivative rule; not an 11D cohomology source",
         source_scope: "The cited papers supply the representation inventory and motivate the Lorentz-compatible gauge ansatz. They do not provide the level-18 embedded Clebsch-Gordan maps or a target gauge quotient.",
         bounded_program_passed: level18.passed && verify_momentum_gauge().passed,
         full_requested_step_complete: false,
@@ -1202,24 +1316,28 @@ mod tests {
         assert_eq!(report.level18.source_ready_embedded_copies, 77);
         assert_eq!(report.level18.source_ready_embedded_fraction, "77/77");
         assert!(report.level18.full_level18_kernel_inventory_complete);
-        assert!(!report.level18.all_embedded_compositions_complete);
+        assert_eq!(report.level18.embedded_couplings_computed, 77);
+        assert!(report.level18.all_embedded_compositions_complete);
         assert!(report.level18.passed);
     }
 
     #[test]
-    fn partial_first_momentum_screens_fail_closed() {
+    fn complete_first_momentum_screens_close_the_bounded_strict_source_gate() {
         let report = verify();
-        assert!(!report.momentum_gauge.passed);
+        assert!(report.momentum_gauge.passed);
         assert_eq!(
             report.momentum_gauge.zero_momentum_kernel_dimensions,
             vec![11, 1, 1, 0, 0, 1]
         );
-        assert!(report.momentum_gauge.channels[0].parameter_projection_complete);
-        for degree in [1, 2, 5] {
-            assert!(!report.momentum_gauge.channels[degree].parameter_projection_complete);
+        for degree in [0, 1, 2, 5] {
+            assert!(report.momentum_gauge.channels[degree].parameter_projection_complete);
+            assert!(
+                report.momentum_gauge.channels[degree]
+                    .complete_projection_artifact_provenance_verified
+            );
         }
         assert!(
-            !report
+            report
                 .momentum_gauge
                 .every_nonempty_channel_subset_excluded_under_strict_source_invariance
         );
@@ -1240,7 +1358,21 @@ mod tests {
                 .target_quotient_api
                 .actual_target_maps_supplied
         );
-        assert!(!report.bounded_program_passed);
+        assert!(
+            report
+                .momentum_gauge
+                .target_quotient_api
+                .exact_level18_embedded_maps_available
+        );
+        assert_eq!(
+            report
+                .momentum_gauge
+                .target_quotient_api
+                .exact_level18_embedded_map_count,
+            77
+        );
+        assert!(!report.momentum_gauge.generic_momentum_quotient_computed);
+        assert!(report.bounded_program_passed);
         assert!(!report.full_requested_step_complete);
     }
 
@@ -1274,13 +1406,15 @@ mod tests {
                 },
             )
             .collect::<Vec<_>>();
+        let (target_stream_content_sha256, source_fixed_curvature_content_sha256) =
+            target_gauge_quotient_provenance_hashes();
         let mut input = TargetGaugeQuotientInput {
             target_stream_schema_version: "adynkra-11d-target-resolved-composition-stream-v2"
                 .to_string(),
             source_fixed_curvature_schema_version: "adynkra-11d-source-fixed-curvature-scaffold-v1"
                 .to_string(),
-            target_stream_content_sha256: "0".repeat(64),
-            source_fixed_curvature_content_sha256: "1".repeat(64),
+            target_stream_content_sha256,
+            source_fixed_curvature_content_sha256,
             channels,
         };
         let contained = evaluate_target_gauge_quotient(&input).unwrap();
@@ -1290,6 +1424,8 @@ mod tests {
         let escaped = evaluate_target_gauge_quotient(&input).unwrap();
         assert!(!escaped.passed);
         assert!(!escaped.channels[5].curvature_variation_lies_in_target_gauge_image);
+        input.target_stream_content_sha256.replace_range(0..1, "f");
+        assert!(evaluate_target_gauge_quotient(&input).is_err());
     }
 
     #[test]
@@ -1300,7 +1436,7 @@ mod tests {
             Path::new("data/eleven_dimensional_level18_momentum.json"),
             Path::new("results/adynkra_11d_level18_momentum_validation.json"),
         );
-        assert!(!report.bounded_program_passed);
+        assert!(report.bounded_program_passed);
         assert!(!report.full_requested_step_complete);
     }
 }

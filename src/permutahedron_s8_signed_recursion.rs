@@ -7,7 +7,7 @@
 //! are tested here. Garden closure is the acceptance condition in the paper.
 
 use crate::decompose::{antisymmetric_commutant_dim, commutant_dim};
-use crate::holoraumy::{gadget, HoloraumyData};
+use crate::holoraumy::{HoloraumyData, gadget};
 use crate::lr_matrix::AdinkraRep;
 use crate::permutahedron_fixtures::{S4_ORDERED_QUARTETS, S8_REPRESENTATION_OCTETS};
 use crate::permutahedron_s8_supersymmetry::S8_BASE_BOOLEAN_FACTORS;
@@ -663,14 +663,18 @@ mod tests {
     fn full_scan_counts_every_ordered_pair_and_flip() {
         let artifact = build();
         assert_eq!(artifact.ordered_pairs.len(), 30);
-        assert!(artifact
-            .ordered_pairs
-            .iter()
-            .all(|pair| pair.first_index != pair.second_index));
-        assert!(artifact
-            .ordered_pairs
-            .iter()
-            .all(|pair| pair.candidates.len() == 8));
+        assert!(
+            artifact
+                .ordered_pairs
+                .iter()
+                .all(|pair| pair.first_index != pair.second_index)
+        );
+        assert!(
+            artifact
+                .ordered_pairs
+                .iter()
+                .all(|pair| pair.candidates.len() == 8)
+        );
         assert_eq!(artifact.validation.signed_candidates_checked, 240);
         assert_eq!(artifact.validation.dense_garden_entries_checked, 1_966_080);
         assert_eq!(artifact.validation.closing_candidates, 16);

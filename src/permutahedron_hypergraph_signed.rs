@@ -7,7 +7,7 @@
 //! Garden-space dimensions of the 30 identity blocks.
 
 use crate::lr_matrix::AdinkraRep;
-use crate::permutahedron::{coset_partition, CosetSide, Permutation};
+use crate::permutahedron::{CosetSide, Permutation, coset_partition};
 use crate::permutahedron_garden::solve_garden_signing;
 use crate::permutahedron_hypergraph::identity_hyperedges;
 use serde::Serialize;

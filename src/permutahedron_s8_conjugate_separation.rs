@@ -7,7 +7,7 @@
 //! and separately tests whether transporting all block partitions adds any
 //! decompositions to the original universe.
 
-use crate::permutahedron::{coset_partition, factorial, rana_r8, CosetSide, Permutation};
+use crate::permutahedron::{CosetSide, Permutation, coset_partition, factorial, rana_r8};
 use crate::permutahedron_fixtures::S4_ORDERED_QUARTETS;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
@@ -290,11 +290,7 @@ fn block_compatible(permutation: Permutation, mask: u8) -> bool {
 }
 
 fn canonical_mask(mask: u8) -> u8 {
-    if mask & 1 != 0 {
-        mask
-    } else {
-        !mask
-    }
+    if mask & 1 != 0 { mask } else { !mask }
 }
 
 fn invariant_masks(subgroup: &[Permutation], all_masks: &[u8]) -> Vec<u8> {
@@ -692,9 +688,11 @@ pub fn build() -> ConjugateSeparationArtifact {
         .copied()
         .map(right_coset_subgroup_key)
         .collect();
-    assert!(recursive_subgroup_keys
-        .iter()
-        .all(|key| subgroups.iter().any(|subgroup| subgroup.key == *key)));
+    assert!(
+        recursive_subgroup_keys
+            .iter()
+            .all(|key| subgroups.iter().any(|subgroup| subgroup.key == *key))
+    );
     let recursive_construction_audit = RecursiveConstructionAudit {
         source_equations: "arXiv:2304.09830v2, Eqs. (2.17)-(2.19)",
         ordered_distinct_sector_pairs_tested: recursive_octets.len(),
@@ -1087,9 +1085,11 @@ mod tests {
     fn canonical_conjugate_enumeration_has_thirty_equal_fibers() {
         let conjugates = canonical_conjugates();
         assert_eq!(conjugates.len(), 30);
-        assert!(conjugates
-            .iter()
-            .all(|subgroup| subgroup.conjugators == 1_344));
+        assert!(
+            conjugates
+                .iter()
+                .all(|subgroup| subgroup.conjugators == 1_344)
+        );
     }
 
     #[test]

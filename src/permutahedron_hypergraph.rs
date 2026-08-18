@@ -8,8 +8,8 @@
 //! hyperedges without supplying the published V4 or R8 coset labels.
 
 use crate::permutahedron::{
-    coset_partition, factorial, permutations, validate_subgroup, vierergruppe, CosetSide,
-    Permutation,
+    CosetSide, Permutation, coset_partition, factorial, permutations, validate_subgroup,
+    vierergruppe,
 };
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};

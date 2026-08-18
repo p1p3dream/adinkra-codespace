@@ -7,7 +7,7 @@
 //! of this thirty-element orbit without external symmetry-breaking data.
 
 use crate::permutahedron::{
-    complete_graph, coset_partition, permutations, rana_r8, CosetSide, Permutation,
+    CosetSide, Permutation, complete_graph, coset_partition, permutations, rana_r8,
 };
 use crate::permutahedron_hypergraph::identity_hyperedges;
 use serde::Serialize;
@@ -141,9 +141,11 @@ pub fn build() -> SpectralIdentifiabilityArtifact {
         adjacency[left as usize].push(right);
         adjacency[right as usize].push(left);
     }
-    assert!(adjacency
-        .iter()
-        .all(|neighbors| neighbors.len() == graph.degree));
+    assert!(
+        adjacency
+            .iter()
+            .all(|neighbors| neighbors.len() == graph.degree)
+    );
 
     let mut partitions = Vec::with_capacity(families.len());
     let mut labels = Vec::with_capacity(families.len());

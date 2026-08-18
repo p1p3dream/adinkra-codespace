@@ -30,20 +30,44 @@ mod coset_primed_lanczos;
 mod dashing;
 mod decompose;
 mod eleven_dimensional_abstract_clifford_join;
+mod eleven_dimensional_b5_majorana_target_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
+mod eleven_dimensional_covariant_cohomology_gate;
+mod eleven_dimensional_direct_local_lorentz;
+mod eleven_dimensional_first_superspace_jet;
 mod eleven_dimensional_free_complex;
 mod eleven_dimensional_gauge;
 mod eleven_dimensional_hook_bianchi;
+mod eleven_dimensional_j1_lorentz_residual;
+mod eleven_dimensional_k_fag_solver;
 mod eleven_dimensional_level16_couplings;
+mod eleven_dimensional_level18_embedded;
 mod eleven_dimensional_level18_momentum;
+mod eleven_dimensional_level18_target_quotient;
 mod eleven_dimensional_linear_susy;
+mod eleven_dimensional_lorentz_holonomy_compensator_audit;
 mod eleven_dimensional_majorana;
+mod eleven_dimensional_physical_adapter_audit;
+mod eleven_dimensional_physical_curvature;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_prepotential_gate;
+mod eleven_dimensional_relaxed_spinorial_cohomology;
+mod eleven_dimensional_second_momentum;
+mod eleven_dimensional_second_momentum_10001_fx;
+mod eleven_dimensional_second_momentum_10001_maps;
+mod eleven_dimensional_second_momentum_20001_fx;
+mod eleven_dimensional_second_momentum_20001_maps;
+mod eleven_dimensional_second_momentum_30001_fx;
+mod eleven_dimensional_second_momentum_30001_maps;
+mod eleven_dimensional_second_momentum_fx;
+mod eleven_dimensional_second_momentum_recoupling;
+mod eleven_dimensional_second_momentum_remaining_recouplings;
 mod eleven_dimensional_source_fixed_curvature;
 mod eleven_dimensional_spinor_bridge;
 mod eleven_dimensional_spinor_bridge_kernels;
+mod eleven_dimensional_spinorial_differential;
+mod eleven_dimensional_target_equation_complex;
 mod eleven_dimensional_target_stream;
 mod eleven_dimensional_top_down;
 mod enhance;
@@ -51,9 +75,9 @@ mod eval;
 mod exact_component_algebra;
 mod filters;
 mod four_color;
-mod higher_dimensional_fingerprint;
 #[allow(dead_code)]
 mod higher_dimensional_canonical;
+mod higher_dimensional_fingerprint;
 mod higher_dimensional_fixture_adapters;
 mod higher_dimensional_parentage;
 mod holoraumy;
@@ -95,6 +119,7 @@ mod pipeline;
 mod prepotential_curvature;
 mod prepotential_gauge;
 mod quotient_graph_analysis;
+mod r8_block_invariants;
 mod ranking;
 mod s8_characters;
 mod scalar_tensor_tangent;
@@ -116,7 +141,7 @@ mod viz_export;
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{enumerate_codes, DoublyEvenCode};
+use code::{DoublyEvenCode, enumerate_codes};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -257,7 +282,17 @@ fn main() {
         "adynkra-11d-level18-momentum-build" => cmd_adynkra_11d_level18_momentum_build(&args),
         "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
         "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
+        "adynkra-11d-second-momentum-build" => cmd_adynkra_11d_second_momentum_build(&args),
+        "adynkra-11d-second-momentum-recoupling-build" => {
+            cmd_adynkra_11d_second_momentum_recoupling_build(&args)
+        }
+        "adynkra-11d-second-momentum-component-build" => {
+            cmd_adynkra_11d_second_momentum_component_build(&args)
+        }
         "adynkra-11d-top-down-build" => cmd_adynkra_11d_top_down_build(&args),
+        "adynkra-11d-first-momentum-fx-aggregate" => {
+            cmd_adynkra_11d_first_momentum_fx_aggregate(&args)
+        }
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
         "adynkra-11d-gauge-intertwiner-verify" => cmd_adynkra_11d_gauge_intertwiner_verify(),
         "adynkra-11d-gauge-composition-manifest" => cmd_adynkra_11d_gauge_composition_manifest(),
@@ -372,7 +407,9 @@ fn print_usage(prog: &str) {
     );
     eprintln!("  cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]");
     eprintln!("                          v2 slot-level CSP engine: correlated product boxes,");
-    eprintln!("                          residual arc-consistency, MRV order (stride>1 = stratified sample)");
+    eprintln!(
+        "                          residual arc-consistency, MRV order (stride>1 = stratified sample)"
+    );
     eprintln!("  cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]");
     eprintln!("                          Durable sharded enumeration: one immutable shard per");
     eprintln!(
@@ -513,8 +550,12 @@ fn print_usage(prog: &str) {
         "  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories"
     );
     eprintln!("  adynkra-11d-top-down-build [json] Build the bounded top-down gate report");
+    eprintln!("  adynkra-11d-first-momentum-fx-aggregate [json] [checkpoint-root]");
+    eprintln!("                          Merge 336 complete F_X checkpoints without recomputing");
     eprintln!("  adynkra-11d-free-complex-build [data-json] [validation-json]");
-    eprintln!("                          Build the exact complexified 44+84|128 free target complex");
+    eprintln!(
+        "                          Build the exact complexified 44+84|128 free target complex"
+    );
     eprintln!("  adynkra-11d-hook-bianchi-build [data-json] [validation-json]");
     eprintln!("                          Build the bounded level-17 hook continuation gate");
     eprintln!("  adynkra-11d-level18-momentum-build [data-json] [validation-json]");
@@ -523,6 +564,12 @@ fn print_usage(prog: &str) {
     eprintln!("                          Build the exact 336-job source-side kill-gate work list");
     eprintln!("  adynkra-11d-target-stream-build [data-json] [validation-json]");
     eprintln!("                          Build the target-resolved exact 11 by 32 stream");
+    eprintln!("  adynkra-11d-second-momentum-build [json]");
+    eprintln!("                          Build the bounded p^2 D^12 inventory and stream report");
+    eprintln!("  adynkra-11d-second-momentum-recoupling-build [json]");
+    eprintln!("                          Certify the trace/STT rank-two momentum recoupling");
+    eprintln!("  adynkra-11d-second-momentum-component-build [results-dir]");
+    eprintln!("                          Build bounded 10001/30001 component-map certificates");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!(
         "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
@@ -897,10 +944,8 @@ fn cmd_higher_dimensional_parentage_query(args: &[String]) {
     );
     let query: higher_dimensional_parentage::ParentageQuery =
         serde_json::from_reader(reader).expect("parse higher-dimensional parentage query");
-    let result = higher_dimensional_parentage::infer(
-        &query,
-        &higher_dimensional_parentage::known_catalog(),
-    );
+    let result =
+        higher_dimensional_parentage::infer(&query, &higher_dimensional_parentage::known_catalog());
     println!("{}", serde_json::to_string_pretty(&result).unwrap());
 }
 
@@ -1637,6 +1682,95 @@ fn cmd_adynkra_11d_top_down_build(args: &[String]) {
     if !report.bounded_gates_passed {
         std::process::exit(2);
     }
+}
+
+fn cmd_adynkra_11d_second_momentum_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_second_momentum_validation.json");
+    match eleven_dimensional_second_momentum::write_artifact(std::path::Path::new(path)) {
+        Ok(report) => {
+            println!("{}", serde_json::to_string_pretty(&report).unwrap());
+            if !report.passed {
+                std::process::exit(2);
+            }
+        }
+        Err(error) => {
+            eprintln!("second-momentum artifact build failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_recoupling_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_second_momentum_recoupling.json");
+    match eleven_dimensional_second_momentum_recoupling::write_artifact(std::path::Path::new(path))
+    {
+        Ok(report) => {
+            println!("{}", serde_json::to_string_pretty(&report).unwrap());
+            if !report.passed {
+                std::process::exit(2);
+            }
+        }
+        Err(error) => {
+            eprintln!("second-momentum recoupling build failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_component_build(args: &[String]) {
+    let directory = std::path::Path::new(args.get(2).map(String::as_str).unwrap_or("results"));
+    let checkpoint_directory = directory.join("adynkra_11d_second_momentum_30001_checkpoints");
+    let map_10001 = directory.join("adynkra_11d_second_momentum_10001_maps.json");
+    let map_30001 = directory.join("adynkra_11d_second_momentum_30001_maps.json");
+    let remaining = directory.join("adynkra_11d_second_momentum_remaining_recouplings.json");
+    let result = (|| -> std::io::Result<()> {
+        eleven_dimensional_second_momentum_10001_maps::write_second_momentum_10001_map_artifact(
+            &map_10001,
+        )?;
+        eleven_dimensional_second_momentum_30001_maps::write_artifact(
+            &checkpoint_directory,
+            &map_30001,
+        )?;
+        eleven_dimensional_second_momentum_remaining_recouplings::write_artifact(&remaining)?;
+        Ok(())
+    })();
+    if let Err(error) = result {
+        eprintln!("second-momentum component build failed: {error}");
+        std::process::exit(2);
+    }
+    println!(
+        "wrote {}, {}, and {}",
+        map_10001.display(),
+        map_30001.display(),
+        remaining.display()
+    );
+}
+
+fn cmd_adynkra_11d_first_momentum_fx_aggregate(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_first_momentum_physical_fx_functional.json");
+    let checkpoint_root = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/eleven_dimensional_first_momentum_fx_checkpoints");
+    if let Err(error) = eleven_dimensional_physical_curvature::
+        merge_first_momentum_fx_functional_artifact_from_complete_checkpoints(
+            std::path::Path::new(path),
+            std::path::Path::new(checkpoint_root),
+        )
+    {
+        eprintln!("first-momentum F_X checkpoint merge failed: {error}");
+        std::process::exit(2);
+    }
+    println!("wrote {path} from 336 validated checkpoints in {checkpoint_root}");
 }
 
 fn cmd_adynkra_11d_free_complex_build(args: &[String]) {
@@ -3276,12 +3410,15 @@ fn cmd_decompose_probe(args: &[String]) {
 }
 
 fn cmd_cls_g_full_build(args: &[String]) {
-    use four_color::gmatrix_full::{run_build, Side};
+    use four_color::gmatrix_full::{Side, run_build};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
         other => {
-            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-full-build [side] [blocks] [threads] [cap] [json]", args[0]);
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-full-build [side] [blocks] [threads] [cap] [json]",
+                args[0]
+            );
             std::process::exit(1);
         }
     };
@@ -3312,12 +3449,15 @@ fn cmd_cls_g_full_build(args: &[String]) {
 }
 
 fn cmd_cls_g_full_verify(args: &[String]) {
-    use four_color::gmatrix_full::{run_verify, Side};
+    use four_color::gmatrix_full::{Side, run_verify};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
         other => {
-            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-full-verify [side] [blocks] [json]", args[0]);
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-full-verify [side] [blocks] [json]",
+                args[0]
+            );
             std::process::exit(1);
         }
     };
@@ -3343,7 +3483,10 @@ fn cmd_cls_g_csp_build(args: &[String]) {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
         other => {
-            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]", args[0]);
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]",
+                args[0]
+            );
             std::process::exit(1);
         }
     };
@@ -3383,7 +3526,10 @@ fn cmd_cls_g_csp_shard(args: &[String]) {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
         other => {
-            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]", args[0]);
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]",
+                args[0]
+            );
             std::process::exit(1);
         }
     };
@@ -3433,7 +3579,10 @@ fn cmd_cls_g_csp_merge(args: &[String]) {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
         other => {
-            eprintln!("side must be L or R, got '{other}'. Usage: {} cls-g-csp-merge [side] [blocks] [dir] [json]", args[0]);
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-csp-merge [side] [blocks] [dir] [json]",
+                args[0]
+            );
             std::process::exit(1);
         }
     };

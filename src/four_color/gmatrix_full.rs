@@ -43,7 +43,7 @@
 //!      verified integer G (canonical trit encoding), so it is independent of
 //!      enumeration order and thread scheduling.
 
-use super::{gmatrix, imm, IntMat};
+use super::{IntMat, gmatrix, imm};
 use std::collections::BTreeSet;
 use std::fmt;
 use std::sync::Arc;
@@ -75,7 +75,11 @@ impl K {
     fn new(re: i128, im: i128, den: i128) -> K {
         assert!(den != 0, "K denominator must be nonzero");
         if re == 0 && im == 0 {
-            return K { re: 0, im: 0, den: 1 };
+            return K {
+                re: 0,
+                im: 0,
+                den: 1,
+            };
         }
         let (mut re, mut im, mut den) = (re, im, den);
         if den < 0 {
@@ -84,21 +88,41 @@ impl K {
             den = -den;
         }
         let g = gcd2(gcd2(re, im), den);
-        K { re: re / g, im: im / g, den: den / g }
+        K {
+            re: re / g,
+            im: im / g,
+            den: den / g,
+        }
     }
 
     pub(crate) fn zero() -> K {
-        K { re: 0, im: 0, den: 1 }
+        K {
+            re: 0,
+            im: 0,
+            den: 1,
+        }
     }
     pub(crate) fn one() -> K {
-        K { re: 1, im: 0, den: 1 }
+        K {
+            re: 1,
+            im: 0,
+            den: 1,
+        }
     }
     pub(crate) fn from_i32(x: i32) -> K {
-        K { re: x as i128, im: 0, den: 1 }
+        K {
+            re: x as i128,
+            im: 0,
+            den: 1,
+        }
     }
     /// lambda = 1 + sqrt(-3), the eigenvalue of each CLS block.
     pub(crate) fn lambda() -> K {
-        K { re: 1, im: 1, den: 1 }
+        K {
+            re: 1,
+            im: 1,
+            den: 1,
+        }
     }
     pub(crate) fn is_zero(&self) -> bool {
         self.re == 0 && self.im == 0
@@ -115,7 +139,11 @@ impl K {
         self.add(o.neg())
     }
     pub(crate) fn neg(self) -> K {
-        K { re: -self.re, im: -self.im, den: self.den }
+        K {
+            re: -self.re,
+            im: -self.im,
+            den: self.den,
+        }
     }
     pub(crate) fn mul(self, o: K) -> K {
         // (a + b s)(c + d s) = (ac - 3bd) + (ad + bc) s
@@ -135,12 +163,22 @@ impl K {
         self.mul(o.inv())
     }
     pub(crate) fn conj(self) -> K {
-        K { re: self.re, im: -self.im, den: self.den }
+        K {
+            re: self.re,
+            im: -self.im,
+            den: self.den,
+        }
     }
 
     /// Real and imaginary rational components as (num, den) pairs, den > 0.
     pub(crate) fn parts(&self) -> ((i128, i128), (i128, i128)) {
         ((self.re, self.den), (self.im, self.den))
+    }
+
+    /// The normalized triple (re, im, den) verbatim, for callers that build
+    /// compact total-order keys over exact K values (flat sorted maps).
+    pub(crate) fn raw_parts(&self) -> (i128, i128, i128) {
+        (self.re, self.im, self.den)
     }
 }
 
@@ -318,10 +356,10 @@ fn kmat_mul(a: &KMat, b: &KMat) -> KMat {
 /// (m = 1, 2, or 3; g is then 2m x 2m over K).
 pub struct Coords {
     pub m: usize,
-    pub a: IntMat,        // 4m x 4m integer A restricted to the first m blocks
-    pub p: KMat,          // 4m x 4m, block diagonal [V_b | conj V_b]
+    pub a: IntMat, // 4m x 4m integer A restricted to the first m blocks
+    pub p: KMat,   // 4m x 4m, block diagonal [V_b | conj V_b]
     pub p_inv: KMat,
-    pub pb: Vec<KMat>,    // per-block 4x4 [V_b | conj V_b]
+    pub pb: Vec<KMat>, // per-block 4x4 [V_b | conj V_b]
     pub pb_inv: Vec<KMat>,
 }
 
@@ -329,8 +367,14 @@ pub struct Coords {
 /// in the Appendix C basis).
 pub fn cls_a_blocks(m: usize, side: Side) -> (IntMat, [IntMat; 3]) {
     let ls: Vec<IntMat> = match side {
-        Side::L => super::cls::cls_l_matrices().iter().map(super::dense).collect(),
-        Side::R => super::cls::cls_r_matrices().iter().map(super::dense).collect(),
+        Side::L => super::cls::cls_l_matrices()
+            .iter()
+            .map(super::dense)
+            .collect(),
+        Side::R => super::cls::cls_r_matrices()
+            .iter()
+            .map(super::dense)
+            .collect(),
     };
     let a = gmatrix::a_of(&ls);
     let blocks: [IntMat; 3] = std::array::from_fn(|b| {
@@ -395,7 +439,11 @@ pub fn build_coords(m: usize, side: Side) -> Coords {
         // Columns 2b, 2b+1 of the big P: V_b; columns 2m+2b, 2m+2b+1: conj(V_b).
         for i in 0..4 {
             for u in 0..4 {
-                let target = if u < 2 { 2 * b + u } else { 2 * m + 2 * b + (u - 2) };
+                let target = if u < 2 {
+                    2 * b + u
+                } else {
+                    2 * m + 2 * b + (u - 2)
+                };
                 p[4 * b + i][target] = p_b[i][u];
             }
         }
@@ -403,7 +451,14 @@ pub fn build_coords(m: usize, side: Side) -> Coords {
         pb_inv.push(p_b_inv);
     }
     let p_inv = kinv(&p).expect("P must be invertible (eigenbases are independent)");
-    Coords { m, a, p, p_inv, pb, pb_inv }
+    Coords {
+        m,
+        a,
+        p,
+        p_inv,
+        pb,
+        pb_inv,
+    }
 }
 
 /// g = top-left 2m x 2m of P^{-1} G P (G integer).
@@ -492,7 +547,9 @@ pub struct Alphabets {
 pub fn build_alphabets(coords: &Coords, blocks: &[IntMat; 3]) -> Alphabets {
     let m = coords.m;
     let n = 2 * m;
-    let mut sets: Vec<Vec<BTreeSet<K>>> = (0..n).map(|_| (0..n).map(|_| BTreeSet::new()).collect()).collect();
+    let mut sets: Vec<Vec<BTreeSet<K>>> = (0..n)
+        .map(|_| (0..n).map(|_| BTreeSet::new()).collect())
+        .collect();
     let mut slot_sets: Vec<BTreeSet<[[K; 2]; 2]>> = (0..m * m).map(|_| BTreeSet::new()).collect();
     let mut counts = vec![vec![0usize; m]; m];
     for bi in 0..m {
@@ -538,7 +595,12 @@ pub fn build_alphabets(coords: &Coords, blocks: &[IntMat; 3]) -> Alphabets {
         .into_iter()
         .map(|s| s.into_iter().collect())
         .collect();
-    Alphabets { n, sets, intertwiner_counts: counts, slots }
+    Alphabets {
+        n,
+        sets,
+        intertwiner_counts: counts,
+        slots,
+    }
 }
 
 // ===========================================================================
@@ -875,12 +937,7 @@ fn run_worker(
 /// Enumerate all solutions for the given coordinate setup and alphabets.
 /// `threads` splits the top-level assignment space deterministically; results
 /// (count, checksum) are order-independent.
-pub fn solve(
-    coords: Coords,
-    alph: Alphabets,
-    threads: usize,
-    cap: Option<u64>,
-) -> SolveStats {
+pub fn solve(coords: Coords, alph: Alphabets, threads: usize, cap: Option<u64>) -> SolveStats {
     let n = alph.n;
     let t0 = Instant::now();
     // Precompute product boxes.
@@ -989,7 +1046,12 @@ pub fn solve(
                     if i as usize >= items.len() {
                         break;
                     }
-                    let (cc, hh, nn, ss) = run_worker(Arc::clone(&sh), &items[i as usize], cap, Arc::clone(&counter));
+                    let (cc, hh, nn, ss) = run_worker(
+                        Arc::clone(&sh),
+                        &items[i as usize],
+                        cap,
+                        Arc::clone(&counter),
+                    );
                     c += cc;
                     h = h.wrapping_add(hh);
                     nd += nn;
@@ -1077,7 +1139,9 @@ pub fn slot_solutions(coords: &Coords, alph: &Alphabets, slot: usize) -> Vec<KMa
 /// Count block-diagonal solutions through the new coordinates: product of the
 /// three per-slot counts; must equal 12^m. Also verifies a sample end to end.
 pub fn block_diagonal_via_coords(coords: &Coords, alph: &Alphabets) -> usize {
-    let per: Vec<usize> = (0..coords.m).map(|s| slot_solutions(coords, alph, s).len()).collect();
+    let per: Vec<usize> = (0..coords.m)
+        .map(|s| slot_solutions(coords, alph, s).len())
+        .collect();
     per.iter().product()
 }
 
@@ -1098,13 +1162,19 @@ pub fn run_build(side: Side, m: usize, threads: usize, cap: Option<u64>, path: &
     let alph = build_alphabets(&coords, &blocks);
     println!("intertwiner counts: {:?}", alph.intertwiner_counts);
     let sizes: Vec<i32> = alph.sets.iter().flatten().map(|s| s.len() as i32).collect();
-    println!("alphabet sizes (row-major {}x{}): {:?}", alph.n, alph.n, sizes);
+    println!(
+        "alphabet sizes (row-major {}x{}): {:?}",
+        alph.n, alph.n, sizes
+    );
 
     // Sanity: per-slot counts must be 12 (matching gmatrix::g_matrices per block).
     for s in 0..m {
         let sols = slot_solutions(&coords, &alph, s);
         let expect = gmatrix::g_matrices(&blocks[s]).len();
-        println!("slot {s}: M_2(K) solutions = {} (gmatrix per-block = {expect})", sols.len());
+        println!(
+            "slot {s}: M_2(K) solutions = {} (gmatrix per-block = {expect})",
+            sols.len()
+        );
         assert_eq!(sols.len(), expect, "slot {s} M_2(K) count mismatch");
     }
     let bd = block_diagonal_via_coords(&coords, &alph);
@@ -1123,7 +1193,15 @@ pub fn run_build(side: Side, m: usize, threads: usize, cap: Option<u64>, path: &
         .map(|g| {
             let rows: Vec<String> = g
                 .iter()
-                .map(|r| format!("[{}]", r.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(",")))
+                .map(|r| {
+                    format!(
+                        "[{}]",
+                        r.iter()
+                            .map(|v| v.to_string())
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    )
+                })
                 .collect();
             format!("[{}]", rows.join(","))
         })

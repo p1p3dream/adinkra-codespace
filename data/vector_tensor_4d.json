@@ -75,6 +75,7 @@
     "fixed_one_sixth_normalization_matched": true,
     "auxiliary_sign_matched": true,
     "gauge_orbits_preserved": true,
+    "residual_temporal_gauge_action_exact": true,
     "temporal_weyl_realification_exact": true,
     "simultaneous_z_omega_orientation_exact": true,
     "narrow_zero_brane_bridge_passed": true,

@@ -224,10 +224,7 @@ mod tests {
             !all_pm_identity(&x),
             "CLS X should NOT already be all +/-I (that would be early collapse)"
         );
-        assert!(
-            !all_pm_identity(&y),
-            "CLS Y should NOT already be all +/-I"
-        );
+        assert!(!all_pm_identity(&y), "CLS Y should NOT already be all +/-I");
         assert!(
             !all_pm_identity(&z),
             "CLS Z should NOT already be all +/-I; this is the key contrast \

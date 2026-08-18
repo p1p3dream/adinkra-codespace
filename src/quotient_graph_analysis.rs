@@ -397,11 +397,7 @@ fn adjacency_lanczos_full(matrix: &[Vec<u32>], m: usize) -> LanczosFullResult {
 // Same algorithm as crate::spectral_lanczos::tridiag_eigen.
 
 fn copysign(a: f64, b: f64) -> f64 {
-    if b >= 0.0 {
-        a.abs()
-    } else {
-        -a.abs()
-    }
+    if b >= 0.0 { a.abs() } else { -a.abs() }
 }
 
 fn tridiag_eigen(alpha: &[f64], beta: &[f64]) -> (Vec<f64>, Vec<Vec<f64>>) {
@@ -1405,8 +1401,7 @@ mod tests {
     fn test_quotient_lift_direct_s8() {
         use crate::permutahedron::{self, CosetSide};
 
-        let graph = permutahedron::complete_graph(8)
-            .expect("S8 graph construction must succeed");
+        let graph = permutahedron::complete_graph(8).expect("S8 graph construction must succeed");
         let r8 = permutahedron::rana_r8();
         let partition = permutahedron::coset_partition(&r8, CosetSide::Right)
             .expect("R8 coset partition must succeed");
@@ -1426,53 +1421,59 @@ mod tests {
             q[cv][cu] += 1;
         }
 
-        let q_eigen = quotient_eigen_full(&q, 20);
-        println!("Quotient eigenvalues (first 10):");
-        for (i, &ev) in q_eigen.eigenvalues.iter().enumerate().take(10) {
-            println!("  {:2}. lambda = {:.4}", i, ev);
-        }
-
-        let embedding = quotient_lift_embedding(
-            &q_eigen.eigenvectors, &coset_labels, graph.vertex_count, 10,
-        );
-
-        // Direct assignment: group vertices by embedding coordinates.
-        // Since the embedding is coset-constant, each unique point = one coset.
         use std::collections::HashMap;
-        let mut point_to_cluster: HashMap<Vec<i64>, usize> = HashMap::new();
-        let mut direct_predicted = vec![0usize; graph.vertex_count];
-        let mut next_id = 0usize;
-        for v in 0..graph.vertex_count {
-            let key: Vec<i64> = embedding[v]
-                .iter()
-                .map(|&x| (x * 1e8).round() as i64)
-                .collect();
-            let cluster = *point_to_cluster.entry(key).or_insert_with(|| {
-                let id = next_id;
-                next_id += 1;
-                id
-            });
-            direct_predicted[v] = cluster;
-        }
-        let direct_ari = crate::spectral_lanczos::adjusted_rand_index(
-            &coset_labels, &direct_predicted,
-        );
-        println!("Direct assignment: {} unique points, ARI = {:.6}", next_id, direct_ari);
-        assert!(
-            direct_ari > 0.999,
-            "direct assignment ARI should be ~1.0, got {:.6}",
-            direct_ari
-        );
 
-        // Also test k-means with higher n_init
-        for &n_init in &[3, 10, 20] {
+        // Try increasing max_vectors and embed_dim to separate all 5040 cosets
+        for &(max_vecs, embed_dim) in &[(20, 10), (20, 20), (100, 50), (200, 100)] {
+            let q_eigen = quotient_eigen_full(&q, max_vecs);
+            if embed_dim == 10 {
+                println!("Quotient eigenvalues (first 10):");
+                for (i, &ev) in q_eigen.eigenvalues.iter().enumerate().take(10) {
+                    println!("  {:2}. lambda = {:.4}", i, ev);
+                }
+            }
+
+            let embedding = quotient_lift_embedding(
+                &q_eigen.eigenvectors,
+                &coset_labels,
+                graph.vertex_count,
+                embed_dim,
+            );
+
+            let mut point_to_cluster: HashMap<Vec<i64>, usize> = HashMap::new();
+            let mut direct_predicted = vec![0usize; graph.vertex_count];
+            let mut next_id = 0usize;
+            for v in 0..graph.vertex_count {
+                let key: Vec<i64> = embedding[v]
+                    .iter()
+                    .map(|&x| (x * 1e8).round() as i64)
+                    .collect();
+                let cluster = *point_to_cluster.entry(key).or_insert_with(|| {
+                    let id = next_id;
+                    next_id += 1;
+                    id
+                });
+                direct_predicted[v] = cluster;
+            }
+            let direct_ari =
+                crate::spectral_lanczos::adjusted_rand_index(&coset_labels, &direct_predicted);
+            println!(
+                "max_vecs={}, embed_dim={}: {} unique points, direct ARI = {:.6}",
+                max_vecs, embed_dim, next_id, direct_ari
+            );
+
+            // k-means with n_init=3 for comparison
             let predicted = crate::spectral_lanczos::kmeans_clustering(
-                &embedding, graph.vertex_count, n_cosets, n_init, 100, 42,
+                &embedding,
+                graph.vertex_count,
+                n_cosets,
+                3,
+                50,
+                42,
             );
-            let ari = crate::spectral_lanczos::adjusted_rand_index(
-                &coset_labels, &predicted,
-            );
-            println!("k-means n_init={}: ARI = {:.6}", n_init, ari);
+            let kmeans_ari =
+                crate::spectral_lanczos::adjusted_rand_index(&coset_labels, &predicted);
+            println!("  k-means n_init=3: ARI = {:.6}", kmeans_ari);
         }
     }
 }

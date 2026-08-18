@@ -3,7 +3,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::permutahedron::permutations;
-use crate::vector_tensor_central_charge::{build as build_census, l_matrices, Matrix};
+use crate::vector_tensor_central_charge::{Matrix, build as build_census, l_matrices};
 use serde::Serialize;
 use std::fs::File;
 use std::io::BufWriter;

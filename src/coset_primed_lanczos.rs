@@ -483,8 +483,7 @@ mod tests {
 
     #[test]
     fn test_multi_indicator_s8() {
-        let graph = permutahedron::complete_graph(8)
-            .expect("S8 graph construction must succeed");
+        let graph = permutahedron::complete_graph(8).expect("S8 graph construction must succeed");
         let r8 = permutahedron::rana_r8();
         let partition = permutahedron::coset_partition(&r8, CosetSide::Right)
             .expect("R8 coset partition must succeed");
@@ -503,19 +502,21 @@ mod tests {
             .map(|(i, e)| (e[0] as usize, e[1] as usize, i % graph.degree))
             .collect();
 
-        let configs: &[(usize, usize, usize)] = &[
-            (3, 200, 20),
-            (5, 200, 20),
-            (3, 200, 40),
-            (10, 200, 40),
-        ];
+        let configs: &[(usize, usize, usize)] =
+            &[(3, 200, 20), (5, 200, 20), (3, 200, 40), (10, 200, 40)];
 
         let mut best_ari = 0.0_f64;
         for &(n_ind, m, dim) in configs {
             let result = multi_indicator_clustering(
-                &edges, graph.degree, graph.vertex_count,
-                &labels, n_cosets, coset_size,
-                n_ind, m, dim,
+                &edges,
+                graph.degree,
+                graph.vertex_count,
+                &labels,
+                n_cosets,
+                coset_size,
+                n_ind,
+                m,
+                dim,
             );
             println!(
                 "multi_indicator S8: n_indicators={}, m={}, embed_dim={} => ARI={:.6} ({} evecs)",

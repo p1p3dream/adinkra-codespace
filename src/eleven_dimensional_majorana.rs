@@ -152,6 +152,20 @@ fn fixed_basis(intertwiner: &Matrix) -> (Matrix, Matrix, usize) {
     (basis, inverse, pairs)
 }
 
+/// Exact change of spinor coordinates from the original complex Euclidean
+/// Clifford basis to the real Lorentzian Majorana basis.
+///
+/// If `psi_complex = S psi_majorana`, this returns `(S, S^{-1})`.  The columns
+/// of `S` are fixed by the antilinear Majorana involution, so this is an
+/// intertwiner derived from the Clifford representation rather than a phase
+/// convention guessed state by state.
+pub fn majorana_basis_change() -> (Vec<Vec<ExactGaussian>>, Vec<Vec<ExactGaussian>>) {
+    let gammas = lorentz_gammas();
+    let intertwiner = majorana_intertwiner(&gammas);
+    let (basis, inverse, _) = fixed_basis(&intertwiner);
+    (basis, inverse)
+}
+
 fn transform(inverse: &Matrix, matrix: &Matrix, basis: &Matrix) -> Matrix {
     multiply(&multiply(inverse, matrix), basis)
 }

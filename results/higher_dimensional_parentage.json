@@ -276,7 +276,7 @@
         "involutive_when_nonzero": true
       },
       "closure": {
-        "certification": "exact_four_dimensional_closure_without_central_bridge",
+        "certification": "exact_four_dimensional_closure_with_zero_brane_central_bridge",
         "component_relations_checked": 720,
         "unexplained_residual_relations": 0,
         "gauge_residues_retained": true
@@ -577,7 +577,7 @@
       {
         "parent_id": "vector-tensor-one-z",
         "linear_class": "VT-one-Z",
-        "exact_four_dimensional_fixture": false,
+        "exact_four_dimensional_fixture": true,
         "qualification": "4D closure and the fixed Eq. (4.6) zero-brane central bridge are exact; the direct repaired Eq. (4.5) reduction to Appendix F remains open",
         "missing_information": [
           "Lorentz field blocks and engineering levels",
@@ -750,7 +750,7 @@
       {
         "parent_id": "vector-tensor-one-z",
         "linear_class": "VT-one-Z",
-        "exact_four_dimensional_fixture": false,
+        "exact_four_dimensional_fixture": true,
         "qualification": "4D closure and the fixed Eq. (4.6) zero-brane central bridge are exact; the direct repaired Eq. (4.5) reduction to Appendix F remains open",
         "missing_information": []
       }

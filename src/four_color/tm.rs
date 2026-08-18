@@ -101,15 +101,31 @@ pub fn w_matrices(l: &[SignedPerm]) -> Vec<SignedPerm> {
 }
 
 // Convenience wrappers for the two concrete sides.
-pub fn tm_x() -> Vec<SignedPerm> { x_matrices(&tm_l_matrices()) }
-pub fn tm_y() -> Vec<SignedPerm> { y_matrices(&tm_l_matrices()) }
-pub fn tm_z() -> Vec<SignedPerm> { z_matrices(&tm_l_matrices()) }
-pub fn tm_w() -> Vec<SignedPerm> { w_matrices(&tm_l_matrices()) }
+pub fn tm_x() -> Vec<SignedPerm> {
+    x_matrices(&tm_l_matrices())
+}
+pub fn tm_y() -> Vec<SignedPerm> {
+    y_matrices(&tm_l_matrices())
+}
+pub fn tm_z() -> Vec<SignedPerm> {
+    z_matrices(&tm_l_matrices())
+}
+pub fn tm_w() -> Vec<SignedPerm> {
+    w_matrices(&tm_l_matrices())
+}
 
-pub fn tm_x_primed() -> Vec<SignedPerm> { x_matrices(&tm_r_matrices()) }
-pub fn tm_y_primed() -> Vec<SignedPerm> { y_matrices(&tm_r_matrices()) }
-pub fn tm_z_primed() -> Vec<SignedPerm> { z_matrices(&tm_r_matrices()) }
-pub fn tm_w_primed() -> Vec<SignedPerm> { w_matrices(&tm_r_matrices()) }
+pub fn tm_x_primed() -> Vec<SignedPerm> {
+    x_matrices(&tm_r_matrices())
+}
+pub fn tm_y_primed() -> Vec<SignedPerm> {
+    y_matrices(&tm_r_matrices())
+}
+pub fn tm_z_primed() -> Vec<SignedPerm> {
+    z_matrices(&tm_r_matrices())
+}
+pub fn tm_w_primed() -> Vec<SignedPerm> {
+    w_matrices(&tm_r_matrices())
+}
 
 // ----------------------------------------------------------------------------
 // Report
@@ -152,7 +168,12 @@ mod tests {
     use super::*;
 
     /// Paper's Table 11 X/Y/Z/W entries as signed addresses.
-    fn table11() -> (Vec<SignedPerm>, Vec<SignedPerm>, Vec<SignedPerm>, Vec<SignedPerm>) {
+    fn table11() -> (
+        Vec<SignedPerm>,
+        Vec<SignedPerm>,
+        Vec<SignedPerm>,
+        Vec<SignedPerm>,
+    ) {
         let x = vec![
             super::super::sp(&[-4, -3, 2, 1]),
             super::super::sp(&[-3, 4, 1, -2]),
@@ -181,7 +202,12 @@ mod tests {
     }
 
     /// Paper's Table 12 X'/Y'/Z'/W' entries as signed addresses.
-    fn table12() -> (Vec<SignedPerm>, Vec<SignedPerm>, Vec<SignedPerm>, Vec<SignedPerm>) {
+    fn table12() -> (
+        Vec<SignedPerm>,
+        Vec<SignedPerm>,
+        Vec<SignedPerm>,
+        Vec<SignedPerm>,
+    ) {
         let x = vec![
             super::super::sp(&[-2, 1, 4, -3]),
             super::super::sp(&[4, -3, 2, -1]),

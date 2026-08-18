@@ -7,7 +7,7 @@
 //! alone, independently of the pair labels in `permutahedron_s8_separation`.
 
 use crate::permutahedron::{
-    coset_partition, factorial, permutations, rana_r8, CosetPartitionReport, CosetSide, Permutation,
+    CosetPartitionReport, CosetSide, Permutation, coset_partition, factorial, permutations, rana_r8,
 };
 use crate::permutahedron_garden::complete_garden_scan;
 use serde::Serialize;

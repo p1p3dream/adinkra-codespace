@@ -5,7 +5,7 @@
 //! local trade between two subgroup partitions and verifies the resulting
 //! mixed cover vertex by vertex.
 
-use crate::permutahedron::{coset_partition, factorial, CosetSide, Permutation};
+use crate::permutahedron::{CosetSide, Permutation, coset_partition, factorial};
 use crate::permutahedron_hypergraph::identity_hyperedges;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};

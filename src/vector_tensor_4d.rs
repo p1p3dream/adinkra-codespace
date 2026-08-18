@@ -1630,12 +1630,63 @@ pub struct VectorTensorCentralBridgeReport {
     pub fixed_one_sixth_normalization_matched: bool,
     pub auxiliary_sign_matched: bool,
     pub gauge_orbits_preserved: bool,
+    pub residual_temporal_gauge_action_exact: bool,
     pub temporal_weyl_realification_exact: bool,
     pub simultaneous_z_omega_orientation_exact: bool,
     pub narrow_zero_brane_bridge_passed: bool,
     pub repaired_eq45_reduced_to_appendix_f: bool,
     pub full_four_dimensional_source_bridge_passed: bool,
     pub boundary: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct ResidualGaugeVariation {
+    vector_temporal: i64,
+    vector_spatial: [i64; 3],
+    two_form_temporal: [i64; 3],
+    two_form_spatial: [i64; 3],
+}
+
+fn residual_gauge_variation(
+    spatial_momentum: [i64; 3],
+    alpha: i64,
+    alpha_time_derivative: i64,
+    lambda_temporal: i64,
+    lambda_spatial: [i64; 3],
+    lambda_spatial_time_derivative: [i64; 3],
+) -> ResidualGaugeVariation {
+    let [p1, p2, p3] = spatial_momentum;
+    let [l1, l2, l3] = lambda_spatial;
+    ResidualGaugeVariation {
+        vector_temporal: alpha_time_derivative,
+        vector_spatial: [p1 * alpha, p2 * alpha, p3 * alpha],
+        two_form_temporal: [
+            lambda_spatial_time_derivative[0] - p1 * lambda_temporal,
+            lambda_spatial_time_derivative[1] - p2 * lambda_temporal,
+            lambda_spatial_time_derivative[2] - p3 * lambda_temporal,
+        ],
+        // Ordered as B_23, B_31, B_12.
+        two_form_spatial: [p2 * l3 - p3 * l2, p3 * l1 - p1 * l3, p1 * l2 - p2 * l1],
+    }
+}
+
+fn residual_temporal_gauge_action_is_zero() -> bool {
+    let zero = ResidualGaugeVariation {
+        vector_temporal: 0,
+        vector_spatial: [0; 3],
+        two_form_temporal: [0; 3],
+        two_form_spatial: [0; 3],
+    };
+    // Check a basis of the residual alpha, Lambda_0, and Lambda_i parameters.
+    (0..5).all(|parameter| {
+        let alpha = i64::from(parameter == 0);
+        let lambda_temporal = i64::from(parameter == 1);
+        let mut lambda_spatial = [0; 3];
+        if parameter >= 2 {
+            lambda_spatial[parameter - 2] = 1;
+        }
+        residual_gauge_variation([0; 3], alpha, 0, lambda_temporal, lambda_spatial, [0; 3]) == zero
+    })
 }
 
 fn verify_central_bridge() -> VectorTensorCentralBridgeReport {
@@ -1662,11 +1713,13 @@ fn verify_central_bridge() -> VectorTensorCentralBridgeReport {
         && component_color == Some(negated_matrix(&committed.color_coefficient_matrix));
     let gauge_orbits_preserved =
         central_annihilates_vector_gauge_orbits() && central_annihilates_two_form_gauge_orbits();
+    let residual_temporal_gauge_action_exact = residual_temporal_gauge_action_is_zero();
     let temporal_weyl_realification_exact =
         weyl_phase_realification_verified() && source_fermionic == committed.fermionic;
     let narrow_zero_brane_bridge_passed = fixed_one_sixth_normalization_matched
         && auxiliary_sign_matched
         && gauge_orbits_preserved
+        && residual_temporal_gauge_action_exact
         && temporal_weyl_realification_exact
         && simultaneous_z_omega_orientation_exact;
     VectorTensorCentralBridgeReport {
@@ -1686,6 +1739,7 @@ fn verify_central_bridge() -> VectorTensorCentralBridgeReport {
         fixed_one_sixth_normalization_matched,
         auxiliary_sign_matched,
         gauge_orbits_preserved,
+        residual_temporal_gauge_action_exact,
         temporal_weyl_realification_exact,
         simultaneous_z_omega_orientation_exact,
         narrow_zero_brane_bridge_passed,
@@ -1977,16 +2031,16 @@ mod tests {
 
     #[test]
     fn residual_temporal_gauge_freedom_acts_trivially_on_retained_nodes() {
-        // At zero spatial momentum, preserving A_0=0 requires dot(alpha)=0,
-        // and preserving B_0i=0 requires dot(Lambda_i)=0.  The retained
-        // variations are partial_i alpha and
-        // partial_i Lambda_j-partial_j Lambda_i, hence vanish identically.
-        let retained_vector_variations = 3;
-        let retained_two_form_variations = 3;
-        let zero_spatial_derivative = true;
-        let residual_parameters_time_independent = true;
-        assert!(zero_spatial_derivative && residual_parameters_time_independent);
-        assert_eq!(retained_vector_variations + retained_two_form_variations, 6);
+        assert!(residual_temporal_gauge_action_is_zero());
+
+        // A spatial-momentum mutation must be visible on retained nodes, so
+        // the zero result above is an evaluated gauge action rather than a
+        // boolean restatement of the temporal-gauge assumptions.
+        let mutated = residual_gauge_variation([1, 0, 0], 2, 0, 0, [0, 3, 5], [0; 3]);
+        assert_eq!(mutated.vector_spatial, [2, 0, 0]);
+        assert_eq!(mutated.two_form_spatial, [0, -5, 3]);
+        assert_ne!(mutated.vector_spatial, [0; 3]);
+        assert_ne!(mutated.two_form_spatial, [0; 3]);
     }
 
     #[test]

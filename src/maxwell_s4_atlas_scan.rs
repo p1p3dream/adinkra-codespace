@@ -1,7 +1,7 @@
 //! Apply the validated Maxwell worldline-recovery gate to all 96 published
 //! fiducial signed S4 quartets.
 
-use crate::maxwell_phantom::{gauge_enhancement_gate, WorldlineLinkage};
+use crate::maxwell_phantom::{WorldlineLinkage, gauge_enhancement_gate};
 use crate::maxwell_worldline_search::search_worldline;
 use serde::Serialize;
 use std::collections::BTreeMap;

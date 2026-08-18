@@ -1,0 +1,214 @@
+{
+  "schema_version": "adynkra-11d-relaxed-spinorial-cohomology-v1",
+  "role": "exact relaxed-torsion incidence gate and source-backed reduced H_F^(0,4)(phys) rank certificate",
+  "primary_sources": [
+    {
+      "source": "Howe, arXiv:hep-th/9707184",
+      "source_archive_sha256": "2aa95c8072e75c6d6b2592f4880a8dbbd843a0036f7805613d911b99608e9482",
+      "statement_used": "the standard dimension-zero torsion constraint plus Bianchi identities implies the 11D supergravity equations of motion"
+    },
+    {
+      "source": "Cederwall, Nilsson, Tsimpis, arXiv:hep-th/0110069",
+      "source_archive_sha256": "5d232edd240298530f8216a351e282f4261a0cfe3ec4cfa02c1eaa055f8e43ea",
+      "statement_used": "after conventional constraints the relaxed torsion fields are (11000)+(10002), with projected spinorial Bianchi representations (11001)+(10003)"
+    },
+    {
+      "source": "Tsimpis, arXiv:hep-th/0407271",
+      "source_archive_sha256": "013049a4da503cdee37a67447ab5adc17a30678e07430ecd43905fb0bdc47ee3",
+      "statement_used": "H_F^(0,4)(phys) controls deformations; it is trivial at orders l and l^2 and one-dimensional at order l^3 after one field redefinition and one closure condition"
+    }
+  ],
+  "structure_group": "Spin(1,10), with compact B5 labels used only for finite-dimensional representation bookkeeping",
+  "relaxed_torsion_sources": [
+    {
+      "dynkin_label": "11000",
+      "dimension": 429
+    },
+    {
+      "dynkin_label": "10002",
+      "dimension": 4290
+    }
+  ],
+  "relaxed_torsion_total_dimension": 4719,
+  "relaxed_torsion_first_jet_dimension": 151008,
+  "relaxed_bianchi_targets": [
+    {
+      "dynkin_label": "11001",
+      "dimension": 10240
+    },
+    {
+      "dynkin_label": "10003",
+      "dimension": 36960
+    }
+  ],
+  "relaxed_bianchi_target_total_dimension": 47200,
+  "relaxed_torsion_projected_incidences": [
+    {
+      "source_dynkin_label": "11000",
+      "target_dynkin_label": "11001",
+      "target_dimension": 10240,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "10002",
+      "target_dynkin_label": "11001",
+      "target_dimension": 10240,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "10002",
+      "target_dynkin_label": "10003",
+      "target_dimension": 36960,
+      "multiplicity": 1
+    }
+  ],
+  "relaxed_torsion_projected_incidence_count": 3,
+  "relaxed_torsion_spinor_products_dimensionally_complete": true,
+  "relaxed_torsion_relative_coefficients_source_fixed": false,
+  "relaxed_torsion_component_d_f_constructed": false,
+  "relaxed_torsion_kernel_computed": false,
+  "h_tau_zero_three_terms": [
+    {
+      "dynkin_label": "01001",
+      "dimension": 1408
+    },
+    {
+      "dynkin_label": "00003",
+      "dimension": 4224
+    }
+  ],
+  "h_tau_zero_three_dimension": 5632,
+  "h_tau_zero_four_terms": [
+    {
+      "dynkin_label": "02000",
+      "dimension": 1144
+    },
+    {
+      "dynkin_label": "01002",
+      "dimension": 17160
+    },
+    {
+      "dynkin_label": "00004",
+      "dimension": 28314
+    }
+  ],
+  "h_tau_zero_four_dimension": 46618,
+  "h_tau_zero_five_terms": [
+    {
+      "dynkin_label": "02001",
+      "dimension": 24960
+    },
+    {
+      "dynkin_label": "01003",
+      "dimension": 137280
+    },
+    {
+      "dynkin_label": "00005",
+      "dimension": 151008
+    }
+  ],
+  "h_tau_zero_five_dimension": 313248,
+  "h_tau_zero_three_to_four_incidences": [
+    {
+      "source_dynkin_label": "01001",
+      "target_dynkin_label": "02000",
+      "target_dimension": 1144,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "01001",
+      "target_dynkin_label": "01002",
+      "target_dimension": 17160,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "00003",
+      "target_dynkin_label": "01002",
+      "target_dimension": 17160,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "00003",
+      "target_dynkin_label": "00004",
+      "target_dimension": 28314,
+      "multiplicity": 1
+    }
+  ],
+  "h_tau_zero_four_to_five_incidences": [
+    {
+      "source_dynkin_label": "02000",
+      "target_dynkin_label": "02001",
+      "target_dimension": 24960,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "01002",
+      "target_dynkin_label": "02001",
+      "target_dimension": 24960,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "01002",
+      "target_dynkin_label": "01003",
+      "target_dimension": 137280,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "00004",
+      "target_dynkin_label": "01003",
+      "target_dimension": 137280,
+      "multiplicity": 1
+    },
+    {
+      "source_dynkin_label": "00004",
+      "target_dynkin_label": "00005",
+      "target_dimension": 151008,
+      "multiplicity": 1
+    }
+  ],
+  "h_tau_representation_quotient_inventory_certified": true,
+  "tau_zero_component_quotient_maps_constructed": false,
+  "order_l_one_physical_cohomology_dimension": 0,
+  "order_l_two_physical_cohomology_dimension": 0,
+  "order_l_three_reduced_complex": {
+    "domain_dimension": 1,
+    "middle_dimension": 3,
+    "target_dimension": 1,
+    "incoming_canonical_matrix": [
+      [
+        1
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ]
+    ],
+    "outgoing_canonical_matrix": [
+      [
+        0,
+        1,
+        0
+      ]
+    ],
+    "incoming_rank": 1,
+    "incoming_nullity": 0,
+    "outgoing_rank": 1,
+    "outgoing_nullity": 2,
+    "composition_residual_entries": 0,
+    "middle_kernel_dimension": 2,
+    "middle_image_dimension": 1,
+    "middle_cohomology_dimension": 1,
+    "canonical_basis_only": true,
+    "physical_basis_coefficients_reconstructed": false
+  },
+  "order_l_three_h_f_zero_four_physical_dimension": 1,
+  "order_l_three_generator_interpretation": "the source identifies one class represented by a fixed combination of G^2 terms, equivalently the local tr(R^2) shift with a global p_1(M) distinction",
+  "full_h_f_zero_four_physical_computed": false,
+  "full_torsion_bianchi_tower_computed": false,
+  "finite_auxiliary_off_shell_closure_computed": false,
+  "passed": true,
+  "result": "The relaxed-torsion and H_tau representation worklists are exact. On Tsimpis's order-l^3 physical-monomial subspace, ker(d_F) has dimension two, im(d_F) has dimension one, and H_F^(0,4)(phys) has dimension one.",
+  "boundary": "The order-l^3 matrices are a canonical rational normal form of source-established ranks, not the physical A/B/C coefficient matrix. The missing relaxed-torsion Clebsch coefficients, tau_0 component quotient maps, higher Bianchi identities, and unrestricted physical-field coefficient complex prevent a full cohomology or finite-auxiliary off-shell claim."
+}

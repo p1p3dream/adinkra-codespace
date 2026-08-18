@@ -1,0 +1,44 @@
+{
+  "schema_version": "adynkra-11d-level18-embedded-maps-v1-embedded-v1",
+  "job": {
+    "target_dynkin_label": "11001",
+    "source_dynkin_label": "02000",
+    "source_copy": 2
+  },
+  "source_fixture": "level18_02000_highest_weight_kernel_2.i16le",
+  "source_fixture_sha256": "c542b368e46fe53d7992fd9cbd27317e796510d56022e4e6759e8cb04295506a",
+  "abstract_certificate_sha256": "7cd5da5e7f4cebea2b417912756693253194c57d28594aea91c27289eef2bb3d",
+  "coupled_map_sha256": "51e9f1652754f71b894ba69be05eaaf6d013a484ed95a2d29c13b3990f534eab",
+  "target_dimension": 10240,
+  "certified_irrep_image_rank": 10240,
+  "rank_derivation": "a nonzero B5-equivariant map onto a multiplicity-one irreducible target is surjective",
+  "certificate": {
+    "schema_version": "adynkra-11d-level18-embedded-embedded-coupling-v1",
+    "role": "exact application of the shared abstract coupling to one exterior embedding",
+    "source_dynkin_label": "02000",
+    "source_copy": 2,
+    "source_fixture": "level18_02000_highest_weight_kernel_2.i16le",
+    "target_dynkin_label": "11001",
+    "abstract_coupling_source_copy": 1,
+    "product_weight_domain_dimension": 5,
+    "primitive_domain_coefficients": [
+      1,
+      -2,
+      2,
+      -2,
+      4
+    ],
+    "coupled_nonzero_terms": 69696,
+    "exact_raising_residual_terms_by_simple_root": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "maximum_absolute_checked_accumulator": 8,
+    "shared_abstract_coupling_applied": true,
+    "passed": true
+  },
+  "passed": true
+}
