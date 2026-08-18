@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 
 const CHECKPOINT: &str = "results/adynkra_11d_level12_second_momentum_kernel_generation.json";
 const CHECKPOINT_SCHEMA: &str = "adynkra-11d-level12-second-momentum-kernel-generation-v1";
-const COMPLETED_SYSTEMS: u64 = 16;
-const COMPLETED_KERNELS: u64 = 38;
+const COMPLETED_SYSTEMS: u64 = 17;
+const COMPLETED_KERNELS: u64 = 39;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Json {
@@ -312,6 +312,10 @@ fn verify_exact_integer_residual(label: &str, copy: u64, matrix: &CsrMatrix, ker
 
 fn stable_digests(label: &str) -> Option<(&'static str, &'static str)> {
     match label {
+        "00010" => Some((
+            "041f2dcb423e807b70e0952f71f163113ef26673a00e46f0e959436100c9f6ee",
+            "8b6d7e58ea61e4b71c3824820711d8a2f81e69047f01443b85fd371c7b0d7d62",
+        )),
         "01002" => Some((
             "6127e200bd993d39c16f9d1a90fb6a972e63c8e92551cd866f80d17e992a583b",
             "3ec6b091f9299b85b6858f6a1be21d6e4434e6e1f32c8ddf6b2f6977b719f4c0",

@@ -4,6 +4,38 @@
   "method": "deterministic sparse echelon over 2^31-1, rational reconstruction, and full integer residual verification",
   "systems": [
     {
+      "dynkin_label": "00010",
+      "exterior_degree": 12,
+      "source_columns": 144678,
+      "raising_rows": 447324,
+      "nonzero_entries": 1639412,
+      "prime": 2147483647,
+      "exact_modular_rank": 144677,
+      "exact_nullity": 1,
+      "free_columns": [
+        100875
+      ],
+      "maximum_pivot_width": 477,
+      "coefficient_width_bytes": 2,
+      "outputs": [
+        {
+          "copy": 1,
+          "path": "data/eleven_dimensional_spinor_bridge/level12_00010_highest_weight_kernel.i16le",
+          "sha256": "5f78511aa24ab9ab779f3eea217e72f58dbe7a1d09c96d3e094b6f538bc982b2",
+          "bytes": 289356,
+          "nonzero_coefficients": 2002,
+          "maximum_absolute_coefficient": 1
+        }
+      ],
+      "seconds": {
+        "matrix": 0.090909708,
+        "echelon": 141.496278292,
+        "reconstruct_and_integer_verify": 0.040722208,
+        "total": 141.627910208
+      },
+      "passed": true
+    },
+    {
       "dynkin_label": "01002",
       "exterior_degree": 12,
       "source_columns": 27054,
@@ -247,7 +279,7 @@
       ],
       "seconds": {
         "matrix": 0.09110021591186523,
-        "echelon": 10.141758918762207,
+        "echelon": 10.141758918762209,
         "reconstruct_and_integer_verify": 0.09787297248840332,
         "total": 10.330732107162476
       },
@@ -356,9 +388,9 @@
       ],
       "seconds": {
         "matrix": 0.15155673027038574,
-        "echelon": 250.29655027389526,
+        "echelon": 250.2965502738953,
         "reconstruct_and_integer_verify": 0.1896519660949707,
-        "total": 250.63775897026062
+        "total": 250.63775897026065
       },
       "passed": true
     },
@@ -387,7 +419,7 @@
         }
       ],
       "seconds": {
-        "matrix": 0.21105003356933594,
+        "matrix": 0.2110500335693359,
         "echelon": 58.29202198982239,
         "reconstruct_and_integer_verify": 0.05181384086608887,
         "total": 58.55488586425781
@@ -478,7 +510,7 @@
         }
       ],
       "seconds": {
-        "matrix": 0.20457816123962402,
+        "matrix": 0.204578161239624,
         "echelon": 147.13478302955627,
         "reconstruct_and_integer_verify": 0.17118501663208008,
         "total": 147.51054620742798
@@ -571,7 +603,7 @@
       "seconds": {
         "matrix": 0.038178205490112305,
         "echelon": 0.2501180171966553,
-        "reconstruct_and_integer_verify": 0.015301942825317383,
+        "reconstruct_and_integer_verify": 0.015301942825317385,
         "total": 0.30359816551208496
       },
       "passed": true
@@ -714,8 +746,8 @@
       "passed": true
     }
   ],
-  "completed_systems": 16,
-  "completed_kernel_copies": 38,
+  "completed_systems": 17,
+  "completed_kernel_copies": 39,
   "expected_systems": 19,
   "expected_kernel_copies": 41,
   "inventory_complete": false,
