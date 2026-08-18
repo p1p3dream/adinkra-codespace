@@ -100,6 +100,16 @@ The Rust `01100` run reproduced rank 44,938, nullity 2, free columns 43,993 and
 43,994, maximum pivot width 668, and zero modular residuals. Peak RSS was about
 44 MB.
 
+The first previously missing system, `00010`, completed through the same
+deterministic path in 140.05 seconds of elimination time. It produced rank
+144,677, nullity 1, free column 100,875, maximum pivot width 477, and 856,225
+retained pivot entries. Rational reconstruction gave a primitive integer kernel
+with maximum absolute coefficient 1 and SHA-256
+`5f78511aa24ab9ab779f3eea217e72f58dbe7a1d09c96d3e094b6f538bc982b2`.
+The full integer residual, kernel independence, and characteristic-zero rank
+bounds passed. Peak RSS was about 100 MB. Publication into the shared fixture
+manifest remains a separate locked step.
+
 On the M4 Pro, the packed block-width-32 `A^T D A` CPU reference measured:
 
 | Missing system | Milliseconds per operator | Estimated working payload |
@@ -108,10 +118,12 @@ On the M4 Pro, the packed block-width-32 `A^T D A` CPU reference measured:
 | `00100` | 30.64 ms | 140.7 MB |
 | `00000` | 63.90 ms | 289.2 MB |
 
-A temporary RTX 4090 CUDA microbenchmark used the `00000` dimensions and nonzero
-count with a synthetic matching degree profile. Its exact packed block-width-32
+An RTX 4090 CUDA microbenchmark used the `00000` dimensions and nonzero count
+with a synthetic matching degree profile. Its exact packed block-width-32
 operator measured 0.361 ms for `D A X`, 0.517 ms for `A^T Y`, and 0.878 ms for
 the complete `A^T D A` application. A lane-zero CPU modular comparison passed.
-This is a sparse-kernel floor, not an end-to-end solve time. Projection,
-checkpointing, block minimal-generator work, reconstruction, and independent
+The feature-gated production backend then passed exact CPU parity and
+repeatability on small matrices and the real `30002` and `01002` matrices under
+CUDA 12.6 for `sm_89`. This remains a sparse-kernel floor, not an end-to-end
+solve time. Recurrence updates, checkpointing, reconstruction, and independent
 verification remain outside that number.

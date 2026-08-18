@@ -16,6 +16,7 @@ Current scope:
 - signed-unit CSR/transpose packing with the sign in bit 31
 - a versioned semantic matrix digest and pinned nonzero diagonal PRNG
 - an allocation-free CPU reference for 32-lane `A^T D A` blocks
+- an optional Linux CUDA backend with device-resident chained block32 operations
 - deterministic sparse echelon reduction with explicit fill and width budgets
 - rational reconstruction, primitive integer normalization, and exact integer residual certificates
 
@@ -50,3 +51,14 @@ validation scan, after one warmup. `level12_atda_bench` reports the packed hot
 path with no validation scan. Its memory figure is estimated logical buffer
 payload, not peak RSS, and its JSON pins matrix, diagonal, input, PRNG, chain,
 and output identities for reproducibility.
+
+The CUDA feature is opt-in and does not invoke a CUDA compiler during default
+builds. On the RTX 4090 host:
+
+```sh
+CUDA_HOME=/usr/local/cuda-12.6 \
+ADYNKRA_CUDA_ARCH=sm_89 \
+cargo test --release \
+  --manifest-path crates/exact-sparse-solver/Cargo.toml \
+  --features cuda cuda::tests -- --nocapture
+```

@@ -6,6 +6,8 @@
 
 pub mod accelerator;
 pub mod certificate;
+#[cfg(feature = "cuda")]
+pub mod cuda;
 pub mod elimination;
 pub mod level12;
 
