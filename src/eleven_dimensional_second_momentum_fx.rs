@@ -489,29 +489,79 @@ fn splitmix64(mut value: u64) -> u64 {
     value ^ (value >> 31)
 }
 
-fn functional_hash(term: &SecondMomentumFxColumnTerm) -> u64 {
+fn functional_hash_parts(
+    gauge_channel: SecondMomentumGaugeChannel,
+    gauge_branch: SecondMomentumGaugeBranch,
+    source_momentum: DegreeTwoMomentumMonomial,
+    parameter_component: usize,
+    target_coordinate: usize,
+    spinor_derivative_mask: u32,
+    sector: SecondMomentumFxSector,
+) -> u64 {
     // The functional acts on the physical output key, never on the unknown
     // coefficient-column ordinal. Including the column here would manufacture
     // independence instead of proving a rank lower bound.
-    let mut value = (term.gauge_channel.form_degree() as u64).rotate_left(9)
-        ^ (term.parameter_component as u64).rotate_left(17)
-        ^ (term.target_coordinate as u64).rotate_left(31)
-        ^ u64::from(term.spinor_derivative_mask).rotate_left(43);
-    value ^= match term.gauge_branch {
+    let mut value = (gauge_channel.form_degree() as u64).rotate_left(9)
+        ^ (parameter_component as u64).rotate_left(17)
+        ^ (target_coordinate as u64).rotate_left(31)
+        ^ u64::from(spinor_derivative_mask).rotate_left(43);
+    value ^= match gauge_branch {
         SecondMomentumGaugeBranch::P2D13Wedge => 0x02d1_3000_0000_0001,
         SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis } => {
             0x03d1_1000_0000_0002 ^ u64::from(momentum_axis).rotate_left(53)
         }
     };
-    value ^= match term.sector {
+    value ^= match sector {
         SecondMomentumFxSector::X2 => 0x1100_0000_0000_0002,
         SecondMomentumFxSector::X5 => 0x1000_2000_0000_0005,
     };
-    for (axis, exponent) in term.source_momentum.exponents.iter().enumerate() {
+    for (axis, exponent) in source_momentum.exponents.iter().enumerate() {
         value ^= (u64::from(*exponent) + 1)
             .wrapping_mul(0x9e37_79b9_7f4a_7c15_u64.rotate_left(axis as u32));
     }
     splitmix64(value)
+}
+
+fn functional_hash(term: &SecondMomentumFxColumnTerm) -> u64 {
+    functional_hash_parts(
+        term.gauge_channel,
+        term.gauge_branch,
+        term.source_momentum,
+        term.parameter_component,
+        term.target_coordinate,
+        term.spinor_derivative_mask,
+        term.sector,
+    )
+}
+
+/// Return the exact deterministic bucket and sign selected by every pinned
+/// functional seed.  The packed accelerator uses this same boundary, so it
+/// cannot accidentally manufacture independence by hashing the column index.
+pub(crate) fn second_momentum_fx_functional_assignments(
+    gauge_channel: SecondMomentumGaugeChannel,
+    gauge_branch: SecondMomentumGaugeBranch,
+    source_momentum: DegreeTwoMomentumMonomial,
+    parameter_component: usize,
+    target_coordinate: usize,
+    spinor_derivative_mask: u32,
+    sector: SecondMomentumFxSector,
+) -> [(usize, i8); SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()] {
+    let base = functional_hash_parts(
+        gauge_channel,
+        gauge_branch,
+        source_momentum,
+        parameter_component,
+        target_coordinate,
+        spinor_derivative_mask,
+        sector,
+    );
+    std::array::from_fn(|seed_ordinal| {
+        let hash = splitmix64(base ^ SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS[seed_ordinal]);
+        (
+            hash as usize % SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
+            if hash >> 63 == 0 { 1 } else { -1 },
+        )
+    })
 }
 
 fn add_scaled(target: &mut ExactGaussian, source: &ExactGaussian, sign: i64) {

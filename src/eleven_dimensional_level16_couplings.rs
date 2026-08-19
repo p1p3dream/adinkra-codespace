@@ -8,6 +8,8 @@ use num_traits::{One, Signed, ToPrimitive, Zero};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs::{self, File};
 use std::io::{self, BufReader, BufWriter, Read, Write};
@@ -450,6 +452,13 @@ struct CoupledDenseState {
 struct CoupledSparseState {
     components: BTreeMap<usize, Vec<(u32, i128)>>,
 }
+
+#[derive(Debug, Clone)]
+struct CoupledSparseState64 {
+    components: BTreeMap<usize, Vec<(u32, i64)>>,
+}
+
+type SparseLoweredComponent = (usize, Vec<(u32, i64)>, i128);
 
 #[derive(Debug, Clone)]
 struct MomentumCoupledDenseState {
@@ -2428,6 +2437,390 @@ fn dense_coupled_to_sparse(
         })
         .collect();
     CoupledSparseState { components }
+}
+
+fn dense_coupled_to_sparse64(
+    model: &mut ExteriorModel,
+    source: &CoupledDenseState,
+) -> CoupledSparseState64 {
+    let components = source
+        .components
+        .iter()
+        .map(|(spinor, state)| {
+            let masks = &model.space(state.weight).masks;
+            let values = masks
+                .iter()
+                .copied()
+                .zip(&state.coefficients)
+                .filter_map(|(mask, coefficient)| {
+                    (*coefficient != 0).then_some((mask, *coefficient))
+                })
+                .collect();
+            (*spinor, values)
+        })
+        .collect();
+    CoupledSparseState64 { components }
+}
+
+fn sparse64_payload_bytes(state: &CoupledSparseState64) -> u64 {
+    state
+        .components
+        .values()
+        .map(|values| values.capacity() * std::mem::size_of::<(u32, i64)>())
+        .sum::<usize>() as u64
+}
+
+#[cfg(any(feature = "cuda", test))]
+const CUDA_SPARSE_LOWERING_BYTES_PER_INPUT: u64 = 240;
+#[cfg(any(feature = "cuda", test))]
+const DEFAULT_CUDA_SPARSE_LOWERING_HOST_CAP_BYTES: u64 = 256 * 1024 * 1024;
+
+#[cfg(any(feature = "cuda", test))]
+fn cuda_sparse_lowering_estimated_host_bytes(input_terms: usize) -> Option<u64> {
+    u64::try_from(input_terms)
+        .ok()?
+        .checked_mul(CUDA_SPARSE_LOWERING_BYTES_PER_INPUT)
+}
+
+#[cfg(feature = "cuda")]
+fn cuda_sparse_lowering_fits_host_cap(input_terms: usize) -> io::Result<bool> {
+    let cap = match std::env::var("ADYNKRA_GPU_FX_HOST_CAP_BYTES") {
+        Ok(value) => value.parse::<u64>().map_err(|error| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("invalid ADYNKRA_GPU_FX_HOST_CAP_BYTES={value}: {error}"),
+            )
+        })?,
+        Err(std::env::VarError::NotPresent) => DEFAULT_CUDA_SPARSE_LOWERING_HOST_CAP_BYTES,
+        Err(error) => return Err(io::Error::other(error)),
+    };
+    let estimated = cuda_sparse_lowering_estimated_host_bytes(input_terms);
+    Ok(estimated.is_some_and(|bytes| bytes <= cap))
+}
+
+enum SparseLoweringStream<'a> {
+    Identity {
+        values: &'a [(u32, i64)],
+        index: usize,
+    },
+    ExteriorReplacement {
+        values: &'a [(u32, i64)],
+        index: usize,
+        upper: usize,
+        lower: usize,
+    },
+}
+
+impl SparseLoweringStream<'_> {
+    fn next(&mut self) -> io::Result<Option<(u32, i64)>> {
+        match self {
+            Self::Identity { values, index } => {
+                let value = values.get(*index).copied();
+                *index += usize::from(value.is_some());
+                Ok(value)
+            }
+            Self::ExteriorReplacement {
+                values,
+                index,
+                upper,
+                lower,
+            } => {
+                let upper_bit = 1_u32 << *upper;
+                let lower_bit = 1_u32 << *lower;
+                while let Some(&(mask, coefficient)) = values.get(*index) {
+                    *index += 1;
+                    if mask & upper_bit == 0 || mask & lower_bit != 0 {
+                        continue;
+                    }
+                    let output_mask = mask ^ upper_bit ^ lower_bit;
+                    let sign = exterior_replacement_sign(mask, *upper, *lower);
+                    let output_coefficient = coefficient.checked_mul(sign).ok_or_else(|| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            "sparse lowering coefficient overflow",
+                        )
+                    })?;
+                    return Ok(Some((output_mask, output_coefficient)));
+                }
+                Ok(None)
+            }
+        }
+    }
+}
+
+/// Exact CPU lowering with bounded transient storage. Each fixed exterior
+/// replacement is an order-preserving stream over canonical masks, so a
+/// small k-way merge directly constructs the canonical output. This avoids
+/// the former materialized contribution vector, whose worst case was 13N.
+fn lower_sparse_coupled_state64_bounded(
+    source: &CoupledSparseState64,
+    root: usize,
+    maximum: &mut i128,
+) -> io::Result<CoupledSparseState64> {
+    if root >= SIMPLE_ROOTS.len() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "sparse lowering simple root is out of range",
+        ));
+    }
+    let spinors = spinor_weights();
+    debug_assert!(source.components.iter().all(|(&spinor, values)| {
+        spinor < spinors.len()
+            && values.iter().all(|(_, coefficient)| *coefficient != 0)
+            && values.windows(2).all(|pair| pair[0].0 < pair[1].0)
+    }));
+    let transitions = (0..spinors.len())
+        .filter_map(|upper| lowered_spinor_index(upper, root, &spinors).map(|lower| (upper, lower)))
+        .collect::<Vec<_>>();
+    let outputs = (0..spinors.len())
+        .into_par_iter()
+        .map(|output_free_spinor| {
+            lower_sparse_output_component(source, root, &spinors, &transitions, output_free_spinor)
+        })
+        .collect::<io::Result<Vec<_>>>()?;
+    let mut components = BTreeMap::<usize, Vec<(u32, i64)>>::new();
+    for (output_free_spinor, output, local_maximum) in outputs {
+        *maximum = (*maximum).max(local_maximum);
+        if !output.is_empty() {
+            components.insert(output_free_spinor, output);
+        }
+    }
+    Ok(CoupledSparseState64 { components })
+}
+
+fn lower_sparse_output_component(
+    source: &CoupledSparseState64,
+    root: usize,
+    spinors: &[Weight; 32],
+    transitions: &[(usize, usize)],
+    output_free_spinor: usize,
+) -> io::Result<SparseLoweredComponent> {
+    let mut streams = Vec::<SparseLoweringStream<'_>>::new();
+    if let Some(values) = source.components.get(&output_free_spinor) {
+        streams.extend(transitions.iter().map(|&(upper, lower)| {
+            SparseLoweringStream::ExteriorReplacement {
+                values,
+                index: 0,
+                upper,
+                lower,
+            }
+        }));
+    }
+    for (&input_free_spinor, values) in &source.components {
+        if lowered_spinor_index(input_free_spinor, root, spinors) == Some(output_free_spinor) {
+            streams.push(SparseLoweringStream::Identity { values, index: 0 });
+        }
+    }
+
+    let mut heap = BinaryHeap::<Reverse<(u32, usize, i64)>>::new();
+    for (stream_index, stream) in streams.iter_mut().enumerate() {
+        if let Some((mask, coefficient)) = stream.next()? {
+            heap.push(Reverse((mask, stream_index, coefficient)));
+        }
+    }
+    let mut output = Vec::<(u32, i64)>::new();
+    let mut local_maximum = 0_i128;
+    while let Some(Reverse((mask, stream_index, coefficient))) = heap.pop() {
+        if let Some((next_mask, next_coefficient)) = streams[stream_index].next()? {
+            heap.push(Reverse((next_mask, stream_index, next_coefficient)));
+        }
+        let mut accumulated = i128::from(coefficient);
+        while heap.peek().is_some_and(|entry| entry.0.0 == mask) {
+            let Reverse((_, next_stream_index, next_coefficient)) = heap.pop().unwrap();
+            accumulated = accumulated
+                .checked_add(i128::from(next_coefficient))
+                .ok_or_else(|| {
+                    io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "i128 sparse lowering accumulator overflow",
+                    )
+                })?;
+            if let Some((next_mask, next_coefficient)) = streams[next_stream_index].next()? {
+                heap.push(Reverse((next_mask, next_stream_index, next_coefficient)));
+            }
+        }
+        if accumulated == 0 {
+            continue;
+        }
+        local_maximum = local_maximum.max(accumulated.abs());
+        let coefficient = i64::try_from(accumulated).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "sparse lowering result exceeds i64",
+            )
+        })?;
+        output.push((mask, coefficient));
+    }
+    Ok((output_free_spinor, output, local_maximum))
+}
+
+fn lower_sparse_coupled_state64(
+    source: &CoupledSparseState64,
+    root: usize,
+    maximum: &mut i128,
+) -> io::Result<CoupledSparseState64> {
+    if root >= SIMPLE_ROOTS.len() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "sparse lowering simple root is out of range",
+        ));
+    }
+    #[cfg(feature = "cuda")]
+    if std::env::var("ADINKRA_FX_CUDA_SPARSE_LOWERING").as_deref() != Ok("0") {
+        let input_terms = source
+            .components
+            .values()
+            .try_fold(0_usize, |total, values| total.checked_add(values.len()))
+            .ok_or_else(|| io::Error::other("sparse lowering input count overflow"))?;
+        if !cuda_sparse_lowering_fits_host_cap(input_terms)? || input_terms == 0 {
+            return lower_sparse_coupled_state64_bounded(source, root, maximum);
+        }
+        let entries = source
+            .components
+            .iter()
+            .flat_map(|(&spinor, values)| {
+                values.iter().map(move |&(mask, coefficient)| {
+                    (((spinor as u64) << 32) | u64::from(mask), coefficient)
+                })
+            })
+            .collect::<Vec<_>>();
+        let device = std::env::var("ADINKRA_FX_CUDA_DEVICE")
+            .ok()
+            .and_then(|value| value.parse::<i32>().ok())
+            .unwrap_or(0);
+        let (lowered, _) = crate::eleven_dimensional_second_momentum_gpu::lower_sparse_exact(
+            &entries, root, device,
+        )
+        .map_err(io::Error::other)?;
+        let mut components = BTreeMap::<usize, Vec<(u32, i64)>>::new();
+        for (key, coefficient) in lowered {
+            *maximum = (*maximum).max(i128::from(coefficient).abs());
+            components
+                .entry((key >> 32) as usize)
+                .or_default()
+                .push((key as u32, coefficient));
+        }
+        return Ok(CoupledSparseState64 { components });
+    }
+    lower_sparse_coupled_state64_bounded(source, root, maximum)
+}
+
+fn visit_independent_sparse_coupled_words<F>(
+    highest: &CoupledSparseState64,
+    words: &[Vec<u8>],
+    maximum: &mut i128,
+    visit: &mut F,
+) -> io::Result<()>
+where
+    F: FnMut(usize, &CoupledSparseState64) -> io::Result<()>,
+{
+    visit_independent_coupled_word_handles(
+        highest,
+        words,
+        maximum,
+        &mut lower_sparse_coupled_root_word64,
+        visit,
+    )
+}
+
+fn common_root_prefix_length(left: &[u8], right: &[u8]) -> usize {
+    left.iter()
+        .zip(right)
+        .take_while(|(left, right)| left == right)
+        .count()
+}
+
+/// Lower a complete root-word segment without cloning its starting state.
+/// Keeping this boundary word-oriented allows a persistent accelerator to
+/// replace the scalar backend later without changing traversal or callbacks.
+fn lower_sparse_coupled_root_word64(
+    source: &CoupledSparseState64,
+    roots: &[u8],
+    maximum: &mut i128,
+) -> io::Result<CoupledSparseState64> {
+    let Some((&first, rest)) = roots.split_first() else {
+        return Ok(source.clone());
+    };
+    if !(1..=5).contains(&first) || rest.iter().any(|root| !(1..=5).contains(root)) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "PBW lowering word contains an invalid simple root",
+        ));
+    }
+    let mut state = lower_sparse_coupled_state64(source, usize::from(first - 1), maximum)?;
+    for &simple_root in rest {
+        state = lower_sparse_coupled_state64(&state, usize::from(simple_root - 1), maximum)?;
+    }
+    Ok(state)
+}
+
+/// Visit opaque backend handles in caller order while retaining at most one
+/// shared-prefix handle. The next adjacent LCP is materialized once and reused.
+/// When the LCP moves upward, its handle is recomputed only after the terminal
+/// callback, so terminal and branch handles never accumulate into an unbounded
+/// trie. No ordering assumption is made beyond the caller's canonical order;
+/// the traversal exploits whatever adjacent prefixes that order provides.
+///
+/// `H` may be a host state or a device-resident allocation. Only `lower_word`
+/// creates a new handle, and only `visit` needs to inspect a terminal handle.
+fn visit_independent_coupled_word_handles<H, F, L>(
+    highest: &H,
+    words: &[Vec<u8>],
+    maximum: &mut i128,
+    lower_word: &mut L,
+    visit: &mut F,
+) -> io::Result<()>
+where
+    F: FnMut(usize, &H) -> io::Result<()>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+{
+    let mut shared_prefix = None::<(Vec<u8>, H)>;
+    for (ordinal, word) in words.iter().enumerate() {
+        let next_lcp = words
+            .get(ordinal + 1)
+            .map_or(0, |next| common_root_prefix_length(word, next));
+        if shared_prefix
+            .as_ref()
+            .is_some_and(|(prefix, _)| !word.starts_with(prefix))
+        {
+            shared_prefix = None;
+        }
+        let start_depth = shared_prefix.as_ref().map_or(0, |(prefix, _)| prefix.len());
+
+        if next_lcp > start_depth {
+            let base = shared_prefix.as_ref().map_or(highest, |(_, state)| state);
+            let next_shared = lower_word(base, &word[start_depth..next_lcp], maximum)?;
+            drop(shared_prefix.take());
+            if next_lcp == word.len() {
+                visit(ordinal, &next_shared)?;
+            } else {
+                let terminal = lower_word(&next_shared, &word[next_lcp..], maximum)?;
+                visit(ordinal, &terminal)?;
+            }
+            shared_prefix = Some((word[..next_lcp].to_vec(), next_shared));
+            continue;
+        }
+
+        if start_depth == word.len() {
+            let terminal = shared_prefix.as_ref().map_or(highest, |(_, state)| state);
+            visit(ordinal, terminal)?;
+        } else {
+            let base = shared_prefix.as_ref().map_or(highest, |(_, state)| state);
+            let terminal = lower_word(base, &word[start_depth..], maximum)?;
+            visit(ordinal, &terminal)?;
+        }
+
+        if next_lcp == 0 {
+            shared_prefix = None;
+        } else if next_lcp < start_depth {
+            drop(shared_prefix.take());
+            let next_shared = lower_word(highest, &word[..next_lcp], maximum)?;
+            shared_prefix = Some((word[..next_lcp].to_vec(), next_shared));
+        } else {
+            debug_assert_eq!(next_lcp, start_depth);
+        }
+    }
+    Ok(())
 }
 
 fn build_derivative_candidate(
@@ -6351,37 +6744,35 @@ where
         ));
     }
 
-    let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
-    let mut emitted_nonzero_components = 0_u64;
-    for (requested_word_ordinal, word) in requested_pbw_words.iter().enumerate() {
-        let state = if word.is_empty() {
-            highest.clone()
-        } else {
-            coupled_state_for_word(&mut model, &highest, word, &mut cache, &mut maximum)
-        };
-        for (&free_spinor_weight_index, exterior) in &state.components {
-            let masks = model.space(exterior.weight).masks.clone();
-            for (exterior_mask, coefficient) in
-                masks.into_iter().zip(exterior.coefficients.iter().copied())
-            {
-                if coefficient == 0 {
-                    continue;
-                }
-                emitted_nonzero_components = emitted_nonzero_components
-                    .checked_add(1)
-                    .ok_or_else(|| io::Error::other("(20001) descendant term count overflow"))?;
-                visit(SecondMomentum20001DescendantEntry {
-                    requested_word_ordinal,
-                    free_spinor_weight_index,
-                    exterior_mask,
-                    coefficient,
-                })?;
-            }
-        }
-    }
+    let highest_sparse = dense_coupled_to_sparse64(&mut model, &highest);
     let estimated_payload_bytes = exterior_model_payload_bytes(&model)
         + coupled_state_payload_bytes(&highest)
-        + cache.values().map(coupled_state_payload_bytes).sum::<u64>();
+        + sparse64_payload_bytes(&highest_sparse);
+    drop(highest);
+    drop(model);
+    let mut emitted_nonzero_components = 0_u64;
+    visit_independent_sparse_coupled_words(
+        &highest_sparse,
+        requested_pbw_words,
+        &mut maximum,
+        &mut |requested_word_ordinal, state| {
+            for (&free_spinor_weight_index, exterior) in &state.components {
+                for &(exterior_mask, coefficient) in exterior {
+                    emitted_nonzero_components =
+                        emitted_nonzero_components.checked_add(1).ok_or_else(|| {
+                            io::Error::other("(20001) descendant term count overflow")
+                        })?;
+                    visit(SecondMomentum20001DescendantEntry {
+                        requested_word_ordinal,
+                        free_spinor_weight_index,
+                        exterior_mask,
+                        coefficient,
+                    })?;
+                }
+            }
+            Ok(())
+        },
+    )?;
     Ok(SecondMomentum20001DescendantAccounting {
         source_dynkin_label: abstract_certificate.source_dynkin_label.clone(),
         source_copy: fixture_copy,
@@ -6536,37 +6927,35 @@ where
         ));
     }
 
-    let mut cache = BTreeMap::from([(Vec::new(), highest.clone())]);
-    let mut emitted_nonzero_components = 0_u64;
-    for (requested_word_ordinal, word) in requested_pbw_words.iter().enumerate() {
-        let state = if word.is_empty() {
-            highest.clone()
-        } else {
-            coupled_state_for_word(&mut model, &highest, word, &mut cache, &mut maximum)
-        };
-        for (&free_spinor_weight_index, exterior) in &state.components {
-            let masks = model.space(exterior.weight).masks.clone();
-            for (exterior_mask, coefficient) in
-                masks.into_iter().zip(exterior.coefficients.iter().copied())
-            {
-                if coefficient == 0 {
-                    continue;
-                }
-                emitted_nonzero_components = emitted_nonzero_components
-                    .checked_add(1)
-                    .ok_or_else(|| io::Error::other("(30001) descendant term count overflow"))?;
-                visit(SecondMomentum30001DescendantEntry {
-                    requested_word_ordinal,
-                    free_spinor_weight_index,
-                    exterior_mask,
-                    coefficient,
-                })?;
-            }
-        }
-    }
+    let highest_sparse = dense_coupled_to_sparse64(&mut model, &highest);
     let estimated_payload_bytes = exterior_model_payload_bytes(&model)
         + coupled_state_payload_bytes(&highest)
-        + cache.values().map(coupled_state_payload_bytes).sum::<u64>();
+        + sparse64_payload_bytes(&highest_sparse);
+    drop(highest);
+    drop(model);
+    let mut emitted_nonzero_components = 0_u64;
+    visit_independent_sparse_coupled_words(
+        &highest_sparse,
+        requested_pbw_words,
+        &mut maximum,
+        &mut |requested_word_ordinal, state| {
+            for (&free_spinor_weight_index, exterior) in &state.components {
+                for &(exterior_mask, coefficient) in exterior {
+                    emitted_nonzero_components =
+                        emitted_nonzero_components.checked_add(1).ok_or_else(|| {
+                            io::Error::other("(30001) descendant term count overflow")
+                        })?;
+                    visit(SecondMomentum30001DescendantEntry {
+                        requested_word_ordinal,
+                        free_spinor_weight_index,
+                        exterior_mask,
+                        coefficient,
+                    })?;
+                }
+            }
+            Ok(())
+        },
+    )?;
     Ok(SecondMomentum30001DescendantAccounting {
         source_dynkin_label: abstract_certificate.source_dynkin_label.clone(),
         source_copy: fixture_copy,
@@ -7392,5 +7781,274 @@ mod tests {
     #[test]
     fn gaussian_integer_product_keeps_real_and_imaginary_parts_exact() {
         assert_eq!(multiply_gaussian_integers(2, 3, 5, -7), (31, 1));
+    }
+
+    fn reference_sparse_lowering_in_chunks(
+        source: &CoupledSparseState64,
+        root: usize,
+        chunk_terms: usize,
+        maximum: &mut i128,
+    ) -> CoupledSparseState64 {
+        assert!(chunk_terms != 0);
+        let spinors = spinor_weights();
+        let flattened = source
+            .components
+            .iter()
+            .flat_map(|(&free_spinor, values)| {
+                values
+                    .iter()
+                    .map(move |&(mask, coefficient)| (free_spinor, mask, coefficient))
+            })
+            .collect::<Vec<_>>();
+        let mut accumulated = BTreeMap::<u64, i128>::new();
+        for chunk in flattened.chunks(chunk_terms) {
+            for &(free_spinor, mask, coefficient) in chunk {
+                if let Some(lowered_free_spinor) = lowered_spinor_index(free_spinor, root, &spinors)
+                {
+                    *accumulated
+                        .entry((lowered_free_spinor as u64) << 32 | u64::from(mask))
+                        .or_default() += i128::from(coefficient);
+                }
+                let mut occupied = mask;
+                while occupied != 0 {
+                    let upper = occupied.trailing_zeros() as usize;
+                    occupied &= occupied - 1;
+                    let Some(lower) = lowered_spinor_index(upper, root, &spinors) else {
+                        continue;
+                    };
+                    if mask & (1_u32 << lower) != 0 {
+                        continue;
+                    }
+                    let output_mask = mask ^ (1_u32 << upper) ^ (1_u32 << lower);
+                    let contribution = i128::from(coefficient)
+                        * i128::from(exterior_replacement_sign(mask, upper, lower));
+                    *accumulated
+                        .entry((free_spinor as u64) << 32 | u64::from(output_mask))
+                        .or_default() += contribution;
+                }
+            }
+        }
+        let mut components = BTreeMap::<usize, Vec<(u32, i64)>>::new();
+        for (key, value) in accumulated {
+            if value == 0 {
+                continue;
+            }
+            *maximum = (*maximum).max(value.abs());
+            components
+                .entry((key >> 32) as usize)
+                .or_default()
+                .push((key as u32, i64::try_from(value).unwrap()));
+        }
+        CoupledSparseState64 { components }
+    }
+
+    fn synthetic_sparse_state64() -> CoupledSparseState64 {
+        let components = (0..8)
+            .map(|free_spinor| {
+                let mut values = (0..16)
+                    .flat_map(|left| ((left + 1)..16).map(move |right| (left, right)))
+                    .map(|(left, right)| {
+                        let mask = (1_u32 << left) | (1_u32 << right);
+                        let coefficient =
+                            i64::from(((free_spinor * 17 + left * 5 + right * 3) % 19) as i32 - 9);
+                        (mask, coefficient)
+                    })
+                    .filter(|(_, coefficient)| *coefficient != 0)
+                    .collect::<Vec<_>>();
+                values.sort_unstable_by_key(|entry| entry.0);
+                (free_spinor, values)
+            })
+            .collect();
+        CoupledSparseState64 { components }
+    }
+
+    #[test]
+    fn bounded_sparse_lowering_matches_chunked_reference_for_all_roots() {
+        let source = synthetic_sparse_state64();
+        for root in 0..SIMPLE_ROOTS.len() {
+            let mut expected_maximum = 0;
+            let expected =
+                reference_sparse_lowering_in_chunks(&source, root, 7, &mut expected_maximum);
+            let mut observed_maximum = 0;
+            let observed =
+                lower_sparse_coupled_state64_bounded(&source, root, &mut observed_maximum).unwrap();
+            assert_eq!(observed.components, expected.components, "root {root}");
+            assert_eq!(observed_maximum, expected_maximum, "root {root}");
+        }
+    }
+
+    #[test]
+    fn production_sized_sparse_lowering_routes_to_bounded_before_cuda_flattening() {
+        let input_terms = 6_190_000;
+        let estimated = cuda_sparse_lowering_estimated_host_bytes(input_terms).unwrap();
+        assert_eq!(estimated, 1_485_600_000);
+        assert!(estimated > DEFAULT_CUDA_SPARSE_LOWERING_HOST_CAP_BYTES);
+    }
+
+    #[test]
+    fn bounded_sparse_lowering_preserves_cross_chunk_cancellation() {
+        let root = 0;
+        let spinors = spinor_weights();
+        let (input_free_spinor, output_free_spinor) = (0..spinors.len())
+            .find_map(|upper| {
+                lowered_spinor_index(upper, root, &spinors).map(|lower| (upper, lower))
+            })
+            .unwrap();
+        let exterior_upper = input_free_spinor;
+        let exterior_lower = output_free_spinor;
+        let extra = (0..32)
+            .find(|index| *index != exterior_upper && *index != exterior_lower)
+            .unwrap();
+        let output_mask = (1_u32 << exterior_lower) | (1_u32 << extra);
+        let replacement_input_mask =
+            output_mask ^ (1_u32 << exterior_upper) ^ (1_u32 << exterior_lower);
+        let identity_coefficient = 37_i64;
+        let replacement_sign =
+            exterior_replacement_sign(replacement_input_mask, exterior_upper, exterior_lower);
+        let replacement_coefficient = -identity_coefficient * replacement_sign;
+        let mut source = CoupledSparseState64 {
+            components: BTreeMap::from([
+                (input_free_spinor, vec![(output_mask, identity_coefficient)]),
+                (
+                    output_free_spinor,
+                    vec![(replacement_input_mask, replacement_coefficient)],
+                ),
+            ]),
+        };
+        for values in source.components.values_mut() {
+            values.sort_unstable_by_key(|entry| entry.0);
+        }
+
+        let mut expected_maximum = 0;
+        let expected = reference_sparse_lowering_in_chunks(&source, root, 1, &mut expected_maximum);
+        let mut observed_maximum = 0;
+        let observed =
+            lower_sparse_coupled_state64_bounded(&source, root, &mut observed_maximum).unwrap();
+        assert_eq!(observed.components, expected.components);
+        assert_eq!(observed_maximum, expected_maximum);
+        assert!(
+            observed
+                .components
+                .get(&output_free_spinor)
+                .into_iter()
+                .flatten()
+                .all(|(mask, _)| *mask != output_mask)
+        );
+    }
+
+    #[test]
+    fn lcp_word_traversal_matches_independent_reference_and_preserves_ordinals() {
+        let highest = synthetic_sparse_state64();
+        let words = vec![
+            vec![1, 2, 3, 4],
+            vec![1, 2, 3, 5],
+            vec![1, 2, 4],
+            vec![1, 5],
+        ];
+        let mut expected = Vec::new();
+        let mut expected_maximum = 0;
+        for (ordinal, word) in words.iter().enumerate() {
+            let mut state = highest.clone();
+            for &simple_root in word {
+                state = reference_sparse_lowering_in_chunks(
+                    &state,
+                    usize::from(simple_root - 1),
+                    5,
+                    &mut expected_maximum,
+                );
+            }
+            expected.push((ordinal, state.components));
+        }
+
+        let mut observed = Vec::new();
+        let mut observed_maximum = 0;
+        let mut lowered_root_segments = Vec::<Vec<u8>>::new();
+        visit_independent_coupled_word_handles(
+            &highest,
+            &words,
+            &mut observed_maximum,
+            &mut |source, roots, maximum| {
+                lowered_root_segments.push(roots.to_vec());
+                lower_sparse_coupled_root_word64(source, roots, maximum)
+            },
+            &mut |ordinal, state| {
+                observed.push((ordinal, state.components.clone()));
+                Ok(())
+            },
+        )
+        .unwrap();
+
+        assert_eq!(observed, expected);
+        assert_eq!(observed_maximum, expected_maximum);
+        assert_eq!(
+            observed
+                .iter()
+                .map(|(ordinal, _)| *ordinal)
+                .collect::<Vec<_>>(),
+            vec![0, 1, 2, 3]
+        );
+        let optimized_root_count = lowered_root_segments.iter().map(Vec::len).sum::<usize>();
+        let independent_root_count = words.iter().map(Vec::len).sum::<usize>();
+        assert!(optimized_root_count < independent_root_count);
+    }
+
+    #[test]
+    fn lcp_word_traversal_accepts_non_clone_opaque_handles_and_unsorted_words() {
+        struct OpaqueHandle {
+            roots: Vec<u8>,
+        }
+
+        let highest = OpaqueHandle { roots: Vec::new() };
+        let words = vec![vec![3, 1, 4], vec![3, 1, 5], vec![2, 5], vec![3, 2]];
+        let mut visited = Vec::new();
+        visit_independent_coupled_word_handles(
+            &highest,
+            &words,
+            &mut 0,
+            &mut |source, suffix, _| {
+                let mut roots = source.roots.clone();
+                roots.extend_from_slice(suffix);
+                Ok(OpaqueHandle { roots })
+            },
+            &mut |ordinal, terminal| {
+                visited.push((ordinal, terminal.roots.clone()));
+                Ok(())
+            },
+        )
+        .unwrap();
+
+        assert_eq!(visited, words.into_iter().enumerate().collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn sparse_coupled_lowering_matches_dense_csr_action() {
+        let mut model = ExteriorModel::new(2);
+        let mask = (1_u32 << 0) | (1_u32 << 7);
+        let weight = add(model.spinors[0], model.spinors[7]);
+        let ordinal = model.space(weight).index[&mask];
+        let mut coefficients = vec![0_i64; model.space(weight).masks.len()];
+        coefficients[ordinal] = -17;
+        let dense = CoupledDenseState {
+            total_weight: add(weight, model.spinors[3]),
+            components: BTreeMap::from([(
+                3,
+                DenseState {
+                    weight,
+                    pbw_word: Vec::new(),
+                    coefficients,
+                },
+            )]),
+        };
+        let sparse = dense_coupled_to_sparse64(&mut model, &dense);
+        for root in 0..5 {
+            let mut dense_maximum = 0_i128;
+            let dense_lowered = lower_coupled_state(&mut model, &dense, root, &mut dense_maximum);
+            let expected = dense_coupled_to_sparse64(&mut model, &dense_lowered);
+            let mut sparse_maximum = 0_i128;
+            let observed =
+                lower_sparse_coupled_state64(&sparse, root, &mut sparse_maximum).unwrap();
+            assert_eq!(observed.components, expected.components, "root {root}");
+            assert_eq!(sparse_maximum, dense_maximum, "root {root}");
+        }
     }
 }

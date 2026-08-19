@@ -432,12 +432,13 @@ fn validate_map_checkpoint(
     Ok(())
 }
 
-fn build_column_gauge_residuals(
+type RecoupledState = BTreeMap<([usize; 2], usize, u32), i128>;
+
+fn build_column_recoupled(
     fixture: SourceFixture,
     reciprocal: &crate::eleven_dimensional_second_momentum_remaining_recouplings::RemainingRecouplingCertificate,
-    highest_target: &crate::eleven_dimensional_bridge::VectorSpinorTargetBasisState,
 ) -> io::Result<(
-    Vec<BTreeMap<GaugeResidualKey, ExactGaussian>>,
+    RecoupledState,
     crate::eleven_dimensional_level16_couplings::SecondMomentum20001DescendantAccounting,
     [usize; 5],
 )> {
@@ -458,7 +459,13 @@ fn build_column_gauge_residuals(
         .enumerate()
         .map(|(ordinal, word)| (word.clone(), ordinal))
         .collect::<BTreeMap<_, _>>();
-    let mut descendants = vec![Vec::new(); words.len()];
+    let mut reciprocal_by_word = vec![Vec::new(); words.len()];
+    for term in &reciprocal.reciprocal_terms {
+        let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
+        reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
+    }
+    let mut observed_by_word = vec![false; words.len()];
+    let mut recoupled = RecoupledState::new();
     let accounting = crate::eleven_dimensional_level16_couplings::
         visit_second_momentum_20001_descendant_components(
             &abstract_checkpoint.certificate,
@@ -470,35 +477,32 @@ fn build_column_gauge_residuals(
             &embedded_checkpoint.coupled_map_sha256,
             &words,
             |entry| {
-                descendants[entry.requested_word_ordinal].push((
-                    entry.free_spinor_weight_index,
-                    entry.exterior_mask,
-                    entry.coefficient,
-                ));
+                observed_by_word[entry.requested_word_ordinal] = true;
+                for &(momentum_pair, primitive_coefficient) in
+                    &reciprocal_by_word[entry.requested_word_ordinal]
+                {
+                    let value = i128::from(entry.coefficient)
+                        .checked_mul(i128::from(primitive_coefficient))
+                        .ok_or_else(|| io::Error::other("p2 recoupling coefficient overflow"))?;
+                    let output = recoupled
+                        .entry((
+                            momentum_pair,
+                            entry.free_spinor_weight_index,
+                            entry.exterior_mask,
+                        ))
+                        .or_insert(0);
+                    *output = output
+                        .checked_add(value)
+                        .ok_or_else(|| io::Error::other("p2 recoupling accumulator overflow"))?;
+                }
                 Ok(())
             },
         )?;
-    if descendants.iter().any(Vec::is_empty) {
+    if observed_by_word.iter().any(|observed| !observed) {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "requested (20001) descendant materialized no exact components",
         ));
-    }
-
-    let mut recoupled = BTreeMap::<([usize; 2], usize, u32), i128>::new();
-    for term in &reciprocal.reciprocal_terms {
-        let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
-        for &(free_spinor, exterior_mask, source_coefficient) in &descendants[word_ordinal] {
-            let value = i128::from(source_coefficient)
-                .checked_mul(i128::from(term.primitive_coefficient))
-                .ok_or_else(|| io::Error::other("p2 recoupling coefficient overflow"))?;
-            let entry = recoupled
-                .entry((term.momentum_pair, free_spinor, exterior_mask))
-                .or_insert(0);
-            *entry = entry
-                .checked_add(value)
-                .ok_or_else(|| io::Error::other("p2 recoupling accumulator overflow"))?;
-        }
     }
     recoupled.retain(|_, coefficient| *coefficient != 0);
     if recoupled.is_empty() {
@@ -514,6 +518,19 @@ fn build_column_gauge_residuals(
             format!("substituted (20001) p2 target state is not highest: {raising_residuals:?}"),
         ));
     }
+    Ok((recoupled, accounting, raising_residuals))
+}
+
+fn build_column_gauge_residuals(
+    fixture: SourceFixture,
+    reciprocal: &crate::eleven_dimensional_second_momentum_remaining_recouplings::RemainingRecouplingCertificate,
+    highest_target: &crate::eleven_dimensional_bridge::VectorSpinorTargetBasisState,
+) -> io::Result<(
+    Vec<BTreeMap<GaugeResidualKey, ExactGaussian>>,
+    crate::eleven_dimensional_level16_couplings::SecondMomentum20001DescendantAccounting,
+    [usize; 5],
+)> {
+    let (recoupled, accounting, raising_residuals) = build_column_recoupled(fixture, reciprocal)?;
 
     let gauge_basis = crate::eleven_dimensional_clifford::gauge_form_operator_basis();
     let mut residuals_by_degree = Vec::with_capacity(6);
@@ -653,6 +670,136 @@ fn project_column_fx(
                 .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
         },
     )
+}
+
+pub(crate) fn visit_gpu_column_contributions<F>(
+    local_ordinal: usize,
+    mut visit: F,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
+where
+    F: FnMut(crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm) -> io::Result<()>,
+{
+    let fixtures = source_fixtures();
+    let fixture = *fixtures.get(local_ordinal).ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "(20001) GPU column ordinal must lie in 0..9",
+        )
+    })?;
+    let recoupling =
+        crate::eleven_dimensional_second_momentum_remaining_recouplings::verify_cached();
+    let reciprocal = recoupling
+        .channels
+        .iter()
+        .find(|channel| channel.intermediate_dynkin_label == "20001")
+        .ok_or_else(|| io::Error::other("missing exact (20001) reciprocal certificate"))?;
+    if reciprocal.reciprocal_raising_residual_terms_by_simple_root != [0; 5]
+        || !reciprocal.exact_chevalley_equivariance_verified
+        || !reciprocal.passed
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "uncertified exact (20001) reciprocal highest-weight map",
+        ));
+    }
+
+    let abstract_checkpoint = read_json::<
+        crate::eleven_dimensional_second_momentum_20001_maps::SecondMomentum20001AbstractCheckpoint,
+    >(&abstract_checkpoint_path(fixture.dynkin_label))?;
+    let embedded_checkpoint = read_json::<
+        crate::eleven_dimensional_second_momentum_20001_maps::SecondMomentum20001EmbeddedCheckpoint,
+    >(&embedded_checkpoint_path(
+        fixture.dynkin_label,
+        fixture.copy,
+    ))?;
+    validate_map_checkpoint(fixture, &abstract_checkpoint, &embedded_checkpoint)?;
+
+    let words = requested_words(reciprocal);
+    let word_ordinals = words
+        .iter()
+        .enumerate()
+        .map(|(ordinal, word)| (word.clone(), ordinal))
+        .collect::<BTreeMap<_, _>>();
+    let mut reciprocal_by_word = vec![Vec::new(); words.len()];
+    for term in &reciprocal.reciprocal_terms {
+        let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
+        reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
+    }
+
+    let mut observed_by_word = vec![false; words.len()];
+    let mut emitted_terms = 0_u64;
+    crate::eleven_dimensional_level16_couplings::visit_second_momentum_20001_descendant_components(
+        &abstract_checkpoint.certificate,
+        fixture.copy,
+        fixture.artifact,
+        2,
+        fixture.bytes,
+        &embedded_checkpoint.source_fixture_sha256,
+        &embedded_checkpoint.coupled_map_sha256,
+        &words,
+        |entry| {
+            observed_by_word[entry.requested_word_ordinal] = true;
+            for &(momentum_pair, primitive_coefficient) in
+                &reciprocal_by_word[entry.requested_word_ordinal]
+            {
+                let coefficient = i128::from(entry.coefficient)
+                    .checked_mul(i128::from(primitive_coefficient))
+                    .ok_or_else(|| io::Error::other("p2 recoupling coefficient overflow"))?;
+                if coefficient == 0 {
+                    continue;
+                }
+                visit(
+                    crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm {
+                        momentum_pair: [
+                            u8::try_from(momentum_pair[0]).map_err(|_| {
+                                io::Error::other("momentum index exceeds packed GPU range")
+                            })?,
+                            u8::try_from(momentum_pair[1]).map_err(|_| {
+                                io::Error::other("momentum index exceeds packed GPU range")
+                            })?,
+                        ],
+                        free_spinor: u8::try_from(entry.free_spinor_weight_index).map_err(
+                            |_| io::Error::other("spinor index exceeds packed GPU range"),
+                        )?,
+                        exterior_mask: entry.exterior_mask,
+                        coefficient,
+                    },
+                )?;
+                emitted_terms = emitted_terms
+                    .checked_add(1)
+                    .ok_or_else(|| io::Error::other("GPU contribution count overflow"))?;
+            }
+            Ok(())
+        },
+    )?;
+    if observed_by_word.iter().any(|observed| !observed) || emitted_terms == 0 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "requested (20001) GPU descendant stream is incomplete or empty",
+        ));
+    }
+    let raising_residuals = reciprocal.reciprocal_raising_residual_terms_by_simple_root;
+    Ok(
+        crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput {
+            global_ordinal: FIRST_GLOBAL_ORDINAL + local_ordinal,
+            source_label: fixture.dynkin_label.to_string(),
+            source_copy: fixture.copy,
+            terms: Vec::new(),
+            raising_residuals,
+        },
+    )
+}
+
+pub(crate) fn build_gpu_column_input(
+    local_ordinal: usize,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput> {
+    let mut terms = Vec::new();
+    let mut column = visit_gpu_column_contributions(local_ordinal, |term| {
+        terms.push(term);
+        Ok(())
+    })?;
+    column.terms = terms;
+    Ok(column)
 }
 
 pub fn construct() -> io::Result<SecondMomentum20001FxReport> {

@@ -61,6 +61,7 @@ mod eleven_dimensional_second_momentum_20001_maps;
 mod eleven_dimensional_second_momentum_30001_fx;
 mod eleven_dimensional_second_momentum_30001_maps;
 mod eleven_dimensional_second_momentum_fx;
+mod eleven_dimensional_second_momentum_gpu;
 mod eleven_dimensional_second_momentum_recoupling;
 mod eleven_dimensional_second_momentum_remaining_recouplings;
 mod eleven_dimensional_source_fixed_curvature;
@@ -124,6 +125,10 @@ mod ranking;
 mod s8_characters;
 mod scalar_tensor_tangent;
 mod search;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_checkpoint;
+#[cfg_attr(not(any(feature = "cuda", test)), allow(dead_code))]
+mod second_momentum_gpu_progress;
 mod signed_perm;
 mod spectral_lanczos;
 mod sr_hole;
@@ -288,6 +293,10 @@ fn main() {
         }
         "adynkra-11d-second-momentum-component-build" => {
             cmd_adynkra_11d_second_momentum_component_build(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx" => cmd_adynkra_11d_second_momentum_gpu_fx(&args),
+        "adynkra-11d-second-momentum-gpu-status-reconcile" => {
+            cmd_adynkra_11d_second_momentum_gpu_status_reconcile(&args)
         }
         "adynkra-11d-top-down-build" => cmd_adynkra_11d_top_down_build(&args),
         "adynkra-11d-first-momentum-fx-aggregate" => {
@@ -570,6 +579,16 @@ fn print_usage(prog: &str) {
     eprintln!("                          Certify the trace/STT rank-two momentum recoupling");
     eprintln!("  adynkra-11d-second-momentum-component-build [results-dir]");
     eprintln!("                          Build bounded 10001/30001 component-map certificates");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx <20001|30001> <local-column> [prime] [output-dir] [cpu-parity-terms] [device] [status-file]"
+    );
+    eprintln!("                          Run one exact GPU F_X column with JSONL/status telemetry");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-status-reconcile <status-file> <child-pid> <exit:N|signal:N|unknown>"
+    );
+    eprintln!(
+        "                          Reconcile a non-resumable status snapshot after waiting for its child"
+    );
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!(
         "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
@@ -1750,6 +1769,263 @@ fn cmd_adynkra_11d_second_momentum_component_build(args: &[String]) {
         map_30001.display(),
         remaining.display()
     );
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_status_reconcile(args: &[String]) {
+    if args.len() != 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-status-reconcile <status-file> <child-pid> <exit:N|signal:N|unknown>",
+            args.first().map(String::as_str).unwrap_or("adinkra")
+        );
+        std::process::exit(2);
+    }
+    let status_path = std::path::Path::new(&args[2]);
+    let child_pid = args[3].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("invalid supervised child PID {}", args[3]);
+        std::process::exit(2);
+    });
+    let (exit_code, signal) = if args[4] == "unknown" {
+        (None, None)
+    } else if let Some(value) = args[4].strip_prefix("exit:") {
+        let code = value.parse::<i32>().unwrap_or_else(|_| {
+            eprintln!("invalid supervised exit observation {}", args[4]);
+            std::process::exit(2);
+        });
+        (Some(code), None)
+    } else if let Some(value) = args[4].strip_prefix("signal:") {
+        let number = value.parse::<i32>().unwrap_or_else(|_| {
+            eprintln!("invalid supervised signal observation {}", args[4]);
+            std::process::exit(2);
+        });
+        if number <= 0 {
+            eprintln!("supervised signal number must be positive");
+            std::process::exit(2);
+        }
+        (None, Some(number))
+    } else {
+        eprintln!("observation must be exit:N, signal:N, or unknown");
+        std::process::exit(2);
+    };
+
+    match second_momentum_gpu_progress::reconcile_status_snapshot(
+        status_path,
+        child_pid,
+        exit_code,
+        signal,
+    ) {
+        Ok(result) => println!(
+            "{}",
+            serde_json::json!({
+                "status_snapshot_path": status_path.display().to_string(),
+                "resumable": false,
+                "reconciled": result.reconciled,
+                "state": result.state
+            })
+        ),
+        Err(error) => {
+            eprintln!("status snapshot reconciliation failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_gpu_fx(args: &[String]) {
+    use second_momentum_gpu_progress::{ProgressConfig, ProgressReporter, emit_fallback_error};
+
+    if args.len() > 9 {
+        second_momentum_gpu_argument_failure(
+            "too many arguments for second-momentum GPU F_X".to_owned(),
+        );
+    }
+    let tranche = args
+        .get(2)
+        .map(String::as_str)
+        .ok_or_else(|| "missing tranche 20001 or 30001".to_owned())
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error));
+    let (first_global_ordinal, tranche_columns_total) = match tranche {
+        "20001" => (53, 9),
+        "30001" => (62, 15),
+        _ => second_momentum_gpu_argument_failure("tranche must be 20001 or 30001".to_owned()),
+    };
+    let local_ordinal = args
+        .get(3)
+        .ok_or_else(|| "missing local column ordinal".to_owned())
+        .and_then(|value| {
+            value
+                .parse::<usize>()
+                .map_err(|_| format!("invalid local column ordinal {value}"))
+        })
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error));
+    if local_ordinal >= tranche_columns_total {
+        second_momentum_gpu_argument_failure(format!(
+            "{tranche} local column ordinal must lie in 0..{tranche_columns_total}"
+        ));
+    }
+    let prime = args
+        .get(4)
+        .map(|value| {
+            value
+                .parse::<u32>()
+                .map_err(|_| format!("invalid finite-field prime {value}"))
+        })
+        .transpose()
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error))
+        .unwrap_or(eleven_dimensional_second_momentum_gpu::GPU_FX_PRIMES[0]);
+    let output_directory = std::path::PathBuf::from(
+        args.get(5)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let cpu_parity_terms = args
+        .get(6)
+        .map(|value| {
+            value
+                .parse::<usize>()
+                .map_err(|_| format!("invalid CPU parity term count {value}"))
+        })
+        .transpose()
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error))
+        .unwrap_or(128);
+    let device = args
+        .get(7)
+        .map(|value| {
+            value
+                .parse::<i32>()
+                .map_err(|_| format!("invalid CUDA device {value}"))
+        })
+        .transpose()
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error))
+        .unwrap_or(0);
+    if device < 0 {
+        second_momentum_gpu_argument_failure("CUDA device must be nonnegative".to_owned());
+    }
+
+    let global_ordinal = first_global_ordinal + local_ordinal;
+    let stem = format!("second_momentum_{tranche}_column_{global_ordinal:02}_p{prime}");
+    let binary_output_path = output_directory.join(format!("{stem}.bin"));
+    let report_output_path = output_directory.join(format!("{stem}.json"));
+    let status_path = args
+        .get(8)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| output_directory.join(format!("{stem}.status.json")));
+    let config = ProgressConfig {
+        command: "adynkra-11d-second-momentum-gpu-fx".to_owned(),
+        tranche: tranche.to_owned(),
+        local_ordinal,
+        global_ordinal,
+        tranche_columns_total,
+        prime,
+        device,
+        cpu_parity_terms,
+        output_directory: output_directory.clone(),
+        binary_output_path,
+        report_output_path,
+        status_snapshot_path: status_path,
+    };
+    let reporter = ProgressReporter::start(config).unwrap_or_else(|error| {
+        emit_fallback_error("progress_initialization_error", &error.to_string());
+        std::process::exit(2);
+    });
+    if let Err(error) = reporter.phase_start("column_execution") {
+        let message = format!("failed to start progress phase: {error}");
+        let _ = reporter.finish_failure(&message);
+        emit_fallback_error("progress_error", &message);
+        std::process::exit(2);
+    }
+
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let live_progress = reporter.live_progress();
+        eleven_dimensional_second_momentum_gpu::run_cuda_column(
+            tranche,
+            local_ordinal,
+            prime,
+            device,
+            &output_directory,
+            cpu_parity_terms,
+            Some(&live_progress),
+        )
+    }));
+    if let Some(signal) = reporter.observed_termination_signal() {
+        let _ = reporter.finish_terminated(signal);
+        std::process::exit(128 + signal);
+    }
+    match outcome {
+        Ok(Ok(report)) => {
+            if let Err(error) = reporter.phase_end(format!(
+                "column execution completed: {} source terms and {} expanded contributions",
+                report.source_terms, report.expanded_contributions
+            )) {
+                let message = format!("failed to finish progress phase: {error}");
+                let _ = reporter.finish_failure(&message);
+                emit_fallback_error("progress_error", &message);
+                std::process::exit(2);
+            }
+            let result = match serde_json::to_value(&report) {
+                Ok(result) => result,
+                Err(error) => {
+                    let message = format!("failed to serialize CUDA column report: {error}");
+                    let _ = reporter.finish_failure(&message);
+                    emit_fallback_error("serialization_error", &message);
+                    std::process::exit(2);
+                }
+            };
+            if let Err(error) = reporter.finish_success(result) {
+                emit_fallback_error("terminal_status_snapshot_error", &error.to_string());
+                std::process::exit(2);
+            }
+        }
+        Ok(Err(error)) => {
+            let _ = reporter.phase_end("column execution failed");
+            if let Err(status_error) = reporter.finish_failure(&error) {
+                emit_fallback_error("terminal_status_snapshot_error", &status_error.to_string());
+            }
+            std::process::exit(2);
+        }
+        Err(payload) => {
+            let panic_message = if let Some(message) = payload.downcast_ref::<&str>() {
+                (*message).to_owned()
+            } else if let Some(message) = payload.downcast_ref::<String>() {
+                message.clone()
+            } else {
+                "non-string panic payload".to_owned()
+            };
+            let error = format!("GPU column command panicked: {panic_message}");
+            let _ = reporter.phase_end("column execution panicked");
+            if let Err(status_error) = reporter.finish_failure(&error) {
+                emit_fallback_error("terminal_status_snapshot_error", &status_error.to_string());
+            }
+            std::process::exit(2);
+        }
+    }
+}
+
+#[cfg(feature = "cuda")]
+fn second_momentum_gpu_argument_failure(message: String) -> ! {
+    second_momentum_gpu_progress::emit_fallback_error("argument_error", &message);
+    std::process::exit(2);
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_gpu_fx(_args: &[String]) {
+    println!(
+        "{}",
+        serde_json::json!({
+            "schema_version": second_momentum_gpu_progress::PROGRESS_SCHEMA,
+            "event": "terminal",
+            "state": "failed",
+            "phase": "terminal",
+            "pid": std::process::id(),
+            "resources": {
+                "gpu": {
+                    "available": false,
+                    "reason": "binary was compiled without the cuda feature"
+                }
+            },
+            "error": "second-momentum CUDA F_X requires a Linux build with --features cuda"
+        })
+    );
+    std::process::exit(2);
 }
 
 fn cmd_adynkra_11d_first_momentum_fx_aggregate(args: &[String]) {

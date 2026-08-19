@@ -14,6 +14,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io;
 use std::path::Path;
+use std::sync::OnceLock;
 
 const VECTOR_DIMENSION: usize = 11;
 const SPINOR_DIMENSION: usize = 32;
@@ -1360,6 +1361,13 @@ pub fn verify() -> RemainingSecondMomentumRecouplingReport {
         passed,
         boundary: "This certifies the five remaining representation-level momentum recouplings and their reciprocal highest-weight adjoint embeddings. They are not standalone component extractors. Literal coefficients require the declared primal or invariant-dual momentum convention. The certificate does not compose the 73 level-12 source embeddings, certify all 77 physical columns, complete either gauge branch, supply complete K/F, or establish F A G_p = 0.".to_string(),
     }
+}
+
+/// Construct the exact recoupling certificate once and share it across every
+/// column and prime evaluated by the current process.
+pub fn verify_cached() -> &'static RemainingSecondMomentumRecouplingReport {
+    static REPORT: OnceLock<RemainingSecondMomentumRecouplingReport> = OnceLock::new();
+    REPORT.get_or_init(verify)
 }
 
 pub fn write_artifact(path: &Path) -> io::Result<RemainingSecondMomentumRecouplingReport> {
