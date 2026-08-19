@@ -1086,7 +1086,11 @@ mod cuda_backend {
 
     const DEFAULT_STREAM_BATCH_TERMS: usize = 262_144;
     const DEFAULT_STREAM_HOST_HARD_CAP_BYTES: u64 = 256 * 1024 * 1024;
-    const DEFAULT_STREAM_DEVICE_HARD_CAP_BYTES: u64 = 2 * 1024 * 1024 * 1024;
+    // The persistent PBW workspace can exceed 2 GiB on a valid level-12
+    // word. CUDA performs an independent free-memory plus 64 MiB headroom
+    // check before every growth, so this is a logical combined budget rather
+    // than an eager allocation.
+    const DEFAULT_STREAM_DEVICE_HARD_CAP_BYTES: u64 = 16 * 1024 * 1024 * 1024;
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     pub(crate) struct CudaStreamingConfig {
@@ -2923,6 +2927,22 @@ mod cuda_backend {
                 "{{\"tranche\":\"30001\",\"local_ordinal\":{LOCAL_ORDINAL},\"word_ordinal\":{WORD_ORDINAL},\"terms\":{gpu_terms},\"roots\":{},\"input_entries\":{input_entries},\"output_entries\":{output_entries},\"cpu_ms\":{cpu_milliseconds},\"persistent_gpu_ms\":{gpu_stage_milliseconds},\"persistent_wall_ms\":{gpu_wall_milliseconds},\"high_water_bytes\":{high_water_bytes},\"maximum_absolute_coefficient\":\"{maximum}\",\"digest\":\"{gpu_digest}\"}}",
                 telemetry.len()
             );
+        }
+
+        #[test]
+        #[ignore = "loads the real 30001 reciprocal certificate and PBW plan"]
+        fn real_30001_zero_reciprocal_words_are_pruned_from_gpu_plan() {
+            const LOCAL_ORDINAL: usize = 0;
+            const PREVIOUS_UNFILTERED_WORD_COUNT: usize = 484;
+            const EXPECTED_CANONICAL_WORD_COUNT: usize = 483;
+
+            let preflight =
+                crate::eleven_dimensional_second_momentum_30001_fx::gpu_column_preflight(
+                    LOCAL_ORDINAL,
+                )
+                .unwrap();
+            assert_eq!(preflight.pbw_word_count, EXPECTED_CANONICAL_WORD_COUNT);
+            assert!(preflight.pbw_word_count < PREVIOUS_UNFILTERED_WORD_COUNT);
         }
 
         fn cpu_lower_for_test(entries: &[(u64, i64)], root: usize) -> Vec<(u64, i64)> {

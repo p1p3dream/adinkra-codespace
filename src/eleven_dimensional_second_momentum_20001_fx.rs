@@ -443,6 +443,7 @@ fn requested_words(
     channel
         .reciprocal_terms
         .iter()
+        .filter(|term| term.primitive_coefficient != 0)
         .map(|term| term.intermediate_pbw_word_simple_roots.clone())
         .collect::<BTreeSet<_>>()
         .into_iter()
@@ -459,6 +460,50 @@ fn pbw_plan_sha256(words: &[Vec<u8>]) -> String {
         hash.update(word);
     }
     format!("{:x}", hash.finalize())
+}
+
+fn complete_gpu_word(
+    observed_by_word: &mut [bool],
+    requested_word_ordinal: usize,
+    raw_terms_emitted: u64,
+) -> io::Result<u64> {
+    let observed = observed_by_word
+        .get_mut(requested_word_ordinal)
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "GPU word ordinal is out of range",
+            )
+        })?;
+    if *observed {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "GPU word completed more than once",
+        ));
+    }
+    *observed = true;
+    Ok(raw_terms_emitted)
+}
+
+fn validate_completed_gpu_word_stream(
+    observed_by_word: &[bool],
+    start_word_ordinal: usize,
+    completed_word_terms: u64,
+    emitted_terms: u64,
+) -> io::Result<()> {
+    if start_word_ordinal > observed_by_word.len()
+        || observed_by_word
+            .iter()
+            .skip(start_word_ordinal)
+            .any(|observed| !observed)
+        || completed_word_terms != emitted_terms
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "requested (20001) GPU descendant stream is incomplete",
+        ));
+    }
+    Ok(())
 }
 
 fn validate_map_checkpoint(
@@ -542,13 +587,19 @@ fn prepare_gpu_column(local_ordinal: usize) -> io::Result<PreparedGpuColumn> {
         .collect::<BTreeMap<_, _>>();
     let mut reciprocal_by_word = vec![Vec::new(); words.len()];
     for term in &reciprocal.reciprocal_terms {
+        if term.primitive_coefficient == 0 {
+            continue;
+        }
         let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
         reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
     }
-    if reciprocal_by_word.iter().any(Vec::is_empty) {
+    if reciprocal_by_word
+        .iter()
+        .any(|terms| terms.is_empty() || terms.iter().any(|(_, coefficient)| *coefficient == 0))
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            "incomplete exact (20001) reciprocal PBW plan",
+            "incomplete or noncanonical exact (20001) reciprocal PBW plan",
         ));
     }
 
@@ -901,6 +952,7 @@ where
 
     let mut observed_by_word = vec![false; prepared.words.len()];
     let mut emitted_terms = 0_u64;
+    let mut completed_word_terms = 0_u64;
     let mut current_word_terms = 0_u64;
     let mut current_word_components = 0_u64;
     let accounting = crate::eleven_dimensional_level16_couplings::
@@ -1019,38 +1071,44 @@ where
                 crate::eleven_dimensional_level16_couplings::CoupledWordStateEvent::WordEnd {
                     ordinal,
                 } => {
-                    if current_word_components == 0 || current_word_terms == 0 {
-                        return Err(io::Error::new(
-                            io::ErrorKind::InvalidData,
-                            "requested (20001) GPU word is empty",
-                        ));
-                    }
-                    observed_by_word[ordinal] = true;
+                    // A lowering word can legitimately annihilate the source
+                    // state. It still completes its deterministic ordinal and
+                    // contributes the additive identity to the streamed F_X
+                    // column. Rejecting it here makes the GPU path disagree
+                    // with the exact lowering algebra.
+                    let raw_terms_emitted =
+                        complete_gpu_word(&mut observed_by_word, ordinal, current_word_terms)?;
+                    completed_word_terms = completed_word_terms
+                        .checked_add(raw_terms_emitted)
+                        .ok_or_else(|| io::Error::other("GPU completed word term count overflow"))?;
                     visit(SecondMomentum20001GpuColumnEvent::WordEnd {
                         requested_word_ordinal: ordinal,
-                        raw_terms_emitted: current_word_terms,
+                        raw_terms_emitted,
                     })?;
                     Ok(0)
                 }
             },
         )?;
-    if accounting.emitted_nonzero_components == 0 && start_word_ordinal < prepared.words.len() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "requested (20001) opaque descendant stream is empty",
-        ));
-    }
-    if observed_by_word
-        .iter()
-        .skip(start_word_ordinal)
-        .any(|observed| !observed)
-        || (start_word_ordinal < prepared.words.len() && emitted_terms == 0)
+    if accounting.requested_pbw_words != prepared.words.len() - start_word_ordinal
+        || accounting.source_dynkin_label != prepared.preflight.source_dynkin_label
+        || accounting.source_copy != prepared.preflight.source_copy
+        || accounting.source_fixture != prepared.preflight.source_fixture
+        || accounting.source_fixture_sha256 != prepared.preflight.source_fixture_sha256
+        || accounting.coupled_map_sha256 != prepared.preflight.source_map_sha256
+        || !accounting.checkpoint_hash_parity_verified
+        || completed_word_terms != emitted_terms
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            "requested (20001) opaque GPU descendant stream is incomplete or empty",
+            "requested (20001) opaque GPU descendant accounting changed",
         ));
     }
+    validate_completed_gpu_word_stream(
+        &observed_by_word,
+        start_word_ordinal,
+        completed_word_terms,
+        emitted_terms,
+    )?;
     Ok(
         crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput {
             global_ordinal: prepared.preflight.global_column_ordinal,
@@ -1078,6 +1136,7 @@ where
     }
     let mut observed_by_word = vec![false; prepared.words.len()];
     let mut emitted_terms = 0_u64;
+    let mut completed_word_terms = 0_u64;
     let mut current_word_terms = 0_u64;
     crate::eleven_dimensional_level16_couplings::
         visit_second_momentum_20001_descendant_events_from(
@@ -1155,35 +1214,33 @@ where
                 crate::eleven_dimensional_level16_couplings::
                     SecondMomentum20001DescendantEvent::WordEnd {
                         requested_word_ordinal,
-                        emitted_nonzero_components,
+                        emitted_nonzero_components: _,
                     } => {
-                        if emitted_nonzero_components == 0 || current_word_terms == 0 {
-                            return Err(io::Error::new(
-                                io::ErrorKind::InvalidData,
-                                "requested (20001) GPU word is empty",
-                            ));
-                        }
-                        observed_by_word[requested_word_ordinal] = true;
+                        let raw_terms_emitted = complete_gpu_word(
+                            &mut observed_by_word,
+                            requested_word_ordinal,
+                            current_word_terms,
+                        )?;
+                        completed_word_terms = completed_word_terms
+                            .checked_add(raw_terms_emitted)
+                            .ok_or_else(|| {
+                                io::Error::other("GPU completed word term count overflow")
+                            })?;
                         visit(SecondMomentum20001GpuColumnEvent::WordEnd {
                             requested_word_ordinal,
-                            raw_terms_emitted: current_word_terms,
+                            raw_terms_emitted,
                         })?;
                     }
             }
             Ok(())
         },
     )?;
-    if observed_by_word
-        .iter()
-        .skip(start_word_ordinal)
-        .any(|observed| !observed)
-        || (start_word_ordinal < prepared.words.len() && emitted_terms == 0)
-    {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "requested (20001) GPU descendant stream is incomplete or empty",
-        ));
-    }
+    validate_completed_gpu_word_stream(
+        &observed_by_word,
+        start_word_ordinal,
+        completed_word_terms,
+        emitted_terms,
+    )?;
     Ok(
         crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput {
             global_ordinal: prepared.preflight.global_column_ordinal,
@@ -1551,6 +1608,38 @@ mod tests {
         assert_ne!(
             pbw_plan_sha256(&words),
             pbw_plan_sha256(&[vec![1], vec![2, 3], vec![4, 5]])
+        );
+    }
+
+    #[test]
+    fn gpu_word_completion_accepts_exact_zero_and_rejects_bad_ordinals() {
+        let mut observed = vec![false; 2];
+        assert_eq!(complete_gpu_word(&mut observed, 0, 0).unwrap(), 0);
+        assert_eq!(observed, [true, false]);
+        assert_eq!(
+            complete_gpu_word(&mut observed, 0, 7).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+        assert_eq!(
+            complete_gpu_word(&mut observed, 2, 0).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+    }
+
+    #[test]
+    fn gpu_word_stream_accepts_an_all_empty_suffix_but_not_a_gap() {
+        assert!(validate_completed_gpu_word_stream(&[false, true, true, true], 1, 0, 0).is_ok());
+        assert_eq!(
+            validate_completed_gpu_word_stream(&[false, true, false, true], 1, 0, 0)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::InvalidData
+        );
+        assert_eq!(
+            validate_completed_gpu_word_stream(&[true], 0, 0, 1)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::InvalidData
         );
     }
 

@@ -2338,14 +2338,16 @@ void *adynkra_fx_cuda_sparse_handle_lower(
                   "download persistent maximum coefficient");
   PERSISTENT_CUDA(cudaStreamSynchronize(context->stream),
                   "finish persistent sparse selection");
-  if (output_count == 0 || output_count > reduced_count || max_abs == 0) {
+  if (output_count > reduced_count ||
+      ((output_count == 0) != (max_abs == 0))) {
     set_error(error, error_capacity,
               "persistent sparse nonzero selection violates bounds");
     return nullptr;
   }
   const uint64_t handle_bytes =
       static_cast<uint64_t>(output_count) * sizeof(SparseEntry);
-  if (!persistent_growth_allowed(context, handle_bytes, error,
+  if (handle_bytes != 0 &&
+      !persistent_growth_allowed(context, handle_bytes, error,
                                  error_capacity)) {
     return nullptr;
   }
@@ -2354,18 +2356,20 @@ void *adynkra_fx_cuda_sparse_handle_lower(
   output->owner = context;
   output->count = output_count;
   output->max_abs_coefficient = max_abs;
-  if (!check_cuda(cudaMalloc(&output->entries,
-                             static_cast<size_t>(handle_bytes)),
-                  error, error_capacity,
-                  "allocate exact persistent sparse output handle") ||
-      !check_cuda(cudaMemcpyAsync(output->entries, context->selected_entries,
-                                  static_cast<size_t>(handle_bytes),
-                                  cudaMemcpyDeviceToDevice, context->stream),
-                  error, error_capacity,
-                  "seal exact persistent sparse output handle")) {
-    cudaFree(output->entries);
-    delete output;
-    return nullptr;
+  if (handle_bytes != 0) {
+    if (!check_cuda(cudaMalloc(&output->entries,
+                               static_cast<size_t>(handle_bytes)),
+                    error, error_capacity,
+                    "allocate exact persistent sparse output handle") ||
+        !check_cuda(cudaMemcpyAsync(output->entries, context->selected_entries,
+                                    static_cast<size_t>(handle_bytes),
+                                    cudaMemcpyDeviceToDevice, context->stream),
+                    error, error_capacity,
+                    "seal exact persistent sparse output handle")) {
+      cudaFree(output->entries);
+      delete output;
+      return nullptr;
+    }
   }
   if (!check_cuda(cudaEventRecord(context->events[7], context->stream), error,
                   error_capacity, "record persistent sparse finish") ||
