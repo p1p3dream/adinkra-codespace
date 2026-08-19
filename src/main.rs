@@ -129,6 +129,8 @@ mod search;
 mod second_momentum_gpu_checkpoint;
 #[cfg_attr(not(any(feature = "cuda", test)), allow(dead_code))]
 mod second_momentum_gpu_progress;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_word_hash;
 mod signed_perm;
 mod spectral_lanczos;
 mod sr_hole;
@@ -146,7 +148,7 @@ mod viz_export;
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{DoublyEvenCode, enumerate_codes};
+use code::{enumerate_codes, DoublyEvenCode};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -1831,7 +1833,7 @@ fn cmd_adynkra_11d_second_momentum_gpu_status_reconcile(args: &[String]) {
 
 #[cfg(feature = "cuda")]
 fn cmd_adynkra_11d_second_momentum_gpu_fx(args: &[String]) {
-    use second_momentum_gpu_progress::{ProgressConfig, ProgressReporter, emit_fallback_error};
+    use second_momentum_gpu_progress::{emit_fallback_error, ProgressConfig, ProgressReporter};
 
     if args.len() > 9 {
         second_momentum_gpu_argument_failure(
@@ -3686,7 +3688,7 @@ fn cmd_decompose_probe(args: &[String]) {
 }
 
 fn cmd_cls_g_full_build(args: &[String]) {
-    use four_color::gmatrix_full::{Side, run_build};
+    use four_color::gmatrix_full::{run_build, Side};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
@@ -3725,7 +3727,7 @@ fn cmd_cls_g_full_build(args: &[String]) {
 }
 
 fn cmd_cls_g_full_verify(args: &[String]) {
-    use four_color::gmatrix_full::{Side, run_verify};
+    use four_color::gmatrix_full::{run_verify, Side};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,

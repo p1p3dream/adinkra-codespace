@@ -64,6 +64,65 @@ struct SourceEntry {
   uint32_t metadata;
 };
 
+struct SparseEntry {
+  uint64_t key;
+  int64_t value;
+};
+
+struct SparseLoweringStats {
+  uint64_t input_count;
+  uint64_t expanded_count;
+  uint64_t reduced_count;
+  uint64_t output_count;
+  uint64_t scratch_high_water_bytes;
+  uint64_t immutable_handle_bytes;
+  float count_milliseconds;
+  float scan_milliseconds;
+  float emit_milliseconds;
+  float sort_milliseconds;
+  float reduce_milliseconds;
+  float select_milliseconds;
+  float total_milliseconds;
+};
+
+struct PersistentLoweringContext;
+
+struct PersistentSparseHandle {
+  int device = 0;
+  PersistentLoweringContext *owner = nullptr;
+  SparseEntry *entries = nullptr;
+  uint32_t count = 0;
+  uint64_t max_abs_coefficient = 0;
+};
+
+struct PersistentLoweringContext {
+  int device = 0;
+  cudaStream_t stream = nullptr;
+  cudaEvent_t events[8]{};
+  SparseEntry *sources = nullptr;
+  uint32_t *counts = nullptr;
+  uint32_t *offsets = nullptr;
+  uint32_t source_capacity = 0;
+  uint64_t *keys[2]{};
+  int64_t *values[2]{};
+  SparseEntry *reduced_entries = nullptr;
+  SparseEntry *selected_entries = nullptr;
+  uint8_t *nonzero_flags = nullptr;
+  uint32_t expanded_capacity = 0;
+  uint32_t *unique_count = nullptr;
+  uint32_t *selected_count = nullptr;
+  uint32_t *overflow = nullptr;
+  unsigned long long *max_abs = nullptr;
+  void *cub_temporary = nullptr;
+  size_t cub_temporary_capacity = 0;
+  uint64_t allocated_bytes = 0;
+  uint64_t live_handle_bytes = 0;
+  uint64_t live_handle_count = 0;
+  uint64_t high_water_bytes = 0;
+  uint64_t hard_cap_bytes = UINT64_MAX;
+  bool destroy_requested = false;
+};
+
 // Signed two's-complement 128-bit value with a sticky overflow bit. Keeping
 // the high and low words explicit avoids relying on host/device __int128 ABI.
 struct WideValue {
@@ -714,6 +773,99 @@ __global__ void expand_sparse_lowering_kernel(
   }
 }
 
+__device__ __forceinline__ uint32_t sparse_lowering_count(SparseEntry source,
+                                                           uint32_t root) {
+  const uint32_t free_spinor = static_cast<uint32_t>(source.key >> 32);
+  const uint32_t mask = static_cast<uint32_t>(source.key);
+  uint32_t count = lowered_spinor(free_spinor, root) >= 0 ? 1U : 0U;
+  uint32_t occupied = mask;
+  while (occupied != 0) {
+    const uint32_t upper = __ffs(occupied) - 1;
+    occupied &= occupied - 1;
+    const int lower = lowered_spinor(upper, root);
+    count += lower >= 0 && (mask & (1U << lower)) == 0 ? 1U : 0U;
+  }
+  return count;
+}
+
+__global__ void count_sparse_lowering_kernel(
+    const SparseEntry *__restrict__ sources, uint32_t source_count,
+    uint32_t root, uint32_t *__restrict__ counts) {
+  const uint32_t index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index < source_count) {
+    counts[index] = sparse_lowering_count(sources[index], root);
+  }
+}
+
+__global__ void finish_sparse_offsets_kernel(
+    const uint32_t *__restrict__ counts, uint32_t source_count,
+    uint32_t *__restrict__ offsets, uint32_t *__restrict__ overflow) {
+  if (blockIdx.x == 0 && threadIdx.x == 0) {
+    const uint64_t total = static_cast<uint64_t>(offsets[source_count - 1]) +
+                           counts[source_count - 1];
+    if (total > UINT32_MAX) {
+      *overflow = 1;
+    } else {
+      offsets[source_count] = static_cast<uint32_t>(total);
+    }
+  }
+}
+
+__global__ void emit_sparse_lowering_kernel(
+    const SparseEntry *__restrict__ sources, uint32_t source_count,
+    uint32_t root, const uint32_t *__restrict__ offsets,
+    uint64_t *__restrict__ output_keys, int64_t *__restrict__ output_values) {
+  const uint32_t source_index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (source_index >= source_count) {
+    return;
+  }
+  const SparseEntry source = sources[source_index];
+  const uint32_t free_spinor = static_cast<uint32_t>(source.key >> 32);
+  const uint32_t mask = static_cast<uint32_t>(source.key);
+  uint32_t output = offsets[source_index];
+  const int lowered_free = lowered_spinor(free_spinor, root);
+  if (lowered_free >= 0) {
+    output_keys[output] =
+        (static_cast<uint64_t>(lowered_free) << 32) | mask;
+    output_values[output] = source.value;
+    ++output;
+  }
+  uint32_t occupied = mask;
+  while (occupied != 0) {
+    const uint32_t upper = __ffs(occupied) - 1;
+    occupied &= occupied - 1;
+    const int lower = lowered_spinor(upper, root);
+    if (lower < 0 || (mask & (1U << lower)) != 0) {
+      continue;
+    }
+    const uint32_t output_mask =
+        mask ^ (1U << upper) ^ (1U << static_cast<uint32_t>(lower));
+    output_keys[output] =
+        (static_cast<uint64_t>(free_spinor) << 32) | output_mask;
+    output_values[output] =
+        source.value * replacement_sign(mask, upper, lower);
+    ++output;
+  }
+}
+
+__global__ void pack_sparse_nonzero_kernel(
+    const uint64_t *__restrict__ keys, const int64_t *__restrict__ values,
+    uint32_t count, SparseEntry *__restrict__ entries,
+    uint8_t *__restrict__ flags,
+    unsigned long long *__restrict__ max_abs) {
+  const uint32_t index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index < count) {
+    entries[index] = SparseEntry{keys[index], values[index]};
+    flags[index] = values[index] != 0 ? 1U : 0U;
+    if (values[index] != 0) {
+      const unsigned long long magnitude =
+          values[index] < 0 ? static_cast<unsigned long long>(-values[index])
+                            : static_cast<unsigned long long>(values[index]);
+      atomicMax(max_abs, magnitude);
+    }
+  }
+}
+
 bool checked_multiply_size(size_t left, size_t right, size_t *output) {
   if (right != 0 && left > SIZE_MAX / right) {
     return false;
@@ -884,6 +1036,209 @@ bool ensure_recoupling_workspace(Context *context, uint32_t count,
   context->buffer_high_water_bytes =
       max(context->buffer_high_water_bytes, context->allocated_bytes);
   return true;
+}
+
+uint32_t growth_capacity(uint32_t required) {
+  uint32_t capacity = 1;
+  while (capacity < required && capacity <= UINT32_MAX / 2) {
+    capacity *= 2;
+  }
+  return capacity < required ? required : capacity;
+}
+
+bool persistent_growth_allowed(PersistentLoweringContext *context,
+                               uint64_t additional, char *error,
+                               size_t error_capacity) {
+  if (context->live_handle_bytes > UINT64_MAX - context->allocated_bytes) {
+    set_error(error, error_capacity,
+              "persistent sparse resident byte count overflow");
+    return false;
+  }
+  const uint64_t resident =
+      context->allocated_bytes + context->live_handle_bytes;
+  if (additional > UINT64_MAX - resident) {
+    set_error(error, error_capacity,
+              "persistent sparse peak byte count overflow");
+    return false;
+  }
+  const uint64_t peak = resident + additional;
+  if (peak > context->hard_cap_bytes) {
+    set_error(error, error_capacity,
+              "persistent sparse workspace exceeds configured hard cap");
+    return false;
+  }
+  size_t free_bytes = 0;
+  size_t total_bytes = 0;
+  if (!check_cuda(cudaMemGetInfo(&free_bytes, &total_bytes), error,
+                  error_capacity, "query persistent sparse device memory")) {
+    return false;
+  }
+  if (additional > free_bytes ||
+      free_bytes - static_cast<size_t>(additional) < kDeviceHeadroomBytes) {
+    set_error(error, error_capacity,
+              "insufficient CUDA memory for persistent sparse workspace");
+    return false;
+  }
+  context->high_water_bytes = max(context->high_water_bytes, peak);
+  return true;
+}
+
+bool ensure_persistent_sources(PersistentLoweringContext *context,
+                               uint32_t required, char *error,
+                               size_t error_capacity) {
+  if (required <= context->source_capacity) {
+    return true;
+  }
+  const uint32_t capacity = growth_capacity(required);
+  const uint64_t new_bytes =
+      static_cast<uint64_t>(capacity) * 2 * sizeof(uint32_t) +
+      sizeof(uint32_t);
+  if (!persistent_growth_allowed(context, new_bytes, error, error_capacity)) {
+    return false;
+  }
+  uint32_t *counts = nullptr;
+  uint32_t *offsets = nullptr;
+  if (!check_cuda(cudaMalloc(&counts,
+                             static_cast<size_t>(capacity) * sizeof(uint32_t)),
+                  error, error_capacity, "allocate persistent sparse counts") ||
+      !check_cuda(cudaMalloc(&offsets,
+                             (static_cast<size_t>(capacity) + 1) *
+                                 sizeof(uint32_t)),
+                  error, error_capacity, "allocate persistent sparse offsets")) {
+    cudaFree(counts);
+    cudaFree(offsets);
+    return false;
+  }
+  const uint64_t old_bytes =
+      static_cast<uint64_t>(context->source_capacity) * 2 * sizeof(uint32_t) +
+      (context->source_capacity == 0 ? 0 : sizeof(uint32_t));
+  cudaFree(context->counts);
+  cudaFree(context->offsets);
+  context->counts = counts;
+  context->offsets = offsets;
+  context->source_capacity = capacity;
+  context->allocated_bytes = context->allocated_bytes - old_bytes + new_bytes;
+  context->high_water_bytes =
+      max(context->high_water_bytes, context->allocated_bytes);
+  return true;
+}
+
+bool ensure_persistent_expanded(PersistentLoweringContext *context,
+                                uint32_t required, char *error,
+                                size_t error_capacity) {
+  if (required <= context->expanded_capacity) {
+    return true;
+  }
+  const uint32_t capacity = growth_capacity(required);
+  const uint64_t bytes = static_cast<uint64_t>(capacity) *
+                         (2 * sizeof(uint64_t) + 2 * sizeof(int64_t) +
+                          2 * sizeof(SparseEntry) + sizeof(uint8_t));
+  if (!persistent_growth_allowed(context, bytes, error, error_capacity)) {
+    return false;
+  }
+  uint64_t *keys[2]{};
+  int64_t *values[2]{};
+  SparseEntry *reduced = nullptr;
+  SparseEntry *selected = nullptr;
+  uint8_t *flags = nullptr;
+  const size_t key_bytes = static_cast<size_t>(capacity) * sizeof(uint64_t);
+  const size_t value_bytes = static_cast<size_t>(capacity) * sizeof(int64_t);
+  const size_t entry_bytes = static_cast<size_t>(capacity) * sizeof(SparseEntry);
+  if (!check_cuda(cudaMalloc(&keys[0], key_bytes), error, error_capacity,
+                  "allocate persistent sparse keys 0") ||
+      !check_cuda(cudaMalloc(&keys[1], key_bytes), error, error_capacity,
+                  "allocate persistent sparse keys 1") ||
+      !check_cuda(cudaMalloc(&values[0], value_bytes), error, error_capacity,
+                  "allocate persistent sparse values 0") ||
+      !check_cuda(cudaMalloc(&values[1], value_bytes), error, error_capacity,
+                  "allocate persistent sparse values 1") ||
+      !check_cuda(cudaMalloc(&reduced, entry_bytes), error, error_capacity,
+                  "allocate persistent reduced entries") ||
+      !check_cuda(cudaMalloc(&selected, entry_bytes), error, error_capacity,
+                  "allocate persistent selected entries") ||
+      !check_cuda(cudaMalloc(&flags, capacity * sizeof(uint8_t)), error,
+                  error_capacity, "allocate persistent nonzero flags")) {
+    cudaFree(keys[0]);
+    cudaFree(keys[1]);
+    cudaFree(values[0]);
+    cudaFree(values[1]);
+    cudaFree(reduced);
+    cudaFree(selected);
+    cudaFree(flags);
+    return false;
+  }
+  const uint64_t old_bytes = static_cast<uint64_t>(context->expanded_capacity) *
+                             (2 * sizeof(uint64_t) + 2 * sizeof(int64_t) +
+                              2 * sizeof(SparseEntry) + sizeof(uint8_t));
+  cudaFree(context->keys[0]);
+  cudaFree(context->keys[1]);
+  cudaFree(context->values[0]);
+  cudaFree(context->values[1]);
+  cudaFree(context->reduced_entries);
+  cudaFree(context->selected_entries);
+  cudaFree(context->nonzero_flags);
+  context->keys[0] = keys[0];
+  context->keys[1] = keys[1];
+  context->values[0] = values[0];
+  context->values[1] = values[1];
+  context->reduced_entries = reduced;
+  context->selected_entries = selected;
+  context->nonzero_flags = flags;
+  context->expanded_capacity = capacity;
+  context->allocated_bytes = context->allocated_bytes - old_bytes + bytes;
+  context->high_water_bytes =
+      max(context->high_water_bytes, context->allocated_bytes);
+  return true;
+}
+
+bool ensure_persistent_cub(PersistentLoweringContext *context,
+                           size_t required, char *error,
+                           size_t error_capacity) {
+  if (required <= context->cub_temporary_capacity) {
+    return true;
+  }
+  if (!persistent_growth_allowed(context, required, error, error_capacity)) {
+    return false;
+  }
+  void *temporary = nullptr;
+  if (!check_cuda(cudaMalloc(&temporary, required), error, error_capacity,
+                  "allocate persistent reusable CUB workspace")) {
+    return false;
+  }
+  cudaFree(context->cub_temporary);
+  context->allocated_bytes = context->allocated_bytes -
+                             context->cub_temporary_capacity + required;
+  context->cub_temporary = temporary;
+  context->cub_temporary_capacity = required;
+  context->high_water_bytes =
+      max(context->high_water_bytes, context->allocated_bytes);
+  return true;
+}
+
+void destroy_persistent_context(PersistentLoweringContext *context) {
+  if (context == nullptr) return;
+  cudaSetDevice(context->device);
+  if (context->stream != nullptr) cudaStreamSynchronize(context->stream);
+  cudaFree(context->sources);
+  cudaFree(context->counts);
+  cudaFree(context->offsets);
+  cudaFree(context->keys[0]);
+  cudaFree(context->keys[1]);
+  cudaFree(context->values[0]);
+  cudaFree(context->values[1]);
+  cudaFree(context->reduced_entries);
+  cudaFree(context->selected_entries);
+  cudaFree(context->nonzero_flags);
+  cudaFree(context->unique_count);
+  cudaFree(context->selected_count);
+  cudaFree(context->overflow);
+  cudaFree(context->max_abs);
+  cudaFree(context->cub_temporary);
+  for (cudaEvent_t event : context->events) {
+    if (event != nullptr) cudaEventDestroy(event);
+  }
+  if (context->stream != nullptr) cudaStreamDestroy(context->stream);
+  delete context;
 }
 
 }  // namespace
@@ -1516,6 +1871,25 @@ int adynkra_fx_cuda_set_recoupling_hard_cap(void *opaque,
   return 0;
 }
 
+uint64_t adynkra_fx_cuda_resident_bytes(const void *opaque) {
+  const Context *context = static_cast<const Context *>(opaque);
+  return context == nullptr ? 0 : context->allocated_bytes;
+}
+
+int adynkra_fx_cuda_reserve_recoupling(void *opaque, uint32_t source_count,
+                                       char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || source_count == 0) {
+    set_error(error, error_capacity,
+              "invalid CUDA recoupling reservation input");
+    return 1;
+  }
+  return ensure_recoupling_workspace(context, source_count, error,
+                                     error_capacity)
+             ? 0
+             : 1;
+}
+
 void adynkra_fx_cuda_destroy(void *opaque) {
   destroy(static_cast<Context *>(opaque));
 }
@@ -1533,6 +1907,511 @@ int adynkra_fx_cuda_device_name(int device, char *name, size_t capacity,
   }
   std::snprintf(name, capacity, "%s", properties.name);
   return 0;
+}
+
+void *adynkra_fx_cuda_sparse_context_create(int device, uint64_t hard_cap_bytes,
+                                             char *error,
+                                             size_t error_capacity) {
+  if (hard_cap_bytes < 4 * sizeof(uint32_t) + sizeof(unsigned long long)) {
+    set_error(error, error_capacity,
+              "persistent sparse hard cap is below fixed allocation");
+    return nullptr;
+  }
+  if (!check_cuda(cudaSetDevice(device), error, error_capacity,
+                  "select persistent sparse CUDA device")) {
+    return nullptr;
+  }
+  PersistentLoweringContext *context = new PersistentLoweringContext();
+  context->device = device;
+  context->hard_cap_bytes = hard_cap_bytes;
+  if (!check_cuda(cudaStreamCreateWithFlags(&context->stream,
+                                             cudaStreamNonBlocking),
+                  error, error_capacity,
+                  "create persistent sparse CUDA stream") ||
+      !check_cuda(cudaMalloc(&context->unique_count, sizeof(uint32_t)), error,
+                  error_capacity, "allocate persistent unique count") ||
+      !check_cuda(cudaMalloc(&context->selected_count, sizeof(uint32_t)), error,
+                  error_capacity, "allocate persistent selected count") ||
+      !check_cuda(cudaMalloc(&context->overflow, sizeof(uint32_t)), error,
+                  error_capacity, "allocate persistent overflow flag") ||
+      !check_cuda(cudaMalloc(&context->max_abs,
+                             sizeof(unsigned long long)),
+                  error, error_capacity,
+                  "allocate persistent maximum coefficient")) {
+    destroy_persistent_context(context);
+    return nullptr;
+  }
+  for (cudaEvent_t &event : context->events) {
+    if (!check_cuda(cudaEventCreate(&event), error, error_capacity,
+                    "create persistent sparse timing event")) {
+      destroy_persistent_context(context);
+      return nullptr;
+    }
+  }
+  context->allocated_bytes =
+      3 * sizeof(uint32_t) + sizeof(unsigned long long);
+  context->high_water_bytes = context->allocated_bytes;
+  return context;
+}
+
+void adynkra_fx_cuda_sparse_context_destroy(void *opaque) {
+  PersistentLoweringContext *context =
+      static_cast<PersistentLoweringContext *>(opaque);
+  if (context == nullptr) return;
+  if (context->live_handle_count != 0) {
+    context->destroy_requested = true;
+    return;
+  }
+  destroy_persistent_context(context);
+}
+
+uint64_t adynkra_fx_cuda_sparse_resident_bytes(const void *opaque) {
+  const PersistentLoweringContext *context =
+      static_cast<const PersistentLoweringContext *>(opaque);
+  if (context == nullptr ||
+      context->live_handle_bytes > UINT64_MAX - context->allocated_bytes) {
+    return UINT64_MAX;
+  }
+  return context->allocated_bytes + context->live_handle_bytes;
+}
+
+void *adynkra_fx_cuda_sparse_handle_upload(
+    void *opaque, const SparseEntry *entries, uint32_t count, char *error,
+    size_t error_capacity) {
+  PersistentLoweringContext *context =
+      static_cast<PersistentLoweringContext *>(opaque);
+  if (context == nullptr || entries == nullptr || count == 0 ||
+      count > UINT32_MAX / 13U) {
+    set_error(error, error_capacity,
+              "invalid persistent sparse handle upload");
+    return nullptr;
+  }
+  uint64_t max_abs = 0;
+  for (uint32_t index = 0; index < count; ++index) {
+    const uint32_t free_spinor = static_cast<uint32_t>(entries[index].key >> 32);
+    const uint32_t mask = static_cast<uint32_t>(entries[index].key);
+    if (free_spinor >= 32 || __builtin_popcount(mask) != 12 ||
+        entries[index].value == 0 || entries[index].value == INT64_MIN ||
+        (index != 0 && entries[index - 1].key >= entries[index].key)) {
+      set_error(error, error_capacity,
+                "persistent sparse upload is not canonical degree-12 data");
+      return nullptr;
+    }
+    const uint64_t magnitude =
+        entries[index].value < 0
+            ? static_cast<uint64_t>(-entries[index].value)
+            : static_cast<uint64_t>(entries[index].value);
+    max_abs = max(max_abs, magnitude);
+  }
+  const uint64_t bytes = static_cast<uint64_t>(count) * sizeof(SparseEntry);
+  if (!persistent_growth_allowed(context, bytes, error, error_capacity)) {
+    return nullptr;
+  }
+  PersistentSparseHandle *handle = new PersistentSparseHandle();
+  handle->device = context->device;
+  handle->owner = context;
+  handle->count = count;
+  handle->max_abs_coefficient = max_abs;
+  if (!check_cuda(cudaMalloc(&handle->entries, static_cast<size_t>(bytes)),
+                  error, error_capacity,
+                  "allocate immutable persistent sparse handle") ||
+      !check_cuda(cudaMemcpyAsync(handle->entries, entries,
+                                  static_cast<size_t>(bytes),
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload immutable persistent sparse handle") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish persistent sparse handle upload")) {
+    cudaFree(handle->entries);
+    delete handle;
+    return nullptr;
+  }
+  context->live_handle_bytes += bytes;
+  ++context->live_handle_count;
+  context->high_water_bytes = max(
+      context->high_water_bytes,
+      context->allocated_bytes + context->live_handle_bytes);
+  return handle;
+}
+
+void adynkra_fx_cuda_sparse_handle_destroy(void *opaque) {
+  PersistentSparseHandle *handle =
+      static_cast<PersistentSparseHandle *>(opaque);
+  if (handle == nullptr) return;
+  cudaSetDevice(handle->device);
+  PersistentLoweringContext *owner = handle->owner;
+  if (owner != nullptr) {
+    const uint64_t bytes =
+        static_cast<uint64_t>(handle->count) * sizeof(SparseEntry);
+    owner->live_handle_bytes -= bytes;
+    --owner->live_handle_count;
+  }
+  cudaFree(handle->entries);
+  delete handle;
+  if (owner != nullptr && owner->live_handle_count == 0 &&
+      owner->destroy_requested) {
+    destroy_persistent_context(owner);
+  }
+}
+
+uint32_t adynkra_fx_cuda_sparse_handle_count(const void *opaque) {
+  const PersistentSparseHandle *handle =
+      static_cast<const PersistentSparseHandle *>(opaque);
+  return handle == nullptr ? 0 : handle->count;
+}
+
+uint64_t adynkra_fx_cuda_sparse_handle_max_abs(const void *opaque) {
+  const PersistentSparseHandle *handle =
+      static_cast<const PersistentSparseHandle *>(opaque);
+  return handle == nullptr ? 0 : handle->max_abs_coefficient;
+}
+
+int adynkra_fx_cuda_sparse_handle_download_range(
+    void *context_opaque, const void *handle_opaque, uint32_t start,
+    SparseEntry *entries, uint32_t capacity, char *error,
+    size_t error_capacity) {
+  PersistentLoweringContext *context =
+      static_cast<PersistentLoweringContext *>(context_opaque);
+  const PersistentSparseHandle *handle =
+      static_cast<const PersistentSparseHandle *>(handle_opaque);
+  if (context == nullptr || handle == nullptr || handle->owner != context ||
+      handle->device != context->device || start > handle->count ||
+      capacity > handle->count - start ||
+      (capacity != 0 && entries == nullptr)) {
+    set_error(error, error_capacity,
+              "invalid persistent sparse ranged download input");
+    return 1;
+  }
+  if (capacity == 0) return 0;
+  if (!check_cuda(cudaMemcpyAsync(
+                      entries, handle->entries + start,
+                      static_cast<size_t>(capacity) * sizeof(SparseEntry),
+                      cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download immutable persistent sparse handle range") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish persistent sparse ranged download")) {
+    return 1;
+  }
+  return 0;
+}
+
+int adynkra_fx_cuda_sparse_handle_download(
+    void *context_opaque, const void *handle_opaque, SparseEntry *entries,
+    uint32_t capacity, char *error, size_t error_capacity) {
+  PersistentLoweringContext *context =
+      static_cast<PersistentLoweringContext *>(context_opaque);
+  const PersistentSparseHandle *handle =
+      static_cast<const PersistentSparseHandle *>(handle_opaque);
+  if (context == nullptr || handle == nullptr || handle->owner != context ||
+      handle->device != context->device ||
+      capacity < handle->count || (handle->count != 0 && entries == nullptr)) {
+    set_error(error, error_capacity,
+              "invalid persistent sparse handle download");
+    return 1;
+  }
+  if (handle->count == 0) return 0;
+  if (!check_cuda(cudaMemcpyAsync(
+                      entries, handle->entries,
+                      static_cast<size_t>(handle->count) * sizeof(SparseEntry),
+                      cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download immutable persistent sparse handle") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish persistent sparse handle download")) {
+    return 1;
+  }
+  return 0;
+}
+
+void *adynkra_fx_cuda_sparse_handle_lower(
+    void *context_opaque, const void *handle_opaque, uint32_t root,
+    SparseLoweringStats *stats, char *error, size_t error_capacity) {
+  PersistentLoweringContext *context =
+      static_cast<PersistentLoweringContext *>(context_opaque);
+  const PersistentSparseHandle *input =
+      static_cast<const PersistentSparseHandle *>(handle_opaque);
+  if (context == nullptr || input == nullptr || stats == nullptr || root >= 5 ||
+      input->owner != context || input->device != context->device) {
+    set_error(error, error_capacity,
+              "invalid persistent sparse lowering input");
+    return nullptr;
+  }
+  std::memset(stats, 0, sizeof(*stats));
+  stats->input_count = input->count;
+  if (input->count == 0) {
+    PersistentSparseHandle *empty = new PersistentSparseHandle();
+    empty->device = context->device;
+    empty->owner = context;
+    ++context->live_handle_count;
+    stats->scratch_high_water_bytes = context->high_water_bytes;
+    return empty;
+  }
+  if (input->count > UINT32_MAX / 13U) {
+    set_error(error, error_capacity,
+              "persistent sparse input exceeds u32 expansion bound");
+    return nullptr;
+  }
+  if (input->max_abs_coefficient >
+      static_cast<uint64_t>(INT64_MAX) / 13ULL) {
+    set_error(error, error_capacity,
+              "persistent sparse root coefficient bound exceeded");
+    return nullptr;
+  }
+  if (!check_cuda(cudaSetDevice(context->device), error, error_capacity,
+                  "select persistent sparse lowering device") ||
+      !ensure_persistent_sources(context, input->count, error,
+                                 error_capacity)) {
+    return nullptr;
+  }
+  size_t scan_bytes = 0;
+  if (!check_cuda(cub::DeviceScan::ExclusiveSum(
+                      nullptr, scan_bytes, context->counts, context->offsets,
+                      input->count, context->stream),
+                  error, error_capacity, "size persistent sparse scan") ||
+      !ensure_persistent_cub(context, scan_bytes, error, error_capacity)) {
+    return nullptr;
+  }
+
+#define PERSISTENT_CUDA(call, action)                                            \
+  do {                                                                           \
+    if (!check_cuda((call), error, error_capacity, (action))) {                  \
+      return nullptr;                                                            \
+    }                                                                            \
+  } while (false)
+
+  constexpr uint32_t threads = 256;
+  const uint32_t source_blocks = (input->count - 1) / threads + 1;
+  PERSISTENT_CUDA(cudaEventRecord(context->events[0], context->stream),
+                  "record persistent sparse start");
+  count_sparse_lowering_kernel<<<source_blocks, threads, 0, context->stream>>>(
+      input->entries, input->count, root, context->counts);
+  PERSISTENT_CUDA(cudaGetLastError(), "launch persistent sparse count");
+  PERSISTENT_CUDA(cudaEventRecord(context->events[1], context->stream),
+                  "record persistent sparse count finish");
+  PERSISTENT_CUDA(cub::DeviceScan::ExclusiveSum(
+                      context->cub_temporary, scan_bytes, context->counts,
+                      context->offsets, input->count, context->stream),
+                  "scan persistent sparse counts");
+  PERSISTENT_CUDA(cudaMemsetAsync(context->overflow, 0, sizeof(uint32_t),
+                                  context->stream),
+                  "clear persistent sparse overflow");
+  finish_sparse_offsets_kernel<<<1, 1, 0, context->stream>>>(
+      context->counts, input->count, context->offsets, context->overflow);
+  PERSISTENT_CUDA(cudaGetLastError(), "finish persistent sparse offsets");
+  PERSISTENT_CUDA(cudaEventRecord(context->events[2], context->stream),
+                  "record persistent sparse scan finish");
+  uint32_t expanded_count = 0;
+  uint32_t overflow = 0;
+  PERSISTENT_CUDA(cudaMemcpyAsync(&expanded_count,
+                                  &context->offsets[input->count],
+                                  sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  "download persistent expanded count");
+  PERSISTENT_CUDA(cudaMemcpyAsync(&overflow, context->overflow,
+                                  sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  "download persistent sparse overflow");
+  PERSISTENT_CUDA(cudaStreamSynchronize(context->stream),
+                  "finish persistent sparse scan");
+  if (overflow != 0) {
+    set_error(error, error_capacity,
+              "persistent sparse expansion count overflow");
+    return nullptr;
+  }
+  stats->expanded_count = expanded_count;
+  if (expanded_count == 0) {
+    PersistentSparseHandle *empty = new PersistentSparseHandle();
+    empty->device = context->device;
+    empty->owner = context;
+    ++context->live_handle_count;
+    stats->scratch_high_water_bytes = context->high_water_bytes;
+    if (!check_cuda(cudaEventElapsedTime(&stats->count_milliseconds,
+                                         context->events[0],
+                                         context->events[1]),
+                    error, error_capacity,
+                    "measure zero persistent sparse count") ||
+        !check_cuda(cudaEventElapsedTime(&stats->scan_milliseconds,
+                                         context->events[1],
+                                         context->events[2]),
+                    error, error_capacity,
+                    "measure zero persistent sparse scan") ||
+        !check_cuda(cudaEventElapsedTime(&stats->total_milliseconds,
+                                         context->events[0],
+                                         context->events[2]),
+                    error, error_capacity,
+                    "measure zero persistent sparse total")) {
+      --context->live_handle_count;
+      delete empty;
+      return nullptr;
+    }
+    return empty;
+  }
+  if (!ensure_persistent_expanded(context, expanded_count, error,
+                                  error_capacity)) {
+    return nullptr;
+  }
+  size_t sort_bytes = 0;
+  size_t reduce_bytes = 0;
+  size_t select_bytes = 0;
+  if (!check_cuda(cub::DeviceRadixSort::SortPairs(
+                      nullptr, sort_bytes, context->keys[0], context->keys[1],
+                      context->values[0], context->values[1], expanded_count,
+                      0, 37, context->stream),
+                  error, error_capacity, "size persistent sparse sort") ||
+      !check_cuda(cub::DeviceReduce::ReduceByKey(
+                      nullptr, reduce_bytes, context->keys[1], context->keys[0],
+                      context->values[1], context->values[0],
+                      context->unique_count, cub::Sum(), expanded_count,
+                      context->stream),
+                  error, error_capacity, "size persistent sparse reduction") ||
+      !check_cuda(cub::DeviceSelect::Flagged(
+                      nullptr, select_bytes, context->reduced_entries,
+                      context->nonzero_flags, context->selected_entries,
+                      context->selected_count, expanded_count, context->stream),
+                  error, error_capacity, "size persistent sparse selection") ||
+      !ensure_persistent_cub(context, max(scan_bytes, max(sort_bytes,
+                                                          max(reduce_bytes,
+                                                              select_bytes))),
+                             error, error_capacity)) {
+    return nullptr;
+  }
+  emit_sparse_lowering_kernel<<<source_blocks, threads, 0, context->stream>>>(
+      input->entries, input->count, root, context->offsets, context->keys[0],
+      context->values[0]);
+  PERSISTENT_CUDA(cudaGetLastError(), "launch persistent sparse emit");
+  PERSISTENT_CUDA(cudaEventRecord(context->events[3], context->stream),
+                  "record persistent sparse emit finish");
+  PERSISTENT_CUDA(cub::DeviceRadixSort::SortPairs(
+                      context->cub_temporary, sort_bytes, context->keys[0],
+                      context->keys[1], context->values[0], context->values[1],
+                      expanded_count, 0, 37, context->stream),
+                  "sort persistent sparse contributions");
+  PERSISTENT_CUDA(cudaEventRecord(context->events[4], context->stream),
+                  "record persistent sparse sort finish");
+  PERSISTENT_CUDA(cub::DeviceReduce::ReduceByKey(
+                      context->cub_temporary, reduce_bytes, context->keys[1],
+                      context->keys[0], context->values[1], context->values[0],
+                      context->unique_count, cub::Sum(), expanded_count,
+                      context->stream),
+                  "reduce persistent sparse contributions");
+  PERSISTENT_CUDA(cudaEventRecord(context->events[5], context->stream),
+                  "record persistent sparse reduction finish");
+  uint32_t reduced_count = 0;
+  PERSISTENT_CUDA(cudaMemcpyAsync(&reduced_count, context->unique_count,
+                                  sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  "download persistent reduced count");
+  PERSISTENT_CUDA(cudaStreamSynchronize(context->stream),
+                  "finish persistent sparse reduction");
+  if (reduced_count == 0 || reduced_count > expanded_count) {
+    set_error(error, error_capacity,
+              "persistent sparse reduced count violates bounds");
+    return nullptr;
+  }
+  stats->reduced_count = reduced_count;
+  PERSISTENT_CUDA(cudaMemsetAsync(context->max_abs, 0,
+                                  sizeof(unsigned long long), context->stream),
+                  "clear persistent maximum coefficient");
+  pack_sparse_nonzero_kernel<<<
+      (reduced_count - 1) / threads + 1, threads, 0, context->stream>>>(
+      context->keys[0], context->values[0], reduced_count,
+      context->reduced_entries, context->nonzero_flags, context->max_abs);
+  PERSISTENT_CUDA(cudaGetLastError(), "pack persistent nonzero flags");
+  PERSISTENT_CUDA(cub::DeviceSelect::Flagged(
+                      context->cub_temporary, select_bytes,
+                      context->reduced_entries, context->nonzero_flags,
+                      context->selected_entries, context->selected_count,
+                      reduced_count, context->stream),
+                  "select persistent nonzero entries");
+  PERSISTENT_CUDA(cudaEventRecord(context->events[6], context->stream),
+                  "record persistent sparse selection finish");
+  uint32_t output_count = 0;
+  unsigned long long max_abs = 0;
+  PERSISTENT_CUDA(cudaMemcpyAsync(&output_count, context->selected_count,
+                                  sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  "download persistent output count");
+  PERSISTENT_CUDA(cudaMemcpyAsync(&max_abs, context->max_abs,
+                                  sizeof(unsigned long long),
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  "download persistent maximum coefficient");
+  PERSISTENT_CUDA(cudaStreamSynchronize(context->stream),
+                  "finish persistent sparse selection");
+  if (output_count == 0 || output_count > reduced_count || max_abs == 0) {
+    set_error(error, error_capacity,
+              "persistent sparse nonzero selection violates bounds");
+    return nullptr;
+  }
+  const uint64_t handle_bytes =
+      static_cast<uint64_t>(output_count) * sizeof(SparseEntry);
+  if (!persistent_growth_allowed(context, handle_bytes, error,
+                                 error_capacity)) {
+    return nullptr;
+  }
+  PersistentSparseHandle *output = new PersistentSparseHandle();
+  output->device = context->device;
+  output->owner = context;
+  output->count = output_count;
+  output->max_abs_coefficient = max_abs;
+  if (!check_cuda(cudaMalloc(&output->entries,
+                             static_cast<size_t>(handle_bytes)),
+                  error, error_capacity,
+                  "allocate exact persistent sparse output handle") ||
+      !check_cuda(cudaMemcpyAsync(output->entries, context->selected_entries,
+                                  static_cast<size_t>(handle_bytes),
+                                  cudaMemcpyDeviceToDevice, context->stream),
+                  error, error_capacity,
+                  "seal exact persistent sparse output handle")) {
+    cudaFree(output->entries);
+    delete output;
+    return nullptr;
+  }
+  if (!check_cuda(cudaEventRecord(context->events[7], context->stream), error,
+                  error_capacity, "record persistent sparse finish") ||
+      !check_cuda(cudaEventSynchronize(context->events[7]), error,
+                  error_capacity, "finish exact persistent sparse handle")) {
+    cudaFree(output->entries);
+    delete output;
+    return nullptr;
+  }
+  stats->output_count = output_count;
+  stats->scratch_high_water_bytes = context->high_water_bytes;
+  stats->immutable_handle_bytes = handle_bytes;
+  if (!check_cuda(cudaEventElapsedTime(&stats->count_milliseconds,
+                                       context->events[0], context->events[1]),
+                  error, error_capacity, "measure persistent sparse count") ||
+      !check_cuda(cudaEventElapsedTime(&stats->scan_milliseconds,
+                                       context->events[1], context->events[2]),
+                  error, error_capacity, "measure persistent sparse scan") ||
+      !check_cuda(cudaEventElapsedTime(&stats->emit_milliseconds,
+                                       context->events[2], context->events[3]),
+                  error, error_capacity, "measure persistent sparse emit") ||
+      !check_cuda(cudaEventElapsedTime(&stats->sort_milliseconds,
+                                       context->events[3], context->events[4]),
+                  error, error_capacity, "measure persistent sparse sort") ||
+      !check_cuda(cudaEventElapsedTime(&stats->reduce_milliseconds,
+                                       context->events[4], context->events[5]),
+                  error, error_capacity,
+                  "measure persistent sparse reduction") ||
+      !check_cuda(cudaEventElapsedTime(&stats->select_milliseconds,
+                                       context->events[5], context->events[7]),
+                  error, error_capacity,
+                  "measure persistent sparse selection") ||
+      !check_cuda(cudaEventElapsedTime(&stats->total_milliseconds,
+                                       context->events[0], context->events[7]),
+                  error, error_capacity, "measure persistent sparse total")) {
+    cudaFree(output->entries);
+    delete output;
+    return nullptr;
+  }
+  context->live_handle_bytes += handle_bytes;
+  ++context->live_handle_count;
+  context->high_water_bytes = max(
+      context->high_water_bytes,
+      context->allocated_bytes + context->live_handle_bytes);
+#undef PERSISTENT_CUDA
+  return output;
 }
 
 int adynkra_fx_cuda_lower_sparse(

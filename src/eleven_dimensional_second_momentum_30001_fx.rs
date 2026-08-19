@@ -85,6 +85,54 @@ fn source_fixtures() -> [SourceFixture; TRANCHE_COLUMNS] {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+pub(crate) struct SecondMomentum30001GpuColumnPreflight {
+    pub tranche: String,
+    pub local_column_ordinal: usize,
+    pub global_column_ordinal: usize,
+    pub source_dynkin_label: String,
+    pub source_copy: usize,
+    pub source_fixture: String,
+    pub source_fixture_sha256: String,
+    pub abstract_certificate_sha256: String,
+    pub source_map_sha256: String,
+    pub reciprocal_map_sha256: String,
+    pub pbw_plan_sha256: String,
+    pub pbw_word_count: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum SecondMomentum30001GpuColumnEvent {
+    WordLoweringStart {
+        requested_word_ordinal: usize,
+        pbw_word_simple_roots: Vec<u8>,
+    },
+    WordStart {
+        requested_word_ordinal: usize,
+        pbw_word_simple_roots: Vec<u8>,
+    },
+    Term {
+        requested_word_ordinal: usize,
+        term: crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm,
+    },
+    WordEnd {
+        requested_word_ordinal: usize,
+        raw_terms_emitted: u64,
+    },
+}
+
+struct PreparedGpuColumn {
+    fixture: SourceFixture,
+    abstract_certificate: crate::eleven_dimensional_level16_couplings::AbstractCouplingCertificate,
+    source_fixture_sha256: String,
+    coupled_map_sha256: String,
+    words: Vec<Vec<u8>>,
+    reciprocal_by_word: Vec<Vec<([usize; 2], i64)>>,
+    raising_residuals: [usize; 5],
+    preflight: SecondMomentum30001GpuColumnPreflight,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct SecondMomentum30001ColumnSpec {
     pub global_ordinal: usize,
     pub source_dynkin_label: String,
@@ -406,6 +454,18 @@ fn requested_words(
         .collect()
 }
 
+fn pbw_plan_sha256(words: &[Vec<u8>]) -> String {
+    let mut hash = Sha256::new();
+    hash.update(b"adynkra-11d-second-momentum-30001-pbw-plan-v1\0");
+    hash.update((words.len() as u64).to_le_bytes());
+    for (ordinal, word) in words.iter().enumerate() {
+        hash.update((ordinal as u64).to_le_bytes());
+        hash.update((word.len() as u64).to_le_bytes());
+        hash.update(word);
+    }
+    format!("{:x}", hash.finalize())
+}
+
 fn validate_map_checkpoint(
     fixture: SourceFixture,
     abstract_checkpoint: &crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001AbstractCheckpoint,
@@ -435,6 +495,100 @@ fn validate_map_checkpoint(
         ));
     }
     Ok(())
+}
+
+fn prepare_gpu_column(local_ordinal: usize) -> io::Result<PreparedGpuColumn> {
+    let fixtures = source_fixtures();
+    let fixture = *fixtures.get(local_ordinal).ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "(30001) GPU column ordinal must lie in 0..15",
+        )
+    })?;
+    let recoupling =
+        crate::eleven_dimensional_second_momentum_remaining_recouplings::verify_cached();
+    let reciprocal = recoupling
+        .channels
+        .iter()
+        .find(|channel| channel.intermediate_dynkin_label == "30001")
+        .ok_or_else(|| io::Error::other("missing exact (30001) reciprocal certificate"))?;
+    if reciprocal.reciprocal_raising_residual_terms_by_simple_root != [0; 5]
+        || !reciprocal.exact_chevalley_equivariance_verified
+        || !reciprocal.passed
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "uncertified exact (30001) reciprocal highest-weight map",
+        ));
+    }
+
+    let abstract_checkpoint = read_json::<
+        crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001AbstractCheckpoint,
+    >(&abstract_checkpoint_path(fixture.dynkin_label))?;
+    let embedded_checkpoint = read_json::<
+        crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001EmbeddedCheckpoint,
+    >(&embedded_checkpoint_path(
+        fixture.dynkin_label,
+        fixture.copy,
+    ))?;
+    validate_map_checkpoint(fixture, &abstract_checkpoint, &embedded_checkpoint)?;
+
+    let words = requested_words(reciprocal);
+    if words.is_empty() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "empty exact (30001) reciprocal PBW plan",
+        ));
+    }
+    let word_ordinals = words
+        .iter()
+        .enumerate()
+        .map(|(ordinal, word)| (word.clone(), ordinal))
+        .collect::<BTreeMap<_, _>>();
+    let mut reciprocal_by_word = vec![Vec::new(); words.len()];
+    for term in &reciprocal.reciprocal_terms {
+        let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
+        reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
+    }
+    if reciprocal_by_word.iter().any(Vec::is_empty) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "incomplete exact (30001) reciprocal PBW plan",
+        ));
+    }
+
+    let source_fixture_sha256 = embedded_checkpoint.source_fixture_sha256.clone();
+    let coupled_map_sha256 = embedded_checkpoint.coupled_map_sha256.clone();
+    let preflight = SecondMomentum30001GpuColumnPreflight {
+        tranche: "30001".to_string(),
+        local_column_ordinal: local_ordinal,
+        global_column_ordinal: FIRST_GLOBAL_ORDINAL + local_ordinal,
+        source_dynkin_label: fixture.dynkin_label.to_string(),
+        source_copy: fixture.copy,
+        source_fixture: fixture.artifact.to_string(),
+        source_fixture_sha256: source_fixture_sha256.clone(),
+        abstract_certificate_sha256: abstract_checkpoint.certificate_sha256.clone(),
+        source_map_sha256: coupled_map_sha256.clone(),
+        reciprocal_map_sha256: reciprocal.certificate_sha256.clone(),
+        pbw_plan_sha256: pbw_plan_sha256(&words),
+        pbw_word_count: words.len(),
+    };
+    Ok(PreparedGpuColumn {
+        fixture,
+        abstract_certificate: abstract_checkpoint.certificate,
+        source_fixture_sha256,
+        coupled_map_sha256,
+        words,
+        reciprocal_by_word,
+        raising_residuals: reciprocal.reciprocal_raising_residual_terms_by_simple_root,
+        preflight,
+    })
+}
+
+pub(crate) fn gpu_column_preflight(
+    local_ordinal: usize,
+) -> io::Result<SecondMomentum30001GpuColumnPreflight> {
+    Ok(prepare_gpu_column(local_ordinal)?.preflight)
 }
 
 type RecoupledState = BTreeMap<([usize; 2], usize, u32), i128>;
@@ -684,117 +838,364 @@ pub(crate) fn visit_gpu_column_contributions<F>(
 where
     F: FnMut(crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm) -> io::Result<()>,
 {
-    let fixtures = source_fixtures();
-    let fixture = *fixtures.get(local_ordinal).ok_or_else(|| {
-        io::Error::new(
+    let prepared = prepare_gpu_column(local_ordinal)?;
+    visit_prepared_gpu_column_events_from(prepared, 0, |event| match event {
+        SecondMomentum30001GpuColumnEvent::Term { term, .. } => visit(term),
+        SecondMomentum30001GpuColumnEvent::WordLoweringStart { .. }
+        | SecondMomentum30001GpuColumnEvent::WordStart { .. }
+        | SecondMomentum30001GpuColumnEvent::WordEnd { .. } => Ok(()),
+    })
+}
+
+pub(crate) fn visit_gpu_column_contribution_events_from<F>(
+    expected_preflight: &SecondMomentum30001GpuColumnPreflight,
+    start_word_ordinal: usize,
+    visit: F,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
+where
+    F: FnMut(SecondMomentum30001GpuColumnEvent) -> io::Result<()>,
+{
+    if start_word_ordinal > expected_preflight.pbw_word_count {
+        return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "(30001) GPU column ordinal must lie in 0..15",
-        )
-    })?;
-    let recoupling =
-        crate::eleven_dimensional_second_momentum_remaining_recouplings::verify_cached();
-    let reciprocal = recoupling
-        .channels
-        .iter()
-        .find(|channel| channel.intermediate_dynkin_label == "30001")
-        .ok_or_else(|| io::Error::other("missing exact (30001) reciprocal certificate"))?;
-    if reciprocal.reciprocal_raising_residual_terms_by_simple_root != [0; 5]
-        || !reciprocal.exact_chevalley_equivariance_verified
-        || !reciprocal.passed
-    {
+            "(30001) start word ordinal exceeds the preflight PBW plan",
+        ));
+    }
+    let prepared = prepare_gpu_column(expected_preflight.local_column_ordinal)?;
+    if prepared.preflight != *expected_preflight {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            "uncertified exact (30001) reciprocal highest-weight map",
+            "(30001) GPU column preflight identity changed before streaming",
+        ));
+    }
+    visit_prepared_gpu_column_events_from(prepared, start_word_ordinal, visit)
+}
+
+/// Stream one verified column through an opaque lowering backend. The
+/// canonical highest state is uploaded once, prefix handles stay backend
+/// resident, and only terminal handles are presented to `download_terms`.
+pub(crate) fn visit_gpu_column_contribution_events_from_handles<H, U, L, D, F>(
+    expected_preflight: &SecondMomentum30001GpuColumnPreflight,
+    start_word_ordinal: usize,
+    upload_highest: U,
+    lower_word: L,
+    mut download_terms: D,
+    mut visit: F,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
+where
+    U: FnOnce(
+        &crate::eleven_dimensional_level16_couplings::CanonicalSparseHighest64,
+    ) -> io::Result<H>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+    D: FnMut(&H, &mut dyn FnMut(u64, i64) -> io::Result<()>) -> io::Result<u64>,
+    F: FnMut(SecondMomentum30001GpuColumnEvent) -> io::Result<()>,
+{
+    if start_word_ordinal > expected_preflight.pbw_word_count {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "(30001) start word ordinal exceeds the preflight PBW plan",
+        ));
+    }
+    let prepared = prepare_gpu_column(expected_preflight.local_column_ordinal)?;
+    if prepared.preflight != *expected_preflight {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "(30001) GPU column preflight identity changed before opaque streaming",
         ));
     }
 
-    let abstract_checkpoint = read_json::<
-        crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001AbstractCheckpoint,
-    >(&abstract_checkpoint_path(fixture.dynkin_label))?;
-    let embedded_checkpoint = read_json::<
-        crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001EmbeddedCheckpoint,
-    >(&embedded_checkpoint_path(
-        fixture.dynkin_label,
-        fixture.copy,
-    ))?;
-    validate_map_checkpoint(fixture, &abstract_checkpoint, &embedded_checkpoint)?;
-
-    let words = requested_words(reciprocal);
-    let word_ordinals = words
-        .iter()
-        .enumerate()
-        .map(|(ordinal, word)| (word.clone(), ordinal))
-        .collect::<BTreeMap<_, _>>();
-    let mut reciprocal_by_word = vec![Vec::new(); words.len()];
-    for term in &reciprocal.reciprocal_terms {
-        let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
-        reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
-    }
-
-    // Preserve every exact descendant-times-reciprocal contribution.  The
-    // CUDA backend performs the canonical key sort and signed-i128 reduction;
-    // combining here would recreate the multi-gigabyte CPU BTreeMap that this
-    // path is specifically designed to remove.
-    let mut observed_by_word = vec![false; words.len()];
+    let mut observed_by_word = vec![false; prepared.words.len()];
     let mut emitted_terms = 0_u64;
-    crate::eleven_dimensional_level16_couplings::visit_second_momentum_30001_descendant_components(
-        &abstract_checkpoint.certificate,
-        fixture.copy,
-        fixture.artifact,
-        2,
-        fixture.bytes,
-        &embedded_checkpoint.source_fixture_sha256,
-        &embedded_checkpoint.coupled_map_sha256,
-        &words,
-        |entry| {
-            observed_by_word[entry.requested_word_ordinal] = true;
-            for &(momentum_pair, primitive_coefficient) in
-                &reciprocal_by_word[entry.requested_word_ordinal]
-            {
-                let coefficient = i128::from(entry.coefficient)
-                    .checked_mul(i128::from(primitive_coefficient))
-                    .ok_or_else(|| io::Error::other("p2 recoupling coefficient overflow"))?;
-                if coefficient == 0 {
-                    continue;
+    let mut current_word_terms = 0_u64;
+    let mut current_word_components = 0_u64;
+    let accounting = crate::eleven_dimensional_level16_couplings::
+        visit_second_momentum_30001_descendant_handles_from(
+            &prepared.abstract_certificate,
+            prepared.fixture.copy,
+            prepared.fixture.artifact,
+            2,
+            prepared.fixture.bytes,
+            &prepared.source_fixture_sha256,
+            &prepared.coupled_map_sha256,
+            &prepared.words,
+            start_word_ordinal,
+            upload_highest,
+            lower_word,
+            |event| match event {
+                crate::eleven_dimensional_level16_couplings::CoupledWordStateEvent::
+                    WordLoweringStart { ordinal, pbw_word } => {
+                        visit(SecondMomentum30001GpuColumnEvent::WordLoweringStart {
+                            requested_word_ordinal: ordinal,
+                            pbw_word_simple_roots: pbw_word.to_vec(),
+                        })?;
+                        Ok(0)
+                    }
+                crate::eleven_dimensional_level16_couplings::CoupledWordStateEvent::WordStart {
+                    ordinal,
+                    pbw_word,
+                } => {
+                    current_word_terms = 0;
+                    current_word_components = 0;
+                    visit(SecondMomentum30001GpuColumnEvent::WordStart {
+                        requested_word_ordinal: ordinal,
+                        pbw_word_simple_roots: pbw_word.to_vec(),
+                    })?;
+                    Ok(0)
                 }
-                visit(
-                    crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm {
-                        momentum_pair: [
-                            u8::try_from(momentum_pair[0]).map_err(|_| {
-                                io::Error::other("momentum index exceeds packed GPU range")
-                            })?,
-                            u8::try_from(momentum_pair[1]).map_err(|_| {
-                                io::Error::other("momentum index exceeds packed GPU range")
-                            })?,
-                        ],
-                        free_spinor: u8::try_from(entry.free_spinor_weight_index).map_err(
-                            |_| io::Error::other("spinor index exceeds packed GPU range"),
-                        )?,
-                        exterior_mask: entry.exterior_mask,
-                        coefficient,
-                    },
-                )?;
-                emitted_terms = emitted_terms
-                    .checked_add(1)
-                    .ok_or_else(|| io::Error::other("GPU contribution count overflow"))?;
+                crate::eleven_dimensional_level16_couplings::CoupledWordStateEvent::State {
+                    ordinal,
+                    state,
+                } => {
+                    let mut previous_key = None;
+                    let reported = download_terms(state, &mut |key, descendant_coefficient| {
+                        let free_spinor_weight_index = usize::try_from(key >> 32).map_err(|_| {
+                            io::Error::new(
+                                io::ErrorKind::InvalidData,
+                                "downloaded free-spinor key exceeds host range",
+                            )
+                        })?;
+                        let exterior_mask = key as u32;
+                        if free_spinor_weight_index >= 32
+                            || exterior_mask.count_ones() != 12
+                            || descendant_coefficient == 0
+                            || previous_key.is_some_and(|previous| previous >= key)
+                        {
+                            return Err(io::Error::new(
+                                io::ErrorKind::InvalidData,
+                                "downloaded (30001) terminal state is not canonical",
+                            ));
+                        }
+                        previous_key = Some(key);
+                        current_word_components = current_word_components
+                            .checked_add(1)
+                            .ok_or_else(|| io::Error::other("descendant component count overflow"))?;
+                        for &(momentum_pair, primitive_coefficient) in
+                            &prepared.reciprocal_by_word[ordinal]
+                        {
+                            let coefficient = i128::from(descendant_coefficient)
+                                .checked_mul(i128::from(primitive_coefficient))
+                                .ok_or_else(|| {
+                                    io::Error::other("p2 recoupling coefficient overflow")
+                                })?;
+                            if coefficient == 0 {
+                                continue;
+                            }
+                            let term = crate::eleven_dimensional_second_momentum_gpu::
+                                RecoupledSourceTerm {
+                                    momentum_pair: [
+                                        u8::try_from(momentum_pair[0]).map_err(|_| {
+                                            io::Error::other(
+                                                "momentum index exceeds packed GPU range",
+                                            )
+                                        })?,
+                                        u8::try_from(momentum_pair[1]).map_err(|_| {
+                                            io::Error::other(
+                                                "momentum index exceeds packed GPU range",
+                                            )
+                                        })?,
+                                    ],
+                                    free_spinor: u8::try_from(free_spinor_weight_index).map_err(
+                                        |_| io::Error::other("spinor index exceeds packed GPU range"),
+                                    )?,
+                                    exterior_mask,
+                                    coefficient,
+                                };
+                            visit(SecondMomentum30001GpuColumnEvent::Term {
+                                requested_word_ordinal: ordinal,
+                                term,
+                            })?;
+                            current_word_terms = current_word_terms.checked_add(1).ok_or_else(|| {
+                                io::Error::other("GPU word contribution count overflow")
+                            })?;
+                            emitted_terms = emitted_terms.checked_add(1).ok_or_else(|| {
+                                io::Error::other("GPU contribution count overflow")
+                            })?;
+                        }
+                        Ok(())
+                    })?;
+                    if reported != current_word_components {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            "downloaded (30001) terminal count disagrees with emitted terms",
+                        ));
+                    }
+                    Ok(reported)
+                }
+                crate::eleven_dimensional_level16_couplings::CoupledWordStateEvent::WordEnd {
+                    ordinal,
+                } => {
+                    if current_word_components == 0 || current_word_terms == 0 {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            "requested (30001) GPU word is empty",
+                        ));
+                    }
+                    observed_by_word[ordinal] = true;
+                    visit(SecondMomentum30001GpuColumnEvent::WordEnd {
+                        requested_word_ordinal: ordinal,
+                        raw_terms_emitted: current_word_terms,
+                    })?;
+                    Ok(0)
+                }
+            },
+        )?;
+    if accounting.emitted_nonzero_components == 0 && start_word_ordinal < prepared.words.len() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "requested (30001) opaque descendant stream is empty",
+        ));
+    }
+    if observed_by_word
+        .iter()
+        .skip(start_word_ordinal)
+        .any(|observed| !observed)
+        || (start_word_ordinal < prepared.words.len() && emitted_terms == 0)
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "requested (30001) opaque GPU descendant stream is incomplete or empty",
+        ));
+    }
+    Ok(
+        crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput {
+            global_ordinal: prepared.preflight.global_column_ordinal,
+            source_label: prepared.preflight.source_dynkin_label,
+            source_copy: prepared.preflight.source_copy,
+            terms: Vec::new(),
+            raising_residuals: prepared.raising_residuals,
+        },
+    )
+}
+
+fn visit_prepared_gpu_column_events_from<F>(
+    prepared: PreparedGpuColumn,
+    start_word_ordinal: usize,
+    mut visit: F,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
+where
+    F: FnMut(SecondMomentum30001GpuColumnEvent) -> io::Result<()>,
+{
+    if start_word_ordinal > prepared.words.len() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "(30001) start word ordinal exceeds the PBW plan",
+        ));
+    }
+    let mut observed_by_word = vec![false; prepared.words.len()];
+    let mut emitted_terms = 0_u64;
+    let mut current_word_terms = 0_u64;
+    crate::eleven_dimensional_level16_couplings::
+        visit_second_momentum_30001_descendant_events_from(
+        &prepared.abstract_certificate,
+        prepared.fixture.copy,
+        prepared.fixture.artifact,
+        2,
+        prepared.fixture.bytes,
+        &prepared.source_fixture_sha256,
+        &prepared.coupled_map_sha256,
+        &prepared.words,
+        start_word_ordinal,
+        |event| {
+            match event {
+                crate::eleven_dimensional_level16_couplings::
+                    SecondMomentum30001DescendantEvent::WordLoweringStart {
+                        requested_word_ordinal,
+                        pbw_word_simple_roots,
+                    } => {
+                        visit(SecondMomentum30001GpuColumnEvent::WordLoweringStart {
+                            requested_word_ordinal,
+                            pbw_word_simple_roots,
+                        })?;
+                    }
+                crate::eleven_dimensional_level16_couplings::
+                    SecondMomentum30001DescendantEvent::WordStart {
+                        requested_word_ordinal,
+                        pbw_word_simple_roots,
+                    } => {
+                        current_word_terms = 0;
+                        visit(SecondMomentum30001GpuColumnEvent::WordStart {
+                            requested_word_ordinal,
+                            pbw_word_simple_roots,
+                        })?;
+                    }
+                crate::eleven_dimensional_level16_couplings::
+                    SecondMomentum30001DescendantEvent::Component(entry) => {
+                    for &(momentum_pair, primitive_coefficient) in
+                        &prepared.reciprocal_by_word[entry.requested_word_ordinal]
+                    {
+                        let coefficient = i128::from(entry.coefficient)
+                            .checked_mul(i128::from(primitive_coefficient))
+                            .ok_or_else(|| io::Error::other("p2 recoupling coefficient overflow"))?;
+                        if coefficient == 0 {
+                            continue;
+                        }
+                        let term = crate::eleven_dimensional_second_momentum_gpu::
+                            RecoupledSourceTerm {
+                            momentum_pair: [
+                                u8::try_from(momentum_pair[0]).map_err(|_| {
+                                    io::Error::other("momentum index exceeds packed GPU range")
+                                })?,
+                                u8::try_from(momentum_pair[1]).map_err(|_| {
+                                    io::Error::other("momentum index exceeds packed GPU range")
+                                })?,
+                            ],
+                            free_spinor: u8::try_from(entry.free_spinor_weight_index).map_err(
+                                |_| io::Error::other("spinor index exceeds packed GPU range"),
+                            )?,
+                            exterior_mask: entry.exterior_mask,
+                            coefficient,
+                        };
+                        visit(SecondMomentum30001GpuColumnEvent::Term {
+                            requested_word_ordinal: entry.requested_word_ordinal,
+                            term,
+                        })?;
+                        current_word_terms = current_word_terms.checked_add(1).ok_or_else(|| {
+                            io::Error::other("GPU word contribution count overflow")
+                        })?;
+                        emitted_terms = emitted_terms.checked_add(1).ok_or_else(|| {
+                            io::Error::other("GPU contribution count overflow")
+                        })?;
+                    }
+                }
+                crate::eleven_dimensional_level16_couplings::
+                    SecondMomentum30001DescendantEvent::WordEnd {
+                        requested_word_ordinal,
+                        emitted_nonzero_components,
+                    } => {
+                        if emitted_nonzero_components == 0 || current_word_terms == 0 {
+                            return Err(io::Error::new(
+                                io::ErrorKind::InvalidData,
+                                "requested (30001) GPU word is empty",
+                            ));
+                        }
+                        observed_by_word[requested_word_ordinal] = true;
+                        visit(SecondMomentum30001GpuColumnEvent::WordEnd {
+                            requested_word_ordinal,
+                            raw_terms_emitted: current_word_terms,
+                        })?;
+                    }
             }
             Ok(())
         },
     )?;
-    if observed_by_word.iter().any(|observed| !observed) || emitted_terms == 0 {
+    if observed_by_word
+        .iter()
+        .skip(start_word_ordinal)
+        .any(|observed| !observed)
+        || (start_word_ordinal < prepared.words.len() && emitted_terms == 0)
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "requested (30001) GPU descendant stream is incomplete or empty",
         ));
     }
-    let raising_residuals = reciprocal.reciprocal_raising_residual_terms_by_simple_root;
     Ok(
         crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput {
-            global_ordinal: FIRST_GLOBAL_ORDINAL + local_ordinal,
-            source_label: fixture.dynkin_label.to_string(),
-            source_copy: fixture.copy,
+            global_ordinal: prepared.preflight.global_column_ordinal,
+            source_label: prepared.preflight.source_dynkin_label,
+            source_copy: prepared.preflight.source_copy,
             terms: Vec::new(),
-            raising_residuals,
+            raising_residuals: prepared.raising_residuals,
         },
     )
 }
@@ -1158,6 +1559,52 @@ mod tests {
         assert_eq!(FIRST_GLOBAL_ORDINAL, 3 + 12 + 8 + 30 + 9);
         assert_eq!(FIRST_GLOBAL_ORDINAL + fixtures.len(), 77);
         assert_eq!(fixtures.iter().map(|item| item.copy).sum::<usize>(), 24);
+    }
+
+    #[test]
+    fn gpu_pbw_plan_digest_binds_order_and_word_boundaries() {
+        let words = vec![vec![1, 2], vec![3], vec![4, 5]];
+        let mut reordered = words.clone();
+        reordered.swap(0, 1);
+        assert_eq!(pbw_plan_sha256(&words), pbw_plan_sha256(&words));
+        assert_ne!(pbw_plan_sha256(&words), pbw_plan_sha256(&reordered));
+        assert_ne!(
+            pbw_plan_sha256(&words),
+            pbw_plan_sha256(&[vec![1], vec![2, 3], vec![4, 5]])
+        );
+    }
+
+    #[test]
+    fn gpu_resume_rejects_start_beyond_preflight_before_streaming() {
+        let preflight = SecondMomentum30001GpuColumnPreflight {
+            tranche: "30001".to_string(),
+            local_column_ordinal: 0,
+            global_column_ordinal: FIRST_GLOBAL_ORDINAL,
+            source_dynkin_label: String::new(),
+            source_copy: 0,
+            source_fixture: String::new(),
+            source_fixture_sha256: String::new(),
+            abstract_certificate_sha256: String::new(),
+            source_map_sha256: String::new(),
+            reciprocal_map_sha256: String::new(),
+            pbw_plan_sha256: String::new(),
+            pbw_word_count: 1,
+        };
+        let error = visit_gpu_column_contribution_events_from(&preflight, 2, |_| {
+            panic!("invalid resume ordinal must not stream events")
+        })
+        .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidInput);
+        let opaque_error = visit_gpu_column_contribution_events_from_handles(
+            &preflight,
+            2,
+            |_| -> io::Result<()> { panic!("invalid resume must not upload") },
+            |_, _, _| -> io::Result<()> { panic!("invalid resume must not lower") },
+            |_, _| -> io::Result<u64> { panic!("invalid resume must not download") },
+            |_| -> io::Result<()> { panic!("invalid resume must not stream events") },
+        )
+        .unwrap_err();
+        assert_eq!(opaque_error.kind(), io::ErrorKind::InvalidInput);
     }
 
     #[test]

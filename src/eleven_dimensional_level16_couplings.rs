@@ -458,6 +458,67 @@ struct CoupledSparseState64 {
     components: BTreeMap<usize, Vec<(u32, i64)>>,
 }
 
+pub(crate) struct CanonicalSparseHighest64 {
+    state: CoupledSparseState64,
+    maximum_absolute_coefficient: u64,
+}
+
+impl CanonicalSparseHighest64 {
+    pub(crate) fn term_count(&self) -> usize {
+        self.state.components.values().map(Vec::len).sum()
+    }
+
+    pub(crate) fn maximum_absolute_coefficient(&self) -> u64 {
+        self.maximum_absolute_coefficient
+    }
+
+    pub(crate) fn visit_terms<F>(&self, mut visit: F) -> io::Result<()>
+    where
+        F: FnMut(u64, i64) -> io::Result<()>,
+    {
+        let mut previous_key = None;
+        let mut observed_maximum = 0_u64;
+        for (&free_spinor, values) in &self.state.components {
+            if free_spinor >= 32 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "canonical sparse highest has an invalid free-spinor index",
+                ));
+            }
+            for &(mask, coefficient) in values {
+                let key = (free_spinor as u64) << 32 | u64::from(mask);
+                if coefficient == 0
+                    || mask.count_ones() != 12
+                    || previous_key.is_some_and(|previous| previous >= key)
+                {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "canonical sparse highest ordering or degree invariant failed",
+                    ));
+                }
+                visit(key, coefficient)?;
+                observed_maximum = observed_maximum.max(coefficient.unsigned_abs());
+                previous_key = Some(key);
+            }
+        }
+        if observed_maximum != self.maximum_absolute_coefficient {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "canonical sparse highest maximum-coefficient invariant failed",
+            ));
+        }
+        Ok(())
+    }
+}
+
+struct VerifiedSparseHighest64 {
+    highest: CanonicalSparseHighest64,
+    maximum_absolute_checked_accumulator: i128,
+    source_fixture_sha256: String,
+    coupled_map_sha256: String,
+    estimated_payload_bytes: u64,
+}
+
 type SparseLoweredComponent = (usize, Vec<(u32, i64)>, i128);
 
 #[derive(Debug, Clone)]
@@ -542,6 +603,23 @@ pub(crate) struct SecondMomentum20001DescendantEntry {
     pub coefficient: i64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum SecondMomentum20001DescendantEvent {
+    WordLoweringStart {
+        requested_word_ordinal: usize,
+        pbw_word_simple_roots: Vec<u8>,
+    },
+    WordStart {
+        requested_word_ordinal: usize,
+        pbw_word_simple_roots: Vec<u8>,
+    },
+    Component(SecondMomentum20001DescendantEntry),
+    WordEnd {
+        requested_word_ordinal: usize,
+        emitted_nonzero_components: u64,
+    },
+}
+
 /// Proof and resource accounting for one requested `(20001)` descendant
 /// materialization.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -572,6 +650,23 @@ pub(crate) struct SecondMomentum30001DescendantEntry {
     pub coefficient: i64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum SecondMomentum30001DescendantEvent {
+    WordLoweringStart {
+        requested_word_ordinal: usize,
+        pbw_word_simple_roots: Vec<u8>,
+    },
+    WordStart {
+        requested_word_ordinal: usize,
+        pbw_word_simple_roots: Vec<u8>,
+    },
+    Component(SecondMomentum30001DescendantEntry),
+    WordEnd {
+        requested_word_ordinal: usize,
+        emitted_nonzero_components: u64,
+    },
+}
+
 /// Proof and resource accounting for one requested `(30001)` descendant
 /// materialization.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -585,6 +680,25 @@ pub(crate) struct SecondMomentum30001DescendantAccounting {
     pub emitted_nonzero_components: u64,
     pub maximum_absolute_checked_accumulator: i128,
     pub estimated_payload_bytes: u64,
+    pub checkpoint_hash_parity_verified: bool,
+}
+
+/// Proof and output accounting for an opaque lowering backend.
+///
+/// Unlike the concrete CPU accounting, this intentionally omits the maximum
+/// intermediate coefficient. An opaque backend need not expose intermediate
+/// handles, so claiming that diagnostic without a backend proof would be
+/// misleading.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub(crate) struct OpaqueSecondMomentumDescendantAccounting {
+    pub source_dynkin_label: String,
+    pub source_copy: usize,
+    pub source_fixture: String,
+    pub source_fixture_sha256: String,
+    pub coupled_map_sha256: String,
+    pub requested_pbw_words: usize,
+    pub emitted_nonzero_components: u64,
+    pub estimated_host_payload_bytes: u64,
     pub checkpoint_hash_parity_verified: bool,
 }
 
@@ -2625,7 +2739,7 @@ fn lower_sparse_output_component(
             heap.push(Reverse((next_mask, stream_index, next_coefficient)));
         }
         let mut accumulated = i128::from(coefficient);
-        while heap.peek().is_some_and(|entry| entry.0.0 == mask) {
+        while heap.peek().is_some_and(|entry| entry.0 .0 == mask) {
             let Reverse((_, next_stream_index, next_coefficient)) = heap.pop().unwrap();
             accumulated = accumulated
                 .checked_add(i128::from(next_coefficient))
@@ -2723,6 +2837,26 @@ where
     )
 }
 
+fn visit_independent_sparse_coupled_word_events_from<F>(
+    highest: &CoupledSparseState64,
+    words: &[Vec<u8>],
+    start_word_ordinal: usize,
+    maximum: &mut i128,
+    visit: &mut F,
+) -> io::Result<()>
+where
+    F: FnMut(CoupledWordStateEvent<'_, CoupledSparseState64>) -> io::Result<()>,
+{
+    visit_independent_coupled_word_handle_events_from(
+        highest,
+        words,
+        start_word_ordinal,
+        maximum,
+        &mut lower_sparse_coupled_root_word64,
+        visit,
+    )
+}
+
 fn common_root_prefix_length(left: &[u8], right: &[u8]) -> usize {
     left.iter()
         .zip(right)
@@ -2774,10 +2908,76 @@ where
     F: FnMut(usize, &H) -> io::Result<()>,
     L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
 {
+    visit_independent_coupled_word_handle_events_from(
+        highest,
+        words,
+        0,
+        maximum,
+        lower_word,
+        &mut |event| match event {
+            CoupledWordStateEvent::State { ordinal, state } => visit(ordinal, state),
+            CoupledWordStateEvent::WordLoweringStart { .. }
+            | CoupledWordStateEvent::WordStart { .. }
+            | CoupledWordStateEvent::WordEnd { .. } => Ok(()),
+        },
+    )
+}
+
+pub(crate) enum CoupledWordStateEvent<'a, H> {
+    WordLoweringStart { ordinal: usize, pbw_word: &'a [u8] },
+    WordStart { ordinal: usize, pbw_word: &'a [u8] },
+    State { ordinal: usize, state: &'a H },
+    WordEnd { ordinal: usize },
+}
+
+fn emit_coupled_word_state_events<H, F>(
+    ordinal: usize,
+    pbw_word: &[u8],
+    state: &H,
+    visit: &mut F,
+) -> io::Result<()>
+where
+    F: FnMut(CoupledWordStateEvent<'_, H>) -> io::Result<()>,
+{
+    visit(CoupledWordStateEvent::WordStart { ordinal, pbw_word })?;
+    visit(CoupledWordStateEvent::State { ordinal, state })?;
+    visit(CoupledWordStateEvent::WordEnd { ordinal })
+}
+
+pub(crate) fn visit_independent_coupled_word_handle_events_from<H, F, L>(
+    highest: &H,
+    words: &[Vec<u8>],
+    start_word_ordinal: usize,
+    maximum: &mut i128,
+    lower_word: &mut L,
+    visit: &mut F,
+) -> io::Result<()>
+where
+    F: FnMut(CoupledWordStateEvent<'_, H>) -> io::Result<()>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+{
+    let suffix = words.get(start_word_ordinal..).ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "PBW start word ordinal exceeds the requested plan",
+        )
+    })?;
     let mut shared_prefix = None::<(Vec<u8>, H)>;
-    for (ordinal, word) in words.iter().enumerate() {
-        let next_lcp = words
-            .get(ordinal + 1)
+    let mut pending_prefix_depth = 0_usize;
+    for (relative_ordinal, word) in suffix.iter().enumerate() {
+        let ordinal = start_word_ordinal + relative_ordinal;
+        visit(CoupledWordStateEvent::WordLoweringStart {
+            ordinal,
+            pbw_word: word,
+        })?;
+        if pending_prefix_depth != 0 {
+            debug_assert!(shared_prefix.is_none());
+            let prefix_depth = std::mem::take(&mut pending_prefix_depth);
+            let state = lower_word(highest, &word[..prefix_depth], maximum)?;
+            shared_prefix = Some((word[..prefix_depth].to_vec(), state));
+        }
+        let next_lcp = suffix
+            .get(relative_ordinal + 1)
             .map_or(0, |next| common_root_prefix_length(word, next));
         if shared_prefix
             .as_ref()
@@ -2792,10 +2992,10 @@ where
             let next_shared = lower_word(base, &word[start_depth..next_lcp], maximum)?;
             drop(shared_prefix.take());
             if next_lcp == word.len() {
-                visit(ordinal, &next_shared)?;
+                emit_coupled_word_state_events(ordinal, word, &next_shared, visit)?;
             } else {
                 let terminal = lower_word(&next_shared, &word[next_lcp..], maximum)?;
-                visit(ordinal, &terminal)?;
+                emit_coupled_word_state_events(ordinal, word, &terminal, visit)?;
             }
             shared_prefix = Some((word[..next_lcp].to_vec(), next_shared));
             continue;
@@ -2803,19 +3003,18 @@ where
 
         if start_depth == word.len() {
             let terminal = shared_prefix.as_ref().map_or(highest, |(_, state)| state);
-            visit(ordinal, terminal)?;
+            emit_coupled_word_state_events(ordinal, word, terminal, visit)?;
         } else {
             let base = shared_prefix.as_ref().map_or(highest, |(_, state)| state);
             let terminal = lower_word(base, &word[start_depth..], maximum)?;
-            visit(ordinal, &terminal)?;
+            emit_coupled_word_state_events(ordinal, word, &terminal, visit)?;
         }
 
         if next_lcp == 0 {
             shared_prefix = None;
         } else if next_lcp < start_depth {
             drop(shared_prefix.take());
-            let next_shared = lower_word(highest, &word[..next_lcp], maximum)?;
-            shared_prefix = Some((word[..next_lcp].to_vec(), next_shared));
+            pending_prefix_depth = next_lcp;
         } else {
             debug_assert_eq!(next_lcp, start_depth);
         }
@@ -3528,11 +3727,9 @@ pub fn joint_column_specs() -> Vec<JointColumnSpec> {
             });
     for ((source, intermediate), copies) in first_momentum_copy_manifest() {
         for copy in copies {
-            assert!(
-                fixtures_by_source[&source.as_str()]
-                    .iter()
-                    .any(|fixture| fixture.copy == copy)
-            );
+            assert!(fixtures_by_source[&source.as_str()]
+                .iter()
+                .any(|fixture| fixture.copy == copy));
             specs.push(JointColumnSpec {
                 ordinal: specs.len(),
                 label: format!("{source}#{copy}->{intermediate}"),
@@ -5690,12 +5887,9 @@ fn finalize_joint_functional_columns(
     assert_eq!(leading_basis.len(), 12);
     assert_eq!(first_momentum_basis.len(), 44);
     assert_eq!(functional_columns.len(), 56);
-    assert!(
-        functional_columns
-            .iter()
-            .all(|column| column.len()
-                == JOINT_FUNCTIONAL_SEEDS.len() * 2 * JOINT_FUNCTIONAL_BUCKETS)
-    );
+    assert!(functional_columns
+        .iter()
+        .all(|column| column.len() == JOINT_FUNCTIONAL_SEEDS.len() * 2 * JOINT_FUNCTIONAL_BUCKETS));
 
     let coefficient_columns = functional_columns.len();
     let mut normal_matrix =
@@ -6659,6 +6853,193 @@ pub(crate) fn verify_second_momentum_20001_embedding_with_hash(
     )
 }
 
+fn prepare_verified_second_momentum_sparse_highest64(
+    problem: CouplingProblem,
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_copy: usize,
+    fixture_artifact: &str,
+    coefficient_width_bytes: usize,
+    fixture_bytes: &[u8],
+    expected_source_fixture_sha256: &str,
+    expected_coupled_map_sha256: &str,
+    requested_pbw_words: &[Vec<u8>],
+    start_word_ordinal: usize,
+) -> io::Result<VerifiedSparseHighest64> {
+    if !abstract_certificate.passed
+        || abstract_certificate.target_dynkin_label != problem.target_dynkin_label
+        || abstract_certificate.exact_raising_residual_terms_by_simple_root != [0; 5]
+        || abstract_certificate.kernel_dimension != 1
+        || abstract_certificate.domain_basis.len()
+            != abstract_certificate.primitive_domain_coefficients.len()
+        || abstract_certificate.source_dynkin_label.is_empty()
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "uncertified level-12 source-to-({}) abstract map",
+                problem.target_dynkin_label
+            ),
+        ));
+    }
+    let expected_width = fixture_coefficient_width(fixture_artifact);
+    if coefficient_width_bytes != expected_width
+        || fixture_copy == 0
+        || requested_pbw_words.is_empty()
+        || requested_pbw_words
+            .iter()
+            .any(|word| word.iter().any(|root| !(1..=5).contains(root)))
+        || requested_pbw_words.iter().collect::<BTreeSet<_>>().len() != requested_pbw_words.len()
+        || start_word_ordinal > requested_pbw_words.len()
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!(
+                "invalid level-12 ({}) fixture, PBW plan, or start ordinal",
+                problem.target_dynkin_label
+            ),
+        ));
+    }
+    let source_fixture_sha256 = sha256_bytes(fixture_bytes);
+    if source_fixture_sha256 != expected_source_fixture_sha256 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "level-12 source fixture SHA-256 mismatch",
+        ));
+    }
+
+    let (mut model, highest, maximum_absolute_checked_accumulator) = materialize_coupled_highest(
+        problem,
+        abstract_certificate,
+        fixture_bytes,
+        coefficient_width_bytes,
+    );
+    let mut coupled_hasher = Sha256::new();
+    coupled_hasher.update(b"adynkra-11d-canonical-embedded-map-v1\0");
+    for (spinor_index, exterior) in &highest.components {
+        for (exterior_ordinal, value) in exterior.coefficients.iter().enumerate() {
+            if *value == 0 {
+                continue;
+            }
+            coupled_hasher.update((*spinor_index as u64).to_le_bytes());
+            coupled_hasher.update((exterior_ordinal as u64).to_le_bytes());
+            coupled_hasher.update(i128::from(*value).to_le_bytes());
+        }
+    }
+    let coupled_map_sha256 = format!("{:x}", coupled_hasher.finalize());
+    if coupled_map_sha256 != expected_coupled_map_sha256 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!(
+                "reconstructed level-12 ({}) map disagrees with checkpoint hash",
+                problem.target_dynkin_label
+            ),
+        ));
+    }
+
+    let highest_sparse = dense_coupled_to_sparse64(&mut model, &highest);
+    let estimated_payload_bytes = exterior_model_payload_bytes(&model)
+        + coupled_state_payload_bytes(&highest)
+        + sparse64_payload_bytes(&highest_sparse);
+    let maximum_absolute_coefficient = highest_sparse
+        .components
+        .values()
+        .flatten()
+        .map(|(_, coefficient)| coefficient.unsigned_abs())
+        .max()
+        .unwrap_or(0);
+    let canonical = CanonicalSparseHighest64 {
+        state: highest_sparse,
+        maximum_absolute_coefficient,
+    };
+    canonical.visit_terms(|_, _| Ok(()))?;
+    Ok(VerifiedSparseHighest64 {
+        highest: canonical,
+        maximum_absolute_checked_accumulator,
+        source_fixture_sha256,
+        coupled_map_sha256,
+        estimated_payload_bytes,
+    })
+}
+
+/// Verify and upload one canonical `(20001)` highest state, then traverse the
+/// requested PBW suffix using opaque backend handles. The highest state is
+/// uploaded exactly once. Prefix and terminal handles remain backend-owned;
+/// only the callback decides whether a terminal state is downloaded.
+///
+/// The callback must return the number of canonical nonzero components it
+/// consumed for `State` and zero for boundary events. `WordLoweringStart` is
+/// emitted before any backend lowering for that word. A completed word is
+/// durable only after the subsequent `WordEnd` event.
+pub(crate) fn visit_second_momentum_20001_descendant_handles_from<H, U, L, F>(
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_copy: usize,
+    fixture_artifact: &str,
+    coefficient_width_bytes: usize,
+    fixture_bytes: &[u8],
+    expected_source_fixture_sha256: &str,
+    expected_coupled_map_sha256: &str,
+    requested_pbw_words: &[Vec<u8>],
+    start_word_ordinal: usize,
+    upload_highest: U,
+    mut lower_word: L,
+    mut visit: F,
+) -> io::Result<OpaqueSecondMomentumDescendantAccounting>
+where
+    U: FnOnce(&CanonicalSparseHighest64) -> io::Result<H>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+    F: FnMut(CoupledWordStateEvent<'_, H>) -> io::Result<u64>,
+{
+    let verified = prepare_verified_second_momentum_sparse_highest64(
+        SECOND_MOMENTUM_20001_PROBLEM,
+        abstract_certificate,
+        fixture_copy,
+        fixture_artifact,
+        coefficient_width_bytes,
+        fixture_bytes,
+        expected_source_fixture_sha256,
+        expected_coupled_map_sha256,
+        requested_pbw_words,
+        start_word_ordinal,
+    )?;
+    let mut maximum = verified.maximum_absolute_checked_accumulator;
+    let highest = upload_highest(&verified.highest)?;
+    let mut emitted_nonzero_components = 0_u64;
+    visit_independent_coupled_word_handle_events_from(
+        &highest,
+        requested_pbw_words,
+        start_word_ordinal,
+        &mut maximum,
+        &mut lower_word,
+        &mut |event| {
+            let is_state = matches!(&event, CoupledWordStateEvent::State { .. });
+            let consumed = visit(event)?;
+            if !is_state && consumed != 0 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "opaque descendant visitor counted a boundary event",
+                ));
+            }
+            if is_state {
+                emitted_nonzero_components = emitted_nonzero_components
+                    .checked_add(consumed)
+                    .ok_or_else(|| io::Error::other("(20001) descendant term count overflow"))?;
+            }
+            Ok(())
+        },
+    )?;
+    Ok(OpaqueSecondMomentumDescendantAccounting {
+        source_dynkin_label: abstract_certificate.source_dynkin_label.clone(),
+        source_copy: fixture_copy,
+        source_fixture: fixture_artifact.to_string(),
+        source_fixture_sha256: verified.source_fixture_sha256,
+        coupled_map_sha256: verified.coupled_map_sha256,
+        requested_pbw_words: requested_pbw_words.len() - start_word_ordinal,
+        emitted_nonzero_components,
+        estimated_host_payload_bytes: verified.estimated_payload_bytes,
+        checkpoint_hash_parity_verified: true,
+    })
+}
+
 /// Materialize only the explicitly requested PBW descendants of one exact
 /// level-12 source map into `(20001)`.
 ///
@@ -6682,6 +7063,40 @@ pub(crate) fn visit_second_momentum_20001_descendant_components<F>(
 where
     F: FnMut(SecondMomentum20001DescendantEntry) -> io::Result<()>,
 {
+    visit_second_momentum_20001_descendant_events_from(
+        abstract_certificate,
+        fixture_copy,
+        fixture_artifact,
+        coefficient_width_bytes,
+        fixture_bytes,
+        expected_source_fixture_sha256,
+        expected_coupled_map_sha256,
+        requested_pbw_words,
+        0,
+        |event| match event {
+            SecondMomentum20001DescendantEvent::Component(entry) => visit(entry),
+            SecondMomentum20001DescendantEvent::WordLoweringStart { .. }
+            | SecondMomentum20001DescendantEvent::WordStart { .. }
+            | SecondMomentum20001DescendantEvent::WordEnd { .. } => Ok(()),
+        },
+    )
+}
+
+pub(crate) fn visit_second_momentum_20001_descendant_events_from<F>(
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_copy: usize,
+    fixture_artifact: &str,
+    coefficient_width_bytes: usize,
+    fixture_bytes: &[u8],
+    expected_source_fixture_sha256: &str,
+    expected_coupled_map_sha256: &str,
+    requested_pbw_words: &[Vec<u8>],
+    start_word_ordinal: usize,
+    mut visit: F,
+) -> io::Result<SecondMomentum20001DescendantAccounting>
+where
+    F: FnMut(SecondMomentum20001DescendantEvent) -> io::Result<()>,
+{
     if !abstract_certificate.passed
         || abstract_certificate.target_dynkin_label
             != SECOND_MOMENTUM_20001_PROBLEM.target_dynkin_label
@@ -6704,6 +7119,7 @@ where
             .iter()
             .any(|word| word.iter().any(|root| !(1..=5).contains(root)))
         || requested_pbw_words.iter().collect::<BTreeSet<_>>().len() != requested_pbw_words.len()
+        || start_word_ordinal > requested_pbw_words.len()
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -6751,22 +7167,53 @@ where
     drop(highest);
     drop(model);
     let mut emitted_nonzero_components = 0_u64;
-    visit_independent_sparse_coupled_words(
+    let mut current_word_components = 0_u64;
+    visit_independent_sparse_coupled_word_events_from(
         &highest_sparse,
         requested_pbw_words,
+        start_word_ordinal,
         &mut maximum,
-        &mut |requested_word_ordinal, state| {
-            for (&free_spinor_weight_index, exterior) in &state.components {
-                for &(exterior_mask, coefficient) in exterior {
-                    emitted_nonzero_components =
-                        emitted_nonzero_components.checked_add(1).ok_or_else(|| {
-                            io::Error::other("(20001) descendant term count overflow")
-                        })?;
-                    visit(SecondMomentum20001DescendantEntry {
-                        requested_word_ordinal,
-                        free_spinor_weight_index,
-                        exterior_mask,
-                        coefficient,
+        &mut |event| {
+            match event {
+                CoupledWordStateEvent::WordLoweringStart { ordinal, pbw_word } => {
+                    visit(SecondMomentum20001DescendantEvent::WordLoweringStart {
+                        requested_word_ordinal: ordinal,
+                        pbw_word_simple_roots: pbw_word.to_vec(),
+                    })?;
+                }
+                CoupledWordStateEvent::WordStart { ordinal, pbw_word } => {
+                    current_word_components = 0;
+                    visit(SecondMomentum20001DescendantEvent::WordStart {
+                        requested_word_ordinal: ordinal,
+                        pbw_word_simple_roots: pbw_word.to_vec(),
+                    })?;
+                }
+                CoupledWordStateEvent::State { ordinal, state } => {
+                    for (&free_spinor_weight_index, exterior) in &state.components {
+                        for &(exterior_mask, coefficient) in exterior {
+                            emitted_nonzero_components =
+                                emitted_nonzero_components.checked_add(1).ok_or_else(|| {
+                                    io::Error::other("(20001) descendant term count overflow")
+                                })?;
+                            current_word_components =
+                                current_word_components.checked_add(1).ok_or_else(|| {
+                                    io::Error::other("(20001) word component count overflow")
+                                })?;
+                            visit(SecondMomentum20001DescendantEvent::Component(
+                                SecondMomentum20001DescendantEntry {
+                                    requested_word_ordinal: ordinal,
+                                    free_spinor_weight_index,
+                                    exterior_mask,
+                                    coefficient,
+                                },
+                            ))?;
+                        }
+                    }
+                }
+                CoupledWordStateEvent::WordEnd { ordinal } => {
+                    visit(SecondMomentum20001DescendantEvent::WordEnd {
+                        requested_word_ordinal: ordinal,
+                        emitted_nonzero_components: current_word_components,
                     })?;
                 }
             }
@@ -6779,7 +7226,7 @@ where
         source_fixture: fixture_artifact.to_string(),
         source_fixture_sha256,
         coupled_map_sha256,
-        requested_pbw_words: requested_pbw_words.len(),
+        requested_pbw_words: requested_pbw_words.len() - start_word_ordinal,
         emitted_nonzero_components,
         maximum_absolute_checked_accumulator: maximum,
         estimated_payload_bytes,
@@ -6842,6 +7289,79 @@ pub(crate) fn verify_second_momentum_30001_embedding_with_hash(
     )
 }
 
+/// Verify and upload one canonical `(30001)` highest state, then traverse the
+/// requested PBW suffix using opaque backend handles. See the `(20001)`
+/// counterpart for event and component-count semantics.
+pub(crate) fn visit_second_momentum_30001_descendant_handles_from<H, U, L, F>(
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_copy: usize,
+    fixture_artifact: &str,
+    coefficient_width_bytes: usize,
+    fixture_bytes: &[u8],
+    expected_source_fixture_sha256: &str,
+    expected_coupled_map_sha256: &str,
+    requested_pbw_words: &[Vec<u8>],
+    start_word_ordinal: usize,
+    upload_highest: U,
+    mut lower_word: L,
+    mut visit: F,
+) -> io::Result<OpaqueSecondMomentumDescendantAccounting>
+where
+    U: FnOnce(&CanonicalSparseHighest64) -> io::Result<H>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+    F: FnMut(CoupledWordStateEvent<'_, H>) -> io::Result<u64>,
+{
+    let verified = prepare_verified_second_momentum_sparse_highest64(
+        SECOND_MOMENTUM_30001_PROBLEM,
+        abstract_certificate,
+        fixture_copy,
+        fixture_artifact,
+        coefficient_width_bytes,
+        fixture_bytes,
+        expected_source_fixture_sha256,
+        expected_coupled_map_sha256,
+        requested_pbw_words,
+        start_word_ordinal,
+    )?;
+    let mut maximum = verified.maximum_absolute_checked_accumulator;
+    let highest = upload_highest(&verified.highest)?;
+    let mut emitted_nonzero_components = 0_u64;
+    visit_independent_coupled_word_handle_events_from(
+        &highest,
+        requested_pbw_words,
+        start_word_ordinal,
+        &mut maximum,
+        &mut lower_word,
+        &mut |event| {
+            let is_state = matches!(&event, CoupledWordStateEvent::State { .. });
+            let consumed = visit(event)?;
+            if !is_state && consumed != 0 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "opaque descendant visitor counted a boundary event",
+                ));
+            }
+            if is_state {
+                emitted_nonzero_components = emitted_nonzero_components
+                    .checked_add(consumed)
+                    .ok_or_else(|| io::Error::other("(30001) descendant term count overflow"))?;
+            }
+            Ok(())
+        },
+    )?;
+    Ok(OpaqueSecondMomentumDescendantAccounting {
+        source_dynkin_label: abstract_certificate.source_dynkin_label.clone(),
+        source_copy: fixture_copy,
+        source_fixture: fixture_artifact.to_string(),
+        source_fixture_sha256: verified.source_fixture_sha256,
+        coupled_map_sha256: verified.coupled_map_sha256,
+        requested_pbw_words: requested_pbw_words.len() - start_word_ordinal,
+        emitted_nonzero_components,
+        estimated_host_payload_bytes: verified.estimated_payload_bytes,
+        checkpoint_hash_parity_verified: true,
+    })
+}
+
 /// Materialize only the explicitly requested PBW descendants of one exact
 /// level-12 source map into `(30001)`.
 ///
@@ -6865,6 +7385,40 @@ pub(crate) fn visit_second_momentum_30001_descendant_components<F>(
 where
     F: FnMut(SecondMomentum30001DescendantEntry) -> io::Result<()>,
 {
+    visit_second_momentum_30001_descendant_events_from(
+        abstract_certificate,
+        fixture_copy,
+        fixture_artifact,
+        coefficient_width_bytes,
+        fixture_bytes,
+        expected_source_fixture_sha256,
+        expected_coupled_map_sha256,
+        requested_pbw_words,
+        0,
+        |event| match event {
+            SecondMomentum30001DescendantEvent::Component(entry) => visit(entry),
+            SecondMomentum30001DescendantEvent::WordLoweringStart { .. }
+            | SecondMomentum30001DescendantEvent::WordStart { .. }
+            | SecondMomentum30001DescendantEvent::WordEnd { .. } => Ok(()),
+        },
+    )
+}
+
+pub(crate) fn visit_second_momentum_30001_descendant_events_from<F>(
+    abstract_certificate: &AbstractCouplingCertificate,
+    fixture_copy: usize,
+    fixture_artifact: &str,
+    coefficient_width_bytes: usize,
+    fixture_bytes: &[u8],
+    expected_source_fixture_sha256: &str,
+    expected_coupled_map_sha256: &str,
+    requested_pbw_words: &[Vec<u8>],
+    start_word_ordinal: usize,
+    mut visit: F,
+) -> io::Result<SecondMomentum30001DescendantAccounting>
+where
+    F: FnMut(SecondMomentum30001DescendantEvent) -> io::Result<()>,
+{
     if !abstract_certificate.passed
         || abstract_certificate.target_dynkin_label
             != SECOND_MOMENTUM_30001_PROBLEM.target_dynkin_label
@@ -6887,6 +7441,7 @@ where
             .iter()
             .any(|word| word.iter().any(|root| !(1..=5).contains(root)))
         || requested_pbw_words.iter().collect::<BTreeSet<_>>().len() != requested_pbw_words.len()
+        || start_word_ordinal > requested_pbw_words.len()
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -6934,22 +7489,53 @@ where
     drop(highest);
     drop(model);
     let mut emitted_nonzero_components = 0_u64;
-    visit_independent_sparse_coupled_words(
+    let mut current_word_components = 0_u64;
+    visit_independent_sparse_coupled_word_events_from(
         &highest_sparse,
         requested_pbw_words,
+        start_word_ordinal,
         &mut maximum,
-        &mut |requested_word_ordinal, state| {
-            for (&free_spinor_weight_index, exterior) in &state.components {
-                for &(exterior_mask, coefficient) in exterior {
-                    emitted_nonzero_components =
-                        emitted_nonzero_components.checked_add(1).ok_or_else(|| {
-                            io::Error::other("(30001) descendant term count overflow")
-                        })?;
-                    visit(SecondMomentum30001DescendantEntry {
-                        requested_word_ordinal,
-                        free_spinor_weight_index,
-                        exterior_mask,
-                        coefficient,
+        &mut |event| {
+            match event {
+                CoupledWordStateEvent::WordLoweringStart { ordinal, pbw_word } => {
+                    visit(SecondMomentum30001DescendantEvent::WordLoweringStart {
+                        requested_word_ordinal: ordinal,
+                        pbw_word_simple_roots: pbw_word.to_vec(),
+                    })?;
+                }
+                CoupledWordStateEvent::WordStart { ordinal, pbw_word } => {
+                    current_word_components = 0;
+                    visit(SecondMomentum30001DescendantEvent::WordStart {
+                        requested_word_ordinal: ordinal,
+                        pbw_word_simple_roots: pbw_word.to_vec(),
+                    })?;
+                }
+                CoupledWordStateEvent::State { ordinal, state } => {
+                    for (&free_spinor_weight_index, exterior) in &state.components {
+                        for &(exterior_mask, coefficient) in exterior {
+                            emitted_nonzero_components =
+                                emitted_nonzero_components.checked_add(1).ok_or_else(|| {
+                                    io::Error::other("(30001) descendant term count overflow")
+                                })?;
+                            current_word_components =
+                                current_word_components.checked_add(1).ok_or_else(|| {
+                                    io::Error::other("(30001) word component count overflow")
+                                })?;
+                            visit(SecondMomentum30001DescendantEvent::Component(
+                                SecondMomentum30001DescendantEntry {
+                                    requested_word_ordinal: ordinal,
+                                    free_spinor_weight_index,
+                                    exterior_mask,
+                                    coefficient,
+                                },
+                            ))?;
+                        }
+                    }
+                }
+                CoupledWordStateEvent::WordEnd { ordinal } => {
+                    visit(SecondMomentum30001DescendantEvent::WordEnd {
+                        requested_word_ordinal: ordinal,
+                        emitted_nonzero_components: current_word_components,
                     })?;
                 }
             }
@@ -6962,7 +7548,7 @@ where
         source_fixture: fixture_artifact.to_string(),
         source_fixture_sha256,
         coupled_map_sha256,
-        requested_pbw_words: requested_pbw_words.len(),
+        requested_pbw_words: requested_pbw_words.len() - start_word_ordinal,
         emitted_nonzero_components,
         maximum_absolute_checked_accumulator: maximum,
         estimated_payload_bytes,
@@ -7474,12 +8060,10 @@ mod tests {
             fixture.bytes,
         );
         assert!(!report.passed);
-        assert!(
-            report
-                .exact_raising_residual_terms_by_simple_root
-                .iter()
-                .any(|terms| *terms != 0)
-        );
+        assert!(report
+            .exact_raising_residual_terms_by_simple_root
+            .iter()
+            .any(|terms| *terms != 0));
     }
 
     #[test]
@@ -7535,12 +8119,10 @@ mod tests {
             fixture.bytes,
         );
         assert!(!report.passed);
-        assert!(
-            report
-                .exact_raising_residual_terms_by_simple_root
-                .iter()
-                .any(|terms| *terms != 0)
-        );
+        assert!(report
+            .exact_raising_residual_terms_by_simple_root
+            .iter()
+            .any(|terms| *terms != 0));
     }
 
     #[test]
@@ -7548,11 +8130,9 @@ mod tests {
         let manifest = first_momentum_copy_manifest();
         assert_eq!(manifest.len(), 23);
         assert_eq!(manifest.values().map(Vec::len).sum::<usize>(), 44);
-        assert!(
-            manifest
-                .keys()
-                .all(|(_, target)| ["00001", "01001", "10001", "20001"].contains(&target.as_str()))
-        );
+        assert!(manifest
+            .keys()
+            .all(|(_, target)| ["00001", "01001", "10001", "20001"].contains(&target.as_str())));
     }
 
     #[test]
@@ -7571,12 +8151,10 @@ mod tests {
         abstract_certificate.primitive_domain_coefficients[0] += 1;
         let embedded = verify_first_momentum_copy_with_abstract(&abstract_certificate, 1);
         assert!(!embedded.passed);
-        assert!(
-            embedded
-                .exact_raising_residual_terms_by_simple_root
-                .iter()
-                .any(|terms| *terms != 0)
-        );
+        assert!(embedded
+            .exact_raising_residual_terms_by_simple_root
+            .iter()
+            .any(|terms| *terms != 0));
     }
 
     #[test]
@@ -7601,12 +8179,10 @@ mod tests {
         let (candidate, maximum) = build_scalar_factorizing_candidate();
         assert!(maximum > 0);
         assert_eq!(candidate.components.len(), 32);
-        assert!(
-            candidate
-                .components
-                .values()
-                .all(|component| !component.is_empty())
-        );
+        assert!(candidate
+            .components
+            .values()
+            .all(|component| !component.is_empty()));
     }
 
     #[test]
@@ -7626,11 +8202,9 @@ mod tests {
         );
         assert!(!residual.is_empty());
         assert!(maximum > 0);
-        assert!(
-            residual
-                .iter()
-                .all(|entry| entry.exterior_mask.count_ones() == 15)
-        );
+        assert!(residual
+            .iter()
+            .all(|entry| entry.exterior_mask.count_ones() == 15));
     }
 
     #[test]
@@ -7656,11 +8230,9 @@ mod tests {
         );
         assert!(!residual.is_empty());
         assert!(maximum > 0);
-        assert!(
-            residual
-                .iter()
-                .all(|entry| entry.exterior_mask.count_ones() == 15)
-        );
+        assert!(residual
+            .iter()
+            .all(|entry| entry.exterior_mask.count_ones() == 15));
     }
 
     #[test]
@@ -7926,14 +8498,12 @@ mod tests {
             lower_sparse_coupled_state64_bounded(&source, root, &mut observed_maximum).unwrap();
         assert_eq!(observed.components, expected.components);
         assert_eq!(observed_maximum, expected_maximum);
-        assert!(
-            observed
-                .components
-                .get(&output_free_spinor)
-                .into_iter()
-                .flatten()
-                .all(|(mask, _)| *mask != output_mask)
-        );
+        assert!(observed
+            .components
+            .get(&output_free_spinor)
+            .into_iter()
+            .flatten()
+            .all(|(mask, _)| *mask != output_mask));
     }
 
     #[test]
@@ -8018,6 +8588,194 @@ mod tests {
         .unwrap();
 
         assert_eq!(visited, words.into_iter().enumerate().collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn canonical_sparse_highest_visits_strict_keys_and_rejects_bad_invariants() {
+        let first_mask = (1_u32 << 12) - 1;
+        let second_mask = first_mask << 1;
+        let highest = CanonicalSparseHighest64 {
+            state: CoupledSparseState64 {
+                components: BTreeMap::from([(2, vec![(first_mask, -3), (second_mask, 5)])]),
+            },
+            maximum_absolute_coefficient: 5,
+        };
+        let mut terms = Vec::new();
+        highest
+            .visit_terms(|key, coefficient| {
+                terms.push((key, coefficient));
+                Ok(())
+            })
+            .unwrap();
+        assert_eq!(highest.term_count(), 2);
+        assert_eq!(highest.maximum_absolute_coefficient(), 5);
+        assert_eq!(
+            terms,
+            vec![
+                ((2_u64 << 32) | u64::from(first_mask), -3),
+                ((2_u64 << 32) | u64::from(second_mask), 5),
+            ]
+        );
+
+        let wrong_maximum = CanonicalSparseHighest64 {
+            state: highest.state.clone(),
+            maximum_absolute_coefficient: 4,
+        };
+        assert_eq!(
+            wrong_maximum.visit_terms(|_, _| Ok(())).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+        let reversed = CanonicalSparseHighest64 {
+            state: CoupledSparseState64 {
+                components: BTreeMap::from([(2, vec![(second_mask, 5), (first_mask, -3)])]),
+            },
+            maximum_absolute_coefficient: 5,
+        };
+        assert_eq!(
+            reversed.visit_terms(|_, _| Ok(())).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+    }
+
+    #[test]
+    fn resumed_word_events_match_uninterrupted_suffix_without_gaps() {
+        struct OpaqueHandle {
+            roots: Vec<u8>,
+        }
+        #[derive(Debug, PartialEq, Eq)]
+        enum ObservedEvent {
+            LoweringStart(usize, Vec<u8>),
+            Start(usize),
+            State(usize, Vec<u8>),
+            End(usize),
+        }
+        fn collect(words: &[Vec<u8>], start_word_ordinal: usize) -> io::Result<Vec<ObservedEvent>> {
+            let highest = OpaqueHandle { roots: Vec::new() };
+            let mut observed = Vec::new();
+            visit_independent_coupled_word_handle_events_from(
+                &highest,
+                words,
+                start_word_ordinal,
+                &mut 0,
+                &mut |source, suffix, _| {
+                    let mut roots = source.roots.clone();
+                    roots.extend_from_slice(suffix);
+                    Ok(OpaqueHandle { roots })
+                },
+                &mut |event| {
+                    observed.push(match event {
+                        CoupledWordStateEvent::WordLoweringStart { ordinal, pbw_word } => {
+                            assert_eq!(pbw_word, words[ordinal]);
+                            ObservedEvent::LoweringStart(ordinal, pbw_word.to_vec())
+                        }
+                        CoupledWordStateEvent::WordStart { ordinal, pbw_word } => {
+                            assert_eq!(pbw_word, words[ordinal]);
+                            ObservedEvent::Start(ordinal)
+                        }
+                        CoupledWordStateEvent::State { ordinal, state } => {
+                            ObservedEvent::State(ordinal, state.roots.clone())
+                        }
+                        CoupledWordStateEvent::WordEnd { ordinal } => ObservedEvent::End(ordinal),
+                    });
+                    Ok(())
+                },
+            )?;
+            Ok(observed)
+        }
+
+        let words = vec![
+            vec![1, 2, 3, 4],
+            vec![1, 2, 3, 5],
+            vec![1, 2, 4],
+            vec![3, 1],
+        ];
+        let uninterrupted = collect(&words, 0).unwrap();
+        let resumed = collect(&words, 2).unwrap();
+        assert_eq!(resumed, uninterrupted[8..]);
+        assert_eq!(
+            resumed,
+            vec![
+                ObservedEvent::LoweringStart(2, words[2].clone()),
+                ObservedEvent::Start(2),
+                ObservedEvent::State(2, words[2].clone()),
+                ObservedEvent::End(2),
+                ObservedEvent::LoweringStart(3, words[3].clone()),
+                ObservedEvent::Start(3),
+                ObservedEvent::State(3, words[3].clone()),
+                ObservedEvent::End(3),
+            ]
+        );
+        assert!(collect(&words, words.len()).unwrap().is_empty());
+        let error = collect(&words, words.len() + 1).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidInput);
+    }
+
+    #[test]
+    fn lowering_failure_emits_only_the_pre_lowering_boundary() {
+        struct OpaqueHandle;
+        let timeline = std::cell::RefCell::new(Vec::new());
+        let error = visit_independent_coupled_word_handle_events_from(
+            &OpaqueHandle,
+            &[vec![1, 2]],
+            0,
+            &mut 0,
+            &mut |_, _, _| {
+                timeline.borrow_mut().push("backend_lower");
+                Err(io::Error::other("injected lowering failure"))
+            },
+            &mut |event| {
+                timeline.borrow_mut().push(match event {
+                    CoupledWordStateEvent::WordLoweringStart { .. } => "lowering_start",
+                    CoupledWordStateEvent::WordStart { .. } => "word_start",
+                    CoupledWordStateEvent::State { .. } => "state",
+                    CoupledWordStateEvent::WordEnd { .. } => "word_end",
+                });
+                Ok(())
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::Other);
+        assert_eq!(&*timeline.borrow(), &["lowering_start", "backend_lower"]);
+    }
+
+    #[test]
+    fn every_backend_lower_is_inside_its_word_event_interval() {
+        #[derive(Clone)]
+        struct OpaqueHandle {
+            roots: Vec<u8>,
+        }
+        let active_word = std::cell::Cell::new(false);
+        let words = vec![vec![1, 2, 3, 4], vec![1, 2, 5], vec![1, 4]];
+        visit_independent_coupled_word_handle_events_from(
+            &OpaqueHandle { roots: Vec::new() },
+            &words,
+            0,
+            &mut 0,
+            &mut |source, suffix, _| {
+                assert!(
+                    active_word.get(),
+                    "backend lowering preceded WordLoweringStart"
+                );
+                let mut roots = source.roots.clone();
+                roots.extend_from_slice(suffix);
+                Ok(OpaqueHandle { roots })
+            },
+            &mut |event| {
+                match event {
+                    CoupledWordStateEvent::WordLoweringStart { .. } => {
+                        assert!(!active_word.replace(true));
+                    }
+                    CoupledWordStateEvent::WordStart { .. }
+                    | CoupledWordStateEvent::State { .. } => assert!(active_word.get()),
+                    CoupledWordStateEvent::WordEnd { .. } => {
+                        assert!(active_word.replace(false));
+                    }
+                }
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert!(!active_word.get());
     }
 
     #[test]

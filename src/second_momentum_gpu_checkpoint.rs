@@ -8,9 +8,11 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
-use std::io::{self, BufWriter, Write};
+use std::io::{self, BufWriter, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
+#[cfg(unix)]
+use std::{ffi::c_int, os::fd::AsRawFd};
 
 pub(crate) const CHECKPOINT_SCHEMA_VERSION: &str = "adynkra-11d-second-momentum-word-checkpoint-v1";
 pub(crate) const CHECKPOINT_ROW_COUNT: usize = 101_376;
@@ -37,14 +39,17 @@ pub(crate) struct CheckpointIdentity {
     pub(crate) source_label: String,
     pub(crate) source_copy: u64,
     pub(crate) source_fixture_sha256: String,
+    pub(crate) abstract_certificate_sha256: String,
     pub(crate) source_map_sha256: String,
     pub(crate) reciprocal_map_sha256: String,
     pub(crate) pbw_plan_sha256: String,
     pub(crate) pbw_word_count: u64,
-    pub(crate) static_semantic_sha256: String,
     /// Sorted, duplicate-free finite-field moduli. Accumulator order is bound
     /// to this order.
     pub(crate) primes: Vec<u32>,
+    /// Static semantic digest for each modulus, in exactly the same order as
+    /// `primes`.
+    pub(crate) static_semantic_sha256_by_prime: Vec<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -95,6 +100,99 @@ struct CheckpointEnvelope {
     schema_version: String,
     checkpoint_semantic_sha256: String,
     checkpoint: WordBoundaryCheckpoint,
+}
+
+/// Process-lifetime advisory lock for one checkpoint path. The lock file is
+/// deliberately retained after release so no contender can lock a replaced
+/// inode. The kernel releases the advisory lock if the process exits.
+#[cfg(unix)]
+#[derive(Debug)]
+pub(crate) struct CheckpointLock {
+    file: File,
+    path: PathBuf,
+}
+
+#[cfg(unix)]
+impl CheckpointLock {
+    pub(crate) fn path(&self) -> &Path {
+        &self.path
+    }
+}
+
+#[cfg(unix)]
+impl Drop for CheckpointLock {
+    fn drop(&mut self) {
+        // Closing the file also releases the lock. Explicit unlock makes the
+        // lifetime boundary clear and leaves no stale kernel lock on success.
+        unsafe {
+            unix_flock(self.file.as_raw_fd(), LOCK_UN);
+        }
+    }
+}
+
+#[cfg(unix)]
+const LOCK_EX: c_int = 2;
+#[cfg(unix)]
+const LOCK_NB: c_int = 4;
+#[cfg(unix)]
+const LOCK_UN: c_int = 8;
+
+#[cfg(unix)]
+unsafe extern "C" {
+    #[link_name = "flock"]
+    fn unix_flock(fd: c_int, operation: c_int) -> c_int;
+}
+
+#[cfg(unix)]
+#[derive(Serialize)]
+struct CheckpointLockOwner<'a> {
+    identity_sha256: &'a str,
+    pid: u32,
+}
+
+/// Acquire a nonblocking exclusive lock bound to the checkpoint file name.
+/// A `WouldBlock` error means another live process owns the same label.
+#[cfg(unix)]
+pub(crate) fn acquire_checkpoint_lock(
+    checkpoint_path: &Path,
+    identity: &CheckpointIdentity,
+) -> io::Result<CheckpointLock> {
+    let identity_sha256 = identity_sha256(identity)?;
+    let parent = checkpoint_parent(checkpoint_path);
+    fs::create_dir_all(parent)?;
+    let file_name = checkpoint_path
+        .file_name()
+        .ok_or_else(|| invalid_input("checkpoint path has no file name"))?
+        .to_string_lossy();
+    let path = parent.join(format!("{file_name}.lock"));
+    let mut file = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .open(&path)?;
+    let status = unsafe { unix_flock(file.as_raw_fd(), LOCK_EX | LOCK_NB) };
+    if status != 0 {
+        let error = io::Error::last_os_error();
+        return if error.kind() == io::ErrorKind::WouldBlock {
+            Err(error)
+        } else {
+            Err(io::Error::new(
+                error.kind(),
+                format!("failed to lock {}: {error}", path.display()),
+            ))
+        };
+    }
+    let owner = CheckpointLockOwner {
+        identity_sha256: &identity_sha256,
+        pid: std::process::id(),
+    };
+    let mut bytes = serde_json::to_vec(&owner).map_err(invalid_json)?;
+    bytes.push(b'\n');
+    file.set_len(0)?;
+    file.seek(SeekFrom::Start(0))?;
+    file.write_all(&bytes)?;
+    file.sync_data()?;
+    Ok(CheckpointLock { file, path })
 }
 
 impl WordBoundaryCheckpoint {
@@ -282,10 +380,13 @@ fn validate_identity(identity: &CheckpointIdentity) -> io::Result<()> {
     }
     for (name, digest) in [
         ("source fixture", &identity.source_fixture_sha256),
+        (
+            "abstract certificate",
+            &identity.abstract_certificate_sha256,
+        ),
         ("source map", &identity.source_map_sha256),
         ("reciprocal map", &identity.reciprocal_map_sha256),
         ("PBW plan", &identity.pbw_plan_sha256),
-        ("static semantic", &identity.static_semantic_sha256),
     ] {
         validate_digest(name, digest, io::ErrorKind::InvalidInput)?;
     }
@@ -300,6 +401,22 @@ fn validate_identity(identity: &CheckpointIdentity) -> io::Result<()> {
                 "checkpoint modulus {prime} is not a prime congruent to 3 modulo 4"
             )));
         }
+    }
+    if identity.static_semantic_sha256_by_prime.len() != identity.primes.len() {
+        return Err(invalid_input(
+            "checkpoint static semantic digest count must match prime count",
+        ));
+    }
+    for (&prime, digest) in identity
+        .primes
+        .iter()
+        .zip(&identity.static_semantic_sha256_by_prime)
+    {
+        validate_digest(
+            &format!("static semantic for prime {prime}"),
+            digest,
+            io::ErrorKind::InvalidInput,
+        )?;
     }
     Ok(())
 }
@@ -537,12 +654,16 @@ mod tests {
             source_label: "00010".to_string(),
             source_copy: 1,
             source_fixture_sha256: digest("fixture"),
+            abstract_certificate_sha256: digest("abstract-certificate"),
             source_map_sha256: digest("map"),
             reciprocal_map_sha256: digest("reciprocal"),
             pbw_plan_sha256: digest("pbw-plan"),
             pbw_word_count: 4,
-            static_semantic_sha256: digest("static"),
-            primes: vec![1_073_741_783],
+            primes: vec![1_073_741_723, 1_073_741_783],
+            static_semantic_sha256_by_prime: vec![
+                digest("static-1073741723"),
+                digest("static-1073741783"),
+            ],
         }
     }
 
@@ -648,6 +769,73 @@ mod tests {
         );
         assert_eq!(fs::read(&path).unwrap(), before);
         fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn wrong_second_prime_static_digest_is_rejected() {
+        let directory = test_directory("second-prime-static-digest");
+        let path = directory.join("column.checkpoint.json");
+        let checkpoint = completed_one_word();
+        write_checkpoint_atomic(&path, &checkpoint).unwrap();
+
+        let mut wrong_identity = identity();
+        wrong_identity.static_semantic_sha256_by_prime[1] = digest("wrong-static");
+        let error = load_checkpoint(&path, &wrong_identity).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert!(error.to_string().contains("identity"));
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn wrong_abstract_certificate_identity_is_rejected() {
+        let directory = test_directory("abstract-certificate-identity");
+        let path = directory.join("column.checkpoint.json");
+        write_checkpoint_atomic(&path, &completed_one_word()).unwrap();
+
+        let mut wrong_identity = identity();
+        wrong_identity.abstract_certificate_sha256 = digest("wrong-abstract-certificate");
+        let error = load_checkpoint(&path, &wrong_identity).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert!(error.to_string().contains("identity"));
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn checkpoint_lock_is_exclusive_and_released_with_guard() {
+        let directory = test_directory("exclusive-lock");
+        let path = directory.join("column.checkpoint.json");
+        let first = acquire_checkpoint_lock(&path, &identity()).unwrap();
+        assert_eq!(
+            first.path(),
+            path.with_file_name("column.checkpoint.json.lock")
+        );
+        assert_eq!(
+            acquire_checkpoint_lock(&path, &identity())
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::WouldBlock
+        );
+        drop(first);
+        let second = acquire_checkpoint_lock(&path, &identity()).unwrap();
+        assert_eq!(
+            second.path(),
+            path.with_file_name("column.checkpoint.json.lock")
+        );
+        drop(second);
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn static_digest_cardinality_must_match_prime_count() {
+        let mut wrong_identity = identity();
+        wrong_identity.static_semantic_sha256_by_prime.pop();
+        assert_eq!(
+            WordBoundaryCheckpoint::new(wrong_identity)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::InvalidInput
+        );
     }
 
     #[test]

@@ -24,9 +24,9 @@ use sha2::{Digest, Sha256};
 
 use crate::eleven_dimensional_k_fag_solver::ExactGaussian;
 use crate::eleven_dimensional_second_momentum_fx::{
-    DegreeTwoMomentumMonomial, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
-    SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS, SecondMomentumFxSector, SecondMomentumGaugeBranch,
-    SecondMomentumGaugeChannel,
+    DegreeTwoMomentumMonomial, SecondMomentumFxSector, SecondMomentumGaugeBranch,
+    SecondMomentumGaugeChannel, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
+    SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS,
 };
 
 pub(crate) const GPU_FX_SCHEMA: &str = "adynkra-11d-second-momentum-gpu-fx-v2";
@@ -220,6 +220,18 @@ pub(crate) struct GpuFxColumnReport {
     pub cuda_batch_term_cap: usize,
     pub cuda_host_hard_cap_bytes: u64,
     pub cuda_device_hard_cap_bytes: u64,
+    pub cuda_total_device_hard_cap_bytes: u64,
+    pub persistent_lowering_enabled: bool,
+    pub persistent_lowering_roots: u64,
+    pub persistent_lowering_input_entry_visits: u64,
+    pub persistent_lowering_expanded_entry_visits: u64,
+    pub persistent_lowering_output_entry_visits: u64,
+    pub persistent_lowering_gpu_milliseconds: f64,
+    pub persistent_lowering_high_water_bytes: u64,
+    pub persistent_lowering_peak_output_handle_bytes: u64,
+    pub persistent_lowering_maximum_absolute_coefficient: u64,
+    pub persistent_lowering_device_hard_cap_bytes: u64,
+    pub persistent_lowering_download_chunk_terms: usize,
     pub cpu_parity_terms: usize,
     pub cpu_parity_passed: bool,
     pub end_to_end_milliseconds: u128,
@@ -267,7 +279,11 @@ fn subtract_mod(left: u32, right: u32, prime: u32) -> u32 {
 }
 
 fn negate_mod(value: u32, prime: u32) -> u32 {
-    if value == 0 { 0 } else { prime - value }
+    if value == 0 {
+        0
+    } else {
+        prime - value
+    }
 }
 
 fn multiply_mod(left: u32, right: u32, prime: u32) -> u32 {
@@ -743,7 +759,8 @@ fn gaussian_inverse(value: GaussianResidue, prime: u32) -> GaussianResidue {
 
 #[cfg(feature = "cuda")]
 mod cuda_backend {
-    use std::ffi::{CStr, c_char, c_void};
+    use std::cell::Cell;
+    use std::ffi::{c_char, c_void, CStr};
     use std::marker::PhantomData;
     use std::ptr::NonNull;
     use std::rc::Rc;
@@ -831,6 +848,55 @@ mod cuda_backend {
         reserved: u32,
     }
 
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[repr(C)]
+    struct CudaSparseEntry {
+        key: u64,
+        value: i64,
+    }
+
+    #[derive(Clone, Copy, Debug, Default, Serialize)]
+    #[repr(C)]
+    pub(crate) struct CudaSparseLoweringStats {
+        pub input_count: u64,
+        pub expanded_count: u64,
+        pub reduced_count: u64,
+        pub output_count: u64,
+        pub scratch_high_water_bytes: u64,
+        pub immutable_handle_bytes: u64,
+        pub count_milliseconds: f32,
+        pub scan_milliseconds: f32,
+        pub emit_milliseconds: f32,
+        pub sort_milliseconds: f32,
+        pub reduce_milliseconds: f32,
+        pub select_milliseconds: f32,
+        pub total_milliseconds: f32,
+    }
+
+    #[derive(Clone, Copy, Debug, Default, Serialize)]
+    pub(crate) struct PersistentLoweringSummary {
+        pub enabled: bool,
+        pub roots_lowered: u64,
+        pub input_entry_visits: u64,
+        pub expanded_entry_visits: u64,
+        pub output_entry_visits: u64,
+        pub gpu_milliseconds: f64,
+        pub scratch_high_water_bytes: u64,
+        pub peak_immutable_handle_bytes: u64,
+        pub maximum_absolute_coefficient: u64,
+        pub device_hard_cap_bytes: u64,
+        pub download_chunk_terms: usize,
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    pub(crate) struct PersistentRootProgress {
+        pub phase: &'static str,
+        pub word_ordinal: usize,
+        pub root: usize,
+        pub stats: CudaSparseLoweringStats,
+        pub resident_bytes: u64,
+    }
+
     #[derive(Clone, Copy, Debug, Default)]
     #[repr(C)]
     struct CudaRecouplingStats {
@@ -897,6 +963,13 @@ mod cuda_backend {
             error: *mut c_char,
             error_capacity: usize,
         ) -> i32;
+        fn adynkra_fx_cuda_resident_bytes(context: *const c_void) -> u64;
+        fn adynkra_fx_cuda_reserve_recoupling(
+            context: *mut c_void,
+            source_count: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
         fn adynkra_fx_cuda_set_legacy_contraction(
             context: *mut c_void,
             enabled: i32,
@@ -925,6 +998,49 @@ mod cuda_backend {
             error: *mut c_char,
             error_capacity: usize,
         ) -> i32;
+        fn adynkra_fx_cuda_sparse_context_create(
+            device: i32,
+            hard_cap_bytes: u64,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> *mut c_void;
+        fn adynkra_fx_cuda_sparse_context_destroy(context: *mut c_void);
+        fn adynkra_fx_cuda_sparse_resident_bytes(context: *const c_void) -> u64;
+        fn adynkra_fx_cuda_sparse_handle_upload(
+            context: *mut c_void,
+            entries: *const CudaSparseEntry,
+            count: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> *mut c_void;
+        fn adynkra_fx_cuda_sparse_handle_lower(
+            context: *mut c_void,
+            handle: *const c_void,
+            root: u32,
+            stats: *mut CudaSparseLoweringStats,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> *mut c_void;
+        fn adynkra_fx_cuda_sparse_handle_count(handle: *const c_void) -> u32;
+        fn adynkra_fx_cuda_sparse_handle_max_abs(handle: *const c_void) -> u64;
+        fn adynkra_fx_cuda_sparse_handle_download_range(
+            context: *mut c_void,
+            handle: *const c_void,
+            start: u32,
+            entries: *mut CudaSparseEntry,
+            capacity: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_sparse_handle_download(
+            context: *mut c_void,
+            handle: *const c_void,
+            entries: *mut CudaSparseEntry,
+            capacity: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_sparse_handle_destroy(handle: *mut c_void);
     }
 
     #[derive(Debug)]
@@ -1244,6 +1360,32 @@ mod cuda_backend {
 
         pub(crate) fn flat_plan_sha256(&self) -> &str {
             &self.flat_plan_sha256
+        }
+
+        pub(crate) fn resident_bytes(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_resident_bytes(self.context.as_ptr()) }
+        }
+
+        pub(crate) fn reserve_recoupling_terms(&mut self, terms: usize) -> Result<(), String> {
+            let terms = u32::try_from(terms)
+                .map_err(|_| "CUDA recoupling reservation exceeds u32".to_string())?;
+            if terms == 0 {
+                return Err("CUDA recoupling reservation is empty".to_string());
+            }
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_reserve_recoupling(
+                    self.context.as_ptr(),
+                    terms,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(error_string(&error))
+            }
         }
 
         #[cfg(test)]
@@ -1673,6 +1815,464 @@ mod cuda_backend {
         }
     }
 
+    struct PersistentSparseContext {
+        raw: NonNull<c_void>,
+    }
+
+    impl PersistentSparseContext {
+        fn new(device: i32, hard_cap_bytes: u64) -> Result<Self, String> {
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let raw = unsafe {
+                adynkra_fx_cuda_sparse_context_create(
+                    device,
+                    hard_cap_bytes,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            NonNull::new(raw)
+                .map(|raw| Self { raw })
+                .ok_or_else(|| error_string(&error))
+        }
+
+        fn upload(&self, entries: &[CudaSparseEntry]) -> Result<PersistentSparseHandle, String> {
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let raw = unsafe {
+                adynkra_fx_cuda_sparse_handle_upload(
+                    self.raw.as_ptr(),
+                    entries.as_ptr(),
+                    u32::try_from(entries.len())
+                        .map_err(|_| "persistent sparse input exceeds u32".to_string())?,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            NonNull::new(raw)
+                .map(|raw| PersistentSparseHandle { raw })
+                .ok_or_else(|| error_string(&error))
+        }
+
+        fn resident_bytes(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_sparse_resident_bytes(self.raw.as_ptr()) }
+        }
+
+        fn lower(
+            &self,
+            handle: &PersistentSparseHandle,
+            root: usize,
+        ) -> Result<(PersistentSparseHandle, CudaSparseLoweringStats), String> {
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let mut stats = CudaSparseLoweringStats::default();
+            let raw = unsafe {
+                adynkra_fx_cuda_sparse_handle_lower(
+                    self.raw.as_ptr(),
+                    handle.raw.as_ptr(),
+                    u32::try_from(root).map_err(|_| "persistent root exceeds u32".to_string())?,
+                    &mut stats,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            NonNull::new(raw)
+                .map(|raw| (PersistentSparseHandle { raw }, stats))
+                .ok_or_else(|| error_string(&error))
+        }
+
+        fn download(&self, handle: &PersistentSparseHandle) -> Result<Vec<(u64, i64)>, String> {
+            let count = unsafe { adynkra_fx_cuda_sparse_handle_count(handle.raw.as_ptr()) };
+            let mut entries = vec![CudaSparseEntry { key: 0, value: 0 }; count as usize];
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_sparse_handle_download(
+                    self.raw.as_ptr(),
+                    handle.raw.as_ptr(),
+                    entries.as_mut_ptr(),
+                    count,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(entries
+                .into_iter()
+                .map(|entry| (entry.key, entry.value))
+                .collect())
+        }
+
+        fn visit_download<F>(
+            &self,
+            handle: &PersistentSparseHandle,
+            chunk_terms: usize,
+            mut visit: F,
+        ) -> Result<u64, String>
+        where
+            F: FnMut(u64, i64) -> Result<(), String>,
+        {
+            if chunk_terms == 0 || chunk_terms > u32::MAX as usize {
+                return Err("persistent CUDA download chunk is invalid".to_string());
+            }
+            let count = unsafe { adynkra_fx_cuda_sparse_handle_count(handle.raw.as_ptr()) };
+            let mut buffer = vec![CudaSparseEntry { key: 0, value: 0 }; chunk_terms];
+            let mut start = 0_u32;
+            while start < count {
+                let take = (count - start).min(chunk_terms as u32);
+                let mut error = [0_i8; ERROR_CAPACITY];
+                let status = unsafe {
+                    adynkra_fx_cuda_sparse_handle_download_range(
+                        self.raw.as_ptr(),
+                        handle.raw.as_ptr(),
+                        start,
+                        buffer.as_mut_ptr(),
+                        take,
+                        error.as_mut_ptr(),
+                        error.len(),
+                    )
+                };
+                if status != 0 {
+                    return Err(error_string(&error));
+                }
+                for entry in &buffer[..take as usize] {
+                    visit(entry.key, entry.value)?;
+                }
+                start += take;
+            }
+            Ok(u64::from(count))
+        }
+    }
+
+    impl Drop for PersistentSparseContext {
+        fn drop(&mut self) {
+            unsafe { adynkra_fx_cuda_sparse_context_destroy(self.raw.as_ptr()) };
+        }
+    }
+
+    struct PersistentSparseHandle {
+        raw: NonNull<c_void>,
+    }
+
+    impl PersistentSparseHandle {
+        fn maximum_absolute_coefficient(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_sparse_handle_max_abs(self.raw.as_ptr()) }
+        }
+    }
+
+    impl Drop for PersistentSparseHandle {
+        fn drop(&mut self) {
+            unsafe { adynkra_fx_cuda_sparse_handle_destroy(self.raw.as_ptr()) };
+        }
+    }
+
+    fn validate_sparse_entries(entries: &[(u64, i64)]) -> Result<(), String> {
+        if entries.is_empty() {
+            return Err("exact CUDA sparse input is empty".to_string());
+        }
+        if entries.len() > (u32::MAX / 13) as usize {
+            return Err("exact CUDA sparse input exceeds the u32 expansion bound".to_string());
+        }
+        for (index, &(key, coefficient)) in entries.iter().enumerate() {
+            let free_spinor = (key >> 32) as u32;
+            let mask = key as u32;
+            if free_spinor >= 32
+                || mask.count_ones() != 12
+                || coefficient == 0
+                || coefficient == i64::MIN
+                || index != 0 && entries[index - 1].0 >= key
+            {
+                return Err(
+                    "CUDA sparse input must be sorted unique nonzero degree-12 data".to_string(),
+                );
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) fn persistent_sparse_enabled() -> Result<bool, String> {
+        match std::env::var("ADYNKRA_GPU_FX_PERSISTENT_LOWERING") {
+            Ok(value) => match value.as_str() {
+                "1" | "true" | "yes" => Ok(true),
+                "0" | "false" | "no" => Ok(false),
+                _ => Err(format!(
+                    "invalid ADYNKRA_GPU_FX_PERSISTENT_LOWERING={value}"
+                )),
+            },
+            Err(std::env::VarError::NotPresent) => Ok(false),
+            Err(error) => Err(format!(
+                "cannot read ADYNKRA_GPU_FX_PERSISTENT_LOWERING: {error}"
+            )),
+        }
+    }
+
+    fn upload_canonical_highest(
+        context: &PersistentSparseContext,
+        highest: &crate::eleven_dimensional_level16_couplings::CanonicalSparseHighest64,
+        host_staging_cap_bytes: u64,
+    ) -> std::io::Result<PersistentSparseHandle> {
+        let required_bytes = highest
+            .term_count()
+            .checked_mul(std::mem::size_of::<CudaSparseEntry>())
+            .and_then(|bytes| u64::try_from(bytes).ok())
+            .ok_or_else(|| std::io::Error::other("persistent highest staging size overflow"))?;
+        if required_bytes > host_staging_cap_bytes {
+            return Err(std::io::Error::other(format!(
+                "persistent highest staging requires {required_bytes} host bytes, above bounded allowance {host_staging_cap_bytes}"
+            )));
+        }
+        let mut entries = Vec::with_capacity(highest.term_count());
+        highest.visit_terms(|key, value| {
+            entries.push(CudaSparseEntry { key, value });
+            Ok(())
+        })?;
+        let handle = context.upload(&entries).map_err(std::io::Error::other)?;
+        if handle.maximum_absolute_coefficient() != highest.maximum_absolute_coefficient() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "persistent CUDA highest-state maximum coefficient changed during upload",
+            ));
+        }
+        Ok(handle)
+    }
+
+    pub(crate) fn visit_persistent_column_contributions<F, P>(
+        tranche: &str,
+        local_ordinal: usize,
+        device: i32,
+        device_hard_cap_bytes: u64,
+        host_staging_cap_bytes: u64,
+        download_chunk_terms: usize,
+        mut visit_term: F,
+        mut root_progress: P,
+    ) -> Result<(GpuFxColumnInput, PersistentLoweringSummary), String>
+    where
+        F: FnMut(RecoupledSourceTerm) -> std::io::Result<()>,
+        P: FnMut(PersistentRootProgress),
+    {
+        if download_chunk_terms == 0 {
+            return Err("persistent CUDA download chunk is empty".to_string());
+        }
+        let context = PersistentSparseContext::new(device, device_hard_cap_bytes)?;
+        let current_word = Cell::new(None::<usize>);
+        let maximum_observed = Cell::new(0_u64);
+        let mut summary = PersistentLoweringSummary {
+            enabled: true,
+            device_hard_cap_bytes,
+            download_chunk_terms,
+            ..PersistentLoweringSummary::default()
+        };
+
+        let mut lower_word = |source: &PersistentSparseHandle,
+                              roots: &[u8],
+                              maximum: &mut i128|
+         -> std::io::Result<PersistentSparseHandle> {
+            if roots.is_empty() || roots.iter().any(|root| !(1..=5).contains(root)) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "persistent CUDA PBW segment contains an invalid simple root",
+                ));
+            }
+            let word_ordinal = current_word.get().ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "persistent CUDA lowering started outside a word boundary",
+                )
+            })?;
+            let mut owned = None;
+            for &simple_root in roots {
+                let base = owned.as_ref().unwrap_or(source);
+                root_progress(PersistentRootProgress {
+                    phase: "started",
+                    word_ordinal,
+                    root: usize::from(simple_root),
+                    stats: CudaSparseLoweringStats::default(),
+                    resident_bytes: context.resident_bytes(),
+                });
+                let (next, stats) = context
+                    .lower(base, usize::from(simple_root - 1))
+                    .map_err(std::io::Error::other)?;
+                let next_maximum = next.maximum_absolute_coefficient();
+                maximum_observed.set(maximum_observed.get().max(next_maximum));
+                *maximum = (*maximum).max(i128::from(next_maximum));
+                summary.roots_lowered = summary
+                    .roots_lowered
+                    .checked_add(1)
+                    .ok_or_else(|| std::io::Error::other("persistent root count overflow"))?;
+                summary.input_entry_visits = summary
+                    .input_entry_visits
+                    .checked_add(stats.input_count)
+                    .ok_or_else(|| std::io::Error::other("persistent input count overflow"))?;
+                summary.expanded_entry_visits = summary
+                    .expanded_entry_visits
+                    .checked_add(stats.expanded_count)
+                    .ok_or_else(|| std::io::Error::other("persistent expansion count overflow"))?;
+                summary.output_entry_visits = summary
+                    .output_entry_visits
+                    .checked_add(stats.output_count)
+                    .ok_or_else(|| std::io::Error::other("persistent output count overflow"))?;
+                summary.gpu_milliseconds += f64::from(stats.total_milliseconds);
+                summary.scratch_high_water_bytes = summary
+                    .scratch_high_water_bytes
+                    .max(stats.scratch_high_water_bytes);
+                summary.peak_immutable_handle_bytes = summary
+                    .peak_immutable_handle_bytes
+                    .max(stats.immutable_handle_bytes);
+                root_progress(PersistentRootProgress {
+                    phase: "completed",
+                    word_ordinal,
+                    root: usize::from(simple_root),
+                    stats,
+                    resident_bytes: context.resident_bytes(),
+                });
+                owned = Some(next);
+            }
+            owned
+                .ok_or_else(|| std::io::Error::other("persistent CUDA lowering produced no handle"))
+        };
+
+        let mut download_terms = |handle: &PersistentSparseHandle,
+                                  visit: &mut dyn FnMut(u64, i64) -> std::io::Result<()>|
+         -> std::io::Result<u64> {
+            context
+                .visit_download(handle, download_chunk_terms, |key, value| {
+                    visit(key, value).map_err(|error| error.to_string())
+                })
+                .map_err(std::io::Error::other)
+        };
+
+        let metadata = match tranche {
+            "20001" => {
+                let preflight =
+                    crate::eleven_dimensional_second_momentum_20001_fx::gpu_column_preflight(
+                        local_ordinal,
+                    )
+                    .map_err(|error| error.to_string())?;
+                crate::eleven_dimensional_second_momentum_20001_fx::
+                    visit_gpu_column_contribution_events_from_handles(
+                        &preflight,
+                        0,
+                        |highest| {
+                            let handle = upload_canonical_highest(
+                                &context,
+                                highest,
+                                host_staging_cap_bytes,
+                            )?;
+                            maximum_observed.set(
+                                maximum_observed
+                                    .get()
+                                    .max(handle.maximum_absolute_coefficient()),
+                            );
+                            Ok(handle)
+                        },
+                        &mut lower_word,
+                        &mut download_terms,
+                        |event| {
+                            use crate::eleven_dimensional_second_momentum_20001_fx::
+                                SecondMomentum20001GpuColumnEvent;
+                            match event {
+                                SecondMomentum20001GpuColumnEvent::WordLoweringStart {
+                                    requested_word_ordinal,
+                                    ..
+                                } => current_word.set(Some(requested_word_ordinal)),
+                                SecondMomentum20001GpuColumnEvent::Term { term, .. } => {
+                                    visit_term(term)?;
+                                }
+                                SecondMomentum20001GpuColumnEvent::WordStart { .. }
+                                | SecondMomentum20001GpuColumnEvent::WordEnd { .. } => {}
+                            }
+                            Ok(())
+                        },
+                    )
+            }
+            "30001" => {
+                let preflight =
+                    crate::eleven_dimensional_second_momentum_30001_fx::gpu_column_preflight(
+                        local_ordinal,
+                    )
+                    .map_err(|error| error.to_string())?;
+                crate::eleven_dimensional_second_momentum_30001_fx::
+                    visit_gpu_column_contribution_events_from_handles(
+                        &preflight,
+                        0,
+                        |highest| {
+                            let handle = upload_canonical_highest(
+                                &context,
+                                highest,
+                                host_staging_cap_bytes,
+                            )?;
+                            maximum_observed.set(
+                                maximum_observed
+                                    .get()
+                                    .max(handle.maximum_absolute_coefficient()),
+                            );
+                            Ok(handle)
+                        },
+                        &mut lower_word,
+                        &mut download_terms,
+                        |event| {
+                            use crate::eleven_dimensional_second_momentum_30001_fx::
+                                SecondMomentum30001GpuColumnEvent;
+                            match event {
+                                SecondMomentum30001GpuColumnEvent::WordLoweringStart {
+                                    requested_word_ordinal,
+                                    ..
+                                } => current_word.set(Some(requested_word_ordinal)),
+                                SecondMomentum30001GpuColumnEvent::Term { term, .. } => {
+                                    visit_term(term)?;
+                                }
+                                SecondMomentum30001GpuColumnEvent::WordStart { .. }
+                                | SecondMomentum30001GpuColumnEvent::WordEnd { .. } => {}
+                            }
+                            Ok(())
+                        },
+                    )
+            }
+            _ => {
+                return Err("persistent CUDA tranche must be 20001 or 30001".to_string());
+            }
+        }
+        .map_err(|error| error.to_string())?;
+        summary.maximum_absolute_coefficient = maximum_observed.get();
+        Ok((metadata, summary))
+    }
+
+    pub(crate) fn lower_sparse_word_exact(
+        entries: &[(u64, i64)],
+        roots: &[usize],
+        device: i32,
+    ) -> Result<(Vec<(u64, i64)>, Vec<CudaSparseLoweringStats>), String> {
+        let hard_cap_bytes = environment_u64(
+            "ADYNKRA_GPU_FX_DEVICE_CAP_BYTES",
+            DEFAULT_STREAM_DEVICE_HARD_CAP_BYTES,
+        )?;
+        lower_sparse_word_exact_with_cap(entries, roots, device, hard_cap_bytes)
+    }
+
+    fn lower_sparse_word_exact_with_cap(
+        entries: &[(u64, i64)],
+        roots: &[usize],
+        device: i32,
+        hard_cap_bytes: u64,
+    ) -> Result<(Vec<(u64, i64)>, Vec<CudaSparseLoweringStats>), String> {
+        validate_sparse_entries(entries)?;
+        if roots.is_empty() || roots.iter().any(|root| *root >= 5) {
+            return Err("persistent CUDA sparse root word is invalid".to_string());
+        }
+        let context = PersistentSparseContext::new(device, hard_cap_bytes)?;
+        let packed = entries
+            .iter()
+            .map(|&(key, value)| CudaSparseEntry { key, value })
+            .collect::<Vec<_>>();
+        let mut handle = context.upload(&packed)?;
+        let mut telemetry = Vec::with_capacity(roots.len());
+        for &root in roots {
+            let (next, stats) = context.lower(&handle, root)?;
+            telemetry.push(stats);
+            handle = next;
+        }
+        let output = context.download(&handle)?;
+        Ok((output, telemetry))
+    }
+
     pub(crate) fn lower_sparse_exact(
         entries: &[(u64, i64)],
         root: usize,
@@ -1691,20 +2291,8 @@ mod cuda_backend {
                 "CUDA sparse lowering requires {required_host_bytes} host bytes, above hard cap {host_hard_cap_bytes}"
             ));
         }
-        for (index, &(key, coefficient)) in entries.iter().enumerate() {
-            let free_spinor = (key >> 32) as u32;
-            let mask = key as u32;
-            if free_spinor >= 32
-                || mask.count_ones() != 12
-                || coefficient == 0
-                || coefficient == i64::MIN
-                || index != 0 && entries[index - 1].0 >= key
-            {
-                return Err(
-                    "CUDA sparse-lowering input must be sorted unique nonzero degree-12 data"
-                        .to_string(),
-                );
-            }
+        validate_sparse_entries(entries)?;
+        for &(_, coefficient) in entries {
             if coefficient.unsigned_abs() > i64::MAX as u64 / 13 {
                 return Err("CUDA sparse-lowering coefficient exceeds exact bound".to_string());
             }
@@ -1821,6 +2409,7 @@ mod cuda_backend {
             let input = sample_column(97);
             let cpu = accumulate_column_cpu(&static_data, &input).unwrap();
             let mut cuda = CudaModularFx::new(&static_data, 0).unwrap();
+            assert!(cuda.resident_bytes() > 0);
             let (gpu, timing) = cuda.accumulate(&input).unwrap();
             assert_eq!(gpu.rows, cpu.rows);
             assert_eq!(gpu.semantic_sha256, cpu.semantic_sha256);
@@ -1961,13 +2550,11 @@ mod cuda_backend {
                 exterior_mask: 0xfff0_0000,
                 coefficient: 0,
             };
-            assert!(
-                canonical
-                    .terms
-                    .iter()
-                    .all(|term| pack_recoupling_key(term).unwrap()
-                        != pack_recoupling_key(&cancel).unwrap())
-            );
+            assert!(canonical
+                .terms
+                .iter()
+                .all(|term| pack_recoupling_key(term).unwrap()
+                    != pack_recoupling_key(&cancel).unwrap()));
             cancel.coefficient = 123_456_789;
             let mut cancel_negative = cancel;
             cancel_negative.coefficient = -cancel.coefficient;
@@ -2054,17 +2641,15 @@ mod cuda_backend {
         fn cuda_streaming_caps_fail_before_batch_allocation() {
             let static_data = ModularFxStaticData::build(GPU_FX_PRIMES[0]).unwrap();
             let cuda = CudaModularFx::new(&static_data, 0).unwrap();
-            assert!(
-                CudaStreamingColumnAccumulator::new(
-                    cuda,
-                    CudaStreamingConfig {
-                        batch_terms: 1_000_000,
-                        host_hard_cap_bytes: 1,
-                        device_hard_cap_bytes: 256 * 1024 * 1024,
-                    },
-                )
-                .is_err()
-            );
+            assert!(CudaStreamingColumnAccumulator::new(
+                cuda,
+                CudaStreamingConfig {
+                    batch_terms: 1_000_000,
+                    host_hard_cap_bytes: 1,
+                    device_hard_cap_bytes: 256 * 1024 * 1024,
+                },
+            )
+            .is_err());
 
             let required = sparse_lowering_host_bytes(250_000_000).unwrap();
             assert!(required > DEFAULT_STREAM_HOST_HARD_CAP_BYTES);
@@ -2086,6 +2671,258 @@ mod cuda_backend {
             assert!(lower_sparse_exact(&[(3_u64 << 32 | 3, 1)], 0, 0).is_err());
             assert!(lower_sparse_exact(&[(3_u64 << 32 | 0xfff, i64::MIN)], 0, 0).is_err());
             assert!(lower_sparse_exact(&[entries[1], entries[0]], 0, 0).is_err());
+        }
+
+        #[test]
+        fn persistent_cuda_sparse_word_matches_exact_cpu_prefixes() {
+            let entries = vec![
+                (((3_u64) << 32) | 0x0000_0fff, -17),
+                (((3_u64) << 32) | 0x0000_1ffe, 9),
+                (((9_u64) << 32) | 0x0000_0fff, 4),
+            ];
+            for roots in [&[0_usize][..], &[4][..], &[0, 1][..], &[4, 3][..]] {
+                let mut expected = entries.clone();
+                for &root in roots {
+                    expected = cpu_lower_for_test(&expected, root);
+                }
+                assert!(!expected.is_empty(), "fixture root word {roots:?}");
+                let (observed, telemetry) = lower_sparse_word_exact(&entries, roots, 0).unwrap();
+                assert_eq!(observed, expected, "root word {roots:?}");
+                assert_eq!(telemetry.len(), roots.len());
+                for (step, stats) in telemetry.iter().enumerate() {
+                    assert!(stats.input_count > 0, "step {step}");
+                    assert!(stats.expanded_count >= stats.output_count, "step {step}");
+                    assert!(stats.reduced_count >= stats.output_count, "step {step}");
+                    assert!(stats.scratch_high_water_bytes > 0, "step {step}");
+                    assert_eq!(
+                        stats.immutable_handle_bytes,
+                        stats.output_count * std::mem::size_of::<CudaSparseEntry>() as u64,
+                        "step {step}"
+                    );
+                    assert!(stats.total_milliseconds > 0.0, "step {step}");
+                }
+            }
+        }
+
+        #[test]
+        fn persistent_cuda_sparse_caps_and_deferred_context_destroy_are_safe() {
+            assert!(PersistentSparseContext::new(0, 1).is_err());
+            let entries = vec![CudaSparseEntry {
+                key: (3_u64 << 32) | 0x0000_0fff,
+                value: 7,
+            }];
+            let tiny = PersistentSparseContext::new(0, 24).unwrap();
+            assert!(tiny.resident_bytes() <= 24);
+            assert!(tiny.upload(&entries).is_err());
+            drop(tiny);
+
+            let context = PersistentSparseContext::new(0, 1024 * 1024).unwrap();
+            let handle = context.upload(&entries).unwrap();
+            assert_eq!(handle.maximum_absolute_coefficient(), 7);
+            let mut ranged = Vec::new();
+            assert_eq!(
+                context
+                    .visit_download(&handle, 1, |key, value| {
+                        ranged.push((key, value));
+                        Ok(())
+                    })
+                    .unwrap(),
+                1
+            );
+            assert_eq!(ranged, vec![(entries[0].key, entries[0].value)]);
+            let other = PersistentSparseContext::new(0, 1024 * 1024).unwrap();
+            let mut wrong_owner_stats = CudaSparseLoweringStats::default();
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let wrong_owner = unsafe {
+                adynkra_fx_cuda_sparse_handle_lower(
+                    other.raw.as_ptr(),
+                    handle.raw.as_ptr(),
+                    0,
+                    &mut wrong_owner_stats,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            assert!(wrong_owner.is_null());
+            assert!(error_string(&error).contains("invalid persistent sparse lowering input"));
+            drop(other);
+            // The C boundary defers destruction until the final immutable
+            // handle is released, preventing a dangling raw owner pointer.
+            drop(context);
+            drop(handle);
+        }
+
+        #[test]
+        fn persistent_cuda_sparse_zero_state_and_coefficient_bound_are_exact() {
+            let odd_mask = (0..12).fold(0_u32, |mask, bit| mask | (1_u32 << (2 * bit + 1)));
+            let zero_input = vec![((1_u64 << 32) | u64::from(odd_mask), 7)];
+            let (zero, telemetry) = lower_sparse_word_exact(&zero_input, &[4, 3], 0).unwrap();
+            assert!(zero.is_empty());
+            assert_eq!(telemetry.len(), 2);
+            assert_eq!(telemetry[0].output_count, 0);
+            assert_eq!(telemetry[1].input_count, 0);
+
+            let too_large = vec![((3_u64 << 32) | 0x0000_0fff, i64::MAX / 13 + 1)];
+            assert!(lower_sparse_word_exact(&too_large, &[0], 0)
+                .unwrap_err()
+                .contains("coefficient bound"));
+        }
+
+        #[test]
+        #[ignore = "benchmarks one million canonical degree-12 entries"]
+        fn benchmark_persistent_cuda_sparse_million_entry_root() {
+            const COUNT: usize = 1_000_000;
+            let mut entries = Vec::with_capacity(COUNT);
+            let mut mask = (1_u32 << 12) - 1;
+            for ordinal in 0..COUNT {
+                entries.push((
+                    (3_u64 << 32) | u64::from(mask),
+                    ordinal as i64 % 1_000_003 + 1,
+                ));
+                let low = mask & mask.wrapping_neg();
+                let ripple = mask.wrapping_add(low);
+                mask = ripple | (((mask ^ ripple) >> 2) / low);
+            }
+            let legacy_started = Instant::now();
+            let (legacy, legacy_kernel_ms) = lower_sparse_exact(&entries, 4, 0).unwrap();
+            let legacy_wall_ms = legacy_started.elapsed().as_secs_f64() * 1_000.0;
+            let persistent_started = Instant::now();
+            let (persistent, telemetry) = lower_sparse_word_exact(&entries, &[4], 0).unwrap();
+            let persistent_wall_ms = persistent_started.elapsed().as_secs_f64() * 1_000.0;
+            assert_eq!(persistent, legacy);
+            let stats = telemetry[0];
+            eprintln!(
+                "{{\"entries\":{COUNT},\"output_entries\":{},\"legacy_kernel_ms\":{legacy_kernel_ms},\"legacy_wall_ms\":{legacy_wall_ms},\"persistent_gpu_ms\":{},\"persistent_wall_ms\":{persistent_wall_ms},\"scratch_high_water_bytes\":{},\"handle_bytes\":{}}}",
+                persistent.len(),
+                stats.total_milliseconds,
+                stats.scratch_high_water_bytes,
+                stats.immutable_handle_bytes
+            );
+        }
+
+        #[test]
+        #[ignore = "runs one real 30001 word through CPU and persistent CUDA lowering"]
+        fn persistent_cuda_real_30001_selected_word_matches_cpu() {
+            use crate::eleven_dimensional_second_momentum_30001_fx::SecondMomentum30001GpuColumnEvent;
+
+            const LOCAL_ORDINAL: usize = 12;
+            const WORD_ORDINAL: usize = 1;
+            const STOP: &str = "real persistent prefix complete";
+            fn hash_term(hash: &mut Sha256, term: RecoupledSourceTerm) {
+                hash.update(term.momentum_pair);
+                hash.update([term.free_spinor]);
+                hash.update(term.exterior_mask.to_le_bytes());
+                hash.update(term.coefficient.to_le_bytes());
+            }
+
+            let preflight =
+                crate::eleven_dimensional_second_momentum_30001_fx::gpu_column_preflight(
+                    LOCAL_ORDINAL,
+                )
+                .unwrap();
+            let cpu_started = Instant::now();
+            let mut cpu_hash = Sha256::new();
+            let mut cpu_terms = 0_u64;
+            let cpu_result = crate::eleven_dimensional_second_momentum_30001_fx::
+                visit_gpu_column_contribution_events_from(&preflight, WORD_ORDINAL, |event| match event {
+                    SecondMomentum30001GpuColumnEvent::Term { term, .. } => {
+                        hash_term(&mut cpu_hash, term);
+                        cpu_terms += 1;
+                        Ok(())
+                    }
+                    SecondMomentum30001GpuColumnEvent::WordEnd {
+                        requested_word_ordinal: WORD_ORDINAL,
+                        ..
+                    } => Err(std::io::Error::other(STOP)),
+                    _ => Ok(()),
+                });
+            assert_eq!(cpu_result.unwrap_err().to_string(), STOP);
+            let cpu_milliseconds = cpu_started.elapsed().as_secs_f64() * 1_000.0;
+            let cpu_digest = format!("{:x}", cpu_hash.finalize());
+
+            let context = PersistentSparseContext::new(0, 2 * 1024 * 1024 * 1024).unwrap();
+            let current_word = Cell::new(None::<usize>);
+            let mut telemetry = Vec::new();
+            let mut gpu_hash = Sha256::new();
+            let mut gpu_terms = 0_u64;
+            let gpu_started = Instant::now();
+            let gpu_result = crate::eleven_dimensional_second_momentum_30001_fx::
+                visit_gpu_column_contribution_events_from_handles(
+                    &preflight,
+                    WORD_ORDINAL,
+                    |highest| upload_canonical_highest(&context, highest, 256 * 1024 * 1024),
+                    |source, roots, observed_maximum| {
+                        let mut owned = None;
+                        for &simple_root in roots {
+                            let base = owned.as_ref().unwrap_or(source);
+                            let (next, stats) = context
+                                .lower(base, usize::from(simple_root - 1))
+                                .map_err(std::io::Error::other)?;
+                            *observed_maximum = (*observed_maximum)
+                                .max(i128::from(next.maximum_absolute_coefficient()));
+                            telemetry.push((
+                                current_word.get().unwrap(),
+                                usize::from(simple_root),
+                                stats,
+                                next.maximum_absolute_coefficient(),
+                            ));
+                            owned = Some(next);
+                        }
+                        owned.ok_or_else(|| std::io::Error::other("empty real PBW segment"))
+                    },
+                    |handle, visit| {
+                        context
+                            .visit_download(handle, 65_536, |key, value| {
+                                visit(key, value).map_err(|error| error.to_string())
+                            })
+                            .map_err(std::io::Error::other)
+                    },
+                    |event| match event {
+                        SecondMomentum30001GpuColumnEvent::WordLoweringStart {
+                            requested_word_ordinal,
+                            ..
+                        } => {
+                            current_word.set(Some(requested_word_ordinal));
+                            Ok(())
+                        }
+                        SecondMomentum30001GpuColumnEvent::Term { term, .. } => {
+                            hash_term(&mut gpu_hash, term);
+                            gpu_terms += 1;
+                            Ok(())
+                        }
+                        SecondMomentum30001GpuColumnEvent::WordEnd {
+                            requested_word_ordinal: WORD_ORDINAL,
+                            ..
+                        } => Err(std::io::Error::other(STOP)),
+                        _ => Ok(()),
+                    },
+                );
+            assert_eq!(gpu_result.unwrap_err().to_string(), STOP);
+            let gpu_wall_milliseconds = gpu_started.elapsed().as_secs_f64() * 1_000.0;
+            let gpu_digest = format!("{:x}", gpu_hash.finalize());
+            assert_eq!(gpu_terms, cpu_terms);
+            assert_eq!(gpu_digest, cpu_digest);
+            assert!(!telemetry.is_empty());
+            let gpu_stage_milliseconds = telemetry
+                .iter()
+                .map(|(_, _, stats, _)| f64::from(stats.total_milliseconds))
+                .sum::<f64>();
+            let high_water_bytes = telemetry
+                .iter()
+                .map(|(_, _, stats, _)| stats.scratch_high_water_bytes)
+                .max()
+                .unwrap();
+            let maximum = telemetry
+                .iter()
+                .map(|(_, _, _, maximum)| *maximum)
+                .max()
+                .unwrap();
+            let input_entries = telemetry[0].2.input_count;
+            let output_entries = telemetry.last().unwrap().2.output_count;
+            eprintln!(
+                "{{\"tranche\":\"30001\",\"local_ordinal\":{LOCAL_ORDINAL},\"word_ordinal\":{WORD_ORDINAL},\"terms\":{gpu_terms},\"roots\":{},\"input_entries\":{input_entries},\"output_entries\":{output_entries},\"cpu_ms\":{cpu_milliseconds},\"persistent_gpu_ms\":{gpu_stage_milliseconds},\"persistent_wall_ms\":{gpu_wall_milliseconds},\"high_water_bytes\":{high_water_bytes},\"maximum_absolute_coefficient\":\"{maximum}\",\"digest\":\"{gpu_digest}\"}}",
+                telemetry.len()
+            );
         }
 
         fn cpu_lower_for_test(entries: &[(u64, i64)], root: usize) -> Vec<(u64, i64)> {
@@ -2141,7 +2978,7 @@ mod cuda_backend {
 }
 
 #[cfg(feature = "cuda")]
-pub(crate) use cuda_backend::{CudaModularFx, lower_sparse_exact};
+pub(crate) use cuda_backend::{lower_sparse_exact, CudaModularFx};
 
 #[cfg(feature = "cuda")]
 pub(crate) fn run_cuda_column(
@@ -2176,8 +3013,43 @@ pub(crate) fn run_cuda_column(
             config.host_hard_cap_bytes
         ));
     }
-    let cuda = CudaModularFx::new(&static_data, device)?;
-    let mut stream = cuda_backend::CudaStreamingColumnAccumulator::new(cuda, config)?;
+    const PERSISTENT_DEVICE_HEADROOM_BYTES: u64 = 64 * 1024 * 1024;
+    const MAX_PERSISTENT_DOWNLOAD_CHUNK_TERMS: usize = 65_536;
+    let total_device_hard_cap_bytes = config.device_hard_cap_bytes;
+    let persistent_enabled = cuda_backend::persistent_sparse_enabled()?;
+    let mut persistent_device_hard_cap_bytes = 0_u64;
+    let mut persistent_host_staging_cap_bytes = 0_u64;
+    let mut persistent_download_chunk_terms = 0_usize;
+    let mut stream_config = config;
+    let mut cuda = CudaModularFx::new(&static_data, device)?;
+    if persistent_enabled {
+        cuda.reserve_recoupling_terms(config.batch_terms)?;
+        let recoupling_resident_bytes = cuda.resident_bytes();
+        persistent_device_hard_cap_bytes = total_device_hard_cap_bytes
+            .checked_sub(recoupling_resident_bytes)
+            .and_then(|remaining| remaining.checked_sub(PERSISTENT_DEVICE_HEADROOM_BYTES))
+            .ok_or_else(|| {
+                format!(
+                    "combined CUDA cap {total_device_hard_cap_bytes} cannot hold reserved F_X workspace {recoupling_resident_bytes} plus {PERSISTENT_DEVICE_HEADROOM_BYTES} bytes headroom"
+                )
+            })?;
+        stream_config.device_hard_cap_bytes = recoupling_resident_bytes;
+        persistent_host_staging_cap_bytes = config
+            .host_hard_cap_bytes
+            .checked_sub(host_peak_with_parity)
+            .ok_or_else(|| "persistent CUDA host staging budget underflow".to_string())?;
+        persistent_download_chunk_terms = usize::try_from(
+            persistent_host_staging_cap_bytes / std::mem::size_of::<(u64, i64)>() as u64,
+        )
+        .unwrap_or(usize::MAX)
+        .min(MAX_PERSISTENT_DOWNLOAD_CHUNK_TERMS);
+        if persistent_download_chunk_terms == 0 {
+            return Err(
+                "CUDA host cap leaves no bounded persistent download staging space".to_string(),
+            );
+        }
+    }
+    let mut stream = cuda_backend::CudaStreamingColumnAccumulator::new(cuda, stream_config)?;
     let device_name = stream.device_name().to_string();
     let flat_plan_sha256 = stream.flat_plan_sha256().to_string();
     let mut parity_terms = Vec::with_capacity(cpu_parity_terms);
@@ -2189,6 +3061,9 @@ pub(crate) fn run_cuda_column(
     let mut cumulative_reduce_milliseconds = 0_f64;
     let mut cumulative_contract_milliseconds = 0_f64;
     let mut cumulative_download_milliseconds = 0_f64;
+    let progress_raw_terms = std::cell::Cell::new(0_u64);
+    let progress_batches = std::cell::Cell::new(0_u64);
+    let progress_current_batch_terms = std::cell::Cell::new(0_u64);
     if let Some(progress) = live_progress {
         progress.update_source(crate::second_momentum_gpu_progress::SourceVisitorProgress {
             word: None,
@@ -2212,6 +3087,8 @@ pub(crate) fn run_cuda_column(
             .checked_add(1)
             .ok_or_else(|| std::io::Error::other("raw GPU contribution count overflow"))?;
         let current_batch_terms = raw_terms_emitted % config.batch_terms as u64;
+        progress_raw_terms.set(raw_terms_emitted);
+        progress_current_batch_terms.set(current_batch_terms);
         if let Some(batch_timing) = stream.take_last_batch_timing() {
             batches_flushed = batches_flushed
                 .checked_add(1)
@@ -2223,6 +3100,7 @@ pub(crate) fn run_cuda_column(
             cumulative_reduce_milliseconds += f64::from(batch_timing.reduce_milliseconds);
             cumulative_contract_milliseconds += f64::from(batch_timing.contract_milliseconds);
             cumulative_download_milliseconds += f64::from(batch_timing.download_milliseconds);
+            progress_batches.set(batches_flushed);
             if let Some(progress) = live_progress {
                 progress.record_gpu_batch(crate::second_momentum_gpu_progress::GpuBatchProgress {
                     batches_completed: batches_flushed,
@@ -2261,19 +3139,66 @@ pub(crate) fn run_cuda_column(
         Ok(())
     };
     let source_started = Instant::now();
-    let column_metadata = match tranche {
-        "20001" => crate::eleven_dimensional_second_momentum_20001_fx::
-            visit_gpu_column_contributions(local_ordinal, &mut consume),
-        "30001" => crate::eleven_dimensional_second_momentum_30001_fx::
-            visit_gpu_column_contributions(local_ordinal, &mut consume),
-        _ => {
-            return Err(
-                "GPU F_X tranche must be 20001 or 30001; the four-column 10001 path uses its smaller exact direct evaluator"
-                    .to_string(),
-            );
+    let (column_metadata, persistent_summary) = if persistent_enabled {
+        cuda_backend::visit_persistent_column_contributions(
+            tranche,
+            local_ordinal,
+            device,
+            persistent_device_hard_cap_bytes,
+            persistent_host_staging_cap_bytes,
+            persistent_download_chunk_terms,
+            &mut consume,
+            |root_progress| {
+                if let Some(progress) = live_progress {
+                    let current_batch_terms = progress_current_batch_terms.get();
+                    eprintln!(
+                        "{}",
+                        serde_json::json!({
+                            "event": "gpu_persistent_root",
+                            "phase": root_progress.phase,
+                            "word_ordinal": root_progress.word_ordinal,
+                            "simple_root": root_progress.root,
+                            "input_entries": root_progress.stats.input_count,
+                            "expanded_entries": root_progress.stats.expanded_count,
+                            "reduced_entries": root_progress.stats.reduced_count,
+                            "output_entries": root_progress.stats.output_count,
+                            "gpu_milliseconds": root_progress.stats.total_milliseconds,
+                            "resident_bytes": root_progress.resident_bytes,
+                            "high_water_bytes": root_progress.stats.scratch_high_water_bytes,
+                        })
+                    );
+                    progress.update_source(
+                        crate::second_momentum_gpu_progress::SourceVisitorProgress {
+                            word: Some(root_progress.word_ordinal as u64),
+                            root: Some(root_progress.root as u64),
+                            raw_terms_emitted: progress_raw_terms.get(),
+                            batches_flushed: progress_batches.get(),
+                            current_batch_terms,
+                            current_batch_bytes: current_batch_terms
+                                .saturating_mul(std::mem::size_of::<RecoupledSourceTerm>() as u64),
+                            hard_memory_cap_bytes: config.host_hard_cap_bytes,
+                            eta_sample_count: progress_batches.get(),
+                        },
+                    );
+                }
+            },
+        )?
+    } else {
+        let metadata = match tranche {
+            "20001" => crate::eleven_dimensional_second_momentum_20001_fx::
+                visit_gpu_column_contributions(local_ordinal, &mut consume),
+            "30001" => crate::eleven_dimensional_second_momentum_30001_fx::
+                visit_gpu_column_contributions(local_ordinal, &mut consume),
+            _ => {
+                return Err(
+                    "GPU F_X tranche must be 20001 or 30001; the four-column 10001 path uses its smaller exact direct evaluator"
+                        .to_string(),
+                );
+            }
         }
-    }
-    .map_err(|error| error.to_string())?;
+        .map_err(|error| error.to_string())?;
+        (metadata, cuda_backend::PersistentLoweringSummary::default())
+    };
     drop(consume);
     let source_build_milliseconds = source_started.elapsed().as_millis();
     let metadata = GpuFxColumnMetadata::from(&column_metadata);
@@ -2400,6 +3325,20 @@ pub(crate) fn run_cuda_column(
         cuda_batch_term_cap: timing.batch_term_cap,
         cuda_host_hard_cap_bytes: timing.host_hard_cap_bytes,
         cuda_device_hard_cap_bytes: timing.device_hard_cap_bytes,
+        cuda_total_device_hard_cap_bytes: total_device_hard_cap_bytes,
+        persistent_lowering_enabled: persistent_summary.enabled,
+        persistent_lowering_roots: persistent_summary.roots_lowered,
+        persistent_lowering_input_entry_visits: persistent_summary.input_entry_visits,
+        persistent_lowering_expanded_entry_visits: persistent_summary.expanded_entry_visits,
+        persistent_lowering_output_entry_visits: persistent_summary.output_entry_visits,
+        persistent_lowering_gpu_milliseconds: persistent_summary.gpu_milliseconds,
+        persistent_lowering_high_water_bytes: persistent_summary.scratch_high_water_bytes,
+        persistent_lowering_peak_output_handle_bytes: persistent_summary
+            .peak_immutable_handle_bytes,
+        persistent_lowering_maximum_absolute_coefficient: persistent_summary
+            .maximum_absolute_coefficient,
+        persistent_lowering_device_hard_cap_bytes: persistent_summary.device_hard_cap_bytes,
+        persistent_lowering_download_chunk_terms: persistent_summary.download_chunk_terms,
         cpu_parity_terms,
         cpu_parity_passed,
         end_to_end_milliseconds: started.elapsed().as_millis(),
