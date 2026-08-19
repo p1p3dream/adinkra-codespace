@@ -666,6 +666,9 @@ fn build_column_recoupled(
         .collect::<BTreeMap<_, _>>();
     let mut reciprocal_by_word = vec![Vec::new(); words.len()];
     for term in &reciprocal.reciprocal_terms {
+        if term.primitive_coefficient == 0 {
+            continue;
+        }
         let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
         reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
     }
