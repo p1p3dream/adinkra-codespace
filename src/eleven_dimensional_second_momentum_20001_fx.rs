@@ -672,7 +672,6 @@ fn build_column_recoupled(
         let word_ordinal = word_ordinals[&term.intermediate_pbw_word_simple_roots];
         reciprocal_by_word[word_ordinal].push((term.momentum_pair, term.primitive_coefficient));
     }
-    let mut observed_by_word = vec![false; words.len()];
     let mut recoupled = RecoupledState::new();
     let accounting = crate::eleven_dimensional_level16_couplings::
         visit_second_momentum_20001_descendant_components(
@@ -685,7 +684,6 @@ fn build_column_recoupled(
             &embedded_checkpoint.coupled_map_sha256,
             &words,
             |entry| {
-                observed_by_word[entry.requested_word_ordinal] = true;
                 for &(momentum_pair, primitive_coefficient) in
                     &reciprocal_by_word[entry.requested_word_ordinal]
                 {
@@ -706,10 +704,11 @@ fn build_column_recoupled(
                 Ok(())
             },
         )?;
-    if observed_by_word.iter().any(|observed| !observed) {
+    if accounting.requested_pbw_words != words.len() || !accounting.checkpoint_hash_parity_verified
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            "requested (20001) descendant materialized no exact components",
+            "requested (20001) descendant accounting is incomplete",
         ));
     }
     recoupled.retain(|_, coefficient| *coefficient != 0);
