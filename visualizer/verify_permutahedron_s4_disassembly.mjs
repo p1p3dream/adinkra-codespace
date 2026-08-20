@@ -152,6 +152,8 @@ data.chains.forEach((chain, index) => {
   if (!want) return;
   check(chain.multiplet === want.multiplet,
     `Quartet ${index + 1} is multiplet ${chain.multiplet}, expected ${want.multiplet}.`);
+  check(chain.id === `chain-${chain.sector_id.slice(1)}`,
+    `${chain.sector_id} was renumbered as ${chain.id}; its stable chain id must follow the published P number.`);
 });
 
 check((data.strand_face_cycle ?? []).join(",") === strandFaceCycle.join(","),

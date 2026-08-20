@@ -67,13 +67,15 @@ if len(labels) != 6:
     failures.append(f"expected 6 strand buttons, rendered {len(labels)}")
 
 # Counterclockwise around the 1XXX face from 1234.
-expected = [("VM3", "1234", "2,6,2"), ("VM2", "1243", "2,4,2"),
-            ("CM", "1423", "4,2,4"), ("VM1", "1432", "6,2,6"),
-            ("TM", "1342", "6,4,6"), ("VM", "1324", "4,6,4")]
-for index, (multiplet, anchor, legs) in enumerate(expected):
+expected = [("P6", "VM3", "1234", "2,6,2"), ("P5", "VM2", "1243", "2,4,2"),
+            ("P1", "CM", "1423", "4,2,4"), ("P4", "VM1", "1432", "6,2,6"),
+            ("P2", "TM", "1342", "6,4,6"), ("P3", "VM", "1324", "4,6,4")]
+for index, (sector, multiplet, anchor, legs) in enumerate(expected):
     if index >= len(labels):
         break
     text = re.sub(r"<[^>]+>", " ", labels[index])
+    if sector not in text:
+        failures.append(f"strand {index + 1} does not preserve published sector {sector}")
     if multiplet not in text:
         failures.append(f"strand {index + 1} does not name {multiplet}")
     if anchor not in text:

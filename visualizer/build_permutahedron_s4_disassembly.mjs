@@ -277,7 +277,9 @@ const chains = supersymmetry.sectors
     }
     const representationLabel = [...representationLabels][0];
     return {
-      id: `chain-${chainIndex + 1}`,
+      // Stable published identity follows P1 through P6. The visual position
+      // follows the counterclockwise face traversal and must not renumber it.
+      id: `chain-${sector.id.slice(1)}`,
       position: chainIndex + 1,
       sector_id: sector.id,
       sector_index: sectorIndex,
