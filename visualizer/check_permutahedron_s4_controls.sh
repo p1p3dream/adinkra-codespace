@@ -46,7 +46,7 @@ failures = list(report["failures"])
 required = [
     "Show permutahedron edges",
     "arXiv:1701.00304 Appendix B",
-    "Howard p.61 order, with members ascending inside each quartet",
+    "Start at 1234 and move counterclockwise around the 1XXX hexagon",
     "One click moves one strand. Every other node remains fixed",
     "Separate strand 1 of 6",
 ]

@@ -59,22 +59,25 @@ for probe, closing in [("sectorButtons", "div"), ("erratumNote", "div"),
     if not inner:
         failures.append(f"#{probe} is empty, so page initialisation aborted")
 
-# The six strands must render in p.61 order, with ascending members and their
-# distinct leg patterns.
+# The six strands must begin at 1234 and follow the counterclockwise 1XXX face
+# cycle, while each quartet retains its published ascending member order.
 buttons = re.search(r'id="sectorButtons"[^>]*>(.*?)</div>\s*<div class="stack"', dom, re.S)
 labels = re.findall(r'<button[^>]*>(.*?)</button>', buttons.group(1), re.S) if buttons else []
 if len(labels) != 6:
     failures.append(f"expected 6 strand buttons, rendered {len(labels)}")
 
-# HowardTLK.v2.pdf p. 61 order, P[1] through P[6].
-expected = [("CM", "4,2,4"), ("TM", "6,4,6"), ("VM", "4,6,4"),
-            ("VM1", "6,2,6"), ("VM2", "2,4,2"), ("VM3", "2,6,2")]
-for index, (multiplet, legs) in enumerate(expected):
+# Counterclockwise around the 1XXX face from 1234.
+expected = [("VM3", "1234", "2,6,2"), ("VM2", "1243", "2,4,2"),
+            ("CM", "1423", "4,2,4"), ("VM1", "1432", "6,2,6"),
+            ("TM", "1342", "6,4,6"), ("VM", "1324", "4,6,4")]
+for index, (multiplet, anchor, legs) in enumerate(expected):
     if index >= len(labels):
         break
     text = re.sub(r"<[^>]+>", " ", labels[index])
     if multiplet not in text:
         failures.append(f"strand {index + 1} does not name {multiplet}")
+    if anchor not in text:
+        failures.append(f"strand {index + 1} does not show anchor {anchor}")
     if legs not in text:
         failures.append(f"strand {index + 1} does not show legs {legs}")
 
@@ -93,5 +96,5 @@ if failures:
     for failure in failures:
         print(f"  - {failure}")
     sys.exit(1)
-print("PASS: page initialised, six strands rendered in p.61 order with ascending members and distinct legs.")
+print("PASS: page initialised, six strands rendered from 1234 counterclockwise around the 1XXX face.")
 PY

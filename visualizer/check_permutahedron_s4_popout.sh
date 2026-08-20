@@ -4,7 +4,7 @@
 # smoke_permutahedron_s4_disassembly.sh checks that the page initialises. This
 # checks that clicking it six times does the right thing: strands leave in listed
 # order, the glow walks each quartet's journey link by link, and every vacated
-# permutahedron site gets a white ball.
+# permutahedron site gets a blank white ball while the name moves to the strand.
 #
 # The page carries a harness behind ?phase3check=1. It clicks the real button and
 # reports what the renderer drew, so the white-ball and glow counts come from the
@@ -79,6 +79,19 @@ for index, observation in enumerate(observations, start=1):
         failures.append(
             f"after pop {index} the renderer drew {observation['whiteBalls']} white balls, expected {index * 4}"
         )
+    if observation["namedVacancies"] != 0:
+        failures.append(
+            f"after pop {index} {observation['namedVacancies']} vacated sites still show node names"
+        )
+    if observation["strandLabels"] != index * 4:
+        failures.append(
+            f"after pop {index} strands show {observation['strandLabels']} names, expected {index * 4}"
+        )
+    if observation["permutahedronLabels"] != 24 - index * 4:
+        failures.append(
+            f"after pop {index} the permutahedron shows {observation['permutahedronLabels']} names, "
+            f"expected {24 - index * 4}"
+        )
     if observation["strand"] != index:
         failures.append(f"click {index} popped strand {observation['strand']}")
     if observation["glowLinks"] < 1:
@@ -106,6 +119,6 @@ if failures:
     sys.exit(1)
 
 order = " ".join(f"{o['strand']}:{o['multiplet']}({o['glowLinks']})" for o in observations)
-print("PASS: six clicks, one strand per click, all other nodes fixed, explicit pauses, black strand links, and 24 white balls.")
+print("PASS: each click removes exactly four names from the permutahedron, keeps them on the strand, and leaves four blank white balls.")
 print(f"      {order}")
 PY

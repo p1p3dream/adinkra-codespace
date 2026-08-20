@@ -74,7 +74,7 @@
 </head>
 <body>
   <header>
-    <div><h1>S4 Six-Quartet Separation</h1><div class="subtitle">Six quartets in HowardTLK.v2.pdf p. 61 order, members ascending within each</div></div>
+    <div><h1>S4 Six-Quartet Separation</h1><div class="subtitle">Start at 1234 and move counterclockwise around the 1XXX hexagon; members retain their p.61 order within each quartet</div></div>
     <div class="status">24 vertices · 36 edges · 6 quartets</div>
     <a class="button" href="permutahedron_s4_explorer.html">Full permutahedron</a>
     <button id="detailsButton">Hide details</button>
@@ -93,7 +93,7 @@
         </div>
       </section>
       <section>
-        <h2>Six quartets, p.61 order</h2>
+        <h2>1XXX face order</h2>
         <div id="sectorButtons" class="sector-grid"></div>
         <div class="stack" style="margin-top:7px">
           <button id="drillButton">Drill into selected chain</button>
@@ -122,12 +122,12 @@
         <label class="check"><input id="edgesToggle" type="checkbox" checked> Show permutahedron edges</label>
       </section>
       <div class="facts">
-        The assembled solid starts in the Howard p.64 view, fitted to the printed figure. The hexagon-down view is a camera preset. Each strand lists its quartet in ascending four-digit order, and the leg between consecutive members is a shortest path that never revisits a vertex. Exactly one member of every quartet lies on the base face; that is a highlight, not the ordering rule.
+        The assembled solid starts in the Howard p.64 view, fitted to the printed figure. Strand 1 is anchored at 1234, then the strands move counterclockwise around the 1XXX hexagonal face. Each strand keeps its quartet in ascending four-digit order, and each leg is a shortest path that never revisits a vertex. The separate base-face marker remains a highlight, not the strand-ordering rule.
       </div>
     </aside>
 
     <main id="stage">
-      <canvas id="canvas" aria-label="Animated separation of the S4 permutahedron into six SUSY-quartet strands in Howard p.61 order, with members ascending inside each quartet"></canvas>
+      <canvas id="canvas" aria-label="Animated separation of the S4 permutahedron into six SUSY-quartet strands beginning at 1234 and moving counterclockwise around the 1XXX hexagonal face"></canvas>
       <div id="modeBadge"><strong id="modeTitle">Assembled permutahedron</strong><span id="modeText">24 vertices and 36 adjacent-transposition edges</span></div>
       <div id="hud">Drag to rotate · Shift-drag to roll · wheel to zoom · double-click a bubble to drill</div>
     </main>
@@ -156,9 +156,9 @@
     const colorFor=chain=>SECTOR_COLORS[chain.multiplet]??"#5e6b78";
     const EDGE_COLORS={1:"#175ac6",2:"#16844a",3:"#ce3131"};
     const VACATED_GREY="#c3ccd1";
-    // HowardTLK.v2.pdf p. 61 lists the quartets P[1] through P[6], which is CM,
-    // TM, VM, VM1, VM2, VM3 and is not a smallest-member sort.
-    const PAGE61_ORDER=["P1","P2","P3","P4","P5","P6"];
+    // One member of each quartet lies on the 1XXX hexagon. That face determines
+    // strand order while Howard p.61 still determines membership and inner order.
+    const STRAND_FACE_CYCLE=["1234","1243","1423","1432","1342","1324"];
     const hexMix=(from,to,t)=>{const a=[1,3,5].map(i=>parseInt(from.substr(i,2),16)),b=[1,3,5].map(i=>parseInt(to.substr(i,2),16));return "#"+a.map((value,i)=>Math.round(value+(b[i]-value)*t).toString(16).padStart(2,"0")).join("");};
     const permutations=ATLAS.permutations.map(value=>Array.isArray(value)?value.map(Number):String(value).split("").map(Number));
     const labels=permutations.map(value=>value.join(""));
@@ -236,7 +236,7 @@
       const points=currentPoints(width,height);
       // Record what this pass actually draws, so the acceptance harness counts
       // rendered markers and lit links rather than trusting a state flag.
-      if(!exportMode){state.screen=points;state.drawn={vacated:[],glow:[],greyEdges:[],strandLinks:[]};}
+      if(!exportMode){state.screen=points;state.drawn={vacated:[],nodeLabels:[],glow:[],greyEdges:[],strandLinks:[]};}
       ctx.save();
       ctx.fillStyle=exportMode?"#fff":getComputedStyle(document.documentElement).getPropertyValue("--paper");
       ctx.fillRect(0,0,width,height);
@@ -245,7 +245,7 @@
         ctx.fillStyle="#121820";ctx.textAlign="center";ctx.font="800 44px system-ui";
         ctx.fillText("S4 Six-Quartet Separation",width/2,56);
         ctx.fillStyle="#5e6b78";ctx.font="22px system-ui";
-        ctx.fillText("24 permutations · six quartets in Howard p.61 order",width/2,94);
+        ctx.fillText("24 permutations · six quartets around the 1XXX face",width/2,94);
       }
       // Link weight follows the sample on HowardTLK.v2.pdf p. 64 (SL21, SL29).
       // Edges are drawn on the fixed lattice, never between current node
@@ -264,9 +264,9 @@
           if(!exportMode&&vacancy>.99)state.drawn.greyEdges.push([a,b]);
         }
       }
-      // A white ball is left at every site a popped node vacated (L219). It keeps its
-      // permutation name: later journeys cross these sites constantly, so a strictly
-      // blank marker would make the last strands untraceable.
+      // A blank white ball is left at every site a popped node vacated. The
+      // permutation name travels with the extracted node and appears only on
+      // its separated strand.
       for(let chain=0;chain<6;chain++){
         const progress=state.chainProgress[chain];
         if(progress<=.02)continue;
@@ -275,18 +275,8 @@
           ctx.save();ctx.globalAlpha=Math.min(1,progress*1.35);
           ctx.fillStyle="#ffffff";ctx.strokeStyle="#c3ccd1";ctx.lineWidth=exportMode?3:1.6;
           ctx.beginPath();ctx.arc(site.x,site.y,exportMode?25:13.5,0,Math.PI*2);ctx.fill();ctx.stroke();
-          // The permutation is the site's address, not a property of the node
-          // that left. Later journeys cross these sites constantly (7 of the
-          // 11 nodes on the sixth strand's journey are already vacated), so the
-          // name stays put in muted grey and only the quartet colour departs.
-          let named=false;
-          if(state.labels){
-            ctx.font=`600 ${exportMode?18:9.5}px ui-monospace,SFMono-Regular,Menlo,monospace`;
-            ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#98a5ac";
-            ctx.fillText(labels[rank],site.x,site.y);named=true;
-          }
           ctx.restore();
-          if(!exportMode)state.drawn.vacated.push({rank,named});
+          if(!exportMode)state.drawn.vacated.push({rank,named:false});
         }
       }
       // The journey glows link by link before its strand lifts out (L17-33).
@@ -336,6 +326,7 @@
         const selected=rank===state.selectedRank,radius=selected?(exportMode?34:19):f&&active?(exportMode?32:18):(exportMode?27:14.5);
         bubble(ctx,points[rank],labels[rank],color,selected,radius,alpha);
         const chainProgress=state.chainProgress[chain];
+        if(!exportMode&&state.labels)state.drawn.nodeLabels.push({rank,location:chainProgress>.99?"strand":"permutahedron"});
         if(state.hoppers&&chainProgress>.18){
           const path=paths[chain],first=points[path[0]],last=points[path[3]],dx=last.x-first.x,dy=last.y-first.y,distance=Math.hypot(dx,dy)||1,nx=-dy/distance,ny=dx/distance,offset=exportMode?52:29;
           ctx.save();ctx.globalAlpha=chainProgress*alpha;ctx.fillStyle=exportMode?"#3d4852":getComputedStyle(document.documentElement).getPropertyValue("--muted");
@@ -354,7 +345,7 @@
     }
 
     function render(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));context.setTransform(dpr,0,0,dpr,0,0);renderTo(context,rect.width,rect.height);updateBadge();$("cameraReadout").textContent=`X ${Math.round(state.pitch*180/Math.PI)}° · Y ${Math.round(state.yaw*180/Math.PI)}° · Z ${Math.round(state.roll*180/Math.PI)}° · zoom ${state.zoom.toFixed(2)}`;}
-    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Members ascend within each quartet; quartets follow p.61 order P[1] to P[6]";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";const view=ORIENTATIONS[state.orientation].label;$("modeText").textContent=`${state.cameraAdjusted?`Custom camera from ${view}`:view} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands separated`;const partial=state.chainProgress.some(value=>value>.01&&value<.99);$("modeText").textContent=partial?"Separating one strand; every other node remains fixed":"Paused. Click to separate the next strand.";}}
+    function updateBadge(){if(state.focus>.02){const chain=state.focusChain??state.selectedChain,record=DISASSEMBLY.chains[chain];$("modeTitle").textContent=`${record.multiplet} · ${record.sector_id}`;$("modeText").textContent=`${record.labels.join(" · ")} · legs ${record.legs.join(",")}`;}else if(state.glow.chain!==null){const record=DISASSEMBLY.chains[state.glow.chain];const lit=Math.min(state.glow.step,record.journey_ranks.length-1);$("modeTitle").textContent=`Tracing ${record.multiplet}`;$("modeText").textContent=`${record.journey_labels.slice(0,lit+1).join(" → ")}`;}else if(poppedCount()===6){$("modeTitle").textContent="Six quartet strands";$("modeText").textContent="Start at 1234, then move counterclockwise around the 1XXX hexagon";}else if(poppedCount()===0&&meanProgress()<.02){$("modeTitle").textContent="Assembled permutahedron";const view=ORIENTATIONS[state.orientation].label;$("modeText").textContent=`${state.cameraAdjusted?`Custom camera from ${view}`:view} · 24 vertices · 36 edges`;}else{$("modeTitle").textContent=`${poppedCount()} of 6 strands separated`;const partial=state.chainProgress.some(value=>value>.01&&value<.99);$("modeText").textContent=partial?"Separating one strand; every other node remains fixed":"Paused. Click to separate the next strand.";}}
 
     // Headless Chrome has no compositor, so requestAnimationFrame does not fire
     // reliably there. The harness needs the same animation code to complete, so
@@ -391,13 +382,13 @@
     function permutationMatrix(permutation){return Array.from({length:4},(_,row)=>Array.from({length:4},(_,column)=>column===permutation[row]-1?1:0));}
     function signedMatrix(permutation,factor){return permutationMatrix(permutation).map((row,index)=>row.map(value=>value*(factor&(1<<index)?-1:1)));}
     function matrixHtml(values){return `<table><tbody>${values.map(row=>`<tr>${row.map(value=>`<td class="${value?"nz":""}">${value||""}</td>`).join("")}</tr>`).join("")}</tbody></table>`;}
-    function updateDetails(){const chain=state.selectedChain,chainRecord=DISASSEMBLY.chains[chain],sector=chainRecord.sector_index,rank=state.selectedRank,color=colorFor(chainRecord),record=SUSY.sectors[sector],slot=slotByRank[rank];$("selectedPermutation").textContent=labels[rank];const onBase=chainRecord.base_face_label===labels[rank];$("selectedId").textContent=`S4-${String(rank).padStart(5,"0")} · position ${slot+1} of 4${onBase?" · on base hexagon":""}`;$("sectorPill").textContent=chainRecord.multiplet;$("sectorPill").style.setProperty("--sector",color);$("quartetFacts").innerHTML=`<dt>multiplet</dt><dd>${chainRecord.representation_label}</dd><dt>coset</dt><dd>${record.id}</dd><dt>S4/V4 coordinate</dt><dd>${record.invariants.quotient_s3_cycle}</dd><dt>strand position</dt><dd>${chainRecord.position} of 6</dd><dt>ordering</dt><dd>ascending four-digit</dd><dt>legs</dt><dd>${chainRecord.legs.join(" · ")}</dd><dt>base-face member</dt><dd>${chainRecord.base_face_label} at position ${chainRecord.base_face_position}</dd>`;$("pathMembers").innerHTML=paths[chain].map((member,index)=>`<button class="${member===rank?"active":""}" data-rank="${member}" style="--sector:${color}">${index+1} · ${labels[member]}${labels[member]===chainRecord.base_face_label?" ●":""}</button>`).join("");$("pathMembers").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank)));$("hopperFacts").innerHTML=chainRecord.leg_routes.map(route=>`<dt>${route.from_label} → ${route.to_label}</dt><dd><strong>${route.distance} links</strong><br><span class="small">${route.route_labels.join(" → ")}</span></dd>`).join("");state.signing=Math.min(state.signing,record.published_fiducial_signings.length-1);$("signingSelect").innerHTML=record.published_fiducial_signings.map((signing,index)=>`<option value="${index}">arXiv:1701.00304 Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`).join("");$("signingSelect").value=String(state.signing);updateSigning();updateSectorButtons();}
+    function updateDetails(){const chain=state.selectedChain,chainRecord=DISASSEMBLY.chains[chain],sector=chainRecord.sector_index,rank=state.selectedRank,color=colorFor(chainRecord),record=SUSY.sectors[sector],slot=slotByRank[rank];$("selectedPermutation").textContent=labels[rank];const onBase=chainRecord.base_face_label===labels[rank];$("selectedId").textContent=`S4-${String(rank).padStart(5,"0")} · position ${slot+1} of 4${onBase?" · on base hexagon":""}`;$("sectorPill").textContent=chainRecord.multiplet;$("sectorPill").style.setProperty("--sector",color);$("quartetFacts").innerHTML=`<dt>multiplet</dt><dd>${chainRecord.representation_label}</dd><dt>coset</dt><dd>${record.id}</dd><dt>S4/V4 coordinate</dt><dd>${record.invariants.quotient_s3_cycle}</dd><dt>strand position</dt><dd>${chainRecord.position} of 6</dd><dt>1XXX face anchor</dt><dd>${chainRecord.strand_anchor_label}</dd><dt>ordering</dt><dd>ascending four-digit</dd><dt>legs</dt><dd>${chainRecord.legs.join(" · ")}</dd><dt>base-face member</dt><dd>${chainRecord.base_face_label} at position ${chainRecord.base_face_position}</dd>`;$("pathMembers").innerHTML=paths[chain].map((member,index)=>`<button class="${member===rank?"active":""}" data-rank="${member}" style="--sector:${color}">${index+1} · ${labels[member]}${labels[member]===chainRecord.base_face_label?" ●":""}</button>`).join("");$("pathMembers").querySelectorAll("button").forEach(button=>button.onclick=()=>selectRank(Number(button.dataset.rank)));$("hopperFacts").innerHTML=chainRecord.leg_routes.map(route=>`<dt>${route.from_label} → ${route.to_label}</dt><dd><strong>${route.distance} links</strong><br><span class="small">${route.route_labels.join(" → ")}</span></dd>`).join("");state.signing=Math.min(state.signing,record.published_fiducial_signings.length-1);$("signingSelect").innerHTML=record.published_fiducial_signings.map((signing,index)=>`<option value="${index}">arXiv:1701.00304 Appendix B #${signing.appendix_b_index}: ${signing.boolean_factors.join(", ")}</option>`).join("");$("signingSelect").value=String(state.signing);updateSigning();updateSectorButtons();}
     function updateSigning(){const chainRecord=DISASSEMBLY.chains[state.selectedChain],sector=chainRecord.sector_index,rank=state.selectedRank,record=SUSY.sectors[sector],signing=record.published_fiducial_signings[state.signing],originalSlot=record.ordered_ranks.indexOf(rank),matrix=signing.matrices[originalSlot];$("signingFacts").innerHTML=`<dt>Boolean factors</dt><dd>${signing.boolean_factors.join(", ")}</dd><dt>chi0</dt><dd>${signing.chi0>0?"+1":"-1"}</dd><dt>Garden closure</dt><dd style="color:var(--good);font-weight:750">${signing.garden_sparse_passed?"pass":"fail"}</dd><dt>dense residuals</dt><dd>${signing.dense_residual_entries}</dd><dt>selected factor</dt><dd>b = ${matrix.boolean_factor}</dd>`;$("matrix").innerHTML=matrixHtml(signedMatrix(permutations[rank],matrix.boolean_factor));}
     function updateSectorButtons(){$("sectorButtons").innerHTML=DISASSEMBLY.chains.map((chainRecord,index)=>{const out=state.chainProgress[index]>.99;return `<button class="sector ${index===state.selectedChain?"active":""}" data-chain="${index}" style="--sector:${colorFor(chainRecord)}">${chainRecord.position}. ${chainRecord.multiplet} ${out?"●":"○"}<br><span class="small">${chainRecord.labels[0]} · legs ${chainRecord.legs.join(",")}</span></button>`;}).join("");$("sectorButtons").querySelectorAll("button").forEach(button=>button.onclick=()=>selectChain(Number(button.dataset.chain)));}
     function selectChain(chain){state.selectedChain=chain;state.selectedRank=paths[chain][0];state.signing=0;if(state.focus>.98){state.focusChain=chain;render();}updateDetails();render();}
     function selectRank(rank){state.selectedRank=rank;state.selectedChain=chainByRank[rank];state.signing=0;updateDetails();render();}
     function nearestRank(x,y){let best=null,distance=22**2;state.screen.forEach((point,rank)=>{if(state.focus>.8&&chainByRank[rank]!==state.focusChain)return;const d=(point.x-x)**2+(point.y-y)**2;if(d<distance){distance=d;best=rank;}});return best;}
-    function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);const record=DISASSEMBLY.chains[state.focusChain??state.selectedChain];link.download=state.focus>.5?`S4_quartet_${record.multiplet}.png`:`S4_six_quartets_p61_order.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
+    function exportPng(){const output=document.createElement("canvas");output.width=2200;output.height=1500;const ctx=output.getContext("2d",{alpha:false});renderTo(ctx,output.width,output.height,true);output.toBlob(blob=>{const link=document.createElement("a");link.href=URL.createObjectURL(blob);const record=DISASSEMBLY.chains[state.focusChain??state.selectedChain];link.download=state.focus>.5?`S4_quartet_${record.multiplet}.png`:`S4_six_quartets_1XXX_counterclockwise.png`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);},"image/png");}
 
     $("playButton").onclick=popNext;$("assembleButton").onclick=reassemble;$("drillButton").onclick=drill;$("showAllButton").onclick=showAll;$("labelsToggle").onchange=event=>{state.labels=event.target.checked;render();};$("hopperToggle").onchange=event=>{state.hoppers=event.target.checked;render();};$("guideToggle").onchange=event=>{state.guides=event.target.checked;render();};$("edgesToggle").onchange=event=>{state.edges=event.target.checked;render();};$("signingSelect").onchange=event=>{state.signing=Number(event.target.value);updateSigning();};function toggleDetails(){const hidden=$("layout").classList.toggle("no-details");$("detailsButton").textContent=hidden?"Show details":"Hide details";$("detailsButton").classList.toggle("primary",hidden);render();}
     $("detailsButton").onclick=toggleDetails;$("detailsCollapse").onclick=toggleDetails;$("themeButton").onclick=()=>{const dark=document.documentElement.dataset.theme==="dark";dark?delete document.documentElement.dataset.theme:document.documentElement.dataset.theme="dark";$("themeButton").textContent=dark?"Dark view":"Light view";render();};$("exportButton").onclick=exportPng;
@@ -427,7 +418,7 @@
       DISASSEMBLY.chains.forEach((chain,index)=>{
         const members=chain.labels;
         assert(members.every((label,i)=>i===0||Number(members[i-1])<Number(label)),`${chain.multiplet} is not in ascending four-digit order`);
-        assert(chain.sector_id===PAGE61_ORDER[index],`strand ${index+1} is ${chain.sector_id}, but p. 61 lists ${PAGE61_ORDER[index]} there`);
+        assert(chain.strand_anchor_label===STRAND_FACE_CYCLE[index],`strand ${index+1} anchor is ${chain.strand_anchor_label}, expected ${STRAND_FACE_CYCLE[index]}`);
         const legs=members.slice(0,-1).map((label,i)=>distancesFrom(rankByLabel.get(label))[rankByLabel.get(members[i+1])]);
         assert(legs.join(",")===chain.legs.join(","),`${chain.multiplet} claims legs ${chain.legs.join(",")} but the graph gives ${legs.join(",")}`);
         assert(legs.every(distance=>distance>1),`${chain.multiplet} has a leg that is a single edge`);
@@ -454,10 +445,8 @@
       });
 
       assert(new Set(DISASSEMBLY.chains.map(chain=>chain.legs.join(","))).size===6,"the six leg patterns have collapsed, so the ordering has reverted");
-      // p. 61 does not sort the quartets by smallest member. Those first members
-      // run 1423, 1342, 1324, 1432, 1243, 1234, so they must not be ascending.
-      const firstMembers=DISASSEMBLY.chains.map(chain=>Number(chain.labels[0]));
-      assert(firstMembers.some((value,index)=>index>0&&firstMembers[index-1]>value),"the quartets are sorted by smallest member, which is not p. 61's order");
+      assert((DISASSEMBLY.strand_face_cycle??[]).join(",")===STRAND_FACE_CYCLE.join(","),"the emitted 1XXX face cycle is wrong");
+      assert(STRAND_FACE_CYCLE.every((label,i)=>adjacency[rankByLabel.get(label)]?.has(rankByLabel.get(STRAND_FACE_CYCLE[(i+1)%STRAND_FACE_CYCLE.length]))),"the 1XXX strand cycle is not a hexagon");
       const cycle=DISASSEMBLY.base_face_cycle??[];
       assert(cycle.length===6&&cycle.every(label=>label.endsWith("4")),"the base face is not the six permutations ending in 4");
       assert(cycle.every((label,i)=>adjacency[rankByLabel.get(label)]?.has(rankByLabel.get(cycle[(i+1)%cycle.length]))),"the base hexagon self-intersects");
@@ -565,13 +554,12 @@
           });
           const drawnVacated=state.drawn.vacated.length;
           if(drawnVacated!==click*4)failures.push(`after pop ${click}, renderer drew ${drawnVacated} white balls, expected ${click*4}`);
-          const unnamed=state.drawn.vacated.filter(marker=>!marker.named).length;
-          if(state.labels&&unnamed)failures.push(`after pop ${click}, ${unnamed} vacated sites lost their permutation name`);
-          // Every node the next journeys cross must still be identifiable.
-          const crossable=new Set(state.drawn.vacated.filter(marker=>marker.named).map(marker=>marker.rank));
-          const laterCrossings=DISASSEMBLY.chains.slice(click).flatMap(later=>later.journey_ranks).filter(rank=>state.chainProgress[chainByRank[rank]]>.99);
-          const anonymous=laterCrossings.filter(rank=>!crossable.has(rank));
-          if(anonymous.length)failures.push(`after pop ${click}, ${anonymous.length} nodes on later journeys are unnamed`);
+          const namedVacancies=state.drawn.vacated.filter(marker=>marker.named).length;
+          if(namedVacancies)failures.push(`after pop ${click}, ${namedVacancies} vacated permutahedron sites still show node names`);
+          const strandLabels=state.drawn.nodeLabels.filter(marker=>marker.location==="strand").length;
+          const permutahedronLabels=state.drawn.nodeLabels.filter(marker=>marker.location==="permutahedron").length;
+          if(state.labels&&strandLabels!==click*4)failures.push(`after pop ${click}, separated strands show ${strandLabels} node names, expected ${click*4}`);
+          if(state.labels&&permutahedronLabels!==24-click*4)failures.push(`after pop ${click}, the permutahedron shows ${permutahedronLabels} node names, expected ${24-click*4}`);
           // Every edge touching an extracted node must have greyed out.
           const shouldBeGrey=ATLAS.edges.filter(([a,b])=>state.chainProgress[chainByRank[a]]>.99||state.chainProgress[chainByRank[b]]>.99).length;
           if(state.drawn.greyEdges.length!==shouldBeGrey)failures.push(`after pop ${click}, ${state.drawn.greyEdges.length} edges rendered grey, expected ${shouldBeGrey}`);
@@ -590,7 +578,7 @@
             if(new Set(visited).size!==visited.length)failures.push(`click ${click} (${record.multiplet}) glow path revisits a node`);
           }
           if(!$("popReadout").textContent.includes(click<6?"paused":"6 of 6 strands separated"))failures.push(`after pop ${click}, the app does not show the expected pause state`);
-          observations.push({click,strand:record.position,multiplet:record.multiplet,glowLinks:state.lastGlowDrawn?.links.length??0,whiteBalls:drawnVacated,untouchedNodesMoved:movedUntouched.length,progress:[...state.chainProgress],strandLinkColors:state.drawn.strandLinks.map(link=>link.color),readout:$("popReadout").textContent});
+          observations.push({click,strand:record.position,multiplet:record.multiplet,glowLinks:state.lastGlowDrawn?.links.length??0,whiteBalls:drawnVacated,namedVacancies,strandLabels,permutahedronLabels,untouchedNodesMoved:movedUntouched.length,progress:[...state.chainProgress],strandLinkColors:state.drawn.strandLinks.map(link=>link.color),readout:$("popReadout").textContent});
         }
         if(state.separationViolations.length)failures.push(...state.separationViolations);
         const node=document.createElement("pre");

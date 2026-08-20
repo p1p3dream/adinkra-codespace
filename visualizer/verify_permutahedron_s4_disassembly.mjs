@@ -14,10 +14,9 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 
-// Transcribed from HowardTLK.v2.pdf p. 61 in its printed order, P[1] to P[6].
-// Members ascend within a quartet; the quartets do NOT ascend by smallest member
-// (those would run 1234, 1243, 1324, 1342, 1423, 1432). Sorting them that way is
-// the mistake this list exists to catch.
+// Transcribed from HowardTLK.v2.pdf p. 61. Members retain their published
+// ascending order within a quartet. Strand order is checked separately against
+// the counterclockwise 1XXX face cycle.
 const expected = [
   { members: ["1423", "2314", "3241", "4132"], legs: [4, 2, 4], base: "2314", basePosition: 2, multiplet: "CM",  sector: "P1" },
   { members: ["1342", "2431", "3124", "4213"], legs: [6, 4, 6], base: "3124", basePosition: 3, multiplet: "TM",  sector: "P2" },
@@ -26,6 +25,8 @@ const expected = [
   { members: ["1243", "2134", "3421", "4312"], legs: [2, 4, 2], base: "2134", basePosition: 2, multiplet: "VM2", sector: "P5" },
   { members: ["1234", "2143", "3412", "4321"], legs: [2, 6, 2], base: "1234", basePosition: 1, multiplet: "VM3", sector: "P6" },
 ];
+const expectedBySector = new Map(expected.map(quartet => [quartet.sector, quartet]));
+const strandFaceCycle = ["1234", "1243", "1423", "1432", "1342", "1324"];
 
 // arXiv:2408.09342 Tables 3 and 5 print 3412 for VM2. That address belongs to VM3.
 // The correct VM2 member is 3421, which is what arXiv:1210.0478 Eq. 5.2 lists and
@@ -77,7 +78,9 @@ check(Array.isArray(data.chains) && data.chains.length === 6,
 
 // Quartet membership, ordering, legs, and routes, all recomputed.
 data.chains.forEach((chain, index) => {
-  const want = expected[index];
+  const want = expectedBySector.get(chain.sector_id);
+  check(Boolean(want), `Strand ${index + 1} uses unknown sector ${chain.sector_id}.`);
+  if (!want) return;
   const got = chain.labels;
   check(got.join(",") === want.members.join(","),
     `Quartet ${index + 1} is ${got.join(",")}, expected ${want.members.join(",")}.`);
@@ -137,22 +140,30 @@ data.chains.forEach((chain, index) => {
     `Quartet ${index + 1} base member is ${chain.base_face_label}, expected ${want.base}.`);
   check(chain.base_face_position === want.basePosition,
     `Quartet ${index + 1} base position is ${chain.base_face_position}, expected ${want.basePosition}.`);
+  check(chain.strand_anchor_label === strandFaceCycle[index],
+    `Strand ${index + 1} anchor is ${chain.strand_anchor_label}, expected ${strandFaceCycle[index]}.`);
+  check(chain.strand_anchor_position === got.indexOf(strandFaceCycle[index]) + 1,
+    `Strand ${index + 1} anchor position does not match ${strandFaceCycle[index]}.`);
 });
 
 // Multiplet identity, so a reorder cannot silently relabel the physics.
 data.chains.forEach((chain, index) => {
-  check(chain.multiplet === expected[index].multiplet,
-    `Quartet ${index + 1} is multiplet ${chain.multiplet}, expected ${expected[index].multiplet}.`);
-  check(chain.sector_id === expected[index].sector,
-    `Strand ${index + 1} is ${chain.sector_id}, expected ${expected[index].sector} per p. 61.`);
+  const want = expectedBySector.get(chain.sector_id);
+  if (!want) return;
+  check(chain.multiplet === want.multiplet,
+    `Quartet ${index + 1} is multiplet ${chain.multiplet}, expected ${want.multiplet}.`);
 });
 
-// Guard the specific mistake p. 61 rules out: a smallest-member sort. Under
-// p. 61 the first members run 1423, 1342, 1324, 1432, 1243, 1234, so they must
-// NOT come out ascending.
-const firstMembers = data.chains.map(chain => Number(chain.labels[0]));
-check(firstMembers.some((value, i) => i > 0 && firstMembers[i - 1] > value),
-  "The quartets are sorted by smallest member, which is not the order printed on p. 61.");
+check((data.strand_face_cycle ?? []).join(",") === strandFaceCycle.join(","),
+  `Strand face cycle is ${(data.strand_face_cycle ?? []).join(",")}, expected ${strandFaceCycle.join(",")}.`);
+check(data.chains.map(chain => chain.strand_anchor_label).join(",") === strandFaceCycle.join(","),
+  "The strand sequence does not begin at 1234 and continue counterclockwise around the 1XXX face.");
+strandFaceCycle.forEach((label, index) => {
+  const a = rankByLabel.get(label);
+  const b = rankByLabel.get(strandFaceCycle[(index + 1) % strandFaceCycle.length]);
+  check(adjacency[a]?.has(b),
+    `Strand face ${label} to ${strandFaceCycle[(index + 1) % strandFaceCycle.length]} is not an edge.`);
+});
 
 // Guard the published erratum directly: 3412 must sit in VM3, not VM2.
 const holder = data.chains.find(chain => chain.labels.includes(erratum.wrong));
@@ -190,4 +201,4 @@ if (failures.length) {
   failures.forEach(message => console.error(`  - ${message}`));
   process.exit(1);
 }
-console.log("PASS: quartets, ascending order, legs, routes, base hexagon, and partition all recomputed from the atlas.");
+console.log("PASS: strand order starts at 1234 and runs counterclockwise around the 1XXX face; quartet membership, legs, routes, base hexagon, and partition were recomputed.");
