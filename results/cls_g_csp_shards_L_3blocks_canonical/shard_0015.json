@@ -1,0 +1,13 @@
+{
+  "shard_id": "cls-g-csp-L-m3-item0015",
+  "engine": "gmatrix_csp.v2-ac3",
+  "side": "L",
+  "blocks": 3,
+  "item": 15,
+  "count": 0,
+  "checksum": "0000000000000000",
+  "nodes": 763243,
+  "seconds": 2676.851,
+  "complete": true,
+  "classes": []
+}
