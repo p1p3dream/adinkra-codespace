@@ -61,6 +61,9 @@ the propagator nothing to bite on, so the tree stays narrow and deep.
 
 ## Cost accounting
 
+- Marginal cash cost: $0 (stonkbot and macm4 are local machines; b300 cycles
+  were borrowed from an existing pod paid by the 11D workstream; the pencilled
+  $75-85 hybrid pod fleet was never launched, Lever A made it unnecessary)
 - Nodes measured: 421,625,916 canonical-rep nodes fleet-wide
 - Wall time: ~2 days across stonkbot (T32), M4 (T12), b300 (T8); the final
   item ran 22.6 h single-tree on the M4 after stonkbot was pulled from the race
