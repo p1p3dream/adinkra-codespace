@@ -140,13 +140,20 @@ sq_neg = []
 for i in range(4):
     S = matmul(L[i], L[i])
     sq_neg.append(all(S[r][c] == (-1 if r == c else 0) for r in range(N) for c in range(N)))
-check("multiplicative squares: exactly the skew colors have L_i^2 = -I "
-      "(L_1 = I never does); pattern = %s" % sq_neg,
-      sq_neg == [False] + [True] * 3 or sq_neg == [False, False, True, True]
-      or not all(sq_neg))
-check("off-diagonal multiplicative anticommutation L_i L_j = -L_j L_i also fails "
-      "for some pairs (pattern of failures is informational)", True,
-      "see sq_neg above; the transpose-Garden algebra is the load-bearing one")
+check("multiplicative squares: L_1^2 = +I (it is the identity), "
+      "L_2^2 = L_3^2 = L_4^2 = -I (they are skew)",
+      sq_neg == [False, True, True, True], "pattern = %s" % sq_neg)
+# Colors 2-4 anticommute multiplicatively; pairs involving color 1 cannot
+# (L_1 = I gives L_1 L_j + L_j L_1 = 2 L_j).  These premises plus monomiality
+# of the conjugates IMPLY the transpose-Garden relation for bucket 1, so the
+# 9/9 entrywise Garden check below is a corollary, not an independent filter.
+ac_234 = all(all(x == 0 for row in matadd(matmul(L[i], L[j]), matmul(L[j], L[i]))
+                 for x in row)
+             for i in range(1, 4) for j in range(i + 1, 4))
+check("multiplicative anticommutation L_i L_j = -L_j L_i for colors 2,3,4", ac_234)
+check("anticommutation with color 1 fails as forced (L_1 = I)",
+      any(any(x != 0 for row in matadd(matmul(L[0], L[j]), matmul(L[j], L[0]))
+              for x in row) for j in range(1, 4)))
 
 A_artifact = json.load(open(A_PATH))["A_L"]
 A_from_L = matmul(matadd(matadd(matadd(L[0], L[1]), L[2]), L[3]), inverse(L[0]))
@@ -170,24 +177,42 @@ keys = {k for _, k, _ in records}
 check("1,076 taxonomy keys", len(keys) == 1076, "%d" % len(keys))
 
 # ------------------------------------------------------- conjugation scan
+def conjugates(G):
+    """All four C_I = G L_I G^-1, always computed in full (no short-circuit:
+    the per-color flag statistics below need every color even when the matrix
+    lands in the noninteger bucket)."""
+    Gf = [list(map(Fraction, row)) for row in G]
+    Ginv = inverse(Gf)
+    return [matmul(matmul(Gf, I), Ginv) for I in L]
+
+
 def classify(G):
-    """1 all-four signed-perm; 2 integer, partially; 3 noninteger present."""
-    Ginv = inverse([list(map(Fraction, row)) for row in G])
-    Cs = []
-    for I in L:
-        C = matmul(matmul([list(map(Fraction, row)) for row in G], I), Ginv)
-        Cs.append(C)
-        if not is_integer(C):
-            return 3, Cs
-    if all(is_signed_perm(C) for C in Cs):
-        return 1, Cs
-    return 2, Cs
+    """Return (bucket, Cs, integer flags, signed-perm flags).
+
+    1 all four C_I integer signed-permutation matrices
+    2 all four integer, at least one not signed-permutation
+    3 at least one non-integer entry
+    """
+    Cs = conjugates(G)
+    int_flags = tuple(is_integer(C) for C in Cs)
+    sp_flags = tuple(is_signed_perm(C) for C in Cs)
+    if not all(int_flags):
+        b = 3
+    elif all(sp_flags):
+        b = 1
+    else:
+        b = 2
+    return b, Cs, int_flags, sp_flags
 
 
 bucket_of = {}
+sp_of = {}
+int_of = {}
 for idx, G in enumerate(distinct):
-    b, _ = classify(G)
+    b, _, int_flags, sp_flags = classify(G)
     bucket_of[G] = b
+    int_of[G] = int_flags
+    sp_of[G] = sp_flags
     if idx % 500 == 0:
         print("  ... %d/%d classified" % (idx, len(distinct)), file=sys.stderr)
 
@@ -200,12 +225,18 @@ print("  all four colors signed-permutation:          %d" % counts[0])
 print("  integer but only partially signed-perm:      %d" % counts[1])
 print("  at least one noninteger conjugated color:    %d" % counts[2])
 
-# Relation checks on the bucket-1 presentations (the multiplicative ones are
-# similarity-invariant, the transpose-Garden ones are not).
+# Relation checks on the bucket-1 presentations.  COROLLARY, not an
+# independent filter: if all four C_I are signed permutations (orthogonal,
+# C^-1 = C^T) then the similarity-preserved squares (C_i^2 = -I for colors
+# 2-4) give C_i^T = -C_i, and the preserved anticommutation gives
+# C_i C_j^T + C_j C_i^T = -(C_i C_j + C_j C_i) = 0.  The check below confirms
+# the implication holds entrywise on the data.  The equivalent centralizer
+# statement (G^T G commutes with every L_i L_j^T) was independently
+# confirmed by the external review.
 g1 = [G for G in distinct if bucket_of[G] == 1]
 tp_garden = 0
 for G in g1:
-    _, Cs = classify(G)
+    _, Cs, _, _ = classify(G)
     ok = True
     for i in range(4):
         for j in range(4):
@@ -218,43 +249,43 @@ for G in g1:
                 ok = ok and all(P[r][c] == (2 if r == c else 0)
                                 for r in range(N) for c in range(N))
     tp_garden += ok
-print("  bucket-1 presentations also satisfying transpose-Garden entrywise: %d/%d"
-      % (tp_garden, len(g1)))
+print("  bucket-1 presentations also satisfying transpose-Garden entrywise "
+      "(corollary, see comment): %d/%d" % (tp_garden, len(g1)))
 
 # ------------------------------------------------ taxonomy-constancy stats
+# Five explicit definitions of "the key's reps change classification", all
+# over the full four-color flag vectors.  The external review's 55 is the
+# combined (bucket, signed-perm flags) definition.  (An earlier version of
+# this script short-circuited classify() at the first non-integer color and
+# computed the flag statistics on truncated color lists; that produced wrong
+# variant counts 119/126.  classify() now always returns all four colors.)
 mats_per_key = {}
-bucket_per_key = {}
-fine_per_key = {}       # per-color monomial-flag tuples
-nint_per_key = {}       # number of integer colors (0..4)
 for item, k, m in records:
     mats_per_key.setdefault(k, set()).add(m)
-    bucket_per_key.setdefault(k, set()).add(bucket_of[m])
-    _, Cs = classify(m)
-    fine_per_key.setdefault(k, set()).add(
-        tuple(1 if is_signed_perm(C) else 0 for C in Cs))
-    nint_per_key.setdefault(k, set()).add(sum(1 for C in Cs if is_integer(C)))
 multi_rep_keys = sum(1 for v in mats_per_key.values() if len(v) > 1)
-mixed_keys = sum(1 for v in bucket_per_key.values() if len(v) > 1)
-mixed_fine = sum(1 for v in fine_per_key.values() if len(v) > 1)
-mixed_nint = sum(1 for v in nint_per_key.values() if len(v) > 1)
 
-# Variant: one rep per (item, key) (first record wins, per-item priority),
-# then compare across items.  A reviewer who deduped per item before the
-# cross-item comparison would see this number instead.
-per_item_rep = {}
-for item, k, m in records:
-    per_item_rep.setdefault((item, k), m)
-bucket_per_key_pitem = {}
-for (item, k), m in per_item_rep.items():
-    bucket_per_key_pitem.setdefault(k, set()).add(bucket_of[m])
-mixed_pitem = sum(1 for v in bucket_per_key_pitem.values() if len(v) > 1)
+
+def diversity(key_getter):
+    per_key = {}
+    for item, k, m in records:
+        per_key.setdefault(k, set()).add(key_getter(m))
+    return sum(1 for v in per_key.values() if len(v) > 1)
+
+
+mixed_bucket = diversity(lambda m: bucket_of[m])
+mixed_sp = diversity(lambda m: sp_of[m])
+mixed_bucket_sp = diversity(lambda m: (bucket_of[m], sp_of[m]))
+mixed_nint = diversity(lambda m: sum(int_of[m]))
+mixed_int = diversity(lambda m: int_of[m])
 
 print()
 print("taxonomy keys with multiple distinct stored representatives: %d" % multi_rep_keys)
-print("taxonomy keys whose stored reps change conjugation bucket:   %d" % mixed_keys)
-print("  variant: keys whose reps change per-color monomial flags:  %d" % mixed_fine)
-print("  variant: keys whose reps change #integer colors:           %d" % mixed_nint)
-print("  variant: per-(item,key) dedup, then cross-item buckets:    %d" % mixed_pitem)
+print("keys whose stored reps change, by definition of the classification:")
+print("  coarse bucket (3-way):                          %d" % mixed_bucket)
+print("  full four-color signed-permutation flags:       %d" % mixed_sp)
+print("  combined (bucket, signed-perm flags):           %d" % mixed_bucket_sp)
+print("  number of integer colors:                       %d" % mixed_nint)
+print("  full four-color integer flags:                  %d" % mixed_int)
 
 # ------------------------------------------------------------- the 9
 print()
@@ -265,11 +296,15 @@ for item, k, m in records:
         seen.add(m)
         print("  item %3d  key nnz=%d support=%d" % (item, k[0], k[1]))
 
-ok_all = all(checks) and counts == [9, 228, 3840] and multi_rep_keys == 712
+ok_all = (all(checks) and counts == [9, 228, 3840] and multi_rep_keys == 712
+          and (mixed_bucket, mixed_sp, mixed_bucket_sp, mixed_nint, mixed_int)
+          == (34, 50, 55, 182, 188))
 print()
 print("REVIEW NUMBERS REPRODUCED: buckets %s (expected [9, 228, 3840]), "
-      "%d multi-rep keys (expected 712); mixed-bucket keys = %d "
-      "(review reported 55; finer variants above)"
-      % (counts, multi_rep_keys, mixed_keys))
+      "%d multi-rep keys (expected 712); mixed-key counts by definition: "
+      "bucket %d, signed-perm flags %d, combined %d, #integer %d, "
+      "integer flags %d (expected 34/50/55/182/188)"
+      % (counts, multi_rep_keys, mixed_bucket, mixed_sp, mixed_bucket_sp,
+         mixed_nint, mixed_int))
 print("ALL CHECKS PASSED" if ok_all else "CHECK ABOVE FOR FAILURES")
 sys.exit(0 if ok_all else 1)

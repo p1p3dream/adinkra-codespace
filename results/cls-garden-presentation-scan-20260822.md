@@ -51,20 +51,36 @@ distinct stored representatives.
 
 The nine bucket-1 matrices, by first-record provenance: 7 first stored in
 item 52's shard, 2 in item 204's shard (the two count-crown items). All nine
-also satisfy the transpose-Garden relation entrywise (9/9). That part is a
-genuine extra property, not similarity bookkeeping: similarity by a
-non-orthogonal G does not preserve transpose relations, and these G are not
-orthogonal (G^2 = A with multi-entry rows). Equivalently, for these nine,
-G^T G commutes with every L_i L_j^T.
+also satisfy the transpose-Garden relation entrywise (9/9), but this is a
+COROLLARY of bucket 1, not an additional independent filter: once all four
+conjugates are signed permutations they are orthogonal (C^-1 = C^T), the
+similarity-preserved squares C_i^2 = -I (colors 2-4; verified skew on the
+L's) force C_i^T = -C_i, and the preserved anticommutation among colors 2-4
+(verified on the L's; pairs with color 1 cannot anticommute since L_1 = I)
+gives C_i C_j^T + C_j C_i^T = -(C_i C_j + C_j C_i) = 0. The equivalent
+centralizer statement, G^T G commutes with every L_i L_j^T for these nine,
+was independently confirmed by the external review. Useful structural
+characterization of bucket 1; carries no filtering power beyond signed-
+permutation-ness itself.
 
-Taxonomy constancy is false, as the review asserted. Counts under explicit
-definitions: 34 keys have stored representatives in different buckets (same
-34 under per-(item,key) dedup before cross-item comparison); 119 keys change
-the number of integer colors; 126 keys change the per-color monomial flags.
-The review reported 55 mixed keys without a definition; no dedup variant I
-constructed yields 55. The discrepancy does not affect the conclusion: every
-variant is far above zero, so a taxonomy key does not determine the
-conjugation property, and population extrapolation from the 9 is unjustified.
+Taxonomy constancy is false, as the review asserted. Counts of keys whose
+stored representatives change classification, by explicit definition:
+
+| definition of the classification | mixed keys |
+|---|---|
+| coarse bucket (3-way) | 34 |
+| full four-color signed-permutation flags | 50 |
+| combined (bucket, signed-perm flags) | 55 |
+| number of integer colors | 182 |
+| full four-color integer flags | 188 |
+
+The review's original 55 is the combined definition. An earlier run of this
+scan reported 119/126 for the two finer rows: that was a bug (classify()
+short-circuited at the first non-integer color, so the flag statistics were
+computed on truncated color lists); fixed in the correction commit, and all
+five rows now reproduce the review's table exactly. Every definition is far
+above zero, so a taxonomy key does not determine the conjugation property,
+and population extrapolation from the 9 is unjustified.
 
 ## What dies, what survives
 
@@ -77,11 +93,11 @@ Dies:
 - Any use of C_I^2 = -I on conjugates as evidence: it is similarity-forced.
 
 Survives, as a narrow exact fact: nine of the 4,077 stored matrices
-conjugate all four L_I into signed-permutation matrices that satisfy the
-transpose-Garden algebra entrywise. Whether additional matrices in those
-nine taxonomy classes do the same is unknown until class members beyond the
-stored representatives are tested (which needs the solution-dump hook and a
-targeted rerun, not a new census).
+conjugate all four L_I into signed-permutation matrices (which then
+necessarily satisfy the transpose-Garden algebra, see the corollary above).
+Whether additional matrices in those nine taxonomy classes do the same is
+unknown until class members beyond the stored representatives are tested
+(which needs the solution-dump hook and a targeted rerun, not a new census).
 
 ## Next steps (per the review, unchanged)
 
@@ -92,3 +108,18 @@ targeted rerun, not a new census).
 3. Targeted class-member tests before attaching any population count.
 
 Reproduce: `python3 scripts/lever_a/garden_presentation_scan.py`
+
+## Correction log
+
+2026-08-22, same day, prompted by the external review's second pass: (a) the
+review's 55 mixed keys was resolved to the combined (bucket, four-color
+signed-perm flags) definition; (b) classify() no longer short-circuits at
+the first non-integer color, so all flag statistics run on full four-color
+lists (the earlier 119/126 figures were truncation artifacts and are
+superseded by 182/188); (c) the multiplicative-square sanity gate is no
+longer fail-open (it now requires exactly L_1^2 = +I, L_2^2 = L_3^2 =
+L_4^2 = -I, plus anticommutation among colors 2-4 and the forced failure of
+anticommutation with color 1); (d) the transpose-Garden 9/9 result was
+downgraded from "genuine extra property" to corollary of bucket 1, per the
+derivation above. The 9/228/3,840 headline and all bookkeeping counts were
+unaffected by the bug.
