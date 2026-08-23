@@ -109,6 +109,76 @@ unknown until class members beyond the stored representatives are tested
 
 Reproduce: `python3 scripts/lever_a/garden_presentation_scan.py`
 
+## Holoraumy gadget cross-matrix is a basis artifact; one equivalence class (2026-08-22)
+
+A follow-up session computed the holoraumy gadget matrix over
+{CLS, T1, T2, T3}, where T1/T2/T3 are the 3 distinct conjugated quadruples
+produced by the 9 bucket-1 G-matrices (verified: the 9 collapse 7/1/1 by
+commutant collisions, G_j^-1 G_i commuting with all four L_I within each
+group):
+
+```
+            CLS   T1(7G)  T2(1G)  T3(1G)
+CLS           3       0       0       0
+T1(7G)        0       3       1       1
+T2(1G)        0       1       3       0
+T3(1G)        0       1       0       3
+```
+
+The session read the cross entries as "CLS holoraumy-orthogonal to its
+conjugates" and "targets sharing one irreducible component". Both readings
+are wrong, and the matrix refutes itself: every target is a conjugate of
+CLS by construction (C_I = G L_I G^-1), so all four rows present ONE
+isomorphism class. An isomorphism-invariant comparison returns the
+self-value (3) on every entry; the observed 0s and 1s therefore prove the
+cross-gadget is not an invariant. The mechanism is in the formula
+(src/holoraumy.rs): gadget(a,b) = -2/(N(N-1)dmin) sum Tr(Vtilde^a_IJ
+Vtilde^b_IJ) multiplies a matrix from a's basis by one from b's basis, and
+such traces move under independent conjugation of the two factors (only
+products within a single rep conjugate through; same trap family as the
+transpose-Garden discussion above).
+
+Direct certificate (scripts/lever_a/garden_target_equivalence_check.py,
+all checks PASS): a node-relabeling witness S maps T2 exactly onto T1, and
+under that pure relabeling gadget(T1, .) moves from 1 to 3.
+
+Exact equivalence answer (the external review's step 2), by complete
+search: CLS, T1, T2, T3 are all equivalent under node permutation ALONE
+(sigma = identity, no color permutation, no sign flips). Witnesses in
+address form, each verified entrywise (S L_I S^-1 = T_I for all I):
+
+- CLS -> T1: (1, 4, 2, 3, 5, -7, 8, -6, 9, -11, -12, 10)
+- CLS -> T2: (5, -7, 6, -8, 1, 4, -3, -2, 9, -11, -12, 10)
+- CLS -> T3: (5, -8, -7, 6, 9, 11, 12, 10, 1, -2, 4, -3)
+
+The search is exact, not heuristic: all four quadruples are block-diagonal
+4+4+4; any intertwiner of the color algebra decouples into independent 4x4
+block conditions with at most 1-dimensional solution spaces (Schur), and
+monomiality forces exactly one nonzero block per block row and column, so
+brute force over the 384 4x4 signed permutations per block is complete,
+including block-mixing intertwiners.
+
+Consequences:
+
+- Review step 1 (genuine holoraumy for the 9) needs no new computation:
+  the 9 presentations are node-relabelings of the CLS presentation, so
+  their holoraumy data are identical to CLS's. Exactly one holoraumy class
+  among the stored Garden presentations.
+- Block plans: T1 = per-block color permutations (234)/(243)/(243) of the
+  original blocks; T2 = (23)/(24)/(243); T3 = (24)/(243)/(34). Within a
+  block family the inducible pure color permutations are exactly the even
+  ones (id and the two 3-cycles); the cross-family block conjugators
+  induce exactly the transpositions. Every plan is therefore realizable by
+  node relabeling, which is why everything collapses to one class.
+- The gadget remains legitimate for genuinely different representations
+  (the d=4 CS/VS tests); it is a functional of a pair of PRESENTATIONS,
+  not of a pair of isomorphism classes.
+- What the 9 G-matrices actually are: integral, non-monomial basis changes
+  connecting the CLS monomial presentation to node-relabelings of itself.
+  The nontrivial census fact stays as stated above (nine of 4,077 stored
+  reps conjugate into signed-permutation form); no new adinkra invariant
+  content.
+
 ## Correction log
 
 2026-08-22, same day, prompted by the external review's second pass: (a) the
@@ -123,3 +193,12 @@ anticommutation with color 1); (d) the transpose-Garden 9/9 result was
 downgraded from "genuine extra property" to corollary of bucket 1, per the
 derivation above. The 9/228/3,840 headline and all bookkeeping counts were
 unaffected by the bug.
+
+2026-08-22, second correction (session follow-up): the holoraumy gadget
+cross-matrix over {CLS, T1, T2, T3} was correctly computed but
+misinterpreted; cross entries are basis artifacts (witness certificate:
+relabeling T2 onto T1 moves gadget(T1, .) from 1 to 3). Exact equivalence
+search: all four quadruples form one class under node permutation alone;
+review steps 1 and 2 are thereby closed. Step 3 (population testing via
+the solution-dump hook) remains open. Script:
+scripts/lever_a/garden_target_equivalence_check.py.
