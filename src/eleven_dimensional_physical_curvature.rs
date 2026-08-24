@@ -14,9 +14,11 @@
 //!
 //! Source equations are hep-th/0101037 Eqs. (25), (29), (39), (40),
 //! and (44).  The target projector convention agrees with
-//! arXiv:2007.05097 Eqs. (2.2)-(2.6).  Antisymmetrization has unit weight,
-//! the Lorentz metric is diag(-,+,...,+), epsilon_(0...10)=+1, and raised
-//! spinor gamma matrices are `Gamma_[p] C^{-1}` in the real Majorana basis.
+//! arXiv:2007.05097 Eqs. (2.2)-(2.6).  Irreducible form projectors use unit
+//! weight. The vector-vector Eq. (29) brackets are instead the source's
+//! unnormalized curl convention, fixed by its Eqs. (7)-(8). The Lorentz
+//! metric is diag(-,+,...,+), epsilon_(0...10)=+1, and raised spinor gamma
+//! matrices are `Gamma_[p] C^{-1}` in the real Majorana basis.
 //!
 //! The sources do not fix a physical `Psi_alpha -> H_hat` operator or the
 //! coefficients of the six proposed gauge channels.  This module therefore
@@ -54,6 +56,7 @@ pub const T_ALPHA_VECTOR_SPINOR_DIMENSION: usize =
 pub const D_J_DIMENSION: usize = SPINOR_DIMENSION * SPINOR_DIMENSION;
 pub const W_FOUR_FORM_DIMENSION: usize = 330;
 pub const GRAVITINO_CURL_DIMENSION: usize = 55 * SPINOR_DIMENSION;
+pub const FERMIONIC_FRAME_DIMENSION: usize = VECTOR_DIMENSION * SPINOR_DIMENSION;
 pub const D_F_FOUR_FORM_DIMENSION: usize = SPINOR_DIMENSION * W_FOUR_FORM_DIMENSION;
 pub const SPINOR_ANHOLONOMY_DIMENSION: usize =
     SPINOR_DIMENSION * SPINOR_DIMENSION * SPINOR_DIMENSION;
@@ -967,6 +970,156 @@ pub fn apply_eq25_bosonic_frame(input: &Eq25BosonicFrameInput) -> BTreeMap<usize
     apply_eq25_with_operator(input, &eq25_dh_to_bosonic_frame_operator())
 }
 
+/// Source data entering the spinorial coefficient of the vector frame in
+/// hep-th/0101037 Eq. (25).
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct Eq25FermionicFrameInput {
+    /// `D_beta Delta_delta{}^gamma`, ordered beta, delta, gamma.
+    pub d_delta: BTreeMap<usize, ExactQi>,
+    /// `D_beta Psi`.
+    pub d_scale: BTreeMap<usize, ExactQi>,
+}
+
+/// The exact vector-spinor coefficient of the linearized vector frame,
+///
+/// `psi_a{}^gamma = (i/32) (gamma_a)^{beta delta}
+///                    D_beta Delta_delta{}^gamma
+///                  + (i/32) (gamma_a)^{beta gamma} D_beta Psi`.
+///
+/// This is the source-fixed gravitino potential. It is distinct from the
+/// spinor-vector prepotential `H_alpha{}^a`.
+pub fn apply_eq25_fermionic_frame(
+    input: &Eq25FermionicFrameInput,
+) -> Result<BTreeMap<usize, ExactQi>, String> {
+    if let Some(index) = input
+        .d_delta
+        .keys()
+        .find(|index| **index >= D_DELTA_DIMENSION)
+    {
+        return Err(format!(
+            "Eq. (25) D Delta coordinate {index} is outside dimension {D_DELTA_DIMENSION}"
+        ));
+    }
+    if let Some(index) = input
+        .d_scale
+        .keys()
+        .find(|index| **index >= SPINOR_DIMENSION)
+    {
+        return Err(format!(
+            "Eq. (25) D Psi coordinate {index} is outside dimension {SPINOR_DIMENSION}"
+        ));
+    }
+
+    let gamma = raised_one_gammas();
+    let mut output = BTreeMap::new();
+    for (&index, value) in &input.d_delta {
+        let output_spinor = index % SPINOR_DIMENSION;
+        let rest = index / SPINOR_DIMENSION;
+        let delta = rest % SPINOR_DIMENSION;
+        let beta = rest / SPINOR_DIMENSION;
+        for vector in 0..VECTOR_DIMENSION {
+            let integer = gamma[vector][beta][delta];
+            if integer != 0 {
+                add_sparse(
+                    &mut output,
+                    vector * SPINOR_DIMENSION + output_spinor,
+                    value.times_i().scaled(&rr(i64::from(integer), 32)),
+                );
+            }
+        }
+    }
+    for (&beta, value) in &input.d_scale {
+        for vector in 0..VECTOR_DIMENSION {
+            for output_spinor in 0..SPINOR_DIMENSION {
+                let integer = gamma[vector][beta][output_spinor];
+                if integer != 0 {
+                    add_sparse(
+                        &mut output,
+                        vector * SPINOR_DIMENSION + output_spinor,
+                        value.times_i().scaled(&rr(i64::from(integer), 32)),
+                    );
+                }
+            }
+        }
+    }
+    Ok(output)
+}
+
+/// Direct hep-th/0101037 Eq. (29) vector-vector spinor anholonomy at one
+/// formal momentum basis vector. The result uses the target ordering
+/// `(increasing vector pair, spinor)`. Eqs. (7)-(8) of the source fix its
+/// bracket convention as unnormalized, so this is the full curl
+/// `C_ab{}^gamma=p_a psi_b-p_b psi_a`. By hep-th/0107155 Eq. (3.2f), it is
+/// also the conventional gravitino torsion `T_ab{}^gamma` and agrees directly
+/// with the target Rarita-Schwinger curvature.
+pub fn apply_eq29_fermionic_anholonomy(
+    input: &Eq25FermionicFrameInput,
+    momentum_axis: usize,
+) -> Result<BTreeMap<usize, ExactQi>, String> {
+    if momentum_axis >= VECTOR_DIMENSION {
+        return Err(format!(
+            "Eq. (29) momentum axis {momentum_axis} is outside dimension {VECTOR_DIMENSION}"
+        ));
+    }
+    // Reuse the typed boundary checks, but evaluate the printed Eq. (29)
+    // expression directly rather than curling the Eq. (25) result.
+    apply_eq25_fermionic_frame(input)?;
+    let gamma = raised_one_gammas();
+    let pairs = lexicographic_combinations(2);
+    let mut output = BTreeMap::new();
+    for (&index, value) in &input.d_delta {
+        let output_spinor = index % SPINOR_DIMENSION;
+        let rest = index / SPINOR_DIMENSION;
+        let delta = rest % SPINOR_DIMENSION;
+        let beta = rest / SPINOR_DIMENSION;
+        for (pair, indices) in pairs.iter().enumerate() {
+            let a = indices[0];
+            let b = indices[1];
+            let integer = if momentum_axis == a {
+                gamma[b][beta][delta]
+            } else if momentum_axis == b {
+                -gamma[a][beta][delta]
+            } else {
+                0
+            };
+            if integer != 0 {
+                add_sparse(
+                    &mut output,
+                    pair * SPINOR_DIMENSION + output_spinor,
+                    value.times_i().scaled(&rr(i64::from(integer), 32)),
+                );
+            }
+        }
+    }
+    for (&beta, value) in &input.d_scale {
+        for (pair, indices) in pairs.iter().enumerate() {
+            let a = indices[0];
+            let b = indices[1];
+            let vector = if momentum_axis == a {
+                Some((b, 1_i64))
+            } else if momentum_axis == b {
+                Some((a, -1_i64))
+            } else {
+                None
+            };
+            let Some((vector, sign)) = vector else {
+                continue;
+            };
+            for output_spinor in 0..SPINOR_DIMENSION {
+                let integer = gamma[vector][beta][output_spinor];
+                if integer != 0 {
+                    add_sparse(
+                        &mut output,
+                        pair * SPINOR_DIMENSION + output_spinor,
+                        value.times_i().scaled(&rr(sign * i64::from(integer), 32)),
+                    );
+                }
+            }
+        }
+    }
+    Ok(output)
+}
+
 fn apply_eq25_with_operator(
     input: &Eq25BosonicFrameInput,
     operator: &SparseQiOperator,
@@ -1023,9 +1176,9 @@ fn frame_curl_for_momentum_axis(
             let pair = pair_lookup[&mask];
             let (left, right) = if a < b { (a, b) } else { (b, a) };
             let factor = if momentum_axis == left && a == right {
-                rr(1, 2)
+                r(1)
             } else if momentum_axis == right && a == left {
-                rr(-1, 2)
+                r(-1)
             } else {
                 continue;
             };
@@ -1040,7 +1193,8 @@ fn frame_curl_for_momentum_axis(
 }
 
 /// Eq. (29) bosonic anholonomy, evaluated at a single momentum basis vector.
-/// This is independently equal to the unit-weight curl of Eq. (25).
+/// This is independently equal to the full unnormalized curl of Eq. (25),
+/// as fixed by the bracket convention in the source's Eqs. (7)-(8).
 pub fn apply_eq29_bosonic_anholonomy(
     input: &Eq25BosonicFrameInput,
     momentum_axis: usize,
@@ -1074,7 +1228,7 @@ pub fn apply_eq29_bosonic_anholonomy(
                     pair * VECTOR_DIMENSION + vector,
                     value.multiply(&ExactQi {
                         real: r(0),
-                        imaginary: rr(i64::from(integer), 32),
+                        imaginary: rr(i64::from(integer), 16),
                     }),
                 );
             }
@@ -1092,7 +1246,7 @@ pub fn apply_eq29_bosonic_anholonomy(
                 add_sparse(
                     &mut output,
                     pair * VECTOR_DIMENSION + c,
-                    input.scalar_compensator.scaled(&rr(scalar_integer, 2)),
+                    input.scalar_compensator.scaled(&r(scalar_integer)),
                 );
             }
         }
@@ -1122,15 +1276,11 @@ pub fn apply_eq29_bosonic_anholonomy(
                     add_sparse(
                         &mut output,
                         pair * VECTOR_DIMENSION + c,
-                        psi_b_c.scaled(&rr(-1, 2)),
+                        psi_b_c.scaled(&r(-1)),
                     );
                 }
                 if momentum_axis == b {
-                    add_sparse(
-                        &mut output,
-                        pair * VECTOR_DIMENSION + c,
-                        psi_a_c.scaled(&rr(1, 2)),
-                    );
+                    add_sparse(&mut output, pair * VECTOR_DIMENSION + c, psi_a_c);
                 }
             }
         }
@@ -6165,7 +6315,7 @@ pub fn verify() -> PhysicalCurvatureOperatorReport {
         ],
         lorentz_signature: "diag(-,+,+,+,+,+,+,+,+,+,+)",
         epsilon_convention: "epsilon_(0...10)=+1; canonical increasing form masks",
-        antisymmetrization_convention: "unit weight, including 1/p!",
+        antisymmetrization_convention: "unit weight, including 1/p!, for irreducible form projectors; hep-th/0101037 Eq. (29) vector-vector brackets are the unnormalized curl fixed by Eqs. (7)-(8)",
         raised_spinor_gamma_convention: "Gamma_[p]^{alpha beta}=-(Gamma_[p] C^{-1})^{alpha beta}, derived by raising both indices of C Gamma_[p]; C^{-1}=-C",
         spinorial_connection_source_relation: "omega_(alpha,de)=C_(alpha,[de])-(2/55)(Gamma_de)_alpha{}^gamma C_(gamma,b){}^b, from hep-th/0107155v2 Eq. (3.2c) and the Table 3 constraint",
         mixed_torsion_connection_source_relation: "T_(alpha,b){}^gamma=C_(alpha,b){}^gamma+(1/4)(Gamma^cd)_alpha{}^gamma omega_(b,cd), from hep-th/0107155v2 Eq. (3.2e)",
@@ -6666,6 +6816,80 @@ mod tests {
     }
 
     #[test]
+    fn fermionic_eq25_target_curl_is_exactly_eq29_torsion_for_both_source_terms() {
+        fn target_curl(
+            frame: &BTreeMap<usize, ExactQi>,
+            momentum_axis: usize,
+        ) -> BTreeMap<usize, ExactQi> {
+            let mut output = BTreeMap::new();
+            for (pair, indices) in lexicographic_combinations(2).iter().enumerate() {
+                let a = indices[0];
+                let b = indices[1];
+                for spinor in 0..SPINOR_DIMENSION {
+                    if momentum_axis == a {
+                        if let Some(value) = frame.get(&(b * SPINOR_DIMENSION + spinor)) {
+                            add_sparse(
+                                &mut output,
+                                pair * SPINOR_DIMENSION + spinor,
+                                value.clone(),
+                            );
+                        }
+                    }
+                    if momentum_axis == b {
+                        if let Some(value) = frame.get(&(a * SPINOR_DIMENSION + spinor)) {
+                            add_sparse(
+                                &mut output,
+                                pair * SPINOR_DIMENSION + spinor,
+                                value.scaled(&r(-1)),
+                            );
+                        }
+                    }
+                }
+            }
+            output
+        }
+
+        let mut delta_only = Eq25FermionicFrameInput::default();
+        delta_only.d_delta.insert(
+            (3 * SPINOR_DIMENSION + 7) * SPINOR_DIMENSION + 11,
+            ExactQi::from_rational(5, 7),
+        );
+        delta_only.d_delta.insert(
+            (19 * SPINOR_DIMENSION + 2) * SPINOR_DIMENSION + 29,
+            ExactQi::i(),
+        );
+        let mut scale_only = Eq25FermionicFrameInput::default();
+        scale_only.d_scale.insert(5, ExactQi::from_integer(-3));
+        for input in [&delta_only, &scale_only] {
+            let frame = apply_eq25_fermionic_frame(input).unwrap();
+            assert!(!frame.is_empty());
+            for momentum_axis in 0..VECTOR_DIMENSION {
+                assert_eq!(
+                    target_curl(&frame, momentum_axis),
+                    apply_eq29_fermionic_anholonomy(input, momentum_axis).unwrap(),
+                    "momentum axis {momentum_axis}"
+                );
+            }
+        }
+
+        let frame = apply_eq25_fermionic_frame(&delta_only).unwrap();
+        let expected = target_curl(&frame, 0);
+        let mut mutation = apply_eq29_fermionic_anholonomy(&delta_only, 0).unwrap();
+        let first = *mutation.keys().next().unwrap();
+        mutation
+            .entry(first)
+            .and_modify(|value| value.add_assign(&ExactQi::one()));
+        assert_ne!(expected, mutation);
+        assert!(
+            apply_eq25_fermionic_frame(&Eq25FermionicFrameInput {
+                d_delta: BTreeMap::from([(D_DELTA_DIMENSION, ExactQi::one())]),
+                d_scale: BTreeMap::new(),
+            })
+            .is_err()
+        );
+    }
+
+    #[test]
     fn eliminated_x_images_obey_both_eq40_constraints() {
         let mut input = BTreeMap::new();
         input.insert(dh_index(0, 0, 0), ExactQi::one());
@@ -6684,6 +6908,49 @@ mod tests {
         );
 
         let solution = solve_conventional_compensators(&input);
+        let raw_two = sparse_to_tensor(2, &cached_gamma_dh_operator(2).apply_sparse(&input));
+        for (&mask, observed) in &solution.psi_three {
+            let indices = (0..VECTOR_DIMENSION)
+                .filter(|axis| mask & (1_u16 << axis) != 0)
+                .collect::<Vec<_>>();
+            let [a, b, c] = [indices[0], indices[1], indices[2]];
+            let raw = |left: usize, right: usize, vector: usize| {
+                raw_two
+                    .get(&((1_u16 << left) | (1_u16 << right), vector))
+                    .cloned()
+                    .unwrap_or_else(ExactQi::zero)
+            };
+            let mut expected = raw(a, b, c).scaled(&r(lorentz_sign(c)));
+            expected.add_assign(&raw(a, c, b).scaled(&r(-lorentz_sign(b))));
+            expected.add_assign(&raw(b, c, a).scaled(&r(lorentz_sign(a))));
+            expected = expected.scaled(&rr(1, 48));
+            assert_eq!(*observed, expected, "Psi_[{a}{b}{c}] 1/48 formula");
+        }
+        let time_mask = (1_u16 << 0) | (1_u16 << 1) | (1_u16 << 2);
+        let observed = solution
+            .psi_three
+            .get(&time_mask)
+            .cloned()
+            .unwrap_or_else(ExactQi::zero);
+        let mut expected = raw_two
+            .get(&((1_u16 << 0) | (1_u16 << 1), 2))
+            .cloned()
+            .unwrap_or_else(ExactQi::zero);
+        expected.add_assign(
+            &raw_two
+                .get(&((1_u16 << 0) | (1_u16 << 2), 1))
+                .cloned()
+                .unwrap_or_else(ExactQi::zero)
+                .scaled(&r(-1)),
+        );
+        expected.add_assign(
+            &raw_two
+                .get(&((1_u16 << 1) | (1_u16 << 2), 0))
+                .cloned()
+                .unwrap_or_else(ExactQi::zero)
+                .scaled(&r(-1)),
+        );
+        assert_eq!(observed, expected.scaled(&rr(1, 48)));
         let psi_one_image = tensor_to_indexed(2, delta_wedge(2, &solution.psi_one));
         assert_eq!(psi_one_image, image.x_two_compensators.trace_image);
         let psi_three_image = inject_total_antisymmetric(2, &solution.psi_three)
@@ -6694,6 +6961,23 @@ mod tests {
             tensor_to_indexed(2, psi_three_image),
             image.x_two_compensators.exterior_image
         );
+        assert!(!solution.psi_three.is_empty());
+        for factor in [rr(2, 1), rr(-1, 1)] {
+            let mutated_psi_three = solution
+                .psi_three
+                .iter()
+                .map(|(&mask, value)| (mask, value.scaled(&factor)))
+                .collect::<BTreeMap<_, _>>();
+            let mutated_image = inject_total_antisymmetric(2, &mutated_psi_three)
+                .into_iter()
+                .map(|(key, value)| (key, value.scaled(&r(-1))))
+                .collect();
+            assert_ne!(
+                tensor_to_indexed(2, mutated_image),
+                image.x_two_compensators.exterior_image,
+                "mutating the Eq. (40) Psi_[3] 1/16 coefficient/sign must break X_[abc]=0"
+            );
+        }
         let psi_four_image = delta_wedge(5, &solution.psi_four)
             .into_iter()
             .map(|(key, value)| (key, value.scaled(&rr(1, 48))))

@@ -34,15 +34,15 @@ use crate::eleven_dimensional_h_hat_jet::{
 };
 use crate::eleven_dimensional_physical_curvature::{self as physical, ExactQi, PhysicalXImage};
 use crate::eleven_dimensional_superderivative_normal_form::{
-    CanonicalSuperPolynomial, OrderedSuperderivativeMonomial,
+    CanonicalSuperPolynomial, OrderedSuperderivativeMonomial, left_multiply_d,
 };
 use crate::eleven_dimensional_target_equation_complex::{
-    ExactPolynomialCoefficient, MomentumMonomial, PhysicalFAdapterDescriptor,
-    PhysicalFTargetAdapter, TargetCurvatureCoordinate, TargetCurvatureSector, TargetSector,
-    target_sector_complex,
+    ExactPolynomialCoefficient, ExactPolynomialMatrix, MomentumMonomial,
+    PhysicalFAdapterDescriptor, PhysicalFTargetAdapter, TargetCurvatureCoordinate,
+    TargetCurvatureSector, TargetSector, target_sector_complex,
 };
 
-pub const SCHEMA_VERSION: &str = "adynkra-11d-complete-physical-f-construction-v6";
+pub const SCHEMA_VERSION: &str = "adynkra-11d-complete-physical-f-construction-v8";
 
 /// All geometry coordinates needed by the source-fixed operators that are
 /// currently executable.  These coordinates must eventually be produced by
@@ -126,6 +126,92 @@ pub fn assemble_geometry_level_physical_f(
 
 type PolynomialMap = BTreeMap<usize, CanonicalSuperPolynomial>;
 type MonomialSlices = BTreeMap<OrderedSuperderivativeMonomial, BTreeMap<usize, ExactQi>>;
+type TargetOperatorColumns = Vec<Vec<(usize, ExactPolynomialCoefficient)>>;
+
+fn index_target_operator(operator: &ExactPolynomialMatrix) -> TargetOperatorColumns {
+    (0..operator.columns())
+        .map(|column| operator.column_terms(column))
+        .collect()
+}
+
+fn rarita_curvature_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::RaritaSchwinger).curvature)
+    })
+}
+
+fn rarita_bianchi_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::RaritaSchwinger).bianchi)
+    })
+}
+
+fn rarita_curvature_to_euler_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(
+            &target_sector_complex(TargetSector::RaritaSchwinger).curvature_to_euler,
+        )
+    })
+}
+
+fn rarita_noether_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::RaritaSchwinger).noether)
+    })
+}
+
+fn graviton_bianchi_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::Graviton).bianchi)
+    })
+}
+
+fn graviton_curvature_to_euler_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::Graviton).curvature_to_euler)
+    })
+}
+
+fn graviton_noether_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::Graviton).noether)
+    })
+}
+
+fn four_form_bianchi_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::FourForm).bianchi)
+    })
+}
+
+fn four_form_curvature_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::FourForm).curvature)
+    })
+}
+
+fn four_form_curvature_to_euler_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::FourForm).curvature_to_euler)
+    })
+}
+
+fn four_form_noether_columns() -> &'static TargetOperatorColumns {
+    static COLUMNS: OnceLock<TargetOperatorColumns> = OnceLock::new();
+    COLUMNS.get_or_init(|| {
+        index_target_operator(&target_sector_complex(TargetSector::FourForm).noether)
+    })
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize)]
 pub enum FrameComposedPhysicalFSector {
@@ -341,12 +427,12 @@ impl FrameComposedPhysicalFEntry {
     }
 }
 
-/// Convention-fixed adapter for the bosonic lowest component of the modern
-/// all-real-gamma `W_[4]` superfield.  `W_[4]|_{theta=0}` is already the
-/// physical four-form curvature coordinate, so this bridge changes only the
-/// type and momentum representation.  Spinorial descendants and the X/J/T
-/// auxiliary sectors are rejected rather than silently misidentified with
-/// Riemann or gravitino curvature.
+/// Conditional coordinate adapter for identifying the bosonic lowest
+/// component of the modern all-real-gamma `W_[4]` superfield with a target
+/// four-form. The current composed raw-W stream fails the target Bianchi test
+/// on a nonzero H canary, so production persistence keeps it auxiliary and
+/// never invokes this adapter as a physical identification. Spinorial
+/// descendants and the X/J/T auxiliary sectors are rejected.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct W2021FourFormTargetAdapter;
 
@@ -384,6 +470,32 @@ fn target_four_form_lexicographic_ordinal(indices: [usize; 4]) -> usize {
         next = value + 1;
     }
     ordinal
+}
+
+fn target_three_form_lexicographic_ordinal(indices: [usize; 3]) -> usize {
+    let mut ordinal = 0_usize;
+    let mut next = 0_usize;
+    for (position, value) in indices.into_iter().enumerate() {
+        for candidate in next..value {
+            ordinal += binomial(physical::VECTOR_DIMENSION - candidate - 1, 3 - position - 1);
+        }
+        next = value + 1;
+    }
+    ordinal
+}
+
+fn psi_three_mask_to_target_ordinal(mask: u16) -> Result<usize, String> {
+    if mask.count_ones() != 3 || mask >= (1_u16 << physical::VECTOR_DIMENSION) {
+        return Err(format!(
+            "Eq. (40) Psi_[3] mask {mask:#x} is not a canonical eleven-dimensional three-form"
+        ));
+    }
+    let indices = (0..physical::VECTOR_DIMENSION)
+        .filter(|axis| mask & (1_u16 << axis) != 0)
+        .collect::<Vec<_>>();
+    Ok(target_three_form_lexicographic_ordinal([
+        indices[0], indices[1], indices[2],
+    ]))
 }
 
 impl PhysicalFTargetAdapter for W2021FourFormTargetAdapter {
@@ -452,6 +564,318 @@ pub struct DirectLinearizedRiemannStats {
     pub source_frame_terms: usize,
     pub symmetric_metric_terms: usize,
     pub riemann_terms: usize,
+}
+
+/// One exact term in the source-fixed Eq. (25) vector-spinor curl.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DirectLinearizedGravitinoCurlEntry {
+    pub component: usize,
+    pub monomial: OrderedSuperderivativeMonomial,
+    pub coefficient: ExactQi,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct DirectLinearizedGravitinoCurlStats {
+    pub fermionic_frame_terms: usize,
+    pub gravitino_curl_terms: usize,
+    pub euler_terms: usize,
+    pub eq29_torsion_residual_terms: usize,
+    pub bianchi_residual_terms: usize,
+    pub noether_residual_terms: usize,
+}
+
+/// Exact closed four-form candidate obtained from the source-derived Eq. (40)
+/// holonomy `Psi_[3]` through the independent Abelian target curvature map.
+/// In the pinned convention,
+/// `Psi_abc=(eta_cc R_ab^c-eta_bb R_ac^b+eta_aa R_bc^a)/48`, with
+/// `R_ab^c=(gamma_ab)^{gamma delta}D_gamma H_delta^c`. This is the unique
+/// multiplicity-one Lambda-three projection selected by the Eq. (40)
+/// conventional constraint. The source does not identify that holonomy with
+/// the physical component potential, so it is not claimed to be the unique
+/// general `H -> A_[3]` map or a physical relative normalization of raw W.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DirectCandidateFourFormEntry {
+    pub component: usize,
+    pub monomial: OrderedSuperderivativeMonomial,
+    pub coefficient: ExactQi,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct DirectCandidateFourFormStats {
+    pub psi_three_potential_terms: usize,
+    pub four_form_curvature_terms: usize,
+    pub euler_terms: usize,
+    pub bianchi_residual_terms: usize,
+    pub noether_residual_terms: usize,
+    pub raw_w_bianchi_residual_terms: usize,
+    pub raw_w_comparison_residual_terms: usize,
+}
+
+fn gauge_fixed_candidate_four_form_curvature(
+    frame_input: &LinearizedFrameSuperfields,
+    raw_entries: &[GaugeFixedInvariantOutputEntry],
+) -> Result<
+    (
+        DirectCandidateFourFormStats,
+        Vec<DirectCandidateFourFormEntry>,
+    ),
+    String,
+> {
+    let representative = canonical_physical_frame_representative(frame_input)?;
+    let mut d_h_slices = MonomialSlices::new();
+    visit_d_h_jet(&representative, |entry| {
+        for (monomial, coefficient) in entry.polynomial.terms {
+            let slice = d_h_slices.entry(monomial).or_default();
+            let value = slice.entry(entry.coordinate).or_insert_with(ExactQi::zero);
+            value.add_assign(&coefficient);
+            if value.is_zero() {
+                slice.remove(&entry.coordinate);
+            }
+        }
+        Ok(())
+    })?;
+    d_h_slices.retain(|_, slice| !slice.is_empty());
+    let mut potential = BTreeMap::new();
+    for (monomial, d_h) in d_h_slices {
+        for (mask, coefficient) in physical::solve_conventional_compensators(&d_h).psi_three {
+            add_polynomial_map_value(
+                &mut potential,
+                (psi_three_mask_to_target_ordinal(mask)?, monomial.clone()),
+                coefficient,
+            );
+        }
+    }
+    let curvature = apply_target_polynomial_columns(four_form_curvature_columns(), &potential)?;
+    let bianchi_residual =
+        apply_target_polynomial_columns(four_form_bianchi_columns(), &curvature)?;
+    if !bianchi_residual.is_empty() {
+        return Err(format!(
+            "Eq. (40) Psi_[3] candidate four-form violates the target Bianchi identity in {} coordinates",
+            bianchi_residual.len()
+        ));
+    }
+    let euler =
+        apply_target_polynomial_columns(four_form_curvature_to_euler_columns(), &curvature)?;
+    let noether_residual = apply_target_polynomial_columns(four_form_noether_columns(), &euler)?;
+    if !noether_residual.is_empty() {
+        return Err(format!(
+            "Eq. (40) Psi_[3] candidate four-form violates Noether(Euler) in {} coordinates",
+            noether_residual.len()
+        ));
+    }
+
+    let mut raw_w = BTreeMap::new();
+    for entry in raw_entries {
+        if entry.sector == GaugeFixedInvariantOutputSector::W2021Raw {
+            let component = target_four_form_lexicographic_ordinal(w_source_four_form_indices(
+                entry.coordinate,
+            )?);
+            add_polynomial_map_value(
+                &mut raw_w,
+                (component, entry.monomial.clone()),
+                entry.coefficient.clone(),
+            );
+        }
+    }
+    let raw_w_bianchi_residual_terms =
+        apply_target_polynomial_columns(four_form_bianchi_columns(), &raw_w)?;
+    let mut raw_minus_candidate = raw_w.clone();
+    for (key, coefficient) in &curvature {
+        add_polynomial_map_value(
+            &mut raw_minus_candidate,
+            key.clone(),
+            coefficient.scaled(&num_rational::Ratio::from_integer(-1)),
+        );
+    }
+    let residual_bianchi =
+        apply_target_polynomial_columns(four_form_bianchi_columns(), &raw_minus_candidate)?;
+    if residual_bianchi != raw_w_bianchi_residual_terms {
+        return Err(
+            "raw W minus Eq. (40) Psi_[3] candidate changed the four-form Bianchi residual"
+                .to_string(),
+        );
+    }
+    let raw_w_comparison_residual_terms = raw_minus_candidate.len();
+    let stats = DirectCandidateFourFormStats {
+        psi_three_potential_terms: potential.len(),
+        four_form_curvature_terms: curvature.len(),
+        euler_terms: euler.len(),
+        bianchi_residual_terms: 0,
+        noether_residual_terms: 0,
+        raw_w_bianchi_residual_terms: raw_w_bianchi_residual_terms.len(),
+        raw_w_comparison_residual_terms,
+    };
+    let entries = curvature
+        .into_iter()
+        .map(
+            |((component, monomial), coefficient)| DirectCandidateFourFormEntry {
+                component,
+                monomial,
+                coefficient,
+            },
+        )
+        .collect();
+    Ok((stats, entries))
+}
+
+fn eq25_fermionic_frame_source_polynomials(
+    representative: &LinearizedFrameSuperfields,
+) -> Result<(PolynomialMap, PolynomialMap), String> {
+    let mut d_delta = PolynomialMap::new();
+    visit_constrained_geometry_jet(representative, |entry| {
+        if entry.sector == ConstrainedGeometryJetSector::DDelta {
+            add_polynomial_coefficient(
+                &mut d_delta,
+                entry.coordinate,
+                entry.monomial,
+                entry.coefficient,
+            );
+        }
+        Ok(())
+    })?;
+    let mut d_scale = PolynomialMap::new();
+    for derivative in 0..physical::SPINOR_DIMENSION {
+        let polynomial = left_multiply_d(derivative, &representative.scale)?;
+        if !polynomial.terms.is_empty() {
+            d_scale.insert(derivative, polynomial);
+        }
+    }
+    Ok((d_delta, d_scale))
+}
+
+/// Stream the direct off-shell linearized gravitino curl on the canonical
+/// gauge-fixed frame section. hep-th/0101037 Eq. (25) first constructs the
+/// vector-spinor from `D Delta` and `D Psi`; the independent target
+/// Rarita-Schwinger curvature then forms the full curl. Every polynomial
+/// coefficient is checked entrywise against the unnormalized Eq. (29)
+/// anholonomy, which equals the conventional torsion by hep-th/0107155
+/// Eq. (3.2f). The source bracket normalization is fixed by hep-th/0101037
+/// Eqs. (7)-(8).
+pub fn visit_gauge_fixed_linearized_gravitino_curl<F>(
+    frame_input: &LinearizedFrameSuperfields,
+    mut emit: F,
+) -> Result<DirectLinearizedGravitinoCurlStats, String>
+where
+    F: FnMut(DirectLinearizedGravitinoCurlEntry) -> Result<(), String>,
+{
+    let representative = canonical_physical_frame_representative(frame_input)?;
+    let (d_delta, d_scale) = eq25_fermionic_frame_source_polynomials(&representative)?;
+    let d_delta = transpose_polynomials(&d_delta);
+    let d_scale = transpose_polynomials(&d_scale);
+    let monomials = d_delta
+        .keys()
+        .chain(d_scale.keys())
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let empty = BTreeMap::new();
+    let target_curvature = rarita_curvature_columns();
+    let mut curl = BTreeMap::new();
+    let mut fermionic_frame_terms = 0_usize;
+
+    for monomial in monomials {
+        let source = physical::Eq25FermionicFrameInput {
+            d_delta: d_delta.get(&monomial).unwrap_or(&empty).clone(),
+            d_scale: d_scale.get(&monomial).unwrap_or(&empty).clone(),
+        };
+        let frame = physical::apply_eq25_fermionic_frame(&source)?;
+        fermionic_frame_terms = fermionic_frame_terms
+            .checked_add(frame.len())
+            .ok_or_else(|| "direct gravitino frame term count overflow".to_string())?;
+        let mut monomial_curl = BTreeMap::new();
+        for (component, coefficient) in &frame {
+            for (curl_component, operator_term) in &target_curvature[*component] {
+                let output_monomial =
+                    multiply_ordered_momentum(&monomial, &operator_term.monomial)?;
+                add_polynomial_map_value(
+                    &mut monomial_curl,
+                    (*curl_component, output_monomial),
+                    multiply_exact_qi_by_public(coefficient, &operator_term),
+                );
+            }
+        }
+        let mut monomial_eq29 = BTreeMap::new();
+        for momentum_axis in 0..physical::VECTOR_DIMENSION {
+            let momentum = MomentumMonomial::variable(momentum_axis);
+            let output_monomial = multiply_ordered_momentum(&monomial, &momentum)?;
+            for (component, coefficient) in
+                physical::apply_eq29_fermionic_anholonomy(&source, momentum_axis)?
+            {
+                add_polynomial_map_value(
+                    &mut monomial_eq29,
+                    (component, output_monomial.clone()),
+                    coefficient,
+                );
+            }
+        }
+        let residual_terms = polynomial_map_difference_count(&monomial_curl, &monomial_eq29);
+        if residual_terms != 0 {
+            return Err(format!(
+                "direct gravitino curl disagrees with Eq. (29) torsion in {residual_terms} coordinates at source monomial {monomial:?}"
+            ));
+        }
+        for (key, coefficient) in monomial_curl {
+            add_polynomial_map_value(&mut curl, key, coefficient);
+        }
+    }
+    let eq29_torsion_residual_terms = 0;
+    let bianchi_residual_terms = gravitino_curl_bianchi_residual(&curl)?.len();
+    if bianchi_residual_terms != 0 {
+        return Err(format!(
+            "direct gravitino curl violates the target Bianchi identity in {bianchi_residual_terms} coordinates"
+        ));
+    }
+    let euler = gravitino_curl_euler_image(&curl)?;
+    let noether_residual_terms =
+        apply_target_polynomial_columns(rarita_noether_columns(), &euler)?.len();
+    if noether_residual_terms != 0 {
+        return Err(format!(
+            "direct gravitino curl violates Noether(Euler) in {noether_residual_terms} coordinates"
+        ));
+    }
+    let stats = DirectLinearizedGravitinoCurlStats {
+        fermionic_frame_terms,
+        gravitino_curl_terms: curl.len(),
+        euler_terms: euler.len(),
+        eq29_torsion_residual_terms,
+        bianchi_residual_terms,
+        noether_residual_terms,
+    };
+    for ((component, monomial), coefficient) in curl {
+        emit(DirectLinearizedGravitinoCurlEntry {
+            component,
+            monomial,
+            coefficient,
+        })?;
+    }
+    Ok(stats)
+}
+
+fn add_polynomial_map_value(
+    output: &mut BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+    key: (usize, OrderedSuperderivativeMonomial),
+    coefficient: ExactQi,
+) {
+    if coefficient.is_zero() {
+        return;
+    }
+    let value = output.entry(key.clone()).or_insert_with(ExactQi::zero);
+    value.add_assign(&coefficient);
+    if value.is_zero() {
+        output.remove(&key);
+    }
+}
+
+fn polynomial_map_difference_count(
+    left: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+    right: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+) -> usize {
+    left.keys()
+        .chain(right.keys())
+        .cloned()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .filter(|key| left.get(key) != right.get(key))
+        .count()
 }
 
 fn add_polynomial_scaled(
@@ -721,6 +1145,134 @@ pub fn adapt_w2021_first_descendants(
     Ok(output)
 }
 
+/// One term in an explicitly differentiated W_[4] polynomial.
+///
+/// `derivative_spinor` is retained independently from `monomial`: the latter
+/// is the ordered normal form after D_alpha has acted on W(H_hat), and cannot
+/// in general be used to reconstruct alpha because anticommutators generate
+/// momentum terms.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ExplicitW2021FirstDescendantEntry {
+    pub derivative_spinor: usize,
+    pub four_form_coordinate: usize,
+    pub monomial: OrderedSuperderivativeMonomial,
+    pub coefficient: ExactQi,
+}
+
+/// Recover polynomial gravitino-curl coordinates from explicitly typed
+/// first descendants. Each ordered H_hat differential monomial is inverted
+/// independently and pushed forward through the source-fixed map again.
+pub fn adapt_explicit_w2021_first_descendants(
+    entries: &[ExplicitW2021FirstDescendantEntry],
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    let mut descendants =
+        BTreeMap::<OrderedSuperderivativeMonomial, BTreeMap<usize, ExactQi>>::new();
+    for entry in entries {
+        add_explicit_w2021_descendant(&mut descendants, entry)?;
+    }
+
+    recover_grouped_w2021_first_descendants(descendants)
+}
+
+fn recover_grouped_w2021_first_descendants(
+    descendants: BTreeMap<OrderedSuperderivativeMonomial, BTreeMap<usize, ExactQi>>,
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    let mut output = BTreeMap::new();
+    for (monomial, descendant) in descendants {
+        let recovered = physical::recover_gravitino_curl_from_linearized_d_f_four(&descendant)
+            .map_err(|error| {
+                format!(
+                    "conditional D W2021 image gate failed for exterior mask {:#010x} and momentum {:?}: {error}",
+                    monomial.exterior_spinor_mask, monomial.momentum.exponents
+                )
+            })?;
+        for (component, coefficient) in recovered {
+            output.insert((component, monomial.clone()), coefficient);
+        }
+    }
+    Ok(output)
+}
+
+fn add_explicit_w2021_descendant(
+    descendants: &mut BTreeMap<OrderedSuperderivativeMonomial, BTreeMap<usize, ExactQi>>,
+    entry: &ExplicitW2021FirstDescendantEntry,
+) -> Result<(), String> {
+    if entry.derivative_spinor >= physical::SPINOR_DIMENSION {
+        return Err(format!(
+            "W2021 derivative spinor {} is outside dimension {}",
+            entry.derivative_spinor,
+            physical::SPINOR_DIMENSION
+        ));
+    }
+    let four_form = target_four_form_lexicographic_ordinal(w_source_four_form_indices(
+        entry.four_form_coordinate,
+    )?);
+    let row = entry.derivative_spinor * physical::W_FOUR_FORM_DIMENSION + four_form;
+    let tensor = descendants.entry(entry.monomial.clone()).or_default();
+    let value = tensor.entry(row).or_insert_with(ExactQi::zero);
+    value.add_assign(&entry.coefficient);
+    if value.is_zero() {
+        tensor.remove(&row);
+    }
+    Ok(())
+}
+
+fn visit_explicitly_differentiated_w2021<F>(
+    raw_entries: &[FrameComposedPhysicalFEntry],
+    mut emit: F,
+) -> Result<(), String>
+where
+    F: FnMut(ExplicitW2021FirstDescendantEntry) -> Result<(), String>,
+{
+    let mut w = PolynomialMap::new();
+    for entry in raw_entries {
+        if entry.sector != FrameComposedPhysicalFSector::W2021 {
+            continue;
+        }
+        add_polynomial_coefficient(
+            &mut w,
+            entry.coordinate,
+            entry.monomial.clone(),
+            entry.coefficient.clone(),
+        );
+    }
+    for (four_form_coordinate, polynomial) in w {
+        for derivative_spinor in 0..physical::SPINOR_DIMENSION {
+            for (monomial, coefficient) in left_multiply_d(derivative_spinor, &polynomial)?.terms {
+                emit(ExplicitW2021FirstDescendantEntry {
+                    derivative_spinor,
+                    four_form_coordinate,
+                    monomial,
+                    coefficient,
+                })?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn explicitly_differentiate_w2021(
+    raw_entries: &[FrameComposedPhysicalFEntry],
+) -> Result<Vec<ExplicitW2021FirstDescendantEntry>, String> {
+    let mut output = Vec::new();
+    visit_explicitly_differentiated_w2021(raw_entries, |entry| {
+        output.push(entry);
+        Ok(())
+    })?;
+    Ok(output)
+}
+
+fn adapt_differentiated_w2021_first_descendants(
+    raw_entries: &[FrameComposedPhysicalFEntry],
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    let mut descendants =
+        BTreeMap::<OrderedSuperderivativeMonomial, BTreeMap<usize, ExactQi>>::new();
+    visit_explicitly_differentiated_w2021(raw_entries, |entry| {
+        add_explicit_w2021_descendant(&mut descendants, &entry)
+    })?;
+    recover_grouped_w2021_first_descendants(descendants)
+}
+
 fn multiply_exact_qi_by_public(left: &ExactQi, right: &ExactPolynomialCoefficient) -> ExactQi {
     let right_real = num_rational::Ratio::new(right.real_numerator, right.real_denominator);
     let right_imaginary =
@@ -770,13 +1322,106 @@ pub fn four_form_bianchi_residual(
     Ok(residual)
 }
 
+fn apply_target_polynomial_columns(
+    columns: &TargetOperatorColumns,
+    input: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    let mut output = BTreeMap::new();
+    for ((component, monomial), coefficient) in input {
+        if *component >= columns.len() {
+            return Err(format!(
+                "target-operator input component {component} is outside dimension {}",
+                columns.len()
+            ));
+        }
+        for (row, operator_term) in &columns[*component] {
+            let output_monomial = multiply_ordered_momentum(monomial, &operator_term.monomial)?;
+            let output_coefficient = multiply_exact_qi_by_public(coefficient, &operator_term);
+            add_polynomial_map_value(&mut output, (*row, output_monomial), output_coefficient);
+        }
+    }
+    Ok(output)
+}
+
+fn certify_target_curvature_stream(
+    label: &str,
+    curvature: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+    bianchi: &TargetOperatorColumns,
+    curvature_to_euler: &TargetOperatorColumns,
+    noether: &TargetOperatorColumns,
+) -> Result<usize, String> {
+    let bianchi_residual = apply_target_polynomial_columns(bianchi, curvature)?;
+    if !bianchi_residual.is_empty() {
+        return Err(format!(
+            "{label} violates the target Bianchi identity in {} coordinates",
+            bianchi_residual.len()
+        ));
+    }
+    let euler = apply_target_polynomial_columns(curvature_to_euler, curvature)?;
+    let noether_residual = apply_target_polynomial_columns(noether, &euler)?;
+    if !noether_residual.is_empty() {
+        return Err(format!(
+            "{label} violates Noether(Euler) in {} coordinates",
+            noether_residual.len()
+        ));
+    }
+    Ok(euler.len())
+}
+
+fn certify_emitted_riemann_target_stream(
+    entries: &[GaugeFixedInvariantOutputEntry],
+) -> Result<usize, String> {
+    let mut riemann = BTreeMap::new();
+    for entry in entries {
+        if entry.sector == GaugeFixedInvariantOutputSector::LinearizedRiemann {
+            add_polynomial_map_value(
+                &mut riemann,
+                (entry.coordinate, entry.monomial.clone()),
+                entry.coefficient.clone(),
+            );
+        }
+    }
+    certify_target_curvature_stream(
+        "direct linearized Riemann stream",
+        &riemann,
+        graviton_bianchi_columns(),
+        graviton_curvature_to_euler_columns(),
+        graviton_noether_columns(),
+    )
+}
+
+/// Apply the independent target Rarita-Schwinger differential-Bianchi map to
+/// polynomial gravitino-curl coordinates.
+pub fn gravitino_curl_bianchi_residual(
+    curvature: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    apply_target_polynomial_columns(rarita_bianchi_columns(), curvature)
+}
+
+/// Retain the exact Rarita-Schwinger Euler image derived from a curl stream.
+pub fn gravitino_curl_euler_image(
+    curvature: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    apply_target_polynomial_columns(rarita_curvature_to_euler_columns(), curvature)
+}
+
+/// Apply Noether to the retained Euler image. Exact zero is the target
+/// Noether identity; any nonzero coordinate fails closed.
+pub fn gravitino_curl_noether_residual(
+    curvature: &BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>,
+) -> Result<BTreeMap<(usize, OrderedSuperderivativeMonomial), ExactQi>, String> {
+    let euler = gravitino_curl_euler_image(curvature)?;
+    apply_target_polynomial_columns(rarita_noether_columns(), &euler)
+}
+
 /// Stable sectors in the production invariant-supercurvature column format.
 ///
 /// `W2021Raw` deliberately remains a raw superfield coordinate at every
 /// exterior-D degree.  In particular, its two-D terms are not relabeled as
 /// gravity.  `LinearizedRiemann` is emitted only by the independent direct
 /// frame adapter, so the schema cannot double-emit a theta-two W term as a
-/// second Riemann coordinate.
+/// second Riemann coordinate. `ConditionalGravitinoCurl` is present only when
+/// the caller explicitly enables the pinned W_2021|_0=F_[4] convention gate.
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[repr(u8)]
 pub enum GaugeFixedInvariantOutputSector {
@@ -785,6 +1430,9 @@ pub enum GaugeFixedInvariantOutputSector {
     JMinus = 5,
     W2021Raw = 8,
     LinearizedRiemann = 9,
+    DirectGravitinoCurl = 10,
+    DirectCandidateFourForm = 11,
+    ConditionalGravitinoCurl = 12,
 }
 
 impl GaugeFixedInvariantOutputSector {
@@ -815,7 +1463,20 @@ pub struct GaugeFixedInvariantOutputEntry {
 pub struct GaugeFixedInvariantOutputStats {
     pub raw_invariant_terms: usize,
     pub direct_riemann_terms: usize,
+    pub direct_gravitino_curl_terms: usize,
+    pub direct_candidate_four_form_terms: usize,
+    pub candidate_four_form_raw_w_bianchi_residual_terms: usize,
+    pub candidate_four_form_raw_w_comparison_residual_terms: usize,
+    pub conditional_gravitino_curl_terms: usize,
     pub emitted_by_sector: BTreeMap<GaugeFixedInvariantOutputSector, usize>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+pub enum W2021FirstDescendantConventionGate {
+    Disabled,
+    /// Explicitly identify the W_2021 lowest component with the physical
+    /// four-form and apply hep-th/0107155 Eq. (3.1g).
+    W2021LowestIsPhysicalFourForm,
 }
 
 fn invariant_entry_cmp(
@@ -840,6 +1501,19 @@ pub fn visit_gauge_fixed_invariant_supercurvature<F>(
 ) -> Result<GaugeFixedInvariantOutputStats, String>
 where
     F: FnMut(GaugeFixedInvariantOutputEntry) -> Result<(), String>,
+{
+    let mut ignore_raw_frame = |_: &FrameComposedPhysicalFEntry| Ok(());
+    visit_gauge_fixed_invariant_supercurvature_base(frame_input, &mut ignore_raw_frame, &mut emit)
+}
+
+fn visit_gauge_fixed_invariant_supercurvature_base<F, G>(
+    frame_input: &LinearizedFrameSuperfields,
+    observe_raw_frame: &mut G,
+    emit: &mut F,
+) -> Result<GaugeFixedInvariantOutputStats, String>
+where
+    F: FnMut(GaugeFixedInvariantOutputEntry) -> Result<(), String>,
+    G: FnMut(&FrameComposedPhysicalFEntry) -> Result<(), String>,
 {
     let mut riemann = Vec::new();
     visit_gauge_fixed_linearized_riemann(frame_input, |entry| {
@@ -869,6 +1543,7 @@ where
     };
 
     visit_gauge_fixed_physical_f(frame_input, |entry| {
+        observe_raw_frame(&entry)?;
         let Some(sector) = GaugeFixedInvariantOutputSector::from_frame(entry.sector) else {
             return Ok(());
         };
@@ -882,8 +1557,7 @@ where
             .peek()
             .is_some_and(|candidate| invariant_entry_cmp(candidate, &unified).is_lt())
         {
-            let candidate = riemann.next().unwrap();
-            emit_checked(candidate)?;
+            emit_checked(riemann.next().unwrap())?;
         }
         emit_checked(unified)
     })?;
@@ -904,22 +1578,213 @@ where
     Ok(stats)
 }
 
+/// Transactional successor stream adding the direct source-fixed gravitino
+/// curl and the separately labeled Eq. (40) `Psi_[3]` four-form candidate to
+/// the frozen invariant sectors. The v4/COL3 writer consumes this visitor;
+/// the frozen v3/COL2 artifacts remain schema-incompatible.
+pub fn visit_gauge_fixed_invariant_supercurvature_with_direct_gravitino<F>(
+    frame_input: &LinearizedFrameSuperfields,
+    mut emit: F,
+) -> Result<GaugeFixedInvariantOutputStats, String>
+where
+    F: FnMut(GaugeFixedInvariantOutputEntry) -> Result<(), String>,
+{
+    let mut entries = Vec::new();
+    let mut ignore_raw_frame = |_: &FrameComposedPhysicalFEntry| Ok(());
+    let mut collect_base = |entry| {
+        entries.push(entry);
+        Ok(())
+    };
+    visit_gauge_fixed_invariant_supercurvature_base(
+        frame_input,
+        &mut ignore_raw_frame,
+        &mut collect_base,
+    )?;
+    certify_emitted_riemann_target_stream(&entries)?;
+    let (candidate_four_form, candidate_four_form_entries) =
+        gauge_fixed_candidate_four_form_curvature(frame_input, &entries)?;
+    entries.extend(candidate_four_form_entries.into_iter().map(|entry| {
+        GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::DirectCandidateFourForm,
+            coordinate: entry.component,
+            monomial: entry.monomial,
+            coefficient: entry.coefficient,
+        }
+    }));
+    visit_gauge_fixed_linearized_gravitino_curl(frame_input, |entry| {
+        entries.push(GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::DirectGravitinoCurl,
+            coordinate: entry.component,
+            monomial: entry.monomial,
+            coefficient: entry.coefficient,
+        });
+        Ok(())
+    })?;
+    let mut stats = emit_sorted_invariant_entries(entries, &mut emit)?;
+    stats.candidate_four_form_raw_w_bianchi_residual_terms =
+        candidate_four_form.raw_w_bianchi_residual_terms;
+    stats.candidate_four_form_raw_w_comparison_residual_terms =
+        candidate_four_form.raw_w_comparison_residual_terms;
+    Ok(stats)
+}
+
+fn emit_sorted_invariant_entries<F>(
+    mut entries: Vec<GaugeFixedInvariantOutputEntry>,
+    emit: &mut F,
+) -> Result<GaugeFixedInvariantOutputStats, String>
+where
+    F: FnMut(GaugeFixedInvariantOutputEntry) -> Result<(), String>,
+{
+    entries.sort_by(invariant_entry_cmp);
+    let mut stats = GaugeFixedInvariantOutputStats::default();
+    let mut previous = None;
+    for entry in entries {
+        if previous
+            .as_ref()
+            .is_some_and(|prior| invariant_entry_cmp(prior, &entry).is_ge())
+        {
+            return Err("unified invariant output is not strictly row ordered".to_string());
+        }
+        *stats.emitted_by_sector.entry(entry.sector).or_default() += 1;
+        previous = Some(entry.clone());
+        emit(entry)?;
+    }
+    stats.direct_riemann_terms = *stats
+        .emitted_by_sector
+        .get(&GaugeFixedInvariantOutputSector::LinearizedRiemann)
+        .unwrap_or(&0);
+    stats.direct_gravitino_curl_terms = *stats
+        .emitted_by_sector
+        .get(&GaugeFixedInvariantOutputSector::DirectGravitinoCurl)
+        .unwrap_or(&0);
+    stats.direct_candidate_four_form_terms = *stats
+        .emitted_by_sector
+        .get(&GaugeFixedInvariantOutputSector::DirectCandidateFourForm)
+        .unwrap_or(&0);
+    stats.conditional_gravitino_curl_terms = *stats
+        .emitted_by_sector
+        .get(&GaugeFixedInvariantOutputSector::ConditionalGravitinoCurl)
+        .unwrap_or(&0);
+    stats.raw_invariant_terms = stats
+        .emitted_by_sector
+        .iter()
+        .filter(|(sector, _)| {
+            !matches!(
+                **sector,
+                GaugeFixedInvariantOutputSector::LinearizedRiemann
+                    | GaugeFixedInvariantOutputSector::DirectGravitinoCurl
+                    | GaugeFixedInvariantOutputSector::DirectCandidateFourForm
+                    | GaugeFixedInvariantOutputSector::ConditionalGravitinoCurl
+            )
+        })
+        .map(|(_, count)| *count)
+        .sum();
+    Ok(stats)
+}
+
+/// Conditional production stream including the explicitly differentiated
+/// W_[4] first descendant. The gate is a required typed argument, and enabled
+/// inputs are rejected unless every monomial lies in the exact forward image
+/// of the 1,760-component gravitino curl.
+pub fn visit_gauge_fixed_invariant_supercurvature_with_first_descendant<F>(
+    frame_input: &LinearizedFrameSuperfields,
+    convention: W2021FirstDescendantConventionGate,
+    mut emit: F,
+) -> Result<GaugeFixedInvariantOutputStats, String>
+where
+    F: FnMut(GaugeFixedInvariantOutputEntry) -> Result<(), String>,
+{
+    if convention == W2021FirstDescendantConventionGate::Disabled {
+        return visit_gauge_fixed_invariant_supercurvature_with_direct_gravitino(frame_input, emit);
+    }
+
+    // The enabled route must retain one column until the aggregate image gate
+    // has passed. The default production route above remains bounded and
+    // byte-for-byte compatible with the frozen v3 stream.
+    let mut entries = Vec::new();
+    let mut raw_frame_entries = Vec::new();
+    let mut observe_raw_frame = |entry: &FrameComposedPhysicalFEntry| {
+        if entry.sector == FrameComposedPhysicalFSector::W2021 {
+            raw_frame_entries.push(entry.clone());
+        }
+        Ok(())
+    };
+    let mut collect_base = |entry| {
+        entries.push(entry);
+        Ok(())
+    };
+    visit_gauge_fixed_invariant_supercurvature_base(
+        frame_input,
+        &mut observe_raw_frame,
+        &mut collect_base,
+    )?;
+    certify_emitted_riemann_target_stream(&entries)?;
+    let (candidate_four_form, candidate_four_form_entries) =
+        gauge_fixed_candidate_four_form_curvature(frame_input, &entries)?;
+    entries.extend(candidate_four_form_entries.into_iter().map(|entry| {
+        GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::DirectCandidateFourForm,
+            coordinate: entry.component,
+            monomial: entry.monomial,
+            coefficient: entry.coefficient,
+        }
+    }));
+    visit_gauge_fixed_linearized_gravitino_curl(frame_input, |entry| {
+        entries.push(GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::DirectGravitinoCurl,
+            coordinate: entry.component,
+            monomial: entry.monomial,
+            coefficient: entry.coefficient,
+        });
+        Ok(())
+    })?;
+
+    let recovered = adapt_differentiated_w2021_first_descendants(&raw_frame_entries)?;
+    let bianchi_residual = gravitino_curl_bianchi_residual(&recovered)?;
+    if !bianchi_residual.is_empty() {
+        return Err(format!(
+            "conditional gravitino curl violates the exact target differential Bianchi identity ({} residual coordinates)",
+            bianchi_residual.len()
+        ));
+    }
+    for ((coordinate, monomial), coefficient) in recovered {
+        entries.push(GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::ConditionalGravitinoCurl,
+            coordinate,
+            monomial,
+            coefficient,
+        });
+    }
+
+    let mut stats = emit_sorted_invariant_entries(entries, &mut emit)?;
+    stats.candidate_four_form_raw_w_bianchi_residual_terms =
+        candidate_four_form.raw_w_bianchi_residual_terms;
+    stats.candidate_four_form_raw_w_comparison_residual_terms =
+        candidate_four_form.raw_w_comparison_residual_terms;
+    Ok(stats)
+}
+
 pub(crate) const SUPERFIELD_OPERATOR_COLUMN_SCHEMA: &[u8] =
-    b"adynkra-11d-gauge-fixed-invariant-supercurvature-column-v2\0";
+    b"adynkra-11d-gauge-fixed-invariant-supercurvature-column-v3\0";
 pub(crate) const SUPERFIELD_OPERATOR_SCHEMA: &str =
-    "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v3";
+    "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v4";
 pub(crate) const SUPERFIELD_COLUMN_SHARD_SCHEMA: &str =
-    "adynkra-11d-gauge-fixed-invariant-supercurvature-column-shard-v2";
+    "adynkra-11d-gauge-fixed-invariant-supercurvature-column-shard-v3";
 pub(crate) const SUPERFIELD_UNIFIED_OUTPUT_SCHEMA: &str =
-    "adynkra-11d-gauge-fixed-invariant-supercurvature-output-v1";
-pub(crate) const SUPERFIELD_COLUMN_SHARD_MAGIC: &[u8; 16] = b"AD11FINVCOL2\0\0\0\0";
+    "adynkra-11d-gauge-fixed-invariant-supercurvature-output-v2";
+pub(crate) const SUPERFIELD_COLUMN_SHARD_MAGIC: &[u8; 16] = b"AD11FINVCOL3\0\0\0\0";
 pub(crate) const SUPERFIELD_COLUMN_ENTRY_BYTES: usize = 67;
+const FROZEN_V3_COLUMN_SHARD_MAGIC: &[u8; 16] = b"AD11FINVCOL2\0\0\0\0";
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct GaugeFixedSuperfieldColumnDigest {
     pub ordinal: usize,
     pub source_coordinate: String,
     pub nonzero_terms: usize,
+    /// Exact target-Bianchi residual size of the auxiliary raw-W sector.
+    pub raw_w_bianchi_residual_terms: usize,
+    /// Exact support size of raw W minus the closed Eq. (40) candidate.
+    pub raw_w_candidate_residual_terms: usize,
     pub sha256: String,
     pub shard_path: Option<String>,
     pub shard_sha256: Option<String>,
@@ -942,6 +1807,8 @@ pub struct GaugeFixedSuperfieldOperatorCertificate {
     pub total_nonzero_terms: u64,
     pub operator_sha256: String,
     pub direct_riemann_integrated: bool,
+    pub direct_gravitino_curl_integrated: bool,
+    pub direct_candidate_four_form_integrated: bool,
     pub raw_w2021_two_d_terms_are_not_gravity: bool,
     pub physical_target_component_adapter_complete: bool,
     pub exact_polynomial_kernel_derived: bool,
@@ -998,6 +1865,25 @@ fn take<const N: usize>(bytes: &[u8], cursor: &mut usize) -> Result<[u8; N], Str
     Ok(slice.try_into().unwrap())
 }
 
+fn invariant_coordinate_is_valid(tag: u8, coordinate: u64) -> bool {
+    match tag {
+        value if value == GaugeFixedInvariantOutputSector::XTwo.tag() => coordinate < 605,
+        value if value == GaugeFixedInvariantOutputSector::XFive.tag() => coordinate < 5_082,
+        value if value == GaugeFixedInvariantOutputSector::JMinus.tag() => coordinate < 32,
+        value if value == GaugeFixedInvariantOutputSector::W2021Raw.tag() => coordinate < 330,
+        value if value == GaugeFixedInvariantOutputSector::LinearizedRiemann.tag() => {
+            coordinate < 3_025
+        }
+        value if value == GaugeFixedInvariantOutputSector::DirectGravitinoCurl.tag() => {
+            coordinate < 1_760
+        }
+        value if value == GaugeFixedInvariantOutputSector::DirectCandidateFourForm.tag() => {
+            coordinate < 330
+        }
+        _ => false,
+    }
+}
+
 fn validate_column_shard(
     path: &Path,
     ordinal: usize,
@@ -1052,15 +1938,22 @@ fn validate_column_shard(
     semantic.update((ordinal as u64).to_le_bytes());
     hash_bytes_with_length(&mut semantic, source_coordinate.as_bytes());
     let mut previous_key = None;
+    let mut raw_w = BTreeMap::new();
+    let mut candidate_four_form = BTreeMap::new();
     for entry_index in 0..entry_count {
         let tag = take::<1>(&bytes, &mut cursor)?[0];
-        if !matches!(tag, 0 | 1 | 5 | 8 | 9) {
+        if !matches!(tag, 0 | 1 | 5 | 8 | 9 | 10 | 11) {
             return Err(format!(
                 "column shard contains non-invariant sector tag {tag}"
             ));
         }
         semantic.update([tag]);
         let coordinate = u64::from_le_bytes(take(&bytes, &mut cursor)?);
+        if !invariant_coordinate_is_valid(tag, coordinate) {
+            return Err(format!(
+                "column shard contains invalid sector/coordinate {tag}/{coordinate}"
+            ));
+        }
         semantic.update(coordinate.to_le_bytes());
         let exterior = u32::from_le_bytes(take(&bytes, &mut cursor)?);
         semantic.update(exterior.to_le_bytes());
@@ -1086,6 +1979,32 @@ fn validate_column_shard(
         for value in values {
             hash_bytes_with_length(&mut semantic, value.to_string().as_bytes());
         }
+        if tag == GaugeFixedInvariantOutputSector::W2021Raw.tag()
+            || tag == GaugeFixedInvariantOutputSector::DirectCandidateFourForm.tag()
+        {
+            let map = if tag == GaugeFixedInvariantOutputSector::W2021Raw.tag() {
+                &mut raw_w
+            } else {
+                &mut candidate_four_form
+            };
+            add_polynomial_map_value(
+                map,
+                (
+                    usize::try_from(coordinate)
+                        .map_err(|_| "column coordinate exceeds usize".to_string())?,
+                    OrderedSuperderivativeMonomial {
+                        exterior_spinor_mask: exterior,
+                        momentum: crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial {
+                            exponents: momentum,
+                        },
+                    },
+                ),
+                ExactQi {
+                    real: num_rational::Ratio::new(values[0], values[1]),
+                    imaginary: num_rational::Ratio::new(values[2], values[3]),
+                },
+            );
+        }
     }
     let stored_count = u64::from_le_bytes(take(&bytes, &mut cursor)?);
     if stored_count != entry_count as u64 {
@@ -1104,10 +2023,22 @@ fn validate_column_shard(
             "column shard semantic SHA mismatch: stored {stored_sha256}, computed {semantic_sha256}"
         ));
     }
+    let raw_w_bianchi_residual_terms =
+        apply_target_polynomial_columns(four_form_bianchi_columns(), &raw_w)?.len();
+    let mut raw_w_candidate_residual = raw_w;
+    for (key, coefficient) in candidate_four_form {
+        add_polynomial_map_value(
+            &mut raw_w_candidate_residual,
+            key,
+            coefficient.scaled(&num_rational::Ratio::from_integer(-1)),
+        );
+    }
     Ok(GaugeFixedSuperfieldColumnDigest {
         ordinal,
         source_coordinate: source_coordinate.to_string(),
         nonzero_terms: entry_count,
+        raw_w_bianchi_residual_terms,
+        raw_w_candidate_residual_terms: raw_w_candidate_residual.len(),
         sha256: semantic_sha256,
         shard_path: Some(path.display().to_string()),
         shard_sha256: Some(file_sha256),
@@ -1182,22 +2113,26 @@ pub fn gauge_fixed_superfield_column_digest(
     hasher.update((ordinal as u64).to_le_bytes());
     hash_bytes_with_length(&mut hasher, source_coordinate.as_bytes());
     let mut nonzero_terms = 0_u64;
-    visit_gauge_fixed_invariant_supercurvature(&input, |entry| {
-        // The unified visitor is strictly ordered by exterior-D mask,
-        // momentum, stable sector tag, then sparse coordinate. Hashing at the
-        // callback boundary avoids retaining millions of entries per column.
-        hash_invariant_entry(&mut hasher, &entry);
-        nonzero_terms = nonzero_terms
-            .checked_add(1)
-            .ok_or_else(|| "superfield-curvature column term count overflow".to_string())?;
-        Ok(())
-    })?;
+    let stream_stats =
+        visit_gauge_fixed_invariant_supercurvature_with_direct_gravitino(&input, |entry| {
+            // The unified visitor is strictly ordered by exterior-D mask,
+            // momentum, stable sector tag, then sparse coordinate. Hashing at the
+            // callback boundary avoids retaining millions of entries per column.
+            hash_invariant_entry(&mut hasher, &entry);
+            nonzero_terms = nonzero_terms
+                .checked_add(1)
+                .ok_or_else(|| "superfield-curvature column term count overflow".to_string())?;
+            Ok(())
+        })?;
     hasher.update(nonzero_terms.to_le_bytes());
     Ok(GaugeFixedSuperfieldColumnDigest {
         ordinal,
         source_coordinate,
         nonzero_terms: usize::try_from(nonzero_terms)
             .map_err(|_| "column term count exceeds usize".to_string())?,
+        raw_w_bianchi_residual_terms: stream_stats.candidate_four_form_raw_w_bianchi_residual_terms,
+        raw_w_candidate_residual_terms: stream_stats
+            .candidate_four_form_raw_w_comparison_residual_terms,
         sha256: format!("{:x}", hasher.finalize()),
         shard_path: None,
         shard_sha256: None,
@@ -1244,15 +2179,16 @@ fn write_or_validate_gauge_fixed_superfield_column_shard(
     semantic.update((ordinal as u64).to_le_bytes());
     hash_bytes_with_length(&mut semantic, source_coordinate.as_bytes());
     let mut nonzero_terms = 0_u64;
-    visit_gauge_fixed_invariant_supercurvature(&input, |entry| {
-        hash_invariant_entry(&mut semantic, &entry);
-        encode_invariant_entry(&mut writer, &mut file_hasher, &entry)
-            .map_err(|error| error.to_string())?;
-        nonzero_terms = nonzero_terms
-            .checked_add(1)
-            .ok_or_else(|| "superfield-curvature column term count overflow".to_string())?;
-        Ok(())
-    })?;
+    let stream_stats =
+        visit_gauge_fixed_invariant_supercurvature_with_direct_gravitino(&input, |entry| {
+            hash_invariant_entry(&mut semantic, &entry);
+            encode_invariant_entry(&mut writer, &mut file_hasher, &entry)
+                .map_err(|error| error.to_string())?;
+            nonzero_terms = nonzero_terms
+                .checked_add(1)
+                .ok_or_else(|| "superfield-curvature column term count overflow".to_string())?;
+            Ok(())
+        })?;
     semantic.update(nonzero_terms.to_le_bytes());
     let semantic_digest = semantic.finalize();
     write_hashed(&mut writer, &mut file_hasher, &nonzero_terms.to_le_bytes())
@@ -1276,6 +2212,9 @@ fn write_or_validate_gauge_fixed_superfield_column_shard(
         source_coordinate,
         nonzero_terms: usize::try_from(nonzero_terms)
             .map_err(|_| "column term count exceeds usize".to_string())?,
+        raw_w_bianchi_residual_terms: stream_stats.candidate_four_form_raw_w_bianchi_residual_terms,
+        raw_w_candidate_residual_terms: stream_stats
+            .candidate_four_form_raw_w_comparison_residual_terms,
         sha256: semantic_digest
             .iter()
             .map(|byte| format!("{byte:02x}"))
@@ -1367,6 +2306,8 @@ where
     for column in &columns {
         hasher.update((column.ordinal as u64).to_le_bytes());
         hasher.update((column.nonzero_terms as u64).to_le_bytes());
+        hasher.update((column.raw_w_bianchi_residual_terms as u64).to_le_bytes());
+        hasher.update((column.raw_w_candidate_residual_terms as u64).to_le_bytes());
         hash_bytes_with_length(&mut hasher, column.source_coordinate.as_bytes());
         hash_bytes_with_length(&mut hasher, column.sha256.as_bytes());
     }
@@ -1376,7 +2317,7 @@ where
         source_dimension: 321,
         gamma_traceless_h_dimension: 320,
         scale_dimension: 1,
-        output_basis: "linearized super-Weyl-covariant X_[2], X_[5], J^(-), raw W_2021, and direct off-shell LinearizedRiemann with canonical exterior-D and eleven-momentum monomials",
+        output_basis: "linearized super-Weyl-covariant X_[2], X_[5], J^(-), auxiliary raw W_2021, direct off-shell LinearizedRiemann, direct Eq. (25) gravitino curl, and the separate conditional Eq. (40) Psi_[3] four-form candidate with canonical exterior-D and eleven-momentum monomials",
         unified_output_schema: SUPERFIELD_UNIFIED_OUTPUT_SCHEMA,
         column_shard_schema: SUPERFIELD_COLUMN_SHARD_SCHEMA,
         column_shard_directory: shard_directory
@@ -1386,6 +2327,8 @@ where
         total_nonzero_terms,
         operator_sha256: format!("{:x}", hasher.finalize()),
         direct_riemann_integrated: true,
+        direct_gravitino_curl_integrated: true,
+        direct_candidate_four_form_integrated: true,
         raw_w2021_two_d_terms_are_not_gravity: true,
         physical_target_component_adapter_complete: false,
         exact_polynomial_kernel_derived: false,
@@ -1399,7 +2342,7 @@ pub fn write_gauge_fixed_superfield_operator_certificate<F>(
 where
     F: FnMut(&GaugeFixedSuperfieldColumnDigest),
 {
-    let shard_directory = PathBuf::from(format!("{}.columns-v2", path.display()));
+    let shard_directory = PathBuf::from(format!("{}.columns-v3", path.display()));
     let certificate = build_gauge_fixed_superfield_operator_certificate_internal(
         Some(&shard_directory),
         progress,
@@ -1489,13 +2432,35 @@ pub struct CompletePhysicalFConstructionReport {
     pub local_lorentz_gauge_fixed_at_input: bool,
     pub local_lorentz_orbit_descends_through_j_t_w: bool,
     pub linearized_invariant_supercurvature_basis_fixed: bool,
-    pub target_four_form_lowest_component_adapter_implemented: bool,
+    pub conditional_raw_w_lowest_component_adapter_implemented: bool,
+    pub raw_w_identified_as_physical_four_form: bool,
     pub direct_off_shell_frame_to_riemann_adapter_implemented: bool,
     pub direct_riemann_integrated_into_321_column_operator: bool,
     pub direct_riemann_bianchi_certified: bool,
+    pub direct_eq25_gravitino_potential_adapter_implemented: bool,
+    pub direct_gravitino_curl_eq29_torsion_certified: bool,
+    pub direct_gravitino_curl_target_bianchi_certified: bool,
+    pub direct_gravitino_euler_image_computed_and_checked: bool,
+    pub direct_gravitino_noether_certified: bool,
+    pub direct_gravitino_stream_persisted_in_v4_col3_schema: bool,
+    pub eq40_psi_three_candidate_four_form_adapter_implemented: bool,
+    pub eq40_psi_three_candidate_bianchi_certified: bool,
+    pub eq40_psi_three_candidate_euler_noether_certified: bool,
+    pub raw_w_four_form_target_bianchi_certified: bool,
+    pub psi_three_identified_as_physical_a3: bool,
+    pub candidate_raw_w_relative_normalization_fixed: bool,
+    pub nonzero_h_canary_raw_w_terms: usize,
+    pub nonzero_h_canary_candidate_four_form_terms: usize,
+    pub nonzero_h_canary_raw_minus_candidate_terms: usize,
+    pub nonzero_h_canary_raw_w_bianchi_residual_terms: usize,
+    pub conditional_w2021_first_descendant_adapter_implemented: bool,
+    pub conditional_gravitino_curl_forward_image_gate_implemented: bool,
+    pub conditional_gravitino_curl_target_bianchi_gate_implemented: bool,
+    pub conditional_gravitino_curl_stream_requires_explicit_convention: bool,
+    pub conditional_w2021_identification_passes_scale_canary: bool,
     pub theta_two_w_gravity_double_emitted: bool,
-    pub target_curvature_adapter_implemented: bool,
-    pub target_bianchi_euler_noether_composition_certified: bool,
+    pub complete_all_sector_target_curvature_adapter_implemented: bool,
+    pub complete_all_sector_target_bianchi_euler_noether_composition_certified: bool,
     pub complete_physical_f_implemented: bool,
     pub complete_f_operator_sha256: Option<String>,
     pub exact_polynomial_target_kernel_derived: bool,
@@ -1575,15 +2540,39 @@ fn build_report() -> CompletePhysicalFConstructionReport {
                 source: "hep-th/0101037 Table 3; hep-th/0107155 Eqs. (3.2c)-(3.2e)",
             },
             PhysicalFSectorStatus {
-                sector: "W",
+                sector: "auxiliary raw W",
                 domain: "T and D J",
-                codomain: "linearized four-form Weyl curvature",
+                codomain: "source W_[4] coordinates, not identified with physical F_[4]",
                 exact_operator_available: true,
                 composed_from_h_hat: true,
                 source: "hep-th/0101037 Eq. (44); arXiv:2007.05097 Eqs. (2.22)-(2.23)",
             },
             PhysicalFSectorStatus {
-                sector: "physical target curvature complex",
+                sector: "direct graviton-curvature target branch",
+                domain: "gauge-fixed Eq. (25) bosonic frame",
+                codomain: "all 1,210 algebraic Riemann coordinates and target Bianchi",
+                exact_operator_available: true,
+                composed_from_h_hat: true,
+                source: "hep-th/0101037 Eq. (25); repository exact graviton target complex",
+            },
+            PhysicalFSectorStatus {
+                sector: "direct gravitino-curvature target branch",
+                domain: "gauge-fixed Eq. (25) D Delta plus D Psi vector-spinor",
+                codomain: "all 1,760 curl coordinates, checked Euler image, Bianchi, and Noether",
+                exact_operator_available: true,
+                composed_from_h_hat: true,
+                source: "hep-th/0101037 Eqs. (7)-(8), (25), (29); hep-th/0107155 Eq. (3.2f); repository exact Rarita-Schwinger target complex",
+            },
+            PhysicalFSectorStatus {
+                sector: "conditional Eq. (40) Psi_[3] four-form target branch",
+                domain: "gauge-fixed D H through the multiplicity-one conventional Psi_[3] solve",
+                codomain: "all 330 closed four-form coordinates, checked Euler image, Bianchi, and Noether",
+                exact_operator_available: true,
+                composed_from_h_hat: true,
+                source: "hep-th/0101037 Eq. (40) conventional constraints plus repository exact Abelian three-form target complex; physical A_[3] identification unprinted",
+            },
+            PhysicalFSectorStatus {
+                sector: "complete all-sector physical target curvature assembly",
                 domain: "completed H_hat curvature data",
                 codomain: "Riemann, four-form, gravitino curl, Bianchi, Euler, Noether",
                 exact_operator_available: true,
@@ -1609,21 +2598,43 @@ fn build_report() -> CompletePhysicalFConstructionReport {
         local_lorentz_gauge_fixed_at_input: true,
         local_lorentz_orbit_descends_through_j_t_w: false,
         linearized_invariant_supercurvature_basis_fixed: true,
-        target_four_form_lowest_component_adapter_implemented: true,
+        conditional_raw_w_lowest_component_adapter_implemented: true,
+        raw_w_identified_as_physical_four_form: false,
         direct_off_shell_frame_to_riemann_adapter_implemented: true,
         direct_riemann_integrated_into_321_column_operator: true,
         direct_riemann_bianchi_certified: true,
+        direct_eq25_gravitino_potential_adapter_implemented: true,
+        direct_gravitino_curl_eq29_torsion_certified: true,
+        direct_gravitino_curl_target_bianchi_certified: true,
+        direct_gravitino_euler_image_computed_and_checked: true,
+        direct_gravitino_noether_certified: true,
+        direct_gravitino_stream_persisted_in_v4_col3_schema: true,
+        eq40_psi_three_candidate_four_form_adapter_implemented: true,
+        eq40_psi_three_candidate_bianchi_certified: true,
+        eq40_psi_three_candidate_euler_noether_certified: true,
+        raw_w_four_form_target_bianchi_certified: false,
+        psi_three_identified_as_physical_a3: false,
+        candidate_raw_w_relative_normalization_fixed: false,
+        nonzero_h_canary_raw_w_terms: 45_260,
+        nonzero_h_canary_candidate_four_form_terms: 648,
+        nonzero_h_canary_raw_minus_candidate_terms: 45_260,
+        nonzero_h_canary_raw_w_bianchi_residual_terms: 312_704,
+        conditional_w2021_first_descendant_adapter_implemented: true,
+        conditional_gravitino_curl_forward_image_gate_implemented: true,
+        conditional_gravitino_curl_target_bianchi_gate_implemented: true,
+        conditional_gravitino_curl_stream_requires_explicit_convention: true,
+        conditional_w2021_identification_passes_scale_canary: false,
         theta_two_w_gravity_double_emitted: false,
-        target_curvature_adapter_implemented: false,
-        target_bianchi_euler_noether_composition_certified: false,
+        complete_all_sector_target_curvature_adapter_implemented: false,
+        complete_all_sector_target_bianchi_euler_noether_composition_certified: false,
         complete_physical_f_implemented: false,
         complete_f_operator_sha256: None,
         exact_polynomial_target_kernel_derived: false,
         pointwise_or_bounded_kernel_is_accepted_as_physical_k: false,
-        next_executable_step: "integrate the conditional first-descendant gravitino-curl adapter, add the remaining target identities and physical target gauge quotient, then derive the exact physical K kernel",
+        next_executable_step: "regenerate and validate the v4/COL3 successor columns, then determine the physical A_[3] identification/relative W normalization and construct the physical target gauge quotient before deriving K",
         passed,
-        result: "The exact ordered-superderivative frame composes H_hat and scale through Delta, both Eqs. (13)-(14) anholonomies, D C, both Lorentz connections, J, mixed torsion, and both W conventions. P_320 and the p=2 gauge choice are enforced at the typed input boundary. The versioned 321-column invariant output now merges X_[2], X_[5], J^(-), raw W_2021, and the independent direct off-shell Riemann stream in strict exterior-D/momentum/sector/coordinate order. Raw two-D W terms retain their W tag and are never double-emitted as gravity. The direct Riemann branch satisfies the target differential Bianchi identity exactly. Full physical F remains incomplete until the conditional gravitino adapter and remaining target identities are integrated.",
-        boundary: "Passing this report certifies the exact gauge-fixed H_hat-to-X/J/T/W differential stream, the direct full off-shell Riemann branch, and their versioned unified 321-column output contract. The raw p=2 lift has a nonzero J/T/W response in the current convention, so this is explicitly a canonical local-Lorentz gauge section rather than a proof that raw coordinates descend unchanged. D^2 W is retained only as a future conditional Weyl cross-check and is not used to define or emit Riemann. The v2 shard schema is consumed only by the fail-closed reader that binds every shard byte, footer, coefficient, row key, and digest before rank extraction. Physical K remains the future exact polynomial kernel after the conditional gravitino adapter, remaining target identities, and physical target gauge quotient are integrated; neither the combined diagnostic rank nor the Riemann-only rank is labeled as physical K.",
+        result: "The exact ordered-superderivative frame composes H_hat and scale through Delta, both Eqs. (13)-(14) anholonomies, D C, both Lorentz connections, J, mixed torsion, and both W conventions. P_320 and the p=2 gauge choice are enforced at the typed input boundary. The v4/COL3 successor stream preserves the frozen X_[2], X_[5], J^(-), auxiliary raw W_2021, and direct Riemann sectors, and adds the direct Eq. (25) gravitino curl plus a separately labeled conditional Eq. (40) Psi_[3] four-form candidate. Riemann, the gravitino curl, and the candidate four-form each pass their target Bianchi and computed-Euler-to-Noether gates exactly. Raw W is never relabeled as target F_[4]. On the exact nonzero-H canary it has 45,260 terms, versus 648 candidate terms, their residual has 45,260 terms, and raw W has 312,704 nonzero Bianchi-residual terms. Therefore raw W is neither equal nor proportional to the closed candidate; the residual has the same Bianchi image entrywise. Full physical F remains incomplete because the source does not identify Psi_[3] with physical A_[3], and the target gauge quotient is not constructed.",
+        boundary: "Passing this report certifies the exact gauge-fixed H_hat-to-X/J/T/W differential stream, the direct full off-shell Riemann branch, the direct kinematic gravitino curvature on the canonical local-Lorentz gauge section, and the closed Eq. (40) holonomy Psi_[3] candidate branch. It does not prove off-shell closure, raw p=2 descent, or a physical A_[3] identification. The candidate is unique only as the multiplicity-one Lambda-three conventional projection with source-fixed 1/16 coefficient; it is not claimed as the unique general H-to-A_[3] map. Euler images are computed and checked but not emitted. The v4/COL3 schema persists direct Riemann, direct gravitino curl, conditional candidate four-form, and auxiliary raw W as distinct tags; frozen v3/COL2 is rejected. The raw-W first-descendant identification remains rejected. Complete all-sector physical composition and physical K remain false until the A_[3]/W normalization and target gauge quotient are fixed; no diagnostic rank is labeled as physical K.",
     }
 }
 
@@ -1720,12 +2731,38 @@ mod tests {
         assert!(report.local_lorentz_orbit_raw_response_is_nonzero);
         assert!(report.local_lorentz_gauge_fixed_at_input);
         assert!(report.linearized_invariant_supercurvature_basis_fixed);
-        assert!(report.target_four_form_lowest_component_adapter_implemented);
+        assert!(report.conditional_raw_w_lowest_component_adapter_implemented);
+        assert!(!report.raw_w_identified_as_physical_four_form);
         assert!(report.direct_off_shell_frame_to_riemann_adapter_implemented);
         assert!(report.direct_riemann_integrated_into_321_column_operator);
         assert!(report.direct_riemann_bianchi_certified);
+        assert!(report.direct_eq25_gravitino_potential_adapter_implemented);
+        assert!(report.direct_gravitino_curl_eq29_torsion_certified);
+        assert!(report.direct_gravitino_curl_target_bianchi_certified);
+        assert!(report.direct_gravitino_euler_image_computed_and_checked);
+        assert!(report.direct_gravitino_noether_certified);
+        assert!(report.direct_gravitino_stream_persisted_in_v4_col3_schema);
+        assert!(report.eq40_psi_three_candidate_four_form_adapter_implemented);
+        assert!(report.eq40_psi_three_candidate_bianchi_certified);
+        assert!(report.eq40_psi_three_candidate_euler_noether_certified);
+        assert!(!report.raw_w_four_form_target_bianchi_certified);
+        assert!(!report.psi_three_identified_as_physical_a3);
+        assert!(!report.candidate_raw_w_relative_normalization_fixed);
+        assert_eq!(report.nonzero_h_canary_raw_w_terms, 45_260);
+        assert_eq!(report.nonzero_h_canary_candidate_four_form_terms, 648);
+        assert_eq!(report.nonzero_h_canary_raw_minus_candidate_terms, 45_260);
+        assert_eq!(
+            report.nonzero_h_canary_raw_w_bianchi_residual_terms,
+            312_704
+        );
+        assert!(report.conditional_w2021_first_descendant_adapter_implemented);
+        assert!(report.conditional_gravitino_curl_forward_image_gate_implemented);
+        assert!(report.conditional_gravitino_curl_target_bianchi_gate_implemented);
+        assert!(report.conditional_gravitino_curl_stream_requires_explicit_convention);
+        assert!(!report.conditional_w2021_identification_passes_scale_canary);
         assert!(!report.theta_two_w_gravity_double_emitted);
-        assert!(!report.target_curvature_adapter_implemented);
+        assert!(!report.complete_all_sector_target_curvature_adapter_implemented);
+        assert!(!report.complete_all_sector_target_bianchi_euler_noether_composition_certified);
         assert!(!report.complete_physical_f_implemented);
         assert!(report.complete_f_operator_sha256.is_none());
         assert!(!report.exact_polynomial_target_kernel_derived);
@@ -1876,6 +2913,226 @@ mod tests {
     }
 
     #[test]
+    fn explicit_first_descendant_round_trip_preserves_masks_and_target_bianchi() {
+        let exterior_mask = (1_u32 << 2) | (1_u32 << 17);
+        let seed_monomial = OrderedSuperderivativeMonomial {
+            exterior_spinor_mask: exterior_mask,
+            momentum:
+                crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial::constant(),
+        };
+        let target = target_sector_complex(TargetSector::RaritaSchwinger);
+        let mut curl = BTreeMap::new();
+        for (component, term) in target.curvature.column_terms(0) {
+            let monomial = multiply_ordered_momentum(&seed_monomial, &term.monomial).unwrap();
+            curl.insert(
+                (component, monomial),
+                multiply_exact_qi_by_public(&ExactQi::one(), &term),
+            );
+        }
+        assert!(!curl.is_empty());
+        assert!(
+            curl.keys()
+                .all(|(_, monomial)| monomial.exterior_spinor_mask == exterior_mask)
+        );
+        assert!(gravitino_curl_bianchi_residual(&curl).unwrap().is_empty());
+        let mut bianchi_mutation = curl.clone();
+        bianchi_mutation.insert((0, seed_monomial.clone()), ExactQi::one());
+        assert!(
+            !gravitino_curl_bianchi_residual(&bianchi_mutation)
+                .unwrap()
+                .is_empty()
+        );
+
+        let mut curl_by_monomial =
+            BTreeMap::<OrderedSuperderivativeMonomial, BTreeMap<usize, ExactQi>>::new();
+        for ((component, monomial), coefficient) in &curl {
+            curl_by_monomial
+                .entry(monomial.clone())
+                .or_default()
+                .insert(*component, coefficient.clone());
+        }
+        let operator = physical::linearized_gravitino_curl_to_d_f_four_operator();
+        let mut descendants = Vec::new();
+        for (monomial, one_monomial_curl) in curl_by_monomial {
+            for (row, coefficient) in operator.apply_sparse(&one_monomial_curl) {
+                let derivative_spinor = row / physical::W_FOUR_FORM_DIMENSION;
+                let target_four_form = row % physical::W_FOUR_FORM_DIMENSION;
+                let source_coordinate = (0..physical::W_FOUR_FORM_DIMENSION)
+                    .find(|source| {
+                        target_four_form_lexicographic_ordinal(
+                            w_source_four_form_indices(*source).unwrap(),
+                        ) == target_four_form
+                    })
+                    .unwrap();
+                descendants.push(ExplicitW2021FirstDescendantEntry {
+                    derivative_spinor,
+                    four_form_coordinate: source_coordinate,
+                    monomial: monomial.clone(),
+                    coefficient,
+                });
+            }
+        }
+        let recovered = adapt_explicit_w2021_first_descendants(&descendants).unwrap();
+        assert_eq!(recovered, curl);
+
+        descendants.push(ExplicitW2021FirstDescendantEntry {
+            derivative_spinor: 0,
+            four_form_coordinate: 0,
+            monomial: seed_monomial,
+            coefficient: ExactQi::one(),
+        });
+        assert!(adapt_explicit_w2021_first_descendants(&descendants).is_err());
+    }
+
+    #[test]
+    fn explicit_differentiation_retains_alpha_separately_from_ordered_d_mask() {
+        let raw = vec![FrameComposedPhysicalFEntry {
+            sector: FrameComposedPhysicalFSector::W2021,
+            coordinate: 0,
+            monomial: OrderedSuperderivativeMonomial {
+                exterior_spinor_mask: 1,
+                momentum:
+                    crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial::constant(),
+            },
+            coefficient: ExactQi::one(),
+        }];
+        let descendants = explicitly_differentiate_w2021(&raw).unwrap();
+        let repeated = descendants
+            .iter()
+            .filter(|entry| entry.derivative_spinor == 0)
+            .collect::<Vec<_>>();
+        assert!(!repeated.is_empty());
+        assert!(repeated.iter().all(|entry| {
+            entry.monomial.exterior_spinor_mask == 0
+                && entry.monomial.momentum.exponents.iter().sum::<u16>() == 1
+        }));
+        assert!(
+            descendants
+                .iter()
+                .filter(|entry| entry.derivative_spinor == 1)
+                .all(|entry| entry.monomial.exterior_spinor_mask == 3
+                    || entry.monomial.exterior_spinor_mask == 0)
+        );
+    }
+
+    #[test]
+    fn direct_d_scale_path_matches_the_full_frame_jet_reference() {
+        let input = LinearizedFrameSuperfields {
+            scale: scalar_polynomial(3),
+            ..LinearizedFrameSuperfields::default()
+        };
+        let representative = canonical_physical_frame_representative(&input).unwrap();
+        let (_, direct) = eq25_fermionic_frame_source_polynomials(&representative).unwrap();
+        let mut reference = PolynomialMap::new();
+        visit_linearized_frame_jet(&representative, |entry| {
+            if entry.sector == LinearizedFrameJetSector::DScale
+                && !entry.polynomial.terms.is_empty()
+            {
+                reference.insert(entry.coordinate, entry.polynomial);
+            }
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(direct, reference);
+    }
+
+    #[test]
+    fn direct_scale_gravitino_curl_preserves_masks_and_all_target_identities() {
+        let input = LinearizedFrameSuperfields {
+            scale: scalar_polynomial(1),
+            ..LinearizedFrameSuperfields::default()
+        };
+        let mut entries = Vec::new();
+        let stats = visit_gauge_fixed_linearized_gravitino_curl(&input, |entry| {
+            entries.push(entry);
+            Ok(())
+        })
+        .unwrap();
+        assert!(stats.fermionic_frame_terms > 0);
+        assert!(stats.gravitino_curl_terms > 0);
+        assert!(stats.euler_terms > 0);
+        assert_eq!(stats.eq29_torsion_residual_terms, 0);
+        assert_eq!(stats.bianchi_residual_terms, 0);
+        assert_eq!(stats.noether_residual_terms, 0);
+        assert_eq!(entries.len(), stats.gravitino_curl_terms);
+        assert!(entries.iter().all(|entry| {
+            entry.monomial.exterior_spinor_mask.count_ones() == 1
+                && entry.monomial.momentum.exponents.iter().sum::<u16>() == 1
+        }));
+        let curl = entries
+            .into_iter()
+            .map(|entry| ((entry.component, entry.monomial), entry.coefficient))
+            .collect::<BTreeMap<_, _>>();
+        assert!(gravitino_curl_bianchi_residual(&curl).unwrap().is_empty());
+        let euler = gravitino_curl_euler_image(&curl).unwrap();
+        assert!(!euler.is_empty());
+        assert!(gravitino_curl_noether_residual(&curl).unwrap().is_empty());
+
+        // Adapter-local corruption gate: the valid C2E image is Noether
+        // closed, while one fresh Euler coordinate is detected immediately.
+        let fresh_monomial = OrderedSuperderivativeMonomial {
+            exterior_spinor_mask: 1_u32 << 31,
+            momentum:
+                crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial::constant(),
+        };
+        let mut mutated_euler = euler;
+        assert!(!mutated_euler.contains_key(&(0, fresh_monomial.clone())));
+        mutated_euler.insert((0, fresh_monomial), ExactQi::one());
+        assert!(
+            !apply_target_polynomial_columns(rarita_noether_columns(), &mutated_euler)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn direct_gamma_traceless_h_canary_reaches_nonzero_certified_gravitino_curl() {
+        let (_, input) = source_basis_input(0).unwrap();
+        assert!(input.scale.terms.is_empty());
+        let representative = canonical_physical_frame_representative(&input).unwrap();
+        let (d_delta, d_scale) = eq25_fermionic_frame_source_polynomials(&representative).unwrap();
+        assert!(!d_delta.is_empty());
+        assert!(d_scale.is_empty());
+        let source_monomials = transpose_polynomials(&d_delta)
+            .keys()
+            .cloned()
+            .collect::<BTreeSet<_>>();
+
+        let mut entries = Vec::new();
+        let stats = visit_gauge_fixed_linearized_gravitino_curl(&input, |entry| {
+            entries.push(entry);
+            Ok(())
+        })
+        .unwrap();
+        assert!(stats.fermionic_frame_terms > 0);
+        assert!(stats.gravitino_curl_terms > 0);
+        assert!(stats.euler_terms > 0);
+        assert_eq!(stats.eq29_torsion_residual_terms, 0);
+        assert_eq!(stats.bianchi_residual_terms, 0);
+        assert_eq!(stats.noether_residual_terms, 0);
+        assert!(entries.iter().all(|entry| {
+            let output_degree = entry
+                .monomial
+                .momentum
+                .exponents
+                .iter()
+                .map(|value| usize::from(*value))
+                .sum::<usize>();
+            source_monomials.iter().any(|source| {
+                source.exterior_spinor_mask == entry.monomial.exterior_spinor_mask
+                    && source
+                        .momentum
+                        .exponents
+                        .iter()
+                        .map(|value| usize::from(*value))
+                        .sum::<usize>()
+                        + 1
+                        == output_degree
+            })
+        }));
+    }
+
+    #[test]
     fn target_four_form_bianchi_helper_annihilates_an_exact_curvature_column() {
         let target = target_sector_complex(TargetSector::FourForm);
         let curvature = target
@@ -1898,19 +3155,143 @@ mod tests {
     }
 
     #[test]
-    fn unified_v2_shard_schema_preserves_exterior_masks_and_rejects_v1() {
+    fn eq40_numeric_three_form_order_maps_exhaustively_to_target_lex_order() {
+        let numeric_masks = (0_u16..(1_u16 << physical::VECTOR_DIMENSION))
+            .filter(|mask| mask.count_ones() == 3)
+            .collect::<Vec<_>>();
+        assert_eq!(numeric_masks.len(), 165);
+        let mapping = numeric_masks
+            .iter()
+            .map(|mask| psi_three_mask_to_target_ordinal(*mask).unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            mapping.iter().copied().collect::<BTreeSet<_>>(),
+            (0..165).collect()
+        );
+        assert_eq!(numeric_masks[2], 0b000_0000_1101);
+        assert_eq!(mapping[2], 9, "numeric ordinal 2 is A_023 in lex order");
+        for (mask, target) in numeric_masks.iter().zip(&mapping) {
+            let indices = (0..physical::VECTOR_DIMENSION)
+                .filter(|axis| mask & (1_u16 << axis) != 0)
+                .collect::<Vec<_>>();
+            assert_eq!(
+                *target,
+                target_three_form_lexicographic_ordinal([indices[0], indices[1], indices[2]])
+            );
+        }
+        let mut ordering_mutation = mapping.clone();
+        ordering_mutation.swap(0, 1);
+        assert_ne!(ordering_mutation, mapping);
+    }
+
+    #[test]
+    fn nonzero_h_eq40_three_form_candidate_is_closed_and_preserves_degree() {
+        let (_, input) = source_basis_input(0).unwrap();
+        let (stats, entries) = gauge_fixed_candidate_four_form_curvature(&input, &[]).unwrap();
+        assert!(stats.psi_three_potential_terms > 0);
+        assert!(stats.four_form_curvature_terms > 0);
+        assert!(stats.euler_terms > 0);
+        assert_eq!(stats.bianchi_residual_terms, 0);
+        assert_eq!(stats.noether_residual_terms, 0);
+        assert_eq!(stats.raw_w_bianchi_residual_terms, 0);
+        assert_eq!(stats.raw_w_comparison_residual_terms, entries.len());
+        assert!(entries.iter().all(|entry| {
+            entry.monomial.exterior_spinor_mask.count_ones() == 1
+                && entry.monomial.momentum.exponents.iter().sum::<u16>() == 1
+        }));
+        let curvature = entries
+            .into_iter()
+            .map(|entry| ((entry.component, entry.monomial), entry.coefficient))
+            .collect::<BTreeMap<_, _>>();
+        assert!(
+            apply_target_polynomial_columns(four_form_bianchi_columns(), &curvature)
+                .unwrap()
+                .is_empty()
+        );
+        let euler =
+            apply_target_polynomial_columns(four_form_curvature_to_euler_columns(), &curvature)
+                .unwrap();
+        assert!(!euler.is_empty());
+        assert!(
+            apply_target_polynomial_columns(four_form_noether_columns(), &euler)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn source_w_and_eq40_candidate_have_exact_relationship_on_nonzero_h_canary() {
+        let (_, input) = source_basis_input(0).unwrap();
+        let mut raw_w = Vec::new();
+        visit_gauge_fixed_physical_f(&input, |entry| {
+            if entry.sector == FrameComposedPhysicalFSector::W2021 {
+                raw_w.push(GaugeFixedInvariantOutputEntry {
+                    sector: GaugeFixedInvariantOutputSector::W2021Raw,
+                    coordinate: entry.coordinate,
+                    monomial: entry.monomial,
+                    coefficient: entry.coefficient,
+                });
+            }
+            Ok(())
+        })
+        .unwrap();
+        assert!(!raw_w.is_empty());
+        let (stats, candidate) = gauge_fixed_candidate_four_form_curvature(&input, &raw_w).unwrap();
+        assert_eq!(raw_w.len(), 45_260);
+        assert_eq!(candidate.len(), 648);
+        assert_eq!(stats.raw_w_comparison_residual_terms, 45_260);
+        assert_eq!(stats.raw_w_bianchi_residual_terms, 312_704);
+        assert!(!candidate.is_empty());
+        assert!(stats.raw_w_comparison_residual_terms > 0);
+        assert!(stats.raw_w_bianchi_residual_terms > 0);
+    }
+
+    #[test]
+    fn target_four_form_curvature_has_the_fixed_a123_signs() {
+        let monomial = OrderedSuperderivativeMonomial {
+            exterior_spinor_mask: 0,
+            momentum:
+                crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial::constant(),
+        };
+        let a123 = target_three_form_lexicographic_ordinal([1, 2, 3]);
+        let input = BTreeMap::from([((a123, monomial), ExactQi::one())]);
+        let image = apply_target_polynomial_columns(four_form_curvature_columns(), &input).unwrap();
+        let f0123 = target_four_form_lexicographic_ordinal([0, 1, 2, 3]);
+        let f1234 = target_four_form_lexicographic_ordinal([1, 2, 3, 4]);
+        let p0 = OrderedSuperderivativeMonomial {
+            exterior_spinor_mask: 0,
+            momentum:
+                crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial {
+                    exponents: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                },
+        };
+        let p4 = OrderedSuperderivativeMonomial {
+            exterior_spinor_mask: 0,
+            momentum:
+                crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial {
+                    exponents: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                },
+        };
+        assert_eq!(image.get(&(f0123, p0)), Some(&ExactQi::one()));
+        assert_eq!(image.get(&(f1234, p4)), Some(&ExactQi::from_integer(-1)));
+        assert_eq!(image.len(), 8);
+    }
+
+    #[test]
+    fn unified_v3_shard_schema_persists_direct_curl_and_rejects_frozen_v2() {
         assert_eq!(
             SUPERFIELD_OPERATOR_SCHEMA,
-            "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v3"
+            "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v4"
         );
-        assert_eq!(SUPERFIELD_COLUMN_SHARD_MAGIC, b"AD11FINVCOL2\0\0\0\0");
+        assert_eq!(SUPERFIELD_COLUMN_SHARD_MAGIC, b"AD11FINVCOL3\0\0\0\0");
+        assert_eq!(FROZEN_V3_COLUMN_SHARD_MAGIC, b"AD11FINVCOL2\0\0\0\0");
         assert_eq!(SUPERFIELD_COLUMN_ENTRY_BYTES, 67);
 
         let source = "schema_probe";
         let ordinal = 7_usize;
         let exterior = (1_u32 << 3) | (1_u32 << 19);
         let entry = GaugeFixedInvariantOutputEntry {
-            sector: GaugeFixedInvariantOutputSector::W2021Raw,
+            sector: GaugeFixedInvariantOutputSector::DirectGravitinoCurl,
             coordinate: 42,
             monomial: OrderedSuperderivativeMonomial {
                 exterior_spinor_mask: exterior,
@@ -1925,23 +3306,26 @@ mod tests {
             GaugeFixedInvariantOutputSector::from_frame(FrameComposedPhysicalFSector::W2021),
             Some(GaugeFixedInvariantOutputSector::W2021Raw)
         );
-        assert_ne!(
+        assert_eq!(
             entry.sector,
-            GaugeFixedInvariantOutputSector::LinearizedRiemann
+            GaugeFixedInvariantOutputSector::DirectGravitinoCurl
         );
 
         let mut bytes = Vec::new();
         let mut file_hasher = Sha256::new();
         encode_invariant_entry(&mut bytes, &mut file_hasher, &entry).unwrap();
         assert_eq!(bytes.len(), SUPERFIELD_COLUMN_ENTRY_BYTES);
-        assert_eq!(bytes[0], GaugeFixedInvariantOutputSector::W2021Raw.tag());
+        assert_eq!(
+            bytes[0],
+            GaugeFixedInvariantOutputSector::DirectGravitinoCurl.tag()
+        );
         assert_eq!(
             u32::from_le_bytes(bytes[9..13].try_into().unwrap()),
             exterior
         );
 
         let directory = std::env::temp_dir().join(format!(
-            "adynkra-unified-v2-schema-test-{}",
+            "adynkra-unified-v3-schema-test-{}",
             std::process::id()
         ));
         fs::create_dir_all(&directory).unwrap();
@@ -1992,7 +3376,22 @@ mod tests {
         let error = validate_column_shard(&path, ordinal, source).unwrap_err();
         assert!(error.contains("not strictly row ordered"));
 
-        shard[..16].copy_from_slice(b"AD11FINVCOL1\0\0\0\0");
+        let mut out_of_bounds_direct = shard.clone();
+        let first_entry = 16 + 8 + 8 + source.len();
+        out_of_bounds_direct[first_entry + 1..first_entry + 9]
+            .copy_from_slice(&1_760_u64.to_le_bytes());
+        fs::write(&path, out_of_bounds_direct).unwrap();
+        let error = validate_column_shard(&path, ordinal, source).unwrap_err();
+        assert!(error.contains("invalid sector/coordinate 10/1760"));
+
+        let mut conditional_in_successor_schema = shard.clone();
+        conditional_in_successor_schema[first_entry] =
+            GaugeFixedInvariantOutputSector::ConditionalGravitinoCurl.tag();
+        fs::write(&path, conditional_in_successor_schema).unwrap();
+        let error = validate_column_shard(&path, ordinal, source).unwrap_err();
+        assert!(error.contains("non-invariant sector tag 12"));
+
+        shard[..16].copy_from_slice(FROZEN_V3_COLUMN_SHARD_MAGIC);
         fs::write(&path, &shard).unwrap();
         let error = validate_column_shard(&path, ordinal, source).unwrap_err();
         assert!(error.contains("invalid column-shard magic"));
@@ -2000,7 +3399,7 @@ mod tests {
     }
 
     #[test]
-    fn unified_output_order_puts_direct_riemann_after_raw_w_at_one_monomial() {
+    fn unified_output_order_puts_curvatures_after_raw_w_at_one_monomial() {
         let monomial = OrderedSuperderivativeMonomial {
             exterior_spinor_mask: 3,
             momentum: crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial::constant(),
@@ -2014,12 +3413,36 @@ mod tests {
         let riemann = GaugeFixedInvariantOutputEntry {
             sector: GaugeFixedInvariantOutputSector::LinearizedRiemann,
             coordinate: 0,
+            monomial: monomial.clone(),
+            coefficient: ExactQi::one(),
+        };
+        let gravitino = GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::DirectGravitinoCurl,
+            coordinate: 0,
+            monomial: monomial.clone(),
+            coefficient: ExactQi::one(),
+        };
+        let candidate_four_form = GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::DirectCandidateFourForm,
+            coordinate: 0,
+            monomial: monomial.clone(),
+            coefficient: ExactQi::one(),
+        };
+        let conditional = GaugeFixedInvariantOutputEntry {
+            sector: GaugeFixedInvariantOutputSector::ConditionalGravitinoCurl,
+            coordinate: 0,
             monomial,
             coefficient: ExactQi::one(),
         };
         assert!(invariant_entry_cmp(&raw_w, &riemann).is_lt());
+        assert!(invariant_entry_cmp(&riemann, &gravitino).is_lt());
+        assert!(invariant_entry_cmp(&gravitino, &candidate_four_form).is_lt());
+        assert!(invariant_entry_cmp(&candidate_four_form, &conditional).is_lt());
         assert_eq!(raw_w.sector.tag(), 8);
         assert_eq!(riemann.sector.tag(), 9);
+        assert_eq!(gravitino.sector.tag(), 10);
+        assert_eq!(candidate_four_form.sector.tag(), 11);
+        assert_eq!(conditional.sector.tag(), 12);
     }
 
     #[test]
@@ -2035,9 +3458,15 @@ mod tests {
         })
         .unwrap();
         assert!(stats.direct_riemann_terms > 0);
+        assert_eq!(stats.direct_gravitino_curl_terms, 0);
+        assert_eq!(stats.conditional_gravitino_curl_terms, 0);
         assert_eq!(
             entries.len(),
-            stats.raw_invariant_terms + stats.direct_riemann_terms
+            stats.raw_invariant_terms
+                + stats.direct_riemann_terms
+                + stats.direct_gravitino_curl_terms
+                + stats.direct_candidate_four_form_terms
+                + stats.conditional_gravitino_curl_terms
         );
         assert!(
             entries
@@ -2062,7 +3491,59 @@ mod tests {
     }
 
     #[test]
-    fn unified_scale_digest_matches_v2_shard_and_resume_validation() {
+    fn unified_direct_scale_stream_is_strictly_ordered_and_gated() {
+        let input = LinearizedFrameSuperfields {
+            scale: scalar_polynomial(1),
+            ..LinearizedFrameSuperfields::default()
+        };
+        let mut entries = Vec::new();
+        let stats =
+            visit_gauge_fixed_invariant_supercurvature_with_direct_gravitino(&input, |entry| {
+                entries.push(entry);
+                Ok(())
+            })
+            .unwrap();
+        assert!(stats.direct_riemann_terms > 0);
+        assert!(stats.direct_gravitino_curl_terms > 0);
+        assert_eq!(stats.conditional_gravitino_curl_terms, 0);
+        assert!(
+            entries
+                .windows(2)
+                .all(|window| invariant_entry_cmp(&window[0], &window[1]).is_lt())
+        );
+        assert_eq!(
+            entries
+                .iter()
+                .filter(|entry| {
+                    entry.sector == GaugeFixedInvariantOutputSector::DirectGravitinoCurl
+                })
+                .count(),
+            stats.direct_gravitino_curl_terms
+        );
+    }
+
+    #[test]
+    fn conditional_scale_canary_is_fail_closed_under_the_w2021_identification() {
+        let input = LinearizedFrameSuperfields {
+            scale: scalar_polynomial(1),
+            ..LinearizedFrameSuperfields::default()
+        };
+        let error = visit_gauge_fixed_invariant_supercurvature_with_first_descendant(
+            &input,
+            W2021FirstDescendantConventionGate::W2021LowestIsPhysicalFourForm,
+            |_| Ok(()),
+        )
+        .unwrap_err();
+        assert!(
+            error.contains("image gate failed")
+                && error.contains("exterior mask 0x00000001")
+                && error.contains("330 residual coordinates"),
+            "unexpected conditional canary error: {error}"
+        );
+    }
+
+    #[test]
+    fn unified_scale_digest_matches_v4_shard_and_resume_validation() {
         let directory = std::env::temp_dir().join(format!(
             "adynkra-unified-v2-scale-column-test-{}",
             std::process::id()
@@ -2076,6 +3557,22 @@ mod tests {
         assert!(!written.shard_reused);
         assert!(reused.shard_reused);
         assert_eq!(digest.nonzero_terms, written.nonzero_terms);
+        assert_eq!(
+            digest.raw_w_bianchi_residual_terms,
+            written.raw_w_bianchi_residual_terms
+        );
+        assert_eq!(
+            digest.raw_w_candidate_residual_terms,
+            written.raw_w_candidate_residual_terms
+        );
+        assert_eq!(
+            written.raw_w_bianchi_residual_terms,
+            reused.raw_w_bianchi_residual_terms
+        );
+        assert_eq!(
+            written.raw_w_candidate_residual_terms,
+            reused.raw_w_candidate_residual_terms
+        );
         assert_eq!(digest.sha256, written.sha256);
         assert_eq!(written.sha256, reused.sha256);
         assert_eq!(written.shard_sha256, reused.shard_sha256);

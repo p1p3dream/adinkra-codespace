@@ -42,8 +42,10 @@ pub const ARXIV_2007_05097_PDF_SHA256: &str =
 ///
 /// The source labels in the submitted TeX are `eq:05`, `eq:06`, `eq:13`,
 /// `eq:13A`, `eq:14`, `eq:15`, `X's`, `eq:043A`, and `eq:01Z`.  They are
-/// numbered (24)-(29), (39)-(40), and (44) in the rendered paper.  Brackets
-/// retain the paper's normalized antisymmetrization convention.
+/// numbered (24)-(29), (39)-(40), and (44) in the rendered paper. Irreducible
+/// form projections retain normalized antisymmetrization. The vector-vector
+/// brackets in Eq. (29) are the paper's unnormalized curl convention, as
+/// fixed by its Eqs. (7)-(8).
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct LinearizedSourceFormula {
     pub rendered_equation: &'static str,

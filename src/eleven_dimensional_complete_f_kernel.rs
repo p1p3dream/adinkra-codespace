@@ -40,6 +40,8 @@ struct InputCertificate {
     total_nonzero_terms: u64,
     operator_sha256: String,
     direct_riemann_integrated: bool,
+    direct_gravitino_curl_integrated: bool,
+    direct_candidate_four_form_integrated: bool,
     raw_w2021_two_d_terms_are_not_gravity: bool,
     physical_target_component_adapter_complete: bool,
     columns: Vec<InputColumn>,
@@ -50,6 +52,8 @@ struct InputColumn {
     ordinal: usize,
     source_coordinate: String,
     nonzero_terms: usize,
+    raw_w_bianchi_residual_terms: usize,
+    raw_w_candidate_residual_terms: usize,
     sha256: String,
     shard_path: Option<String>,
     shard_sha256: Option<String>,
@@ -147,6 +151,12 @@ fn coordinate_is_valid(sector: u8, coordinate: u64) -> bool {
         value if value == GaugeFixedInvariantOutputSector::LinearizedRiemann as u8 => {
             coordinate < 3_025
         }
+        value if value == GaugeFixedInvariantOutputSector::DirectGravitinoCurl as u8 => {
+            coordinate < 1_760
+        }
+        value if value == GaugeFixedInvariantOutputSector::DirectCandidateFourForm as u8 => {
+            coordinate < 330
+        }
         _ => false,
     }
 }
@@ -166,7 +176,7 @@ fn rational_is_canonical(numerator: i64, denominator: i64) -> bool {
         && (numerator != 0 || denominator == 1)
 }
 
-fn prevalidate_shard(column: &InputColumn, certificate_path: &Path) -> Result<[u64; 10], String> {
+fn prevalidate_shard(column: &InputColumn, certificate_path: &Path) -> Result<[u64; 12], String> {
     let path = resolve_shard_path(column, certificate_path)?;
     let bytes = std::fs::read(&path).map_err(|error| format!("{}: {error}", path.display()))?;
     if column.shard_byte_count != Some(bytes.len() as u64) {
@@ -184,7 +194,7 @@ fn prevalidate_shard(column: &InputColumn, certificate_path: &Path) -> Result<[u
 
     let mut cursor = 0_usize;
     if &take::<16>(&bytes, &mut cursor)? != SHARD_MAGIC {
-        return Err(format!("{} has invalid COL2 magic", path.display()));
+        return Err(format!("{} has invalid COL3 magic", path.display()));
     }
     let stored_ordinal = u64::from_le_bytes(take(&bytes, &mut cursor)?);
     if stored_ordinal != column.ordinal as u64 {
@@ -226,7 +236,7 @@ fn prevalidate_shard(column: &InputColumn, certificate_path: &Path) -> Result<[u
     semantic.update((column.ordinal as u64).to_le_bytes());
     hash_bytes_with_length(&mut semantic, name);
     let mut previous_key = None;
-    let mut sector_counts = [0_u64; 10];
+    let mut sector_counts = [0_u64; 12];
     for entry_ordinal in 0..entry_count {
         let sector = take::<1>(&bytes, &mut cursor)?[0];
         semantic.update([sector]);
@@ -589,6 +599,8 @@ fn operator_sha256(input: &InputCertificate) -> String {
     for column in &input.columns {
         hasher.update((column.ordinal as u64).to_le_bytes());
         hasher.update((column.nonzero_terms as u64).to_le_bytes());
+        hasher.update((column.raw_w_bianchi_residual_terms as u64).to_le_bytes());
+        hasher.update((column.raw_w_candidate_residual_terms as u64).to_le_bytes());
         hash_bytes_with_length(&mut hasher, column.source_coordinate.as_bytes());
         hash_bytes_with_length(&mut hasher, column.sha256.as_bytes());
     }
@@ -600,10 +612,15 @@ fn validate_input_metadata(input: &InputCertificate) -> Result<(), String> {
         || input.unified_output_schema != INPUT_UNIFIED_OUTPUT_SCHEMA
         || input.column_shard_schema != INPUT_SHARD_SCHEMA
         || !input.direct_riemann_integrated
+        || !input.direct_gravitino_curl_integrated
+        || !input.direct_candidate_four_form_integrated
         || !input.raw_w2021_two_d_terms_are_not_gravity
         || input.physical_target_component_adapter_complete
     {
-        return Err("input is not the exact fail-closed v3 direct-Riemann operator".to_string());
+        return Err(
+            "input is not the exact fail-closed v4 direct-Riemann/direct-gravitino operator"
+                .to_string(),
+        );
     }
     if input.source_dimension != SOURCE_DIMENSION
         || input.gamma_traceless_h_dimension != 320
@@ -637,7 +654,7 @@ fn validate_input_metadata(input: &InputCertificate) -> Result<(), String> {
     }
     if !lowercase_sha256(&input.operator_sha256) || operator_sha256(input) != input.operator_sha256
     {
-        return Err("operator SHA-256 does not bind the declared v3 columns".to_string());
+        return Err("operator SHA-256 does not bind the declared v4 columns".to_string());
     }
     Ok(())
 }
@@ -859,6 +876,12 @@ fn sector_name(sector: u8) -> Result<&'static str, String> {
         value if value == GaugeFixedInvariantOutputSector::W2021Raw as u8 => Ok("W2021Raw"),
         value if value == GaugeFixedInvariantOutputSector::LinearizedRiemann as u8 => {
             Ok("LinearizedRiemann")
+        }
+        value if value == GaugeFixedInvariantOutputSector::DirectGravitinoCurl as u8 => {
+            Ok("DirectGravitinoCurl")
+        }
+        value if value == GaugeFixedInvariantOutputSector::DirectCandidateFourForm as u8 => {
+            Ok("DirectCandidateFourForm")
         }
         _ => Err(format!(
             "unsupported invariant-supercurvature sector {sector}"
@@ -1091,6 +1114,8 @@ mod tests {
             ordinal: 0,
             source_coordinate: source.to_string(),
             nonzero_terms: entries.len(),
+            raw_w_bianchi_residual_terms: 0,
+            raw_w_candidate_residual_terms: 0,
             sha256: semantic_sha256,
             shard_path: Some(path.display().to_string()),
             shard_sha256: Some(format!("{:x}", Sha256::digest(&bytes))),
@@ -1138,6 +1163,8 @@ mod tests {
                     ordinal,
                     source_coordinate: format!("source-{ordinal}"),
                     nonzero_terms: ordinal + 1,
+                    raw_w_bianchi_residual_terms: ordinal * 2,
+                    raw_w_candidate_residual_terms: ordinal * 3,
                     sha256: digest.clone(),
                     shard_path: Some(format!("column_{ordinal:03}.bin")),
                     shard_sha256: Some(digest),
@@ -1158,6 +1185,8 @@ mod tests {
                 .sum(),
             operator_sha256: String::new(),
             direct_riemann_integrated: true,
+            direct_gravitino_curl_integrated: true,
+            direct_candidate_four_form_integrated: true,
             raw_w2021_two_d_terms_are_not_gravity: true,
             physical_target_component_adapter_complete: false,
             columns,
@@ -1189,12 +1218,32 @@ mod tests {
     }
 
     #[test]
-    fn col2_tag9_shard_is_fully_validated_and_d_masks_remain_distinct() {
+    fn col3_direct_curvature_shard_is_fully_validated_and_d_masks_remain_distinct() {
         let (path, column) = write_test_shard(&[
             sector_entry(0, GaugeFixedInvariantOutputSector::W2021Raw as u8, 0),
             entry(0, 0),
+            sector_entry(
+                0,
+                GaugeFixedInvariantOutputSector::DirectGravitinoCurl as u8,
+                0,
+            ),
+            sector_entry(
+                0,
+                GaugeFixedInvariantOutputSector::DirectCandidateFourForm as u8,
+                0,
+            ),
             sector_entry(1, GaugeFixedInvariantOutputSector::W2021Raw as u8, 0),
             entry(1, 0),
+            sector_entry(
+                1,
+                GaugeFixedInvariantOutputSector::DirectGravitinoCurl as u8,
+                0,
+            ),
+            sector_entry(
+                1,
+                GaugeFixedInvariantOutputSector::DirectCandidateFourForm as u8,
+                0,
+            ),
         ]);
         let counts = prevalidate_shard(&column, Path::new("unused-certificate.json")).unwrap();
         assert_eq!(
@@ -1203,6 +1252,14 @@ mod tests {
         );
         assert_eq!(
             counts[GaugeFixedInvariantOutputSector::LinearizedRiemann as usize],
+            2
+        );
+        assert_eq!(
+            counts[GaugeFixedInvariantOutputSector::DirectGravitinoCurl as usize],
+            2
+        );
+        assert_eq!(
+            counts[GaugeFixedInvariantOutputSector::DirectCandidateFourForm as usize],
             2
         );
         let mut cursor = ColumnCursor::open(
@@ -1224,6 +1281,16 @@ mod tests {
     fn shard_prevalidation_rejects_legacy_magic_bounds_order_and_coefficients() {
         let cases = [
             vec![entry(0, 3_025)],
+            vec![sector_entry(
+                0,
+                GaugeFixedInvariantOutputSector::DirectGravitinoCurl as u8,
+                1_760,
+            )],
+            vec![sector_entry(
+                0,
+                GaugeFixedInvariantOutputSector::DirectCandidateFourForm as u8,
+                330,
+            )],
             vec![entry(0, 0), entry(0, 0)],
             vec![ExactEntry {
                 real_numerator: 2,
@@ -1243,7 +1310,7 @@ mod tests {
 
         let (path, mut column) = write_test_shard(&[entry(0, 0)]);
         let mut bytes = std::fs::read(&path).unwrap();
-        bytes[..16].copy_from_slice(b"AD11FINVCOL1\0\0\0\0");
+        bytes[..16].copy_from_slice(b"AD11FINVCOL2\0\0\0\0");
         std::fs::write(&path, &bytes).unwrap();
         column.shard_sha256 = Some(format!("{:x}", Sha256::digest(&bytes)));
         assert!(prevalidate_shard(&column, Path::new("unused-certificate.json")).is_err());

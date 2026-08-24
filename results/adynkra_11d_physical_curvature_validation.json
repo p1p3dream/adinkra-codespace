@@ -12,11 +12,12 @@
   ],
   "source_hashes": [
     "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
-    "3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7"
+    "3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7",
+    "71ccd43c2dea3df8fb9708c016595463cca2674bccad1872c955fc2c8647f25e"
   ],
   "lorentz_signature": "diag(-,+,+,+,+,+,+,+,+,+,+)",
   "epsilon_convention": "epsilon_(0...10)=+1; canonical increasing form masks",
-  "antisymmetrization_convention": "unit weight, including 1/p!",
+  "antisymmetrization_convention": "unit weight, including 1/p!, for irreducible form projectors; hep-th/0101037 Eq. (29) vector-vector brackets are the unnormalized curl fixed by Eqs. (7)-(8)",
   "raised_spinor_gamma_convention": "Gamma_[p]^{alpha beta}=-(Gamma_[p] C^{-1})^{alpha beta}, derived by raising both indices of C Gamma_[p]; C^{-1}=-C",
   "spinorial_connection_source_relation": "omega_(alpha,de)=C_(alpha,[de])-(2/55)(Gamma_de)_alpha{}^gamma C_(gamma,b){}^b, from hep-th/0107155v2 Eq. (3.2c) and the Table 3 constraint",
   "mixed_torsion_connection_source_relation": "T_(alpha,b){}^gamma=C_(alpha,b){}^gamma+(1/4)(Gamma^cd)_alpha{}^gamma omega_(b,cd), from hep-th/0107155v2 Eq. (3.2e)",
