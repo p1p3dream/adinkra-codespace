@@ -1,0 +1,80 @@
+{
+  "schema_version": "adynkra-11d-complete-physical-f-construction-v1",
+  "role": "exact geometry-level physical-F assembly and fail-closed route to a target-kernel-derived K",
+  "source_hashes": [
+    "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
+    "3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7"
+  ],
+  "sectors": [
+    {
+      "sector": "X_[2]",
+      "domain": "D H",
+      "codomain": "(11000), rank 429 conventional quotient",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Eqs. (39)-(40), (44)"
+    },
+    {
+      "sector": "X_[5]",
+      "domain": "D H",
+      "codomain": "(10002), rank 4290 conventional quotient",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Eqs. (39)-(40), (44)"
+    },
+    {
+      "sector": "J^(1), J^(2), J^(+)",
+      "domain": "spinor and mixed anholonomy plus spinorial connection",
+      "codomain": "spinor geometry",
+      "exact_operator_available": true,
+      "composed_from_h_hat": false,
+      "source": "hep-th/0101037 Eq. (44), Table 3; arXiv:2007.05097 Eq. (2.21)"
+    },
+    {
+      "sector": "T and omega",
+      "domain": "geometry anholonomy and first jet",
+      "codomain": "mixed torsion and Lorentz connections",
+      "exact_operator_available": true,
+      "composed_from_h_hat": false,
+      "source": "hep-th/0101037 Table 3; hep-th/0107155 Eqs. (3.2c)-(3.2e)"
+    },
+    {
+      "sector": "W",
+      "domain": "T and D J",
+      "codomain": "linearized four-form Weyl curvature",
+      "exact_operator_available": true,
+      "composed_from_h_hat": false,
+      "source": "hep-th/0101037 Eq. (44); arXiv:2007.05097 Eqs. (2.22)-(2.23)"
+    },
+    {
+      "sector": "physical target curvature complex",
+      "domain": "completed H_hat curvature data",
+      "codomain": "Riemann, four-form, gravitino curl, Bianchi, Euler, Noether",
+      "exact_operator_available": true,
+      "composed_from_h_hat": false,
+      "source": "repository exact 44+84|128 target equation complex"
+    }
+  ],
+  "geometry_level_join_implemented": true,
+  "probe_x_two_entries": 13,
+  "probe_x_five_entries": 182,
+  "probe_j_one_entries": 1,
+  "probe_j_two_entries": 1,
+  "probe_j_plus_entries": 1,
+  "probe_t_entries": 265,
+  "probe_w_2001_entries": 30,
+  "probe_w_2021_entries": 44,
+  "h_hat_to_consistent_geometry_jet_implemented": false,
+  "ordered_superderivative_normal_form_complete": false,
+  "local_lorentz_orbit_descends_through_j_t_w": false,
+  "target_curvature_adapter_implemented": false,
+  "target_bianchi_euler_noether_composition_certified": false,
+  "complete_physical_f_implemented": false,
+  "complete_f_operator_sha256": null,
+  "exact_polynomial_target_kernel_derived": false,
+  "pointwise_or_bounded_kernel_is_accepted_as_physical_k": false,
+  "next_executable_step": "derive the complete linearized H_hat jet directly from the full constrained superframe, including compensator elimination and ordered D_alpha D_beta = -D_beta D_alpha + i Gamma^a_alpha,beta p_a reductions; require the pure p=2 Lorentz orbit to vanish after the assembled invariant curvature map",
+  "passed": true,
+  "result": "The previously separate X, J, connection, torsion, and W operators now have one exact geometry-level assembly. Complete F still waits on one consistent H_hat-to-geometry-jet map and the target-curvature adapter; no fitted J counterterm or premature K is introduced.",
+  "boundary": "Passing this report certifies only the exact geometry-level union and its source gates. It does not certify that independently supplied geometry coordinates arise from one H_hat jet. Physical F requires the missing full-frame jet, generic formal momentum normal form, local-Lorentz descent, and target curvature/Bianchi composition. Physical K is then the exact polynomial target-side kernel of the hashed complete F, not a numerical or bounded-slice nullspace."
+}

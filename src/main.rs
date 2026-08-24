@@ -34,6 +34,7 @@ mod eleven_dimensional_abstract_clifford_join;
 mod eleven_dimensional_b5_majorana_target_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
+mod eleven_dimensional_complete_f;
 mod eleven_dimensional_covariant_cohomology_gate;
 mod eleven_dimensional_direct_local_lorentz;
 mod eleven_dimensional_first_superspace_jet;
@@ -301,6 +302,7 @@ fn main() {
         "adynkra-11d-hook-bianchi-build" => cmd_adynkra_11d_hook_bianchi_build(&args),
         "adynkra-11d-level18-momentum-build" => cmd_adynkra_11d_level18_momentum_build(&args),
         "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
+        "adynkra-11d-complete-f-build" => cmd_adynkra_11d_complete_f_build(&args),
         "adynkra-11d-physical-k-audit" => cmd_adynkra_11d_physical_k_audit(&args),
         "adynkra-11d-physical-k-validate" => cmd_adynkra_11d_physical_k_validate(&args),
         "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
@@ -629,6 +631,10 @@ fn print_usage(prog: &str) {
     eprintln!("                          Build exact level-18 lifts and momentum source audit");
     eprintln!("  adynkra-11d-prepotential-gate-build [json]");
     eprintln!("                          Build the exact 336-job source-side kill-gate work list");
+    eprintln!("  adynkra-11d-complete-f-build [json]");
+    eprintln!(
+        "                          Join exact geometry sectors and gate the route to F and K"
+    );
     eprintln!("  adynkra-11d-physical-k-audit [json]");
     eprintln!("                          Audit and bind the physical K input boundary");
     eprintln!("  adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
@@ -3191,6 +3197,22 @@ fn cmd_adynkra_11d_prepotential_gate_build(args: &[String]) {
         });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.worklist_consistent_with_current_exact_engine {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_complete_f_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_complete_physical_f_construction.json");
+    let report = eleven_dimensional_complete_f::write_artifact(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
         std::process::exit(2);
     }
 }
