@@ -684,7 +684,7 @@ pub fn hook_projector_operator(degree: usize) -> SparseQiOperator {
 }
 
 /// The Eq. (39) gamma contraction `Gamma_[p]^{alpha beta} D_alpha H_beta^c`.
-pub fn gamma_dh_operator(degree: usize) -> SparseQiOperator {
+fn build_gamma_dh_operator(degree: usize) -> SparseQiOperator {
     assert!(degree == 2 || degree == 5);
     let masks = masks_of_degree(degree);
     let output_dimension = masks.len() * VECTOR_DIMENSION;
@@ -714,6 +714,20 @@ pub fn gamma_dh_operator(degree: usize) -> SparseQiOperator {
         output_dimension,
         columns,
     }
+}
+
+fn cached_gamma_dh_operator(degree: usize) -> &'static SparseQiOperator {
+    static GAMMA_TWO: OnceLock<SparseQiOperator> = OnceLock::new();
+    static GAMMA_FIVE: OnceLock<SparseQiOperator> = OnceLock::new();
+    match degree {
+        2 => GAMMA_TWO.get_or_init(|| build_gamma_dh_operator(2)),
+        5 => GAMMA_FIVE.get_or_init(|| build_gamma_dh_operator(5)),
+        _ => panic!("gamma-DH operator is defined only for degrees 2 and 5"),
+    }
+}
+
+pub fn gamma_dh_operator(degree: usize) -> SparseQiOperator {
+    cached_gamma_dh_operator(degree).clone()
 }
 
 /// The `D H` part of the bosonic frame in hep-th/0101037 Eq. (25).
@@ -1974,8 +1988,8 @@ fn inverse_hodge_six_to_five(star: &BTreeMap<u16, ExactQi>) -> BTreeMap<u16, Exa
 pub fn solve_conventional_compensators(
     d_h: &BTreeMap<usize, ExactQi>,
 ) -> ConventionalCompensatorSolution {
-    let raw_two = sparse_to_tensor(2, &gamma_dh_operator(2).apply_sparse(d_h));
-    let raw_five = sparse_to_tensor(5, &gamma_dh_operator(5).apply_sparse(d_h));
+    let raw_two = sparse_to_tensor(2, &cached_gamma_dh_operator(2).apply_sparse(d_h));
+    let raw_five = sparse_to_tensor(5, &cached_gamma_dh_operator(5).apply_sparse(d_h));
     let psi_one = mixed_trace(2, &raw_two)
         .into_iter()
         .map(|(mask, value)| (mask, value.scaled(&rr(1, 80))))
@@ -2288,14 +2302,8 @@ fn eliminate_one_degree(
 /// corrections fixed by Eq. (40), without assigning an unstated normalization
 /// to the paper's epsilon-contracted p=5 field.
 pub fn apply_leading_physical_x(d_h: &BTreeMap<usize, ExactQi>) -> PhysicalXImage {
-    static GAMMA_TWO: OnceLock<SparseQiOperator> = OnceLock::new();
-    static GAMMA_FIVE: OnceLock<SparseQiOperator> = OnceLock::new();
-    let raw_two = GAMMA_TWO
-        .get_or_init(|| gamma_dh_operator(2))
-        .apply_sparse(d_h);
-    let raw_five = GAMMA_FIVE
-        .get_or_init(|| gamma_dh_operator(5))
-        .apply_sparse(d_h);
+    let raw_two = cached_gamma_dh_operator(2).apply_sparse(d_h);
+    let raw_five = cached_gamma_dh_operator(5).apply_sparse(d_h);
     let (x_two_11000, x_two_compensators) =
         eliminate_one_degree(2, &raw_two, ExactQi::from_rational(1, 16));
     let (x_five_10002, x_five_compensators) = eliminate_one_degree(
