@@ -1,0 +1,147 @@
+{
+  "schema_version": "adynkra-11d-physical-k-determination-audit-v1",
+  "map_roles": [
+    {
+      "symbol": "G_q",
+      "domain": "Lambda_[q], q=0..5",
+      "codomain": "Psi_source_alpha",
+      "count": 6,
+      "status": "exact source maps available; parameter domains are independent"
+    },
+    {
+      "symbol": "A_j",
+      "domain": "Psi_source_alpha",
+      "codomain": "H_hat_alpha^a and its declared representation-level targets",
+      "count": 77,
+      "status": "all canonical representation-level response columns computed"
+    },
+    {
+      "symbol": "K",
+      "domain": "Xi_target, not yet fixed",
+      "codomain": "H_hat_alpha^a in (10001), dimension 320",
+      "count": 0,
+      "status": "missing physical target-gauge domain and exact map"
+    },
+    {
+      "symbol": "F",
+      "domain": "H_hat_alpha^a",
+      "codomain": "complete curvature, Bianchi, Euler, and Noether complex",
+      "count": 0,
+      "status": "X_[2]/X_[5] slice exists; complete physical F is unfinished"
+    }
+  ],
+  "source_fixed_statements": [
+    {
+      "work": "arXiv:2002.08502",
+      "equation_or_section": "Eq. (6.3), Added Note in Proof",
+      "pdf_page": 44,
+      "pdf_sha256": "62587ef23aa92fd30bb7d978cc4e628275a18dd14fcb10fdf2020906638e554c",
+      "statement": "V = D^alpha Psi_alpha is proposed for an unconstrained spinor prepotential",
+      "fixes_physical_k": false
+    },
+    {
+      "work": "arXiv:2007.05097",
+      "equation_or_section": "Eqs. (2.1)-(2.3)",
+      "pdf_page": 7,
+      "pdf_sha256": "197604bc6b5c9e0dfb12044d981aae467920f46554ba9371f1eb9b6389d00a73",
+      "statement": "H_hat = P_320 H and delta H_beta^b = (gamma^b)_beta^alpha Lambda_alpha; P_320 gamma Lambda = 0",
+      "fixes_physical_k": false
+    },
+    {
+      "work": "arXiv:2007.05097",
+      "equation_or_section": "Eq. (2.7)",
+      "pdf_page": 9,
+      "pdf_sha256": "197604bc6b5c9e0dfb12044d981aae467920f46554ba9371f1eb9b6389d00a73",
+      "statement": "a scalar-factorized H(V) route would involve fifteen spinor derivatives, but the functional is not printed",
+      "fixes_physical_k": false
+    },
+    {
+      "work": "hep-th/0101037",
+      "equation_or_section": "Eqs. (24)-(29), (39)-(40), and (44)",
+      "pdf_page": 7,
+      "pdf_sha256": "3d40a1b32fa4491dee56b3e99802172d2c5039b2de198b987ce121a1bbb15cc3",
+      "statement": "linearized frame, anholonomy, conventional quotient, and X/J/W definitions are printed; H remains a semi-prepotential with unknown differential constraints",
+      "fixes_physical_k": false
+    }
+  ],
+  "source_gauge_channels": [
+    {
+      "form_degree": 0,
+      "parameter_dynkin_label": "00000",
+      "parameter_dimension": 1,
+      "map": "G_q: Lambda_[q] -> Psi_source_alpha",
+      "independent_parameter_domain": true
+    },
+    {
+      "form_degree": 1,
+      "parameter_dynkin_label": "10000",
+      "parameter_dimension": 11,
+      "map": "G_q: Lambda_[q] -> Psi_source_alpha",
+      "independent_parameter_domain": true
+    },
+    {
+      "form_degree": 2,
+      "parameter_dynkin_label": "01000",
+      "parameter_dimension": 55,
+      "map": "G_q: Lambda_[q] -> Psi_source_alpha",
+      "independent_parameter_domain": true
+    },
+    {
+      "form_degree": 3,
+      "parameter_dynkin_label": "00100",
+      "parameter_dimension": 165,
+      "map": "G_q: Lambda_[q] -> Psi_source_alpha",
+      "independent_parameter_domain": true
+    },
+    {
+      "form_degree": 4,
+      "parameter_dynkin_label": "00010",
+      "parameter_dimension": 330,
+      "map": "G_q: Lambda_[q] -> Psi_source_alpha",
+      "independent_parameter_domain": true
+    },
+    {
+      "form_degree": 5,
+      "parameter_dynkin_label": "00002",
+      "parameter_dimension": 462,
+      "map": "G_q: Lambda_[q] -> Psi_source_alpha",
+      "independent_parameter_domain": true
+    }
+  ],
+  "source_channel_count": 6,
+  "source_parameter_dimension_sum": 1024,
+  "exact_incidence_block_count": 77,
+  "exact_incidence_dimension": 439904,
+  "typed_incidence_basis_sha256": "150711903df210b9b32e95e83620cb0705c278f5792ba5320179c5f1305e11aa",
+  "incidence_blocks_are_second_momentum_response_columns": false,
+  "physical_identification_between_incidence_and_response_bases_available": false,
+  "exact_k_formula_present_in_audited_sources": false,
+  "target_gauge_parameter_domain_fixed": false,
+  "six_source_channels_are_independent_domains": true,
+  "six_source_channels_are_physical_k_coefficients": false,
+  "projected_local_gamma_trace_has_nonzero_h_hat_image": false,
+  "complete_f_available": false,
+  "exact_fk_zero_certificate_available": false,
+  "physical_k_specification_ready_to_accept": true,
+  "physical_k_validated": false,
+  "physical_target_gauge_quotient_complete": false,
+  "required_inputs": [
+    "a distinct target gauge-parameter domain Xi_target with bound basis and dimension",
+    "the exact convention-fixed formula K: Xi_target -> H_hat, including derivative order and normalization",
+    "a source equation, author-confirmation record, or derivation as the exact kernel of complete F",
+    "the induced routing into the exact 77-block incidence basis",
+    "an exact complete-F digest and F K = 0 certificate"
+  ],
+  "questions_for_convention_owner": [
+    "What is the target gauge-parameter superfield Xi_target and its Spin(1,10) representation?",
+    "What is delta H_hat before and after the P_320 gamma-trace projection?",
+    "Is Xi_target independent of the source prepotential Psi_source_alpha?",
+    "What derivative order, gamma structures, relative signs, and rational normalizations define K?",
+    "Are any of the six independent G_q source domains identified with Xi_target, and by what exact maps?",
+    "Which complete curvature/equation operator F supplies the identity F K = 0?"
+  ],
+  "next_executable_step": "obtain the missing K convention or finish complete F and solve its exact target-side kernel, then instantiate PhysicalKSpecification and validate it against the 77-block basis",
+  "passed": true,
+  "result": "The exact 77-block quotient backend is ready, and the physical K input boundary is now typed and fail-closed. The audited sources do not determine K.",
+  "boundary": "No target gauge quotient is called physical until a distinct target parameter domain, exact K, and induced routing validate. Promotion into the equation complex additionally requires an exact F K = 0 certificate. The six G_q maps are source-side maps on inequivalent domains, not cancellable coefficients of K."
+}

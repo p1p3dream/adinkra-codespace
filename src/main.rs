@@ -51,6 +51,7 @@ mod eleven_dimensional_lorentz_holonomy_compensator_audit;
 mod eleven_dimensional_majorana;
 mod eleven_dimensional_physical_adapter_audit;
 mod eleven_dimensional_physical_curvature;
+mod eleven_dimensional_physical_k;
 mod eleven_dimensional_prepotential;
 mod eleven_dimensional_prepotential_gate;
 mod eleven_dimensional_relaxed_spinorial_cohomology;
@@ -300,6 +301,8 @@ fn main() {
         "adynkra-11d-hook-bianchi-build" => cmd_adynkra_11d_hook_bianchi_build(&args),
         "adynkra-11d-level18-momentum-build" => cmd_adynkra_11d_level18_momentum_build(&args),
         "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
+        "adynkra-11d-physical-k-audit" => cmd_adynkra_11d_physical_k_audit(&args),
+        "adynkra-11d-physical-k-validate" => cmd_adynkra_11d_physical_k_validate(&args),
         "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
         "adynkra-11d-second-momentum-build" => cmd_adynkra_11d_second_momentum_build(&args),
         "adynkra-11d-second-momentum-recoupling-build" => {
@@ -626,6 +629,10 @@ fn print_usage(prog: &str) {
     eprintln!("                          Build exact level-18 lifts and momentum source audit");
     eprintln!("  adynkra-11d-prepotential-gate-build [json]");
     eprintln!("                          Build the exact 336-job source-side kill-gate work list");
+    eprintln!("  adynkra-11d-physical-k-audit [json]");
+    eprintln!("                          Audit and bind the physical K input boundary");
+    eprintln!("  adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
+    eprintln!("                          Validate a physical K and open the exact quotient gate");
     eprintln!("  adynkra-11d-target-stream-build [data-json] [validation-json]");
     eprintln!("                          Build the target-resolved exact 11 by 32 stream");
     eprintln!("  adynkra-11d-second-momentum-build [json]");
@@ -3186,6 +3193,47 @@ fn cmd_adynkra_11d_prepotential_gate_build(args: &[String]) {
     if !report.worklist_consistent_with_current_exact_engine {
         std::process::exit(2);
     }
+}
+
+fn cmd_adynkra_11d_physical_k_audit(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_physical_k_determination_audit.json");
+    let report = eleven_dimensional_physical_k::write_audit(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_physical_k_validate(args: &[String]) {
+    let specification = args.get(2).unwrap_or_else(|| {
+        eprintln!("Usage: adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
+        std::process::exit(2);
+    });
+    let checkpoint_directory = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/eleven_dimensional_level18_embedded");
+    let output = args
+        .get(4)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_physical_k_validated.json");
+    let summary = eleven_dimensional_physical_k::validate_specification_file(
+        std::path::Path::new(specification),
+        std::path::Path::new(checkpoint_directory),
+        std::path::Path::new(output),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Physical K validation failed: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&summary).unwrap());
 }
 
 fn cmd_adynkra_11d_clifford_verify() {
