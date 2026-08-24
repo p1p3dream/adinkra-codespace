@@ -1,6 +1,6 @@
 # 11D top-down exact program status
 
-Status date: 2026-08-17
+Status date: 2026-08-24
 
 ## Scope
 
@@ -86,9 +86,80 @@ The channelwise joint rank/nullity bounds are `11/38`, `46/3`, `35/14`, `49/0`, 
 
 This is a sharp bounded negative result, not the full gauge-curvature identity. The parameter and target projections are not complete, `F_X` omits the `J` and `W` sectors, higher momentum orders are absent, and full `F A G_p` remains false.
 
+### Full rank for the 77-member second-momentum ansatz on the `p^2 D^13` slice
+
+All 77 members of the repository's canonical representation-level
+second-momentum ansatz have now been evaluated on its declared bounded
+partial-`F_X` functional slice. The operator variables are `p^2 D^12` before
+gauge composition; their projected responses lie in the declared
+`p^2 D^13` diagnostic. The inventory has six intermediate channels:
+
+| Intermediate channel | Columns |
+|---|---:|
+| `(00001)` | 3 |
+| `(01001)` | 12 |
+| `(10001)` | 8 |
+| `(11001)` | 30 |
+| `(20001)` | 9 |
+| `(30001)` | 15 |
+
+The inventory is built from 41 exact level-12 fixtures in 19 source labels,
+73 source incidences, and 35 source-intermediate pairs. Twenty-eight columns
+were already present in validated production artifacts. The remaining 49
+required 22 exact abstract source-target maps and 47 embedded map jobs. All 47
+jobs completed, all exact raising residuals vanish, and the map gate reports
+49 newly enabled columns with no remainder. The standalone status gate checks
+the embedded digest field structurally; the production column traversal
+reconstructed every coupled map and required its exact SHA-256 before
+accepting contributions.
+
+The 49 missing columns were produced in 28 portable, resumable GPU jobs. All
+28 job commit records pass, with zero failed, pending, running, or stale jobs.
+Together with the 28 established artifacts, the final matrix has 25,344 exact
+functional rows and 77 columns. The run fixes parameter component zero in
+each gauge domain, the selected highest vector-spinor dual target state, and
+one deterministic 32-bucket functional seed after the `X_[2]` and `X_[5]`
+response. Exact Gaussian finite-field elimination at the pinned prime
+`1073741783` gives
+
+\[
+\operatorname{rank} M_p=77,
+\qquad
+\operatorname{nullity} M_p=0.
+\]
+
+A nonzero modular `77 x 77` minor proves the corresponding
+characteristic-zero lower bound over `Q(i)`. Since there are only 77 columns,
+the characteristic-zero rank is exactly 77. Therefore no nonzero coefficient
+vector in this 77-dimensional ansatz has zero projected `X_[2]` and `X_[5]`
+response on this slice.
+
+The authoritative report is
+`results/adynkra_11d_second_momentum_full_77_rank_p0.json`. Its matrix SHA-256
+is `87bcd72496b4cf92989f75d20d8188d2159da0226f5ca6c0e77b1815eb266210`,
+its static semantic SHA-256 is
+`eff2e32b1aa7ccb35d89acfe7887e6d3cf482c25dfea6243f73836637b99ed65`,
+and the serialized certificate SHA-256 is
+`d2d59a078bba548df55b89d66ae500666d07a099e47225d6b8d914a8436c9153`.
+An independent second aggregation from the verified binary artifacts produced
+the identical certificate bytes.
+
+This is a complete full-rank certificate for all 77 members of the canonical
+representation-level ansatz on the declared `p^2 D^13` partial-`F_X` slice.
+It is a bounded no-go only for that ansatz under this diagnostic. It does not
+construct the independent `p^3 D^11` normal-order branch, exhaust parameter
+or target coordinates, derive `K: Psi_alpha -> H_hat`, fix the routing of the
+six independent gauge domains, compute the quotient by their images, or join
+the existing geometry-level `J/T/W` machinery to the compensator-eliminated
+`H_hat` input and complete `F`. It therefore does not establish generic
+`F A G_p` and must not be promoted to a no-go theorem for 11D supergravity.
+The complete derivation, proof logic, inventory, hashes, and reproduction
+commands are recorded in
+`docs/adynkra-11d-second-momentum-full-rank-20260824.md`.
+
 ### Generic K and F A G_p decision engine
 
-The coefficient engine now works over exact Gaussian rationals and formal polynomials in all eleven momentum variables. It keeps derivative masks, derivative order, lower-symbol coverage, target-basis provenance, and the six inequivalent gauge domains explicit. It supports exact unique-ray, family, zero-kernel, and no-solution verdicts, plus channelwise and joint-kernel intersection after a target gauge quotient. Both `D^17 Lambda` and `p D^15 Lambda` streams are ingestible. The pinned harness artifact has SHA-256 `11ec33c36d9536e17e617839cc8dbabc885b9d30bf13ff05a4d0dc5e6b9fe562`; it independently binds the current `3c31...` physical envelope and frozen `c308...` F_X input snapshot. The bounded physical `F_X` slice now excludes the recorded 49-vector coefficient space, but the generic physical verdict remains false because `K`, complete `F`, complete projections, and the physical quotient are not yet available.
+The coefficient engine now works over exact Gaussian rationals and formal polynomials in all eleven momentum variables. It keeps derivative masks, derivative order, lower-symbol coverage, target-basis provenance, and the six inequivalent gauge domains explicit. It supports exact unique-ray, family, zero-kernel, and no-solution verdicts, plus channelwise and joint-kernel intersection after a target gauge quotient. Both `D^17 Lambda` and `p D^15 Lambda` streams are ingestible. The pinned harness artifact has SHA-256 `11ec33c36d9536e17e617839cc8dbabc885b9d30bf13ff05a4d0dc5e6b9fe562`; it independently binds the current `3c31...` physical envelope and frozen `c308...` F_X input snapshot. The bounded first-momentum physical `F_X` slice excludes its recorded 49-vector coefficient space, and the declared second-momentum diagnostic excludes the canonical 77-member ansatz on its tested projection. The generic physical verdict remains false because the source-derived `K`, complete `F`, routing of the six independent gauge domains, target quotient, companion `p^3 D^11` branch, complete parameter and target coverage, and generic momentum tower are not yet available.
 
 ### Higher-jet Lorentz quotient
 
@@ -122,16 +193,18 @@ The complete free target-side complex is exact over `Q(i)[p_0,...,p_10]`. The gr
 
 ## Open gates
 
-1. Finish the convention-fixed `H_hat -> torsion -> (W,X_[2],X_[5],J)` operator `F`.
-2. Solve the physical `Psi_alpha -> H_hat` map `K` and its six channel coefficients.
-3. Connect the 77 exact embeddings to `K` and compute the physical target gauge quotient.
-4. Apply the full physical `F` to both `D^17 Lambda` and `p D^15 Lambda` target streams independently for all six gauge domains at generic polynomial momentum.
-5. Build the curvature, Bianchi, and field-equation complex and match its physical quotient to `44+84|128`.
-6. Extend the exact spinorial differential to the relaxed `X_[2] + X_[5]` torsion complex and the relevant physical cohomology.
-7. Join the physical `44+84|128` supersymmetry maps to the covariant superfield complex.
+1. Finish the compensator-eliminated `H_hat` input and jet and join it to the convention-fixed geometry-level `(W,X_[2],X_[5],J,T)` machinery as complete `F`.
+2. Derive or source-select the physical `Psi_alpha -> H_hat` map `K`.
+3. Fix the routing and coefficients of the six independent gauge domains through the 77 blocks, then compute the target quotient by `sum_q Im(K composed with G_q)`.
+4. Construct the companion second-momentum `p^3 D^11` contraction branch.
+5. Exhaust the required parameter and target coordinates for both second-momentum branches.
+6. Apply the full physical `F` to both `D^17 Lambda` and `p D^15 Lambda` target streams independently for all six gauge domains at generic polynomial momentum.
+7. Build the curvature, Bianchi, and field-equation complex and match its physical quotient to `44+84|128`.
+8. Extend the exact spinorial differential to the relaxed `X_[2] + X_[5]` torsion complex and the relevant physical cohomology.
+9. Join the physical `44+84|128` supersymmetry maps to the covariant superfield complex.
 
 ## Current interpretation
 
-The 11D program is no longer blocked by the absence of a target-resolved stream, a Lorentzian real form, the physical on-shell multiplet, or level-18 source kernels. The recorded 49-dimensional first-momentum ansatz is now exactly excluded on the declared physical `F_X` slice. The remaining obstruction is sharply localized: the complete physical superfield differential, generic gauge-curvature composition, and target quotient are not source-fixed or computationally complete.
+The 11D program is no longer blocked by the absence of a target-resolved stream, a Lorentzian real form, the physical on-shell multiplet, level-18 source kernels, exact source-target maps, or the full 77-member representation-level second-momentum inventory. The recorded 49-dimensional first-momentum ansatz and the canonical 77-member second-momentum ansatz are exactly excluded on their respective declared partial-`F_X` projections. These are sharp bounded negative results, not complete physical no-go statements. The remaining obstruction is localized in the source-derived physical `K`, the compensator-eliminated `H_hat` input and complete `F`, routing of the six independent gauge domains, actual target quotient, independent `p^3 D^11` branch, complete parameter and target coverage, and generic gauge-curvature composition.
 
 No current artifact proves an off-shell 11D multiplet, an irreducible scalar-superfield decomposition, or a nonlinear supersymmetric extension of Einstein's equation.
