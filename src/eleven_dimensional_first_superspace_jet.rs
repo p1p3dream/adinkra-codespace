@@ -122,7 +122,7 @@ pub fn assemble_first_superspace_jet(input: &FirstSuperspaceJetInput) -> FirstSu
     }
 
     let d_spinorial_connection = apply_first_jet_prolongation(
-        &physical::c_alpha_b_c_to_spinorial_connection_operator(),
+        physical::cached_c_alpha_b_c_to_spinorial_connection_operator(),
         &input.d_c_alpha_b_c,
     );
     debug_assert!(
@@ -132,11 +132,11 @@ pub fn assemble_first_superspace_jet(input: &FirstSuperspaceJetInput) -> FirstSu
     );
 
     let d_j_one_anholonomy = apply_first_jet_prolongation(
-        &physical::c_alpha_beta_gamma_to_j_one_operator(),
+        physical::cached_c_alpha_beta_gamma_to_j_one_operator(),
         &input.d_c_alpha_beta_gamma,
     );
     let d_j_one_connection = apply_first_jet_prolongation(
-        &physical::spinorial_connection_to_j_one_operator(),
+        physical::cached_spinorial_connection_to_j_one_operator(),
         &d_spinorial_connection,
     );
     let mut d_j_one = d_j_one_anholonomy;
@@ -147,8 +147,10 @@ pub fn assemble_first_superspace_jet(input: &FirstSuperspaceJetInput) -> FirstSu
     // J^(2)=(4/33)T_{alpha,b}{}^b.  The Lorentz connection contribution
     // omega_{alpha,b}{}^b vanishes identically by antisymmetry, so its first
     // jet is exactly the prolonged anholonomy trace.
-    let d_j_two =
-        apply_first_jet_prolongation(&physical::c_alpha_b_c_to_j_operator(), &input.d_c_alpha_b_c);
+    let d_j_two = apply_first_jet_prolongation(
+        physical::cached_c_alpha_b_c_to_j_operator(),
+        &input.d_c_alpha_b_c,
+    );
     let d_j_plus = physical::apply_d_j_plus(&d_j_one, &d_j_two);
 
     let bosonic_connection = physical::apply_bosonic_connection(&d_spinorial_connection);

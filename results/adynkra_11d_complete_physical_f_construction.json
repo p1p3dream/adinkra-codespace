@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra-11d-complete-physical-f-construction-v3",
+  "schema_version": "adynkra-11d-complete-physical-f-construction-v4",
   "role": "exact geometry-level physical-F assembly and fail-closed route to a target-kernel-derived K",
   "source_hashes": [
     "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
@@ -27,7 +27,7 @@
       "domain": "spinor and mixed anholonomy plus spinorial connection",
       "codomain": "spinor geometry",
       "exact_operator_available": true,
-      "composed_from_h_hat": false,
+      "composed_from_h_hat": true,
       "source": "hep-th/0101037 Eq. (44), Table 3; arXiv:2007.05097 Eq. (2.21)"
     },
     {
@@ -35,7 +35,7 @@
       "domain": "geometry anholonomy and first jet",
       "codomain": "mixed torsion and Lorentz connections",
       "exact_operator_available": true,
-      "composed_from_h_hat": false,
+      "composed_from_h_hat": true,
       "source": "hep-th/0101037 Table 3; hep-th/0107155 Eqs. (3.2c)-(3.2e)"
     },
     {
@@ -43,7 +43,7 @@
       "domain": "T and D J",
       "codomain": "linearized four-form Weyl curvature",
       "exact_operator_available": true,
-      "composed_from_h_hat": false,
+      "composed_from_h_hat": true,
       "source": "hep-th/0101037 Eq. (44); arXiv:2007.05097 Eqs. (2.22)-(2.23)"
     },
     {
@@ -64,9 +64,12 @@
   "probe_t_entries": 265,
   "probe_w_2001_entries": 30,
   "probe_w_2021_entries": 44,
-  "h_hat_to_consistent_geometry_jet_implemented": false,
+  "h_hat_to_consistent_geometry_jet_implemented": true,
   "ordered_superderivative_normal_form_complete": true,
   "bounded_linearized_frame_jet_stream_implemented": true,
+  "gamma_traceless_h_hat_input_projected": true,
+  "local_lorentz_orbit_raw_response_is_nonzero": true,
+  "local_lorentz_gauge_fixed_at_input": true,
   "local_lorentz_orbit_descends_through_j_t_w": false,
   "target_curvature_adapter_implemented": false,
   "target_bianchi_euler_noether_composition_certified": false,
@@ -74,8 +77,8 @@
   "complete_f_operator_sha256": null,
   "exact_polynomial_target_kernel_derived": false,
   "pointwise_or_bounded_kernel_is_accepted_as_physical_k": false,
-  "next_executable_step": "compose the streamed H, scale, and Lorentz jets through the differentiated Eq. (40) compensator solve and Eqs. (26)/(28); require the pure p=2 Lorentz orbit to vanish after the assembled invariant curvature map",
+  "next_executable_step": "map the exact gauge-fixed X/J/T/W stream into the typed physical target curvature complex, hash the complete polynomial operator, and solve its exact H_hat kernel",
   "passed": true,
-  "result": "The previously separate X, J, connection, torsion, and W operators now have one exact geometry-level assembly. The complete flat ordered-superderivative normal form and bounded H/scale/Lorentz jet stream are certified. Complete F still waits on the compensator/anholonomy composition and target-curvature adapter; no fitted J counterterm or premature K is introduced.",
-  "boundary": "Passing this report certifies only the exact geometry-level union, its source gates, and the flat ordered-superderivative algebra. It does not certify that independently supplied geometry coordinates arise from one H_hat jet. Physical F requires the missing full-frame jet, local-Lorentz descent, and target curvature/Bianchi composition. Physical K is then the exact polynomial target-side kernel of the hashed complete F, not a numerical or bounded-slice nullspace."
+  "result": "The exact ordered-superderivative frame now composes H_hat and scale through Delta, both Eqs. (13)-(14) anholonomies, D C, both Lorentz connections, J, mixed torsion, and both W conventions. P_320 and the p=2 gauge choice are enforced at the typed input boundary. Complete F now waits only on the target-curvature/Bianchi adapter and canonical operator hash; no fitted J counterterm or premature K is introduced.",
+  "boundary": "Passing this report certifies the exact gauge-fixed H_hat-to-X/J/T/W differential stream. The raw p=2 lift has a nonzero J/T/W response in the current convention, so this is explicitly a canonical local-Lorentz gauge section rather than a proof that the raw coordinates descend unchanged. Physical F still requires the target curvature/Bianchi composition. Physical K is then the exact polynomial H_hat kernel of the hashed complete F, not a numerical or bounded-slice nullspace."
 }

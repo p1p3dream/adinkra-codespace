@@ -1046,6 +1046,15 @@ pub fn eq28_d_scalar_to_c_alpha_b_c_operator() -> SparseQiOperator {
 /// Lorentz antisymmetry makes the spinorial connection traceless here, so this
 /// map acts directly on `C_{alpha,b}{}^c`.
 pub fn c_alpha_b_c_to_j_operator() -> SparseQiOperator {
+    cached_c_alpha_b_c_to_j_operator().clone()
+}
+
+pub(crate) fn cached_c_alpha_b_c_to_j_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_c_alpha_b_c_to_j_operator)
+}
+
+fn build_c_alpha_b_c_to_j_operator() -> SparseQiOperator {
     let mut columns = vec![Vec::new(); C_ALPHA_VECTOR_VECTOR_DIMENSION];
     for alpha in 0..SPINOR_DIMENSION {
         for b in 0..VECTOR_DIMENSION {
@@ -1064,7 +1073,7 @@ pub fn c_alpha_b_c_to_j_operator() -> SparseQiOperator {
 
 pub fn apply_h_sector_j(second_jets: &BTreeMap<usize, ExactQi>) -> BTreeMap<usize, ExactQi> {
     let c = eq28_h_to_c_alpha_b_c_operator().apply_sparse(second_jets);
-    c_alpha_b_c_to_j_operator().apply_sparse(&c)
+    cached_c_alpha_b_c_to_j_operator().apply_sparse(&c)
 }
 
 /// Solve the Table 3 spinorial Lorentz connection from
@@ -1073,7 +1082,7 @@ pub fn c_alpha_b_c_to_spinorial_connection_operator() -> SparseQiOperator {
     cached_c_alpha_b_c_to_spinorial_connection_operator().clone()
 }
 
-fn cached_c_alpha_b_c_to_spinorial_connection_operator() -> &'static SparseQiOperator {
+pub(crate) fn cached_c_alpha_b_c_to_spinorial_connection_operator() -> &'static SparseQiOperator {
     static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
     OPERATOR.get_or_init(|| build_c_alpha_b_c_to_spinorial_connection_operator(55))
 }
@@ -1152,7 +1161,13 @@ pub fn apply_spinorial_connection(
 /// hence `omega_{a,de}=(i/16) Gamma_a^{alpha beta}
 /// D_alpha omega_{beta,de}`.
 pub fn d_spinorial_connection_to_bosonic_connection_operator() -> SparseQiOperator {
-    build_d_spinorial_connection_to_bosonic_connection_operator(16)
+    cached_d_spinorial_connection_to_bosonic_connection_operator().clone()
+}
+
+pub(crate) fn cached_d_spinorial_connection_to_bosonic_connection_operator()
+-> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(|| build_d_spinorial_connection_to_bosonic_connection_operator(16))
 }
 
 fn build_d_spinorial_connection_to_bosonic_connection_operator(
@@ -1189,7 +1204,8 @@ fn build_d_spinorial_connection_to_bosonic_connection_operator(
 pub fn apply_bosonic_connection(
     d_spinorial_connection: &BTreeMap<usize, ExactQi>,
 ) -> BTreeMap<usize, ExactQi> {
-    d_spinorial_connection_to_bosonic_connection_operator().apply_sparse(d_spinorial_connection)
+    cached_d_spinorial_connection_to_bosonic_connection_operator()
+        .apply_sparse(d_spinorial_connection)
 }
 
 /// The connection contribution to `T_{alpha,e}{}^gamma`.
@@ -1198,7 +1214,12 @@ pub fn apply_bosonic_connection(
 /// `T_{alpha,e}{}^gamma=C_{alpha,e}{}^gamma
 /// +(1/4)omega_{e,de}(Gamma^de)_alpha{}^gamma` at linear order.
 pub fn bosonic_connection_to_t_alpha_e_gamma_operator() -> SparseQiOperator {
-    build_bosonic_connection_to_t_alpha_e_gamma_operator(4)
+    cached_bosonic_connection_to_t_alpha_e_gamma_operator().clone()
+}
+
+pub(crate) fn cached_bosonic_connection_to_t_alpha_e_gamma_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(|| build_bosonic_connection_to_t_alpha_e_gamma_operator(4))
 }
 
 fn build_bosonic_connection_to_t_alpha_e_gamma_operator(denominator: i64) -> SparseQiOperator {
@@ -1243,7 +1264,7 @@ pub fn apply_t_alpha_e_gamma(
     }
     let mut output = c_alpha_e_gamma.clone();
     for (index, value) in
-        bosonic_connection_to_t_alpha_e_gamma_operator().apply_sparse(bosonic_connection)
+        cached_bosonic_connection_to_t_alpha_e_gamma_operator().apply_sparse(bosonic_connection)
     {
         add_sparse(&mut output, index, value);
     }
@@ -1253,6 +1274,15 @@ pub fn apply_t_alpha_e_gamma(
 /// The anholonomy contribution to
 /// `J_alpha^(1)=(4/33)T_{alpha beta}{}^beta`.
 pub fn c_alpha_beta_gamma_to_j_one_operator() -> SparseQiOperator {
+    cached_c_alpha_beta_gamma_to_j_one_operator().clone()
+}
+
+pub(crate) fn cached_c_alpha_beta_gamma_to_j_one_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_c_alpha_beta_gamma_to_j_one_operator)
+}
+
+fn build_c_alpha_beta_gamma_to_j_one_operator() -> SparseQiOperator {
     let mut columns = vec![Vec::new(); SPINOR_ANHOLONOMY_DIMENSION];
     for alpha in 0..SPINOR_DIMENSION {
         for beta in 0..SPINOR_DIMENSION {
@@ -1278,7 +1308,7 @@ pub fn spinorial_connection_to_j_one_operator() -> SparseQiOperator {
     cached_spinorial_connection_to_j_one_operator().clone()
 }
 
-fn cached_spinorial_connection_to_j_one_operator() -> &'static SparseQiOperator {
+pub(crate) fn cached_spinorial_connection_to_j_one_operator() -> &'static SparseQiOperator {
     static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
     OPERATOR.get_or_init(|| build_spinorial_connection_to_j_one_operator(33, false))
 }
@@ -1318,7 +1348,7 @@ pub fn apply_j_one(
     c_alpha_beta_gamma: &BTreeMap<usize, ExactQi>,
     spinorial_connection: &BTreeMap<usize, ExactQi>,
 ) -> BTreeMap<usize, ExactQi> {
-    let mut output = c_alpha_beta_gamma_to_j_one_operator().apply_sparse(c_alpha_beta_gamma);
+    let mut output = cached_c_alpha_beta_gamma_to_j_one_operator().apply_sparse(c_alpha_beta_gamma);
     for (index, value) in
         cached_spinorial_connection_to_j_one_operator().apply_sparse(spinorial_connection)
     {
@@ -1606,6 +1636,15 @@ pub fn apply_d_j_plus(
 
 /// The torsion term in arXiv:2007.05097 Eq. (2.23), in its all-real gamma convention.
 pub fn t_alpha_e_gamma_to_w_operator() -> SparseQiOperator {
+    cached_t_alpha_e_gamma_to_w_operator().clone()
+}
+
+fn cached_t_alpha_e_gamma_to_w_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_t_alpha_e_gamma_to_w_operator)
+}
+
+fn build_t_alpha_e_gamma_to_w_operator() -> SparseQiOperator {
     let four_masks = masks_of_degree(4);
     let gammas = real_gammas();
     let mut columns = vec![Vec::new(); T_ALPHA_VECTOR_SPINOR_DIMENSION];
@@ -1639,6 +1678,15 @@ pub fn t_alpha_e_gamma_to_w_operator() -> SparseQiOperator {
 /// The linearized `J^(+)` derivative in arXiv:2007.05097 Eq. (2.22).
 /// Its all-real-gamma coefficient is `(i/32)(11/4)=11i/128`.
 pub fn d_j_to_w_operator() -> SparseQiOperator {
+    cached_d_j_to_w_operator().clone()
+}
+
+fn cached_d_j_to_w_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_d_j_to_w_operator)
+}
+
+fn build_d_j_to_w_operator() -> SparseQiOperator {
     let four_masks = masks_of_degree(4);
     let mut columns = vec![Vec::new(); D_J_DIMENSION];
     for (form, mask) in four_masks.into_iter().enumerate() {
@@ -1672,8 +1720,8 @@ pub fn apply_linearized_w(
     t_alpha_e_gamma: &BTreeMap<usize, ExactQi>,
     d_j: &BTreeMap<usize, ExactQi>,
 ) -> BTreeMap<usize, ExactQi> {
-    let mut output = t_alpha_e_gamma_to_w_operator().apply_sparse(t_alpha_e_gamma);
-    for (index, value) in d_j_to_w_operator().apply_sparse(d_j) {
+    let mut output = cached_t_alpha_e_gamma_to_w_operator().apply_sparse(t_alpha_e_gamma);
+    for (index, value) in cached_d_j_to_w_operator().apply_sparse(d_j) {
         add_sparse(&mut output, index, value);
     }
     output
@@ -1682,12 +1730,26 @@ pub fn apply_linearized_w(
 /// The torsion input operator in hep-th/0101037 Eq. (44), whose older gamma
 /// convention differs by a displayed factor of `i`.
 pub fn t_alpha_e_gamma_to_w_2001_operator() -> SparseQiOperator {
-    t_alpha_e_gamma_to_w_operator().scaled(ExactQi::i())
+    cached_t_alpha_e_gamma_to_w_2001_operator().clone()
+}
+
+fn cached_t_alpha_e_gamma_to_w_2001_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(|| cached_t_alpha_e_gamma_to_w_operator().scaled(ExactQi::i()))
 }
 
 /// The `J^(2)` derivative input in hep-th/0101037 Eq. (44), after substituting
 /// `T_{alpha b}{}^b=(33/4)J^(2)_alpha`.  Its coefficient is `-11/128`.
 pub fn d_j_two_to_w_2001_operator() -> SparseQiOperator {
+    cached_d_j_two_to_w_2001_operator().clone()
+}
+
+fn cached_d_j_two_to_w_2001_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_d_j_two_to_w_2001_operator)
+}
+
+fn build_d_j_two_to_w_2001_operator() -> SparseQiOperator {
     let four_masks = masks_of_degree(4);
     let mut columns = vec![Vec::new(); D_J_DIMENSION];
     for (form, mask) in four_masks.into_iter().enumerate() {
@@ -1718,8 +1780,8 @@ pub fn apply_linearized_w_2001(
     t_alpha_e_gamma: &BTreeMap<usize, ExactQi>,
     d_j_two: &BTreeMap<usize, ExactQi>,
 ) -> BTreeMap<usize, ExactQi> {
-    let mut output = t_alpha_e_gamma_to_w_2001_operator().apply_sparse(t_alpha_e_gamma);
-    for (index, value) in d_j_two_to_w_2001_operator().apply_sparse(d_j_two) {
+    let mut output = cached_t_alpha_e_gamma_to_w_2001_operator().apply_sparse(t_alpha_e_gamma);
+    for (index, value) in cached_d_j_two_to_w_2001_operator().apply_sparse(d_j_two) {
         add_sparse(&mut output, index, value);
     }
     output

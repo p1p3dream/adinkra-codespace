@@ -20,7 +20,7 @@ use serde::Serialize;
 
 use crate::eleven_dimensional_physical_curvature::{ExactQi, SPINOR_DIMENSION, VECTOR_DIMENSION};
 use crate::eleven_dimensional_superderivative_normal_form::{
-    left_multiply_d, CanonicalSuperPolynomial,
+    CanonicalSuperPolynomial, left_multiply_d,
 };
 
 pub const SCHEMA_VERSION: &str = "adynkra-11d-linearized-frame-jet-v1";
@@ -35,6 +35,62 @@ pub struct LinearizedFrameSuperfields {
     pub scale: CanonicalSuperPolynomial,
     /// Independent increasing Lorentz pairs in the repository mask order.
     pub lorentz_two_form: BTreeMap<usize, CanonicalSuperPolynomial>,
+}
+
+/// Canonical representative of the gamma-traceless `H_hat=P_320 H` target.
+/// The local gamma-trace and Lorentz-two-form directions are removed before
+/// any differential jet is formed, so downstream operators act on the
+/// declared physical frame domain rather than on a gauge-dependent lift.
+pub fn canonical_physical_frame_representative(
+    input: &LinearizedFrameSuperfields,
+) -> Result<LinearizedFrameSuperfields, String> {
+    if let Some(component) = input
+        .h
+        .keys()
+        .find(|component| **component >= H_COMPONENT_DIMENSION)
+    {
+        return Err(format!(
+            "H component {component} is outside dimension {H_COMPONENT_DIMENSION}"
+        ));
+    }
+    let gammas = crate::eleven_dimensional_majorana::real_gamma_matrices();
+    let mut trace = vec![CanonicalSuperPolynomial::default(); SPINOR_DIMENSION];
+    for (&component, polynomial) in &input.h {
+        let (spinor, vector) = h_indices(component);
+        let metric = if vector == 0 { -1 } else { 1 };
+        for (row, trace_row) in trace.iter_mut().enumerate() {
+            let integer = i64::from(gammas[vector][row][spinor]) * metric;
+            if integer != 0 {
+                trace_row.add_assign(&polynomial.scaled(&ExactQi::from_integer(integer)));
+            }
+        }
+    }
+
+    let mut h = input.h.clone();
+    for vector in 0..VECTOR_DIMENSION {
+        for row in 0..SPINOR_DIMENSION {
+            let mut correction = CanonicalSuperPolynomial::default();
+            for (column, trace_column) in trace.iter().enumerate() {
+                let integer = gammas[vector][row][column];
+                if integer != 0 {
+                    correction.add_assign(
+                        &trace_column.scaled(&ExactQi::from_rational(i64::from(integer), 11)),
+                    );
+                }
+            }
+            let coordinate = row * VECTOR_DIMENSION + vector;
+            let entry = h.entry(coordinate).or_default();
+            entry.add_assign(&correction.scaled(&ExactQi::from_integer(-1)));
+            if entry.terms.is_empty() {
+                h.remove(&coordinate);
+            }
+        }
+    }
+    Ok(LinearizedFrameSuperfields {
+        h,
+        scale: input.scale.clone(),
+        lorentz_two_form: BTreeMap::new(),
+    })
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize)]
@@ -355,6 +411,29 @@ pub fn write_artifact(path: &Path) -> io::Result<LinearizedFrameJetReport> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn physical_frame_representative_removes_gamma_trace_and_lorentz_orbit() {
+        let gammas = crate::eleven_dimensional_majorana::real_gamma_matrices();
+        let mut input = LinearizedFrameSuperfields::default();
+        for vector in 0..VECTOR_DIMENSION {
+            for row in 0..SPINOR_DIMENSION {
+                let integer = gammas[vector][row][0];
+                if integer != 0 {
+                    input.h.insert(
+                        row * VECTOR_DIMENSION + vector,
+                        CanonicalSuperPolynomial::scalar(ExactQi::from_integer(i64::from(integer))),
+                    );
+                }
+            }
+        }
+        input
+            .lorentz_two_form
+            .insert(0, CanonicalSuperPolynomial::scalar(ExactQi::one()));
+        let representative = canonical_physical_frame_representative(&input).unwrap();
+        assert!(representative.h.is_empty());
+        assert!(representative.lorentz_two_form.is_empty());
+    }
     use crate::eleven_dimensional_superderivative_normal_form::translation_action;
 
     #[test]
