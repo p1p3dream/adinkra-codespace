@@ -1,0 +1,22 @@
+{
+  "schema_version": "adynkra-11d-constrained-geometry-jet-v1",
+  "role": "exact compensator-eliminated H-hat jet through the complete linearized anholonomy and first geometry jet",
+  "source": "Gates and Nishino, hep-th/0101037 Eqs. (1), (13), (14), (39), and (40)",
+  "source_sha256": "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
+  "delta_terms": 716,
+  "d_delta_terms": 28204,
+  "c_alpha_beta_gamma_terms": 204810,
+  "c_alpha_vector_vector_terms": 64535,
+  "c_alpha_vector_gamma_terms": 252192,
+  "d_c_alpha_beta_gamma_terms": 8661212,
+  "d_c_alpha_vector_vector_terms": 2731272,
+  "delta_derivative_identity_residual_terms": 0,
+  "equation_13_composed": true,
+  "equation_14_both_anholonomies_composed": true,
+  "first_geometry_jet_composed": true,
+  "p2_descent_proved": false,
+  "complete_physical_f_implemented": false,
+  "passed": true,
+  "result": "The same exact H/scale/p=2 frame jet now supplies Delta, D Delta, all three linearized anholonomies, and the D C inputs required by the first-superspace-jet curvature chain.",
+  "boundary": "This closes the missing H-hat-to-geometry-jet composition. The next gate must feed these outputs through J, torsion, and W and prove that the pure p=2 local-Lorentz orbit vanishes in the invariant curvature output before complete physical F or its exact target-side kernel K can be claimed."
+}

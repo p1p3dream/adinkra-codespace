@@ -35,6 +35,7 @@ mod eleven_dimensional_b5_majorana_target_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
 mod eleven_dimensional_complete_f;
+mod eleven_dimensional_constrained_geometry_jet;
 mod eleven_dimensional_covariant_cohomology_gate;
 mod eleven_dimensional_direct_local_lorentz;
 mod eleven_dimensional_eq40_frame_composition;
@@ -312,6 +313,9 @@ fn main() {
         "adynkra-11d-h-hat-jet-build" => cmd_adynkra_11d_h_hat_jet_build(&args),
         "adynkra-11d-eq40-frame-composition-build" => {
             cmd_adynkra_11d_eq40_frame_composition_build(&args)
+        }
+        "adynkra-11d-constrained-geometry-jet-build" => {
+            cmd_adynkra_11d_constrained_geometry_jet_build(&args)
         }
         "adynkra-11d-physical-k-audit" => cmd_adynkra_11d_physical_k_audit(&args),
         "adynkra-11d-physical-k-validate" => cmd_adynkra_11d_physical_k_validate(&args),
@@ -653,6 +657,8 @@ fn print_usage(prog: &str) {
     eprintln!(
         "                          Compose the frame jet through the differentiated Eq. (40) solve"
     );
+    eprintln!("  adynkra-11d-constrained-geometry-jet-build [json]");
+    eprintln!("                          Assemble Eqs. (13)/(14) and their exact first spinor jet");
     eprintln!("  adynkra-11d-physical-k-audit [json]");
     eprintln!("                          Audit and bind the physical K input boundary");
     eprintln!("  adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
@@ -3275,6 +3281,23 @@ fn cmd_adynkra_11d_eq40_frame_composition_build(args: &[String]) {
         .unwrap_or("results/adynkra_11d_eq40_frame_composition.json");
     let report =
         eleven_dimensional_eq40_frame_composition::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_constrained_geometry_jet_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_constrained_geometry_jet.json");
+    let report =
+        eleven_dimensional_constrained_geometry_jet::write_artifact(std::path::Path::new(path))
             .unwrap_or_else(|error| {
                 eprintln!("Failed to write {path}: {error}");
                 std::process::exit(2);

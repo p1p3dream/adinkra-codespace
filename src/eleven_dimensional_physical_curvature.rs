@@ -55,6 +55,10 @@ pub const D_J_DIMENSION: usize = SPINOR_DIMENSION * SPINOR_DIMENSION;
 pub const W_FOUR_FORM_DIMENSION: usize = 330;
 pub const SPINOR_ANHOLONOMY_DIMENSION: usize =
     SPINOR_DIMENSION * SPINOR_DIMENSION * SPINOR_DIMENSION;
+pub const DELTA_DIMENSION: usize = SPINOR_DIMENSION * SPINOR_DIMENSION;
+pub const D_DELTA_DIMENSION: usize = SPINOR_DIMENSION * DELTA_DIMENSION;
+pub const DD_DELTA_DIMENSION: usize = SPINOR_DIMENSION * D_DELTA_DIMENSION;
+pub const P_DELTA_DIMENSION: usize = VECTOR_DIMENSION * DELTA_DIMENSION;
 
 pub const HEP_TH_0101037_SOURCE_SHA256: &str =
     "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453";
@@ -1333,31 +1337,64 @@ pub fn apply_j_one(
 pub fn inject_d_lorentz_compensator_into_d_delta(
     d_psi_two: &BTreeMap<usize, ExactQi>,
 ) -> BTreeMap<usize, ExactQi> {
-    let pair_masks = masks_of_degree(2);
+    inject_d_holonomy_form_into_d_delta(2, d_psi_two)
+}
+
+fn inject_holonomy_form(
+    degree: usize,
+    outer_dimension: usize,
+    input: &BTreeMap<usize, ExactQi>,
+) -> BTreeMap<usize, ExactQi> {
+    assert!((1..=5).contains(&degree));
+    let masks = masks_of_degree(degree);
+    let form_dimension = masks.len();
     let mut output = BTreeMap::new();
-    for (&index, value) in d_psi_two {
-        assert!(index < SPINORIAL_CONNECTION_DIMENSION);
-        let pair = index % 55;
-        let derivative = index / 55;
-        let mask = pair_masks[pair];
+    for (&index, value) in input {
+        assert!(index < outer_dimension * form_dimension);
+        let form = index % form_dimension;
+        let outer = index / form_dimension;
+        let mask = masks[form];
         let indices = (0..VECTOR_DIMENSION)
             .filter(|axis| mask & (1_u16 << axis) != 0)
             .collect::<Vec<_>>();
-        let gamma_de = gamma_product(&indices, false);
+        let gamma = gamma_product(&indices, false);
+        let coefficient = if degree % 2 == 0 {
+            value.clone()
+        } else {
+            value.times_i()
+        };
         for delta in 0..SPINOR_DIMENSION {
             for epsilon in 0..SPINOR_DIMENSION {
-                let integer = gamma_de[delta][epsilon];
+                let integer = gamma[delta][epsilon];
                 if integer != 0 {
                     add_sparse(
                         &mut output,
-                        (derivative * SPINOR_DIMENSION + delta) * SPINOR_DIMENSION + epsilon,
-                        value.scaled(&r(i64::from(integer))),
+                        (outer * SPINOR_DIMENSION + delta) * SPINOR_DIMENSION + epsilon,
+                        coefficient.scaled(&r(i64::from(integer))),
                     );
                 }
             }
         }
     }
     output
+}
+
+/// Inject independent lower-index p-form coordinates into Eq. (1) `Delta`.
+/// The displayed `1/p!` cancels the ordered Einstein sum for one increasing
+/// stored mask.  Odd Clifford degrees carry the source's explicit factor i.
+pub fn inject_holonomy_form_into_delta(
+    degree: usize,
+    psi: &BTreeMap<usize, ExactQi>,
+) -> BTreeMap<usize, ExactQi> {
+    inject_holonomy_form(degree, 1, psi)
+}
+
+/// Derivative-major lift of [`inject_holonomy_form_into_delta`].
+pub fn inject_d_holonomy_form_into_d_delta(
+    degree: usize,
+    d_psi: &BTreeMap<usize, ExactQi>,
+) -> BTreeMap<usize, ExactQi> {
+    inject_holonomy_form(degree, SPINOR_DIMENSION, d_psi)
 }
 
 /// Apply the Delta and explicit Lorentz-compensator terms in the second line
@@ -1416,6 +1453,100 @@ pub fn apply_eq28_delta_sector_to_c_alpha_b_c(
             c_alpha_b_c_index(alpha, right, left),
             value.scaled(&r(lorentz_sign(left))),
         );
+    }
+    output
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct Eq14MixedSpinorAnholonomyInput {
+    /// `D_alpha D_delta Delta_zeta{}^gamma`, in that major order.
+    pub d_d_delta: BTreeMap<usize, ExactQi>,
+    /// `partial_b Delta_alpha{}^gamma`, momentum-major.
+    pub p_delta: BTreeMap<usize, ExactQi>,
+    /// `partial_b Psi`.
+    pub p_scale: BTreeMap<usize, ExactQi>,
+    /// `D_alpha D_delta Psi`.
+    pub d_d_scale: BTreeMap<usize, ExactQi>,
+}
+
+/// Assemble the first line of hep-th/0101037 Eq. (14),
+/// `C_{alpha,b}{}^gamma`, from one exact constrained-frame jet.
+pub fn apply_eq14_mixed_spinor_anholonomy(
+    input: &Eq14MixedSpinorAnholonomyInput,
+) -> BTreeMap<usize, ExactQi> {
+    assert!(
+        input
+            .d_d_delta
+            .keys()
+            .all(|index| *index < DD_DELTA_DIMENSION)
+    );
+    assert!(input.p_delta.keys().all(|index| *index < P_DELTA_DIMENSION));
+    assert!(input.p_scale.keys().all(|index| *index < VECTOR_DIMENSION));
+    assert!(
+        input
+            .d_d_scale
+            .keys()
+            .all(|index| *index < SPINOR_DIMENSION * SPINOR_DIMENSION)
+    );
+    let gamma_b = eq28_raised_lower_one_gammas();
+    let mut output = BTreeMap::new();
+
+    for (&index, value) in &input.d_d_delta {
+        let gamma = index % SPINOR_DIMENSION;
+        let rest = index / SPINOR_DIMENSION;
+        let zeta = rest % SPINOR_DIMENSION;
+        let rest = rest / SPINOR_DIMENSION;
+        let delta = rest % SPINOR_DIMENSION;
+        let alpha = rest / SPINOR_DIMENSION;
+        for b in 0..VECTOR_DIMENSION {
+            let integer = gamma_b[b][delta][zeta];
+            if integer != 0 {
+                add_sparse(
+                    &mut output,
+                    (alpha * VECTOR_DIMENSION + b) * SPINOR_DIMENSION + gamma,
+                    value.times_i().scaled(&rr(i64::from(integer), 32)),
+                );
+            }
+        }
+    }
+
+    for (&index, value) in &input.p_delta {
+        let gamma = index % SPINOR_DIMENSION;
+        let rest = index / SPINOR_DIMENSION;
+        let alpha = rest % SPINOR_DIMENSION;
+        let b = rest / SPINOR_DIMENSION;
+        add_sparse(
+            &mut output,
+            (alpha * VECTOR_DIMENSION + b) * SPINOR_DIMENSION + gamma,
+            value.scaled(&rr(-1, 2)),
+        );
+    }
+
+    for (&b, value) in &input.p_scale {
+        for alpha in 0..SPINOR_DIMENSION {
+            add_sparse(
+                &mut output,
+                (alpha * VECTOR_DIMENSION + b) * SPINOR_DIMENSION + alpha,
+                value.scaled(&rr(-1, 2)),
+            );
+        }
+    }
+
+    for (&index, value) in &input.d_d_scale {
+        let delta = index % SPINOR_DIMENSION;
+        let alpha = index / SPINOR_DIMENSION;
+        for b in 0..VECTOR_DIMENSION {
+            for gamma in 0..SPINOR_DIMENSION {
+                let integer = gamma_b[b][delta][gamma];
+                if integer != 0 {
+                    add_sparse(
+                        &mut output,
+                        (alpha * VECTOR_DIMENSION + b) * SPINOR_DIMENSION + gamma,
+                        value.times_i().scaled(&rr(i64::from(integer), 32)),
+                    );
+                }
+            }
+        }
     }
     output
 }
@@ -6991,5 +7122,62 @@ mod tests {
             )),
         )
         .unwrap();
+    }
+
+    #[test]
+    fn generic_eq1_p_form_injection_preserves_p2_and_odd_i_factors() {
+        let mut d_two = BTreeMap::new();
+        d_two.insert(9 * 55 + 17, ExactQi::from_integer(3));
+        assert_eq!(
+            inject_d_holonomy_form_into_d_delta(2, &d_two),
+            inject_d_lorentz_compensator_into_d_delta(&d_two)
+        );
+
+        let mut one = BTreeMap::new();
+        one.insert(4, ExactQi::from_integer(2));
+        let delta = inject_holonomy_form_into_delta(1, &one);
+        assert!(!delta.is_empty());
+        assert!(
+            delta
+                .values()
+                .all(|value| value.real == r(0) && value.imaginary.denom() == &1)
+        );
+    }
+
+    #[test]
+    fn eq14_mixed_spinor_anholonomy_keeps_all_four_source_terms() {
+        let mut input = Eq14MixedSpinorAnholonomyInput::default();
+        input.d_d_delta.insert(0, ExactQi::one());
+        input.p_delta.insert(0, ExactQi::from_integer(2));
+        input.p_scale.insert(0, ExactQi::from_integer(3));
+        input.d_d_scale.insert(0, ExactQi::from_integer(5));
+        let complete = apply_eq14_mixed_spinor_anholonomy(&input);
+        assert!(!complete.is_empty());
+
+        let sectors = [
+            Eq14MixedSpinorAnholonomyInput {
+                d_d_delta: input.d_d_delta.clone(),
+                ..Eq14MixedSpinorAnholonomyInput::default()
+            },
+            Eq14MixedSpinorAnholonomyInput {
+                p_delta: input.p_delta.clone(),
+                ..Eq14MixedSpinorAnholonomyInput::default()
+            },
+            Eq14MixedSpinorAnholonomyInput {
+                p_scale: input.p_scale.clone(),
+                ..Eq14MixedSpinorAnholonomyInput::default()
+            },
+            Eq14MixedSpinorAnholonomyInput {
+                d_d_scale: input.d_d_scale.clone(),
+                ..Eq14MixedSpinorAnholonomyInput::default()
+            },
+        ];
+        let mut recombined = BTreeMap::new();
+        for sector in sectors {
+            for (index, value) in apply_eq14_mixed_spinor_anholonomy(&sector) {
+                add_sparse(&mut recombined, index, value);
+            }
+        }
+        assert_eq!(complete, recombined);
     }
 }
