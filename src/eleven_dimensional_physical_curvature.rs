@@ -53,6 +53,8 @@ pub const T_ALPHA_VECTOR_SPINOR_DIMENSION: usize =
     SPINOR_DIMENSION * VECTOR_DIMENSION * SPINOR_DIMENSION;
 pub const D_J_DIMENSION: usize = SPINOR_DIMENSION * SPINOR_DIMENSION;
 pub const W_FOUR_FORM_DIMENSION: usize = 330;
+pub const GRAVITINO_CURL_DIMENSION: usize = 55 * SPINOR_DIMENSION;
+pub const D_F_FOUR_FORM_DIMENSION: usize = SPINOR_DIMENSION * W_FOUR_FORM_DIMENSION;
 pub const SPINOR_ANHOLONOMY_DIMENSION: usize =
     SPINOR_DIMENSION * SPINOR_DIMENSION * SPINOR_DIMENSION;
 pub const DELTA_DIMENSION: usize = SPINOR_DIMENSION * SPINOR_DIMENSION;
@@ -64,6 +66,8 @@ pub const HEP_TH_0101037_SOURCE_SHA256: &str =
     "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453";
 pub const ARXIV_2007_05097_SOURCE_SHA256: &str =
     "3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7";
+pub const HEP_TH_0107155_SOURCE_SHA256: &str =
+    "71ccd43c2dea3df8fb9708c016595463cca2674bccad1872c955fc2c8647f25e";
 
 type Rational = Ratio<i64>;
 
@@ -260,6 +264,28 @@ fn masks_of_degree(degree: usize) -> Vec<u16> {
         .collect()
 }
 
+fn lexicographic_combinations(degree: usize) -> Vec<Vec<usize>> {
+    fn extend(
+        next: usize,
+        remaining: usize,
+        prefix: &mut Vec<usize>,
+        output: &mut Vec<Vec<usize>>,
+    ) {
+        if remaining == 0 {
+            output.push(prefix.clone());
+            return;
+        }
+        for value in next..=VECTOR_DIMENSION - remaining {
+            prefix.push(value);
+            extend(value + 1, remaining - 1, prefix, output);
+            prefix.pop();
+        }
+    }
+    let mut output = Vec::new();
+    extend(0, degree, &mut Vec::new(), &mut output);
+    output
+}
+
 fn form_vector_basis(degree: usize) -> Vec<(u16, usize)> {
     masks_of_degree(degree)
         .into_iter()
@@ -395,6 +421,170 @@ fn gamma_product(indices: &[usize], lower_indices: bool) -> Vec<Vec<i16>> {
         }
     }
     result
+}
+
+fn ordered_partition_sign(first: [usize; 2], second: [usize; 2]) -> i64 {
+    let values = [first[0], first[1], second[0], second[1]];
+    let inversions = (0..values.len())
+        .flat_map(|left| ((left + 1)..values.len()).map(move |right| (left, right)))
+        .filter(|&(left, right)| values[left] > values[right])
+        .count();
+    if inversions % 2 == 0 { 1 } else { -1 }
+}
+
+/// Linearized physical first descendant of the eleven-dimensional four-form
+/// field strength.  The source paper uses unnormalized graded
+/// antisymmetrization, as fixed by its Eqs. (2.2)-(2.3), so
+/// hep-th/0107155v2 Eq. (3.1g) becomes
+///
+/// `D_alpha F_bcde = -(1/2) sum_(2+2 partitions) sign *
+///                    (Gamma_pair)_alpha{}^gamma C_other_pair,gamma`.
+///
+/// Columns are the increasing two-form pair followed by the curl spinor.
+/// Rows are the derivative spinor followed by the increasing four-form mask.
+/// The nonlinear `C_alpha,b{}^f W_fcde` term in Eq. (3.1g) vanishes about the
+/// flat background, so this operator is the exact linearized on-shell
+/// teleparallel component map.  Identifying it with `D W_2021` additionally
+/// requires the convention `W_[4]|_0=F_[4]`; that off-shell bridge is not
+/// asserted by this function.
+pub fn linearized_gravitino_curl_to_d_f_four_operator() -> SparseQiOperator {
+    cached_linearized_gravitino_curl_to_d_f_four_operator().clone()
+}
+
+pub(crate) fn cached_linearized_gravitino_curl_to_d_f_four_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_linearized_gravitino_curl_to_d_f_four_operator)
+}
+
+fn build_linearized_gravitino_curl_to_d_f_four_operator() -> SparseQiOperator {
+    let pairs = lexicographic_combinations(2);
+    let four_forms = lexicographic_combinations(4);
+    let pair_ordinals = pairs
+        .iter()
+        .enumerate()
+        .map(|(ordinal, indices)| ((1_u16 << indices[0]) | (1_u16 << indices[1]), ordinal))
+        .collect::<BTreeMap<_, _>>();
+    let mut columns = vec![Vec::new(); GRAVITINO_CURL_DIMENSION];
+
+    for (four_ordinal, indices) in four_forms.iter().enumerate() {
+        for first_positions in [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]] {
+            let first = [indices[first_positions[0]], indices[first_positions[1]]];
+            let second_values = indices
+                .iter()
+                .copied()
+                .filter(|axis| *axis != first[0] && *axis != first[1])
+                .collect::<Vec<_>>();
+            let second = [second_values[0], second_values[1]];
+            let sign = ordered_partition_sign(first, second);
+            let gamma_pair = gamma_product(&first, true);
+            let second_mask = (1_u16 << second[0]) | (1_u16 << second[1]);
+            let pair_ordinal = pair_ordinals[&second_mask];
+
+            for alpha in 0..SPINOR_DIMENSION {
+                let row = alpha * W_FOUR_FORM_DIMENSION + four_ordinal;
+                for gamma in 0..SPINOR_DIMENSION {
+                    let gamma_entry = gamma_pair[alpha][gamma];
+                    if gamma_entry == 0 {
+                        continue;
+                    }
+                    let column = pair_ordinal * SPINOR_DIMENSION + gamma;
+                    columns[column].push(SparseQiEntry {
+                        row,
+                        coefficient: ExactQi::from_rational(-sign * i64::from(gamma_entry), 2),
+                    });
+                }
+            }
+        }
+    }
+
+    SparseQiOperator {
+        input_dimension: GRAVITINO_CURL_DIMENSION,
+        output_dimension: D_F_FOUR_FORM_DIMENSION,
+        columns,
+    }
+}
+
+fn apply_unscaled_d_f_map(input: &BTreeMap<usize, ExactQi>) -> BTreeMap<usize, ExactQi> {
+    cached_linearized_gravitino_curl_to_d_f_four_operator()
+        .apply_sparse(input)
+        .into_iter()
+        .map(|(row, value)| (row, value.scaled(&rr(-2, 1))))
+        .collect()
+}
+
+fn apply_unscaled_d_f_transpose(input: &BTreeMap<usize, ExactQi>) -> BTreeMap<usize, ExactQi> {
+    let operator = cached_linearized_gravitino_curl_to_d_f_four_operator();
+    let mut output = BTreeMap::new();
+    for (column, entries) in operator.columns.iter().enumerate() {
+        for entry in entries {
+            let Some(value) = input.get(&entry.row) else {
+                continue;
+            };
+            add_sparse(
+                &mut output,
+                column,
+                entry.coefficient.scaled(&rr(-2, 1)).multiply(value),
+            );
+        }
+    }
+    output
+}
+
+fn apply_unscaled_d_f_gram(input: &BTreeMap<usize, ExactQi>) -> BTreeMap<usize, ExactQi> {
+    apply_unscaled_d_f_transpose(&apply_unscaled_d_f_map(input))
+}
+
+/// Recover the complete 1,760-component gravitino curl from a first
+/// teleparallel four-form descendant.  The exact left inverse follows from
+/// `G=A0^T A0` and
+/// `(G-21I)(G-84I)(G-216I)=0`:
+///
+/// `L=-2 (G^2-321G+24444I) A0^T / 381024`.
+///
+/// Acceptance is fail-closed: the reconstructed curl is pushed forward again
+/// and must reproduce every supplied descendant coordinate exactly.  Thus an
+/// arbitrary off-image tensor is never silently projected onto a physical
+/// curl.
+pub fn recover_gravitino_curl_from_linearized_d_f_four(
+    input: &BTreeMap<usize, ExactQi>,
+) -> Result<BTreeMap<usize, ExactQi>, String> {
+    if let Some(index) = input
+        .keys()
+        .find(|index| **index >= D_F_FOUR_FORM_DIMENSION)
+    {
+        return Err(format!(
+            "D F four-form coordinate {index} is outside dimension {D_F_FOUR_FORM_DIMENSION}"
+        ));
+    }
+    let z = apply_unscaled_d_f_transpose(input);
+    let gz = apply_unscaled_d_f_gram(&z);
+    let g_squared_z = apply_unscaled_d_f_gram(&gz);
+    let mut recovered = BTreeMap::new();
+    for (source, factor) in [(&g_squared_z, 1_i64), (&gz, -321), (&z, 24_444)] {
+        for (&coordinate, value) in source {
+            add_sparse(
+                &mut recovered,
+                coordinate,
+                value.scaled(&rr(-2 * factor, 381_024)),
+            );
+        }
+    }
+    let reconstructed =
+        cached_linearized_gravitino_curl_to_d_f_four_operator().apply_sparse(&recovered);
+    if reconstructed != *input {
+        let residual_coordinates = reconstructed
+            .keys()
+            .chain(input.keys())
+            .copied()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .filter(|coordinate| reconstructed.get(coordinate) != input.get(coordinate))
+            .count();
+        return Err(format!(
+            "D F four-form tensor is outside the exact gravitino-curl image ({residual_coordinates} residual coordinates)"
+        ));
+    }
+    Ok(recovered)
 }
 
 fn raised_gamma(indices: &[usize]) -> Vec<Vec<i16>> {
@@ -1614,6 +1804,25 @@ pub fn apply_j_plus(
             assert!(index < SPINOR_DIMENSION);
             add_sparse(&mut output, index, value.scaled(&rr(1, 2)));
         }
+    }
+    output
+}
+
+/// The scale-covariant tensor `J^(-)=1/2(J^(1)-J^(2))` from
+/// arXiv:2007.05097 Eqs. (2.21)-(2.22).  At linear order around the flat
+/// background its inhomogeneous super-Weyl variation cancels exactly.
+pub fn apply_j_minus(
+    j_one: &BTreeMap<usize, ExactQi>,
+    j_two: &BTreeMap<usize, ExactQi>,
+) -> BTreeMap<usize, ExactQi> {
+    let mut output = BTreeMap::new();
+    for (&index, value) in j_one {
+        assert!(index < SPINOR_DIMENSION);
+        add_sparse(&mut output, index, value.scaled(&rr(1, 2)));
+    }
+    for (&index, value) in j_two {
+        assert!(index < SPINOR_DIMENSION);
+        add_sparse(&mut output, index, value.scaled(&rr(-1, 2)));
     }
     output
 }
@@ -5949,7 +6158,11 @@ pub fn verify() -> PhysicalCurvatureOperatorReport {
             "arXiv:2007.05097 Eqs. (2.2)-(2.6): gamma-traceless target and conventional constraints",
             "arXiv:2007.05097 Eqs. (2.19)-(2.23): J^(1), J^(2), J^(+), and all-real-gamma W",
         ],
-        source_hashes: vec![HEP_TH_0101037_SOURCE_SHA256, ARXIV_2007_05097_SOURCE_SHA256],
+        source_hashes: vec![
+            HEP_TH_0101037_SOURCE_SHA256,
+            ARXIV_2007_05097_SOURCE_SHA256,
+            HEP_TH_0107155_SOURCE_SHA256,
+        ],
         lorentz_signature: "diag(-,+,+,+,+,+,+,+,+,+,+)",
         epsilon_convention: "epsilon_(0...10)=+1; canonical increasing form masks",
         antisymmetrization_convention: "unit weight, including 1/p!",
@@ -6116,6 +6329,55 @@ pub fn write_artifacts(data_path: &Path, results_path: &Path) -> io::Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn teleparallel_four_form_first_descendant_has_source_fixed_shape_and_normalization() {
+        let operator = linearized_gravitino_curl_to_d_f_four_operator();
+        assert_eq!(operator.input_dimension, GRAVITINO_CURL_DIMENSION);
+        assert_eq!(operator.output_dimension, D_F_FOUR_FORM_DIMENSION);
+        assert_eq!(operator.nonzero_entries(), 63_360);
+        assert!(operator.columns.iter().all(|column| column.len() == 36));
+
+        // For F_0123, the C_23 term is -(1/2) Gamma_01 C_23.
+        let pair_23 = lexicographic_combinations(2)
+            .iter()
+            .position(|pair| pair == &[2, 3])
+            .unwrap();
+        let gamma_01 = gamma_product(&[0, 1], true);
+        for gamma in 0..SPINOR_DIMENSION {
+            let column = pair_23 * SPINOR_DIMENSION + gamma;
+            for alpha in 0..SPINOR_DIMENSION {
+                let row = alpha * W_FOUR_FORM_DIMENSION;
+                let actual = operator.columns[column]
+                    .iter()
+                    .find(|entry| entry.row == row)
+                    .map(|entry| entry.coefficient.clone())
+                    .unwrap_or_else(ExactQi::zero);
+                assert_eq!(
+                    actual,
+                    ExactQi::from_rational(-i64::from(gamma_01[alpha][gamma]), 2)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn teleparallel_four_form_descendant_recovers_the_full_gravitino_curl_exactly() {
+        let operator = cached_linearized_gravitino_curl_to_d_f_four_operator();
+        let mut curl = BTreeMap::new();
+        curl.insert(0, ExactQi::from_rational(3, 7));
+        curl.insert(319, ExactQi::i());
+        curl.insert(1_759, ExactQi::from_integer(-2));
+        let descendant = operator.apply_sparse(&curl);
+        assert_eq!(
+            recover_gravitino_curl_from_linearized_d_f_four(&descendant).unwrap(),
+            curl
+        );
+
+        let mut off_image = BTreeMap::new();
+        off_image.insert(0, ExactQi::one());
+        assert!(recover_gravitino_curl_from_linearized_d_f_four(&off_image).is_err());
+    }
 
     #[test]
     fn finished_first_momentum_fx_slice_is_pinned_and_strictly_qualified() {

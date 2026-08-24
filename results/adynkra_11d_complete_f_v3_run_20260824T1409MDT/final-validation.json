@@ -1,0 +1,116 @@
+{
+  "combined_kernel": {
+    "columns": 321,
+    "elapsed_seconds": 8.440088541,
+    "exact_input_terms": 18931260,
+    "file_sha256": "6c2e802a039daa1fd38676051ee4aff0e04e36978426f7e5f8d89d77ca370f93",
+    "full_column_rank": true,
+    "fully_validated_shards": 321,
+    "input_certificate_sha256": "3f75b3fbf3ae30b494d6918e091c3244e7c304b338e598b20ba2a7cbb8e9598c",
+    "input_operator_sha256": "fec4195161bcd085d629c85bc2b0efc12bc2ea613266c4d3c12c49be37a41661",
+    "input_schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v3",
+    "merged_rows_examined": 1058,
+    "nullity_upper_bound": 0,
+    "path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_kernel_v2_p0_20260824.json",
+    "prime": 1073741783,
+    "proof_boundary": "full rank modulo a good prime proves exact column independence over Q(i); modular rank deficiency alone does not prove an exact kernel, and this certificate covers only the declared gauge-fixed invariant-supercurvature operator",
+    "rank_over_gaussian_extension": 321,
+    "schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-kernel-v2",
+    "shard_entries_examined": 3794,
+    "stopped_after_full_rank": true
+  },
+  "construction_report": {
+    "file_sha256": "576d32ed798151cadcb8c278f05f72c6683463656c59c3d421b7ed9bf82b30b6",
+    "path": "results/adynkra_11d_complete_physical_f_construction.json",
+    "schema_version": "adynkra-11d-complete-physical-f-construction-v6",
+    "source_hashes": [
+      "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
+      "3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7",
+      "71ccd43c2dea3df8fb9708c016595463cca2674bccad1872c955fc2c8647f25e"
+    ]
+  },
+  "final_code_validation": {
+    "binary_sha256": "69f9a4c3396c45db5eaf1ace3ca79bee591e36b4c9ee4e05139c23b5d7f6b0fe",
+    "combined_kernel_semantic_rerun_matches": true,
+    "ignored_fields": [
+      "elapsed_seconds"
+    ],
+    "riemann_only_kernel_semantic_rerun_matches": true
+  },
+  "generation": {
+    "binary_sha256": "f5cebf2e2ba4e009cc2fb6efc5f4c240a3f65aab651ab4671f6bc85b162ff9cb",
+    "git_diff_sha256": "1684d34b28b28d14f6b7ac66fec0066a99d5f6f9aa2b516d2a56d565f78a37ec",
+    "git_head": "586862e19c8c0e433ec451b0ad15deefe503f000",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)"
+  },
+  "host_run": {
+    "finished_at": "2026-08-24T14:45:08-06:00",
+    "peak_rss_bytes": 12791595008,
+    "started_at": "2026-08-24T14:09:43-06:00",
+    "threads": 4,
+    "wall_seconds": 2124.24
+  },
+  "legacy_projection": {
+    "columns_compared": 321,
+    "legacy_payload_sha256": "a49b0323885b42f8b0706a778bdee4fdf2554e67d834de38f41dc6f0efcae51d",
+    "legacy_projection_byte_identical": true,
+    "legacy_terms": 17719920,
+    "new_operator_sha256": "fec4195161bcd085d629c85bc2b0efc12bc2ea613266c4d3c12c49be37a41661",
+    "new_terms": 18931260,
+    "old_operator_sha256": "80acbad466e7b61a9693322e0178f46d586e252014841d486277d9a4d29a84c6",
+    "proof_boundary": "The new COL2 stream filtered to legacy tags 0,1,5,8 is byte-identical entry-for-entry to the old certified COL1 payload for all 321 columns.",
+    "riemann_terms": 1211340,
+    "schema_version": "adynkra-11d-invariant-supercurvature-v3-legacy-projection-validation-v1",
+    "sector_terms": {
+      "JMinus": 153168,
+      "LinearizedRiemann": 1211340,
+      "W2021Raw": 16069472,
+      "X2": 112960,
+      "X5": 1384320
+    }
+  },
+  "operator": {
+    "adopted_certificate_sha256": "3f75b3fbf3ae30b494d6918e091c3244e7c304b338e598b20ba2a7cbb8e9598c",
+    "adopted_shards": 321,
+    "columns": 321,
+    "exact_terms": 18931260,
+    "file_sha256": "3f75b3fbf3ae30b494d6918e091c3244e7c304b338e598b20ba2a7cbb8e9598c",
+    "first_pass_certificate_sha256": "cd84182449425f9cdfb9471097d1b6028fde6dd35702afd1834610cbd7f7f9b5",
+    "fresh_shards": 321,
+    "path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v3_riemann_20260824.json",
+    "semantic_sha256": "fec4195161bcd085d629c85bc2b0efc12bc2ea613266c4d3c12c49be37a41661"
+  },
+  "proof_boundary": "These certificates prove exact independence for the declared gauge-fixed diagnostic operator and for its direct LinearizedRiemann projection over Q(i). They do not construct the physical target gauge quotient or physical K.",
+  "raw_shard_storage": {
+    "bytes": 1268424189,
+    "committed_to_git": false,
+    "files": 321,
+    "path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v3_riemann_20260824.json.columns-v2",
+    "per_file_hashes_bound_in_operator_certificate": true,
+    "reason": "The exact shard set is preserved locally; the compact committed certificate binds every shard by file SHA-256, semantic SHA-256, byte count, term count, source label, and ordinal without adding 1.2 GiB to Git history."
+  },
+  "riemann_only_kernel": {
+    "columns": 321,
+    "elapsed_seconds": 9.562700084,
+    "exact_input_terms": 18931260,
+    "exact_sector_terms": 1211340,
+    "file_sha256": "c68a81f25d3552ea4da6c031a98958445880d173da4d3bc27ae86138126e8b88",
+    "full_column_rank": true,
+    "fully_validated_shards": 321,
+    "input_certificate_sha256": "3f75b3fbf3ae30b494d6918e091c3244e7c304b338e598b20ba2a7cbb8e9598c",
+    "input_operator_sha256": "fec4195161bcd085d629c85bc2b0efc12bc2ea613266c4d3c12c49be37a41661",
+    "input_schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v3",
+    "merged_rows_examined": 181895,
+    "nullity_upper_bound": 0,
+    "path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_riemann_sector_kernel_v1_p0_20260824.json",
+    "prime": 1073741783,
+    "proof_boundary": "sector-only modular full rank proves exact independence of the declared source columns after projection to this one diagnostic sector over Q(i); it does not establish physical target completeness or the physical K quotient",
+    "rank_over_gaussian_extension": 321,
+    "schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-sector-kernel-v1",
+    "sector_entries_examined": 568907,
+    "sector_name": "LinearizedRiemann",
+    "sector_tag": 9,
+    "stopped_after_full_rank": true
+  },
+  "schema_version": "adynkra-11d-direct-riemann-supercurvature-final-validation-v1"
+}

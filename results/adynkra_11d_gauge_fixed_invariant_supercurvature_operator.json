@@ -1,0 +1,3226 @@
+{
+  "schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v2",
+  "source_basis": "320 Cartesian gamma-traceless spatial-frame basis vectors followed by scale",
+  "source_dimension": 321,
+  "gamma_traceless_h_dimension": 320,
+  "scale_dimension": 1,
+  "output_basis": "linearized super-Weyl-covariant X_[2], X_[5], J^(-), and W_2021 with canonical ordered-D and eleven-momentum monomials",
+  "column_shard_schema": "adynkra-11d-gauge-fixed-invariant-supercurvature-column-shard-v1",
+  "column_shard_directory": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns",
+  "columns": [
+    {
+      "ordinal": 0,
+      "source_coordinate": "h_spatial_v1_spinor0",
+      "nonzero_terms": 50297,
+      "sha256": "e9b75f5d422186560cad7b1af0906afb95b635c254fae146f236f0cf42017769",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_000.bin",
+      "shard_sha256": "77fcb81623ecdeaf386a1b1bfe73123baa8e9231bfc9a88768d3d8cce9e3b2f8",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 1,
+      "source_coordinate": "h_spatial_v1_spinor1",
+      "nonzero_terms": 50297,
+      "sha256": "752e6db5c238f420bd94e86845aa09fd6984914ea68343aa9fe45b8d250d3d52",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_001.bin",
+      "shard_sha256": "7a3692a9870bdf073c7d53e5bbecec397c993f8427477be78d715637aa2f7abd",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 2,
+      "source_coordinate": "h_spatial_v1_spinor2",
+      "nonzero_terms": 50297,
+      "sha256": "a867dba4c7f805cee3ad5cf901a87ed0ea0b124b56978b303110adb37957cc2d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_002.bin",
+      "shard_sha256": "4d7f2fd4ab091fe275c40cc905e58821c08b76ae9a17c6ee59b28e5c49fe982a",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 3,
+      "source_coordinate": "h_spatial_v1_spinor3",
+      "nonzero_terms": 50297,
+      "sha256": "2d87b78cd87324a531fbfcc4efd2d882a24dd59198e94b95a49cdb5545e68859",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_003.bin",
+      "shard_sha256": "83b59e3e15c0d36fd761e87f7c3121acb8d7c2854648c8e0c833cd981ab86ce9",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 4,
+      "source_coordinate": "h_spatial_v1_spinor4",
+      "nonzero_terms": 50297,
+      "sha256": "d05e966badb64220d1e2f0634a4ab870b73361253837b517b064d46b99ec0ea2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_004.bin",
+      "shard_sha256": "c682712f136d8f767398d3e112329b0461490a3e13c8a7dac2433280f79d1975",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 5,
+      "source_coordinate": "h_spatial_v1_spinor5",
+      "nonzero_terms": 50297,
+      "sha256": "1a9950af94ee7ef4b89b39aaf546db691c7c54b4304efc36defc765225d7abc0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_005.bin",
+      "shard_sha256": "3420e68648fc2e61e29140310d9fe21c54dff5cff2fda363552642fbdb16e7c9",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 6,
+      "source_coordinate": "h_spatial_v1_spinor6",
+      "nonzero_terms": 50297,
+      "sha256": "57672159e90dad8c1b18377fe2c2e6431f828e038f5ef186f7a2048d67c04b47",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_006.bin",
+      "shard_sha256": "98fc3070427264e32b26603390023e4844ed38d8fa9d4476deedd5e96f53ab52",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 7,
+      "source_coordinate": "h_spatial_v1_spinor7",
+      "nonzero_terms": 50297,
+      "sha256": "8e0097a1486cba141ac2be841066bb930834e24096d25a8397e98ce79c5d27d6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_007.bin",
+      "shard_sha256": "89265addea56495e94b68ec942ce0217cd85ec9b078d81b395cbb48d7ae660ae",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 8,
+      "source_coordinate": "h_spatial_v1_spinor8",
+      "nonzero_terms": 50297,
+      "sha256": "c8c31e9883f4c84ab2afe67e87e33599458ededd9d56e8325a4a8e212e8c2bba",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_008.bin",
+      "shard_sha256": "aa57942d48ee027a3c7615c2db72561bbc72497829b73cb2358080ba0a2e41e5",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 9,
+      "source_coordinate": "h_spatial_v1_spinor9",
+      "nonzero_terms": 50297,
+      "sha256": "068febf6fa00f990d4d52f2012597063fae738a21a2863918840f106a67c0dd8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_009.bin",
+      "shard_sha256": "e61ffc1dcc33470c485daff4b0f2dbd1120a96c0485fc49cc9a56d9d5b773451",
+      "shard_byte_count": 3369991,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 10,
+      "source_coordinate": "h_spatial_v1_spinor10",
+      "nonzero_terms": 50297,
+      "sha256": "185c84bc098e2a501055054d5972a8ecae7110318c65861c61df457ebda60c26",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_010.bin",
+      "shard_sha256": "61a5ccb2e7096ec699a87c501d6acf66562989c2d5a667c8625cf8f7b408b8da",
+      "shard_byte_count": 3369992,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 11,
+      "source_coordinate": "h_spatial_v1_spinor11",
+      "nonzero_terms": 50297,
+      "sha256": "04524ee6d36055e4e0546ad7338bfb0a2d7e7b0dad47bae6f22042d4cda4c401",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_011.bin",
+      "shard_sha256": "64c12842a01e6c4499e16140decd7d8b1716dc8041182bc8b8d7313f44351f82",
+      "shard_byte_count": 3369992,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 12,
+      "source_coordinate": "h_spatial_v1_spinor12",
+      "nonzero_terms": 50297,
+      "sha256": "1ff1531f3dc1c50cdac07716908132dd7ca54da605d2e19e134d6cd39e2549e5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_012.bin",
+      "shard_sha256": "03c80728c8b9dd4f01de93738651571df331a0c79b6360d2a911263ede7eeaf6",
+      "shard_byte_count": 3369992,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 13,
+      "source_coordinate": "h_spatial_v1_spinor13",
+      "nonzero_terms": 50297,
+      "sha256": "be33bd5709abe2a69c125b1acdb3d217022c454ec3ea418a022681a190574eec",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_013.bin",
+      "shard_sha256": "e1d252f198b57ca4c8087495edeb602b5cab3d667962ce85f73b378ae2a13c7e",
+      "shard_byte_count": 3369992,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 14,
+      "source_coordinate": "h_spatial_v1_spinor14",
+      "nonzero_terms": 50297,
+      "sha256": "9e9cfd2a906b88a835f6a185ecc6583a2c8aad239c8b62642776541ce3944243",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_014.bin",
+      "shard_sha256": "6181b81d268204de516e8fdf9eebaaf6b2cbd434f6f5550761fac6f64bfa6f48",
+      "shard_byte_count": 3369992,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 15,
+      "source_coordinate": "h_spatial_v1_spinor15",
+      "nonzero_terms": 50297,
+      "sha256": "a5365a187bd08178e9f72b17a2c558cd7f8eb780458636606e7c1772738709cd",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_015.bin",
+      "shard_sha256": "24b5bf02ba33bc6e6f3192e30f073b1f98a64b318319677ec260f3aae05d9753",
+      "shard_byte_count": 3369992,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 16,
+      "source_coordinate": "h_spatial_v1_spinor16",
+      "nonzero_terms": 51062,
+      "sha256": "3b90d81651cc3c7d9e42e2890a8aeffd8052cfa6071d2619526f7856af73b575",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_016.bin",
+      "shard_sha256": "67824a1abb9b6a19d737ec40cb217c5249e4986c658d4527b017d610961c46fb",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 17,
+      "source_coordinate": "h_spatial_v1_spinor17",
+      "nonzero_terms": 51062,
+      "sha256": "78292027a6fdd64431d8d6f4a20b7f7d945169d0aecd6f1a2375f7a0c6f3d007",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_017.bin",
+      "shard_sha256": "ec70456cebc6ba666d3d9cf7576fa530efa440858c674e0f8d85011e80155847",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 18,
+      "source_coordinate": "h_spatial_v1_spinor18",
+      "nonzero_terms": 51062,
+      "sha256": "e3c1755b2f9579c78e6317a9d4b8997b5c35cadc78bb76e2bd22f5396f2ef690",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_018.bin",
+      "shard_sha256": "bbd24867a742768f5d855ef870718bb6c690fd845002502cc8305d810efd1e3d",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 19,
+      "source_coordinate": "h_spatial_v1_spinor19",
+      "nonzero_terms": 51062,
+      "sha256": "bccae2b2336d1a0de0b2e842a8e34d2fd67a29b1a9330658d990ff9818b8482f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_019.bin",
+      "shard_sha256": "accb5adb6dadc96f9be229d86fb4b38597a76545d1d24b7d7875781efadb1fda",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 20,
+      "source_coordinate": "h_spatial_v1_spinor20",
+      "nonzero_terms": 51062,
+      "sha256": "3b49263efafe582205aa286a4fe6379e86c6917e378938bdd2761386cbe7724d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_020.bin",
+      "shard_sha256": "46dfaef93780b520f0e2267dfb781e4dd1ded0c683abb358e1061995a0b30915",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 21,
+      "source_coordinate": "h_spatial_v1_spinor21",
+      "nonzero_terms": 51062,
+      "sha256": "b437a66e3de8a87ecb51d541327043057ff61ad5928bbcc421ad4d563cf12f86",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_021.bin",
+      "shard_sha256": "65a19745afafa532deb84a13982c3b8c8feb6b9e616031f58ba20bc6f4e28bab",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 22,
+      "source_coordinate": "h_spatial_v1_spinor22",
+      "nonzero_terms": 51062,
+      "sha256": "7976384f66cc3470225a1ab859e08eb3131c854b231cb6602361b21b24a7321f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_022.bin",
+      "shard_sha256": "7805dbd807032fe2d3b46424de499a6110b45b2f5973efdcbd7c93a0fc267866",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 23,
+      "source_coordinate": "h_spatial_v1_spinor23",
+      "nonzero_terms": 51062,
+      "sha256": "429733e6ce29b0f6b3e47666f0b037f0817f82b008e53c1b466b4dd53630eb75",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_023.bin",
+      "shard_sha256": "386b254036b659d9bdfb5cc2195358e7b20d1a61fe1b1c5e31136817ff568116",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 24,
+      "source_coordinate": "h_spatial_v1_spinor24",
+      "nonzero_terms": 51062,
+      "sha256": "094c9adccb6aa8ea87d5f8962d6fe7c7d14e62c52ea963ba8c60788b57013430",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_024.bin",
+      "shard_sha256": "f07632a52908bf022c027f090350363f0d1c733d0d7ec06cffdcbb72da4436a1",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 25,
+      "source_coordinate": "h_spatial_v1_spinor25",
+      "nonzero_terms": 51062,
+      "sha256": "05355284af2d04b9af598813fdcede246033eda76fc68ec6b67d9503c350b455",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_025.bin",
+      "shard_sha256": "7cb8a5b787dda0b980aa9c37578701d2752f1f6aa52158c8a405257f4b801f49",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 26,
+      "source_coordinate": "h_spatial_v1_spinor26",
+      "nonzero_terms": 51062,
+      "sha256": "e2c0a5a75830b07c301715f3c13e33779010ede54c164db08903d5c694d25df8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_026.bin",
+      "shard_sha256": "e5bf9c7c313ee2424104e7f93cabeab2e8a186632c685d271b950c2329e176e9",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 27,
+      "source_coordinate": "h_spatial_v1_spinor27",
+      "nonzero_terms": 51062,
+      "sha256": "7369c193953f289962d8657c2e992a52797d78689455999829553619c53ded45",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_027.bin",
+      "shard_sha256": "96980490a29455bb755c85261cea0c07ff83d36cc3c5be840ba1183178a0eca3",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 28,
+      "source_coordinate": "h_spatial_v1_spinor28",
+      "nonzero_terms": 51062,
+      "sha256": "11795e4cfb6a2f3f8953b289a519d252432fbe1f56c7676cb59fd1f6bec7c6a7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_028.bin",
+      "shard_sha256": "f6430eca56d533daa8a959ae3178abb8ae51f04fd8edc02a4d2b06dc5f36c0d0",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 29,
+      "source_coordinate": "h_spatial_v1_spinor29",
+      "nonzero_terms": 51062,
+      "sha256": "98ed31c44baad83ca374549b7d3c417c625d10fdabfb2f418a97791088a09ba8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_029.bin",
+      "shard_sha256": "e927c2b25ef988ac1434d3f932a06d1f4f7a5f4e5410757fe9d868bb37a15577",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 30,
+      "source_coordinate": "h_spatial_v1_spinor30",
+      "nonzero_terms": 51062,
+      "sha256": "2f9a8c357f127d1833a83ef0ee6bd770b3c1b46efedd2cab6d7642b81d028153",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_030.bin",
+      "shard_sha256": "1992cf38a65169433cdfdbe833a9b9b81ebef1f421542ac89ab8b9ae6acd9dd6",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 31,
+      "source_coordinate": "h_spatial_v1_spinor31",
+      "nonzero_terms": 51062,
+      "sha256": "14af88b5524c6f86b29cafe6801f88354f0a779820909a9486e4eae423ebb1ec",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_031.bin",
+      "shard_sha256": "23726497d370c8d316dd91efa67af4bd902e51fbef778a0abd2dad60254571cf",
+      "shard_byte_count": 3421247,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 32,
+      "source_coordinate": "h_spatial_v2_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "22570bdfb31f5383f1141e3c429776a2ca14e87d473bee2ce74bbfb0531c4faa",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_032.bin",
+      "shard_sha256": "63f25669a5e71596e8037abeb0c214e20f6c683cc98a2df03528ae14142931d7",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 33,
+      "source_coordinate": "h_spatial_v2_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "473027c9e57db14918a84c1ab181f46253e722009dc5909dfc68ead341bd201a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_033.bin",
+      "shard_sha256": "2911a4c299d31f547942f0fd0c8ecf3d06f335ff963feffd7993ddb06a701592",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 34,
+      "source_coordinate": "h_spatial_v2_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "b6b68efd17cf39c35c0a2f86e7f0fef7b3837015e7fcc4a979581bc9775041fe",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_034.bin",
+      "shard_sha256": "8d64aa847300bd2c7c962555c23a7588d09e5c5c76dfbf58126c268b80aa514e",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 35,
+      "source_coordinate": "h_spatial_v2_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "dbfd7ee320cb53ea80b8b67a772d27411b7d234f0c5639ee9827b50254ef701c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_035.bin",
+      "shard_sha256": "792700fa8b87566117f1d08000ab565e81ff2aefe0d557dfda211e86cc6dba56",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 36,
+      "source_coordinate": "h_spatial_v2_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "e20dc8ecf61ef8432d9917c6af589f6255fc917c2e36743e2fdbb2380f73c50e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_036.bin",
+      "shard_sha256": "de61f0493d51e410ff8d3c596d0aaff5d73ddf920cf4c1151a76788fb01857a8",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 37,
+      "source_coordinate": "h_spatial_v2_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "defa6edd0e35e37c69b9bf022ffe19da47be62695400dd70bfb4cc2c24fe3492",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_037.bin",
+      "shard_sha256": "c90c56e1961625297f9cf85a7e80180afd00de2d32566b435a15b0e4fa10a08c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 38,
+      "source_coordinate": "h_spatial_v2_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "53744e8d9cafd35c6e28833611fdc55abb82e18c3d9a3c72a0b35208a97e8a92",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_038.bin",
+      "shard_sha256": "e85a03d810f3bdae59e29aeb53feea8fc4cb50bd1de8ce9fa0be60db6e39ff6b",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 39,
+      "source_coordinate": "h_spatial_v2_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "f3ffb2d774029f536a002016526ebdd0b069c1bf7621dac3a0f581c07cd6b5c9",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_039.bin",
+      "shard_sha256": "6be280c0b444be3d3c344d6f681d24037cb2cf1e8284d4de6886be53d44ae21c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 40,
+      "source_coordinate": "h_spatial_v2_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "36cb1bba610949dc06f32bb16df196a8c68784664af42e6fe233993d9be72ab0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_040.bin",
+      "shard_sha256": "37c6502065de67d0c75472f118d78838721ad298b877122ff10b51f5b11205b6",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 41,
+      "source_coordinate": "h_spatial_v2_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "9b87d21e7679ad48d40ff0bc4055683d263c760de1dce7b23db2197a7eb07b6e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_041.bin",
+      "shard_sha256": "707485f9f034d5224b8307b42420b357e49e075b88ba65a78a669122cd26a2a4",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 42,
+      "source_coordinate": "h_spatial_v2_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "84a34331894a415dcf03313d44e2185fb2bb9efe1b29983cfce31ed1cd180a4f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_042.bin",
+      "shard_sha256": "9f0950ea39a53f1d584bc4c78000e6b1a46beb2af7c7aace8e88e2ddd5daddcb",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 43,
+      "source_coordinate": "h_spatial_v2_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "d937ca19a313644c0480257e004eca68345011c4d3d3a0bb2548f206aed7d249",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_043.bin",
+      "shard_sha256": "ed6dacca81975a25af791564c77606ad29b3853b59d96fe84e9e94ff179adb7f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 44,
+      "source_coordinate": "h_spatial_v2_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "101aa322a3fb027cd81e23a24d8b380aa6f948220105734c8b7a5cce4ef56624",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_044.bin",
+      "shard_sha256": "73340473498db78bf66061d750af1f75e8651bbdbfc0fd37e722117a1cb74c24",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 45,
+      "source_coordinate": "h_spatial_v2_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "a6b61fecc119be664762d1277eb585565e98304816a0989f0a4eeba387dd986d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_045.bin",
+      "shard_sha256": "3742c008b3c23ccbacab94f030651a01dd745aeca506c578e9886d3a2e351fa7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 46,
+      "source_coordinate": "h_spatial_v2_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "e33090874cebad55edd1168f05f3099ac62f30315c65547af28acebcfc913ec8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_046.bin",
+      "shard_sha256": "4e41ab9ac0a1ea2b84ca07e75d9859b82b47ba0c28ab7bc35d8022cce8c72e4a",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 47,
+      "source_coordinate": "h_spatial_v2_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "20afc8935c8d2077564f6c1ce7c594e5ce963fc60ac2462d52569425091e3147",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_047.bin",
+      "shard_sha256": "11747be145b0648735537744b57071d4cec8a67cdb92295d4597cb8b3e1b9a2e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 48,
+      "source_coordinate": "h_spatial_v2_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "0b39b12ae5869e7dd71f1cedb47c5d963bfa7f342ba6be9a15552c6bcbd15363",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_048.bin",
+      "shard_sha256": "66327ac0287492de63bc326c2f5014375e164e226f12afb9c6d27a8720876fc2",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 49,
+      "source_coordinate": "h_spatial_v2_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "1a0672d3499cec2bb990308ab8adef991b184189aa38fc991104f7433651e620",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_049.bin",
+      "shard_sha256": "418ec9eba49cc3617433bc1b42a58edcdea20bdfa3206c4145ab2fa587039f3d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 50,
+      "source_coordinate": "h_spatial_v2_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "29001c25ec68107bfc02196a26cdd375177e862e4481cf73f54cdf237b5a0393",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_050.bin",
+      "shard_sha256": "751fd6145a17253e8cd9fab9a9813bac1bcd5ecd7bd438906ae5fe4550598162",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 51,
+      "source_coordinate": "h_spatial_v2_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "42c80f3d44777edb3892f201577c44b0d0f454aba1964950d942468f90f17bd3",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_051.bin",
+      "shard_sha256": "de466cbc136b6c1901b4dc1aebcd8ee89eba4257bace799d72586d212317b896",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 52,
+      "source_coordinate": "h_spatial_v2_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "9a2b09818c2486e8674d58eb3e69107a00555d1aee4afc97863385380b13210e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_052.bin",
+      "shard_sha256": "2a4867f3ac8c9e73a5d10172ee6c1548a2c40ad84cb044100f6a0d3b7622119e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 53,
+      "source_coordinate": "h_spatial_v2_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "5c16b55849f24240c39f58cd2bd6eaea1b49a5c1a5ce207bddca0d7cdc323cac",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_053.bin",
+      "shard_sha256": "c635f5383f2bd2f08c89be1905208c26e91576c5cc2120c39e9d8aae9fdddf37",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 54,
+      "source_coordinate": "h_spatial_v2_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "338796ba25d7e4172819c58fb7ff41ddaf7b0156cb85984b3caecf98b84048a4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_054.bin",
+      "shard_sha256": "882657204f2c71c97215c4efbd1b659bb3068adac79a9ffff26ced7c6a44b1e7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 55,
+      "source_coordinate": "h_spatial_v2_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "6dd681e33154f7e12699a723c096d54a88bbcaf9c073a0e703d88e93be06ed03",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_055.bin",
+      "shard_sha256": "d7fddf31e3fc787d22802abe5e97356be89d5b59e8584a56b4d0d067c0d9d4e4",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 56,
+      "source_coordinate": "h_spatial_v2_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "7c54770ccffe58c6578e01a847ce9c2a249fbb69228d6930c3e89fc75f1be5da",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_056.bin",
+      "shard_sha256": "1b8559c47b653addbeb317443814f98ba38ad84a6370162a3cc79cd2a394ea20",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 57,
+      "source_coordinate": "h_spatial_v2_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "d493e05155918f652f596949188f6065f079c2258a3be3b42c6195f07b85ef4a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_057.bin",
+      "shard_sha256": "980d3ef3c1914b271cf0383d870e5de44ba0c97fe05b2ea0b67eb0cec1f02da6",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 58,
+      "source_coordinate": "h_spatial_v2_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "634eb425538bf0bbcb960be3da8338e5b2a8323e446770b4d19c1ee0abd1375d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_058.bin",
+      "shard_sha256": "699eb141d3eb4bf51c18c9d2fd34def5c04ba6a83ae2cbd688fc395a1976ff23",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 59,
+      "source_coordinate": "h_spatial_v2_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "a639f2191a3416b9137235ed399c971877284eedf07500aa6780f1e2090c693b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_059.bin",
+      "shard_sha256": "34e8b015fa5bbdc36dab9e079c477a284353e5cebc7dc256c6c25ee5e938096c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 60,
+      "source_coordinate": "h_spatial_v2_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "712bde153f504ca92d6c1ca5ae4593bc9a12713000473aa6761fceb5cef3cfce",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_060.bin",
+      "shard_sha256": "1c5c4218605485dbcadd52b2dca10c48ab2a5493e71b3973d174dbe560d1ce49",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 61,
+      "source_coordinate": "h_spatial_v2_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "c5f64589a9ad0354f861b7b9165847b24f21f7acd79e936032afdcaa9c173fd0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_061.bin",
+      "shard_sha256": "45df1ce10a2c91128d26d132ec5c8a2669d7bd767cf21d3343f7f83775dc87eb",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 62,
+      "source_coordinate": "h_spatial_v2_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "663b7af8b66fb1535810b20b80aa90c2beadd04da9a3a7e36c9480ad048ebf96",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_062.bin",
+      "shard_sha256": "404ed5df7dcae83527b07568977c98c2126377add2d9a1d0d3dc67d7eae4e94d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 63,
+      "source_coordinate": "h_spatial_v2_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "0a451094d092780f8c5858806a8e29c19c9c8ae14f1a7c7327805b54393833de",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_063.bin",
+      "shard_sha256": "6cd149861443570ec16556ca320849077deb1fa8889606d55d5f34fcb66c669d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 64,
+      "source_coordinate": "h_spatial_v3_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "f18a03daf56c1ec9e5e22a77277df0585446f7989b6aad1d691073aa36919adf",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_064.bin",
+      "shard_sha256": "3840e1c35ebc578b6066cd46e229326457b7256d56fb9f46cc778ff67a3aa156",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 65,
+      "source_coordinate": "h_spatial_v3_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "ec119cd699c007eb1e8d9b9369996900fc715aceffd47480896cb343d7f4ce03",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_065.bin",
+      "shard_sha256": "a476da457c610c36ad97ba6f641499caf1dd2d3cf9258bcfc1ad54bfcd4251f8",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 66,
+      "source_coordinate": "h_spatial_v3_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "1cbe7618f7756308f89bcc40d0647cfd7ee6aa3937b66ee4dfd66cbfd67e67f5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_066.bin",
+      "shard_sha256": "3d4407d718a3ecb576efacd32b86065116d7dbacc91ca7940539bb7fcfdc5c8c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 67,
+      "source_coordinate": "h_spatial_v3_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "bfc37a587778305d9d39668a7c7360f5bb990e04f9f7cfd8bd3d2014f7779963",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_067.bin",
+      "shard_sha256": "996a1cf8a738596546f093bc33fc88346630c09068fc2c78be57985196e88a2a",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 68,
+      "source_coordinate": "h_spatial_v3_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "228e5dd63b675676d01e8335c55508fedc9cc473dd9fb6828bb246d166af5f01",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_068.bin",
+      "shard_sha256": "06f6feb614f69ec903e73c950d9e7c7b03bba66e809448aaa5b4a674018f13fc",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 69,
+      "source_coordinate": "h_spatial_v3_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "019f8710bdce3346290aabdede4831ea45151d6d29e37242732e091b85ea6b41",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_069.bin",
+      "shard_sha256": "a08f3022810fee65c1a1dc7bcb78fc74c640773701192f6a341cc59638587e6e",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 70,
+      "source_coordinate": "h_spatial_v3_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "70233f93162ec182946bb727d34143256c7976d053cd7f4b15e5d086f1e53ea1",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_070.bin",
+      "shard_sha256": "8446d68f14315b33088da8ec811c8825e449f891a8b7738ddd7aa62aab33550a",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 71,
+      "source_coordinate": "h_spatial_v3_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "ba1b5eaa3a4a942f3ae7f49c2cb30fcf1837b2426e34eb267f4e115fcf74e085",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_071.bin",
+      "shard_sha256": "f75bd57d49e6f10b48f91fee5784c8d37e9ff0e90578da5a8bed358d71cc4536",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 72,
+      "source_coordinate": "h_spatial_v3_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "1a8dcb530c42565b036e49906bcee46dc91f46e4fa7ffd1043ed9d8a1c115aa0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_072.bin",
+      "shard_sha256": "1340859b0cd1fef35fd9a298056428fd65ffb3e089aac279fba120b9b14baa64",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 73,
+      "source_coordinate": "h_spatial_v3_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "a786c5f5eb906d991b6cefbfc153c8507243686bf40566c073846e596b89ef56",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_073.bin",
+      "shard_sha256": "c70deb015b0522d1e10ab5393cbc9047b0ba7e9517171a77b01979d9a4b746fd",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 74,
+      "source_coordinate": "h_spatial_v3_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "79e33e79e19986d63cef70988f36db9d421c897eb6e47a27e5568b97a59ec2a2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_074.bin",
+      "shard_sha256": "aa2e7eb40c7ac2687f4693e4de900253fa4b8c4627aae3ab56463f6c1411dd32",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 75,
+      "source_coordinate": "h_spatial_v3_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "5054a4d6170bd491f433f057721410c96da904482e67a8e76800022f7aba2a66",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_075.bin",
+      "shard_sha256": "d09d730636bcb72e391aed10ebb5f2c62d1c0ff2d4b493e2e088085dda25ac6e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 76,
+      "source_coordinate": "h_spatial_v3_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "b4feb2d866431ad9bda2f0e2a5e41ae3d4e1e63fc63aff64e4e3827f428e33b4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_076.bin",
+      "shard_sha256": "bdc3f5d4a79482f37edd950d9c076801c48bdc01ce0dcc375389904d7c7d2e5e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 77,
+      "source_coordinate": "h_spatial_v3_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "9f045714f6b9aec8cbd2289f021801f71f4cc2e213f1725e08e9c2f543a37520",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_077.bin",
+      "shard_sha256": "0847077e85feb36d57ea3f8bfba6ad7b5a2e99d1f6a1d92f779aa02e0cdd3ae7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 78,
+      "source_coordinate": "h_spatial_v3_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "c781c02032193100338f645bc7e27b89017e6c0c9119bf7ca867bdc8c8eb00ab",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_078.bin",
+      "shard_sha256": "36a7ce3068c9ee34d84303356039d9e01d398c6aaeb3193dc0e6e81fb2660ca4",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 79,
+      "source_coordinate": "h_spatial_v3_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "dc8b3e29e44f4a4809ae5dbf4cf5709a2ba232655375c557337db35c933a4032",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_079.bin",
+      "shard_sha256": "4dc858ac41ca39582d98604488bb0bcccd70b678904c50ee78efd23f627db980",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 80,
+      "source_coordinate": "h_spatial_v3_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "2adf226848b96eebfa821ebf1bfdc0a741acd67e78c8dd11144b98582518a5a3",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_080.bin",
+      "shard_sha256": "1cc6d18b2682587f9c8563378f294ebf5de0da7ae3463788cab30e5fd18ec3ec",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 81,
+      "source_coordinate": "h_spatial_v3_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "d1d09a51e718d22abeb32ee1ac00b58836c55d6ab297994a7487a41648eeba25",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_081.bin",
+      "shard_sha256": "40c636e6ffa482ed2778e859c0545504facf16c9b0c20552a058bb8dabf09eea",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 82,
+      "source_coordinate": "h_spatial_v3_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "192299555ec96ed521cca901fc13686cff8345bf45b06faa0d3d7356f1d42352",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_082.bin",
+      "shard_sha256": "d5f1279767ca1b863e101c5ef6c38698c9ffc1c6f7fdf0603d1dd156b582024c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 83,
+      "source_coordinate": "h_spatial_v3_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "3578ec346bf65118d9e8b56b2e350e3c62e188da8209fd8afe5e777d17c91e6b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_083.bin",
+      "shard_sha256": "5972a12ee496c88ccba577bbb1afb36d66ed14531f2b0f7ddad61589b99e521c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 84,
+      "source_coordinate": "h_spatial_v3_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "8014070f9f421257d2a0902dfea06991c2b97ebff2b8a574a37006fb936e5aec",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_084.bin",
+      "shard_sha256": "c20332b162cf3c246bfbf245640f568deb2556c470a94699ec2b0d2503a43717",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 85,
+      "source_coordinate": "h_spatial_v3_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "02d14ea387608b80844f7428d286359ba36fe6e7bdca8f77e145cf93e7499255",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_085.bin",
+      "shard_sha256": "efea1ac6867c9df1495214146fb1af577dad7c58efd84af30f570856c379e21f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 86,
+      "source_coordinate": "h_spatial_v3_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "2ae3cd8383d8aa9d23dc1c23874037b978a3d16816007caf841cf3252eca385f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_086.bin",
+      "shard_sha256": "bdbd99fbf93b19df02bfb208b8e30432a8a1ad98d97c6365c5cd55352c3dd8e0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 87,
+      "source_coordinate": "h_spatial_v3_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "bf3b7d27f3c7f55134af5cc54b6edfc1ad6cbbe6670d41358074ade3380ed3f7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_087.bin",
+      "shard_sha256": "953eeb8625a86d174022b0265478bcda679aad99a85e02a3f6cfe6838e676fa8",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 88,
+      "source_coordinate": "h_spatial_v3_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "2b8bd95bd8813cfbf8edfd2140eadade974b5156207881f81442eb1affc12c6f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_088.bin",
+      "shard_sha256": "d0ef9445596d34bdd70503b2fb441c493bb5cb7a027708950c88f787932f7a63",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 89,
+      "source_coordinate": "h_spatial_v3_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "db95f66b8f3832c628eeff92a0bf447bf07e821e2339e739674b7182d5dc145c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_089.bin",
+      "shard_sha256": "9cdfa0e7fda2d27609a85663706d60aa1077a7f91a4e1c8aeb829e1840d851ee",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 90,
+      "source_coordinate": "h_spatial_v3_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "860977b7d927088497c2403c9dd9b1e43fb41fbb07e0b8fc616b5858a1329eb2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_090.bin",
+      "shard_sha256": "62b89c536fd4ecaa01dc9312808581c430fb8af3ccd70a4d78ae0b07f2d4baa4",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 91,
+      "source_coordinate": "h_spatial_v3_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "d009ce0a7a6ac011ee00fb458638b9598d02c203a011f5152eb2ad06e96968ec",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_091.bin",
+      "shard_sha256": "3b47239a9e4720277d0c5300ad768b4fb8cff3b31cebd510b3e346e8255bdb31",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 92,
+      "source_coordinate": "h_spatial_v3_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "eff85dd39f550911d33b78a7b707e8947e64034298447555c9419a82c5799e0a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_092.bin",
+      "shard_sha256": "0e55a0268a05a284b4a4908d3215ccb98c89d699c5a64c883dd0ba607a2678ee",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 93,
+      "source_coordinate": "h_spatial_v3_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "1bc9379417279b1527fec52992ea477b7533aa5583ac894e72affd91ecee6d2f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_093.bin",
+      "shard_sha256": "f08f82bc15e2ea4612afe09ee0fe762892a64b0d478926792b41e4800f83d490",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 94,
+      "source_coordinate": "h_spatial_v3_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "6410568e74e90ffa90089e30d2b8b1ecd3fb5db89e5e5f0631205157502c18a7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_094.bin",
+      "shard_sha256": "6a8b820bb9a5b8756408b8e7b0a8a511b69364897368a681fe206ee201647425",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 95,
+      "source_coordinate": "h_spatial_v3_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "d1f369e5872fe8ee3baa2aac5e4d043ecaf94cb04f4bd922e0d5273842d82683",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_095.bin",
+      "shard_sha256": "4b8e5f9ca9a73d0793d26ec2057fc728680757ecb8c0c3665d50a7a4fa5b7f65",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 96,
+      "source_coordinate": "h_spatial_v4_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "dcd73494d20ef00a5f0a46f449e5ba3719a6c11dfceef25a612d8aba59636c51",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_096.bin",
+      "shard_sha256": "8d7357053a5131338fe8250f6007808095daab8709c20d68b29f336969b8de92",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 97,
+      "source_coordinate": "h_spatial_v4_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "d07b3763bbd79e5d4f36c8d9d12bb1370c3a0e8aa02430489942c5dd68f0f282",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_097.bin",
+      "shard_sha256": "d1b3b17a006747d1ca523a24a568335f851092513d8a3cf4df53e3a8f9259383",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 98,
+      "source_coordinate": "h_spatial_v4_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "ca199b8174377a982759094f35deecff5ca1facd76649ca414a604c771483b25",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_098.bin",
+      "shard_sha256": "44da162faf296df6d361d21078606d5db1d5ad4aab6e5a28ec65a5294b78252c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 99,
+      "source_coordinate": "h_spatial_v4_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "c7aeeee31682bef07bf678e5e64ff6118910a9e8ffce63c7f24452f642f70351",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_099.bin",
+      "shard_sha256": "a63742ff67905a92746e2e2eb30211135811d929aa76652b12c1c141fd819736",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 100,
+      "source_coordinate": "h_spatial_v4_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "ed6907b1108702d2391b4325e34ecbc9e378b5d5a2dad514adcd7859d8daef19",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_100.bin",
+      "shard_sha256": "dd18e71cfc4bd73e4a6d39a297b59c0d00771c8f526a6dc329d36d5876cfcfe9",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 101,
+      "source_coordinate": "h_spatial_v4_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "17cc4e6f67a079abd45c67ec29ef8a1dca55a615393289d9d4c04ab300d3ac42",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_101.bin",
+      "shard_sha256": "66b0a0cd6488d547ccb1195fa71860d9e8df3bd8149fafa42eb2a3e86e3ddbe8",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 102,
+      "source_coordinate": "h_spatial_v4_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "d9fb2834df3aa7b984aacae0f20d7b890dd512548ca3e49351c96838631f35ce",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_102.bin",
+      "shard_sha256": "dac186a96b9e358a2d1e9454245dcf064246e0dec89c00c74a51edd1664fc029",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 103,
+      "source_coordinate": "h_spatial_v4_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "58b4279c1d0e5a90b2361bf68d55cb78bf9c4a1e41ec32e25008d881efc055f5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_103.bin",
+      "shard_sha256": "12813c08f1a11592eb28987c8ef5b68253c2d4ab4a81483fb943ac75589f6a02",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 104,
+      "source_coordinate": "h_spatial_v4_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "a42881d60f2fe50c5b5e8d5445df899be4b13e65bcf104fbfd9e8c97face3fe6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_104.bin",
+      "shard_sha256": "49c392354ca62c4f5f55b4055ba57ca29faa4e98cddcbb14c8e945d48959cf2a",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 105,
+      "source_coordinate": "h_spatial_v4_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "9213bce10f14ccf7af659f852002e0bf2e79169e8e89556651a1ee745a6cceef",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_105.bin",
+      "shard_sha256": "f5f7b8be6f87b77487c1b66488e930b29d2bdab674c30a597674906711a2ed4f",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 106,
+      "source_coordinate": "h_spatial_v4_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "802edf22c52b923c3c5e2b9723cbdc3d13d69675b1126413f511a5b63d2cf099",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_106.bin",
+      "shard_sha256": "97a90096d094bad3447fb7e0b6162cdc800727980fed31bb46a5e4b2e15faf5d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 107,
+      "source_coordinate": "h_spatial_v4_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "8afed26d558f26e65e8f36a3290a0ded3231f651ad36a85dca8e622ef4aefdc5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_107.bin",
+      "shard_sha256": "b3c2fbc0ed81ba81a53ff6b9e6ce0bfb625593733c5eaf76f63976c88bf604ce",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 108,
+      "source_coordinate": "h_spatial_v4_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "16db3ff0a0ea88173c5729481428adcc11dc818658f035ff20184309a6235187",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_108.bin",
+      "shard_sha256": "00ed64dfa073bd12b3453bfeea4e44df79b7cc55bc521e5a891e419190e125f5",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 109,
+      "source_coordinate": "h_spatial_v4_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "e9c770e20a018babc3da20fafd18de321671611564c6eba6076a05509521efd2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_109.bin",
+      "shard_sha256": "08007bb7a3fc5ce48de761d8aeda811e09858f039ff19bd838d78e6071533657",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 110,
+      "source_coordinate": "h_spatial_v4_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "992f786dd3b03e2394ee64cc7c9341503325fda76ced7f34deb7912c1b4b12c0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_110.bin",
+      "shard_sha256": "de53670999adf622db67daa213fad1877057d35a982f403e9844749e4c1998ad",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 111,
+      "source_coordinate": "h_spatial_v4_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "0acffeec5a6610a6cd908111bf2db48bb6454322aa16e868e80daff4321e3090",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_111.bin",
+      "shard_sha256": "1aaa951a747175ff4f4f7acc6aad24778a0a5ba162ea7507b5f35c28739331ff",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 112,
+      "source_coordinate": "h_spatial_v4_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "1de777b3ca58e4edc3e6575327573e2d7e37985a85fca42468e69ff5d2200f66",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_112.bin",
+      "shard_sha256": "eb6aec334a62e715c84208ebe71560bbcbddae8d831e025ef53cb34b1f8d2bf3",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 113,
+      "source_coordinate": "h_spatial_v4_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "8d56a2d832278d2b7bdfccc1e4be1b998017bcb067ccb5089671b36445b626e5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_113.bin",
+      "shard_sha256": "7a12f7c4b43a587df4d13526d75177822fdff17b9ee3e5c24b52b610d05c63ea",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 114,
+      "source_coordinate": "h_spatial_v4_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "3205d149e7367d1e13492475c51395fe12f34a15e7d3f0f4e61bde7f0ac9dc36",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_114.bin",
+      "shard_sha256": "543e9f5a9a70a35c656107125dcbf6d32c21164b6ff6a765dfd68f69a58d9f95",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 115,
+      "source_coordinate": "h_spatial_v4_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "000cd7afee355ed2e9a3af41136ecce8251ab6fabd4f2afaf818bb42ec83378b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_115.bin",
+      "shard_sha256": "eef05415b01c40dcb5593ef4b759010db814448e4d4afb3e52002891acdedb00",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 116,
+      "source_coordinate": "h_spatial_v4_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "fd5105b93df927b72a3a54fb8e50ebe3cc6821d536751d16dd67e5bd54520a17",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_116.bin",
+      "shard_sha256": "271777d3db9b1851505fda5616a2bd12af0a58db9f297814aa0ab4e5a5345373",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 117,
+      "source_coordinate": "h_spatial_v4_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "310e50067531178b7b64f07e11b182ca336951b6b5b3981867b5afe9a3f21ebc",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_117.bin",
+      "shard_sha256": "b6efab03a28a973a3971c455e25ffbbd11ac7bcf677a6e38ac8c4e1489a8ecae",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 118,
+      "source_coordinate": "h_spatial_v4_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "72dd74a36bbc1e7ff92169a380c9ed8d539d36589890c17d433adec408fc0f20",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_118.bin",
+      "shard_sha256": "b82d5acc10e9de96f5efe10abfea0392d9d80c43e319f0e88014fdecfe601a34",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 119,
+      "source_coordinate": "h_spatial_v4_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "bac4835ed39f47adf28aaf54babb174802bf750f8005fd069db4f2e564de4397",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_119.bin",
+      "shard_sha256": "d6f109ef72d82859231fe8f7e95c9126f357a0635c07ed8fe4db470b466f4096",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 120,
+      "source_coordinate": "h_spatial_v4_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "00adc150d9092405342f5d4d90f76df7ad48bb0b147bca816ab07c8353e9f228",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_120.bin",
+      "shard_sha256": "2415609c0bc70541ad9eb68be3002dc9bdc482b10ee3f7a3184aedc407ff71a6",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 121,
+      "source_coordinate": "h_spatial_v4_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "d2a0a12a151b658224ff6686e4aa211035d3347bd483197be04fdb84fb011e77",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_121.bin",
+      "shard_sha256": "5e3ae4662b2cf9ced062d59be1b0ae396782e66ede06f9eaf0259586a87fa11d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 122,
+      "source_coordinate": "h_spatial_v4_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "a1ac48427b48457d09a4d1d19b41258b5cf39a45ad30cbd5f1ceddb39b2645a2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_122.bin",
+      "shard_sha256": "7bfa2a91148fa6938784f9016367a1f4ab1c7e89d0dbc9fb8554b7a8f9db571f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 123,
+      "source_coordinate": "h_spatial_v4_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "6dc62142ded2808d3657c1d56dea5520285362cca501eba25c01c601757896dd",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_123.bin",
+      "shard_sha256": "111e03fbdc53a180b6a6de44684db1532ab5acfbef98c08ab174e9b34f22db20",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 124,
+      "source_coordinate": "h_spatial_v4_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "8cf3bb462259c4937ea1fbf65528aebcf808543833c6322437dfe6b03d441871",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_124.bin",
+      "shard_sha256": "e59a98dd7fb512ba981a726bb2e142304690b48ce325a74031b5cd4af75f8c2a",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 125,
+      "source_coordinate": "h_spatial_v4_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "736655ad18f5d7a132468216dca30764fc834ff7d6f28bade52ce6f190b09432",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_125.bin",
+      "shard_sha256": "fe63c83ab24a8fbcb52b0f0345c99df50cf70fb800e6841bbd7992f7125f6827",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 126,
+      "source_coordinate": "h_spatial_v4_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "35b579f4814c159f0620f4279bed0652feccec98640f5b5ba388989cf92f26f6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_126.bin",
+      "shard_sha256": "90c8dbad8020a3a7326a4370493b41110082cc392bc6696bc6dabd4174371f4c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 127,
+      "source_coordinate": "h_spatial_v4_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "49ff9a4143924b218abfe6c9bdb121e0ebe936ced5fcf38d76f5777c2ba8bf58",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_127.bin",
+      "shard_sha256": "8be6f4daedad5ffd9a6eff6129de0411232e6e16e7be6f2a2a154261eeb416f0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 128,
+      "source_coordinate": "h_spatial_v5_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "8d618fb4d2ffb7b03d6ef6030b710f7266b4b3d759da884f808591456710928b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_128.bin",
+      "shard_sha256": "c7b6a2acc878b1d5bcc97989200b77179a80b186fa559f5f04308fd953fcde1b",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 129,
+      "source_coordinate": "h_spatial_v5_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "d4d2aa023be984883ad1bdb8287b8d4d9514d85ec89dde4e66dca1a9795c8aea",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_129.bin",
+      "shard_sha256": "cddebf861c4585d46364e95c0020c155628d24adb9f0ea28e34171e2d03fb948",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 130,
+      "source_coordinate": "h_spatial_v5_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "7df1facf4c509c3753b587b00f958e207fab82db6a9411db5033a46e1564007c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_130.bin",
+      "shard_sha256": "03bca35e76b695f0ceb1bad235f28ebf1a673abf4dbe92ec04c1ef6b2a544419",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 131,
+      "source_coordinate": "h_spatial_v5_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "40b6670419d8d561778168e746d518f31b921ffa8490d4aca378b7d21a149064",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_131.bin",
+      "shard_sha256": "e0d7f249b73ad21705521cd4e9ed6b8a81590aff1baaf7a78e8140d7ac9e93db",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 132,
+      "source_coordinate": "h_spatial_v5_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "c368523a13ecaaf11fd671c59d49dd5070f1c045f8e1d16cf68f8bea868c740e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_132.bin",
+      "shard_sha256": "cb34fb9945582c77048d42633606ba390bcd0d18bc200b92cf83251794c3c9a8",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 133,
+      "source_coordinate": "h_spatial_v5_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "41853c4aae8540f037a24e04621e58601f090fed520990a032b2bb65c2ea8251",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_133.bin",
+      "shard_sha256": "c461c3057d77530708804621bf3373e483b7de455c3dd6755028f25ed3bc36de",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 134,
+      "source_coordinate": "h_spatial_v5_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "89fcce63cd098ee4cdadaa3e7c9367f15baf3b523bcfc6c605ceaccf7ec6d950",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_134.bin",
+      "shard_sha256": "9188384846f4032c3bd758c67055bbde6cc65bb55b7c01a2a9c68a6c85f6341a",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 135,
+      "source_coordinate": "h_spatial_v5_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "db79ffafa7c2a51fe9b72b8b6ceff368fc7a9779cbd1d36c3b12a0df87f365bf",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_135.bin",
+      "shard_sha256": "2b4d109e5c621e3b516ed6c4c01a8cc165bd1aedf993890d597b9fc8a840d720",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 136,
+      "source_coordinate": "h_spatial_v5_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "961f42ff5346888305bdf219b044ae47e6cc130db80481adddf1c3e450c1c666",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_136.bin",
+      "shard_sha256": "7d6da4f933bd7aa15450f3316f56112d2c09ccc2e316363e13ba954e24262944",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 137,
+      "source_coordinate": "h_spatial_v5_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "611161092c9690bc97fde951128b6baa2cdd38bc041a71daae3bbc31dc9c521b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_137.bin",
+      "shard_sha256": "46123572dbbfd0e69b677dfb62b47a76d1e5b8bc8d9f74c762db499aef7b0232",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 138,
+      "source_coordinate": "h_spatial_v5_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "340f29d390ce6422fababe8a95ff54bb116d7a60627bb04c883d6fd36aba7447",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_138.bin",
+      "shard_sha256": "6cb67022ddcc8f6a57731e78780e00d3a5a9a018dc43d4dc58e326b243203341",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 139,
+      "source_coordinate": "h_spatial_v5_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "0827e04f17f2fc24ea18f41d7237acdb40dc17991e7d638eec1aaf4c52c95598",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_139.bin",
+      "shard_sha256": "8a5a4a2c615dee01e9efb1f966eb4bb723de55ba8a49976aa266e35022c6a8b1",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 140,
+      "source_coordinate": "h_spatial_v5_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "5e5405a558e065dc7e8220fabcbd568cfb79c3ee43b23e6105546f2a0e39d3be",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_140.bin",
+      "shard_sha256": "bbdf7c98a00571404ef05c1ace0414fdd6e74b120305bd68bea93d2959f40092",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 141,
+      "source_coordinate": "h_spatial_v5_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "4edc67f3c98d940ea3a2d7f8899f629ce1f2288ee68b5112e0093cc27b7d900d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_141.bin",
+      "shard_sha256": "ca45ae73bc093590c852c14d76fe67c71e118f4c061beeac03c5674706b58892",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 142,
+      "source_coordinate": "h_spatial_v5_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "2f3d8981c806d237b042ee5a1b9bb7981b0d861c563513150b8f6e2f25d7a7fb",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_142.bin",
+      "shard_sha256": "73dabfcec02f3d6489430c6463e569708d7e68071b416a2a8f8253a257f48bdf",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 143,
+      "source_coordinate": "h_spatial_v5_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "4aa5dd92a41fdc7e4d4f33045c5a89d0d6552e848f903a007f4c727eabde29d4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_143.bin",
+      "shard_sha256": "5a7cf192a03e6d37bdb2ab3b146330053fdf1901b3e441a4c0912e4e38ef9322",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 144,
+      "source_coordinate": "h_spatial_v5_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "824633797f1b7d37575a93077931a4cfee0b4d07cb18a1d2107d0d4f9907e81e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_144.bin",
+      "shard_sha256": "98e323d7dcafec3240ea85ab71a693f44b2b27e18811b131202169cee2f95e96",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 145,
+      "source_coordinate": "h_spatial_v5_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "759fd52646def7a1e82783bbe94405fd9a93727a7307ac5f5f80c436cf19a8f7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_145.bin",
+      "shard_sha256": "ca8d39dbd0cc00958512b17981a06da755edfb0196f21f0a4df810b7817bca82",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 146,
+      "source_coordinate": "h_spatial_v5_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "a17fdb6d2eb91327e8964f0de598a121db239383a9e6315f992b038f7f9f64d6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_146.bin",
+      "shard_sha256": "d3d53fde0eff140a7dbea01b66883f9e5df0fc4fde100b2021f7b9214df86e72",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 147,
+      "source_coordinate": "h_spatial_v5_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "0b8d7c687897caa5428f1409e9b560305d8e217c4b7551f630ac67f1f79bf9d7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_147.bin",
+      "shard_sha256": "0f1bb33e29e197546dcc177d70aba6ce431bbcb0c75417663bbc25f0b13ee128",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 148,
+      "source_coordinate": "h_spatial_v5_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "3fc2303f4d7629a402ecbe2ae5bdc5c9bd2f5f4a76533419267790d0018a33e6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_148.bin",
+      "shard_sha256": "dce6bc73fd1570bd6eaf34a79e88a0f5a45b7f3c1486896aa9227312e6f5aaf3",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 149,
+      "source_coordinate": "h_spatial_v5_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "28c1316a49ab471f995d9a874dfaab14602deac03955ac0287bd80638eba5bd2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_149.bin",
+      "shard_sha256": "730435b91ae8475cdd7fc93c98c71245871b7e3a2b810c4bd73eb6a57922e5c6",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 150,
+      "source_coordinate": "h_spatial_v5_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "770b78afdb88316238b21983b81f8e542daa8789bea92a361e2c3728d545594c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_150.bin",
+      "shard_sha256": "88d1056a5e6186cce9498d062b02d5be3835daf6cd9bb378ad630a6dd586c7ca",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 151,
+      "source_coordinate": "h_spatial_v5_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "6056bd4603d08dc9201ce94bb46d125f9bad1f29adf0f5c4eae7b8ce481e664f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_151.bin",
+      "shard_sha256": "e8a49891debb53289365236a99c9ca08d5cad8e86a79d6f326e5eab7989e1f8f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 152,
+      "source_coordinate": "h_spatial_v5_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "18fe4408cc237a02b43b985285c6c5f94690146ea9d3491333080698f89c3679",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_152.bin",
+      "shard_sha256": "db3a41d8d7f7f3b6633f42f7f07f420e9c20e5faa7622b042838f1b92d4d0f71",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 153,
+      "source_coordinate": "h_spatial_v5_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "fca144389ce329b4ed626fae4e553c451df6a4095b1584d9e820cb2cbf18f74f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_153.bin",
+      "shard_sha256": "3966f66375e4a8538aba40485ebe2a9f0fccad46b5654fdf001371d653fe2c43",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 154,
+      "source_coordinate": "h_spatial_v5_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "2879ccc11a1ec0216d11f879622144f3b82a077bfa4f9f5d9044b5f18dec6679",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_154.bin",
+      "shard_sha256": "f6a2ec036ed5331a05ac205de21aec5418f0506ae1a3d79f6c29d22bba1228c3",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 155,
+      "source_coordinate": "h_spatial_v5_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "481e251735c0544c648f3fdad9ba16cb2aa1729b4f8e9daed74fdff2710cdac2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_155.bin",
+      "shard_sha256": "53c4da510b22d0d706ea941dd5a8d9588a3883a1289437ce489d9c45a80d431c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 156,
+      "source_coordinate": "h_spatial_v5_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "70d22a4c12aae00d2193cbbf2b2f14ead67c271ce14aa0930417e43e1c9c992b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_156.bin",
+      "shard_sha256": "acab0c07a1f7a091ead0b76035639dd57022879f9767936257457ce6d0cb285f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 157,
+      "source_coordinate": "h_spatial_v5_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "c88fea28e94b5753360420b1bd3495d8feca6b851845810282b957af91b4839e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_157.bin",
+      "shard_sha256": "9826ca098d51648fa3b952c87b05f6bd520f979ae8ff984db90b42a49d7ed88c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 158,
+      "source_coordinate": "h_spatial_v5_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "7637a53013a7a1e194e9f792a94f14712d60c38d6a275c634d26d89f731f34ec",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_158.bin",
+      "shard_sha256": "899956b0c759e24664181386330f840340f73481f94d7b047fc5c155b7dc23c8",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 159,
+      "source_coordinate": "h_spatial_v5_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "d02c327125e77378c6045e13ad77adab5267a923574d52b5ef640164bb36e0db",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_159.bin",
+      "shard_sha256": "01da272f6b734fac9110d44fd3a659e4c72206edd3c03c29bf2e33a03a29b88e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 160,
+      "source_coordinate": "h_spatial_v6_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "09de9eb5b2037e24deb36fac104e16cfe5bd79e6117881b9c815885ed0d467d3",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_160.bin",
+      "shard_sha256": "2057f97b855ecaac9429ae2d282ba4356bdc69c30f76b48b5c1c0fee21c8b49a",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 161,
+      "source_coordinate": "h_spatial_v6_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "ea12ba7e6e194c6f93ec31b1bfc841ddcdc9e2c9fedcc96954943eaa16b9a358",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_161.bin",
+      "shard_sha256": "93e066b11619c8f667e80303f82077398f583449c237a564c7a8526640eb3ae2",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 162,
+      "source_coordinate": "h_spatial_v6_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "efad8730b138026b78e72a0bac49e00d6b2add48f076f386c7a52f09a071efc7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_162.bin",
+      "shard_sha256": "173976f14cf98b7f6b16f641f79ef12413d726ccaf883bfe64c50ee9db40499f",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 163,
+      "source_coordinate": "h_spatial_v6_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "f2f6108430e1ae14bdc7fa01205996da53eb9236eaec6030dc7ecd7248309bc2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_163.bin",
+      "shard_sha256": "75f2157c8f944be7ca89894a37c7a9da0b9094886ebef15b8abdd5b2d46a2572",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 164,
+      "source_coordinate": "h_spatial_v6_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "4ac623718d722487dda4acc452425eb46230c9e89f622e58d9ade099d3c29418",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_164.bin",
+      "shard_sha256": "6ab198f713e674e52cc967603fc5a2b04f22e096eebfa03c11966f54ddbcf000",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 165,
+      "source_coordinate": "h_spatial_v6_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "38113d10714b3c64eb365f8d64187f8ed6665b19edbbfd168cf6ccd449bb90cd",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_165.bin",
+      "shard_sha256": "2f53ddf2375cea7f337d85997b90ffad700313598a62020c8f3f65d32a491646",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 166,
+      "source_coordinate": "h_spatial_v6_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "ec49217ace9f296e14cb32a1ac8858017a47b1a1a92d5360991b1cacebeb9941",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_166.bin",
+      "shard_sha256": "b590110bdca928c5a251dc198980e129548a090b9b604d51139c8a645795236f",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 167,
+      "source_coordinate": "h_spatial_v6_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "168713b905139b0ab290026c063922393dda3a876565150dc0c52356714ab40e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_167.bin",
+      "shard_sha256": "7d8516c6616edfa3560f51d580f8f5950fefd3d505bfd8229abf9d7679fa1b24",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 168,
+      "source_coordinate": "h_spatial_v6_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "045b375a9a1d715cfecac27364100c938563966545201451b2aac15c6ebad413",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_168.bin",
+      "shard_sha256": "70c14ef96e57117dcc80f77977779c2bb3e0803fe99a33047e9654fe6241eb74",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 169,
+      "source_coordinate": "h_spatial_v6_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "779a12cb4da8dca99fdb6e2ca3cb2c00bca8e8399b3c999f67e96fa2f6266e34",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_169.bin",
+      "shard_sha256": "7a416b4e3fd308058a378e994ff6ebc8fb145e9568e9c3ec313d728f6c323ecd",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 170,
+      "source_coordinate": "h_spatial_v6_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "5ac0a25f7b8efd9c1f16ea332d8f41f3e8c44796c6aedb27bbe768b063a805ae",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_170.bin",
+      "shard_sha256": "730d54bbff4a44aa8e064289ee10680dfd57689920f403318a4c835b6d741d5f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 171,
+      "source_coordinate": "h_spatial_v6_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "fca04aae7ae5e1ef8e3858e39b7aff129c71a8fd10bfd2e55a31e8db892c4b4c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_171.bin",
+      "shard_sha256": "76cf22d5dd54e0517a9557af8845adeb80799b4f3b37550d179e8fb088aafcda",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 172,
+      "source_coordinate": "h_spatial_v6_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "4320346fdc4edd43d262fe61e87ccf73f1535ef1e1fe3ca9b8dc4a240297ef61",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_172.bin",
+      "shard_sha256": "42f8854e60db3a5696be47da81893bac33818c72d6a6153a0b0459d97e40f784",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 173,
+      "source_coordinate": "h_spatial_v6_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "d953d2c6ff8b1178832e9bf7f8f0223fd3d66cb1c3b5834ac7ed0eccff58bfd4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_173.bin",
+      "shard_sha256": "40004a7e69c7f4bb2f8aba8d7c9c5821428e191a1f20fdc55c3d6ba1f95144c0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 174,
+      "source_coordinate": "h_spatial_v6_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "6e68bbaecb7564793b62b3afdf28ec49d3e6f8a201c5bd68e7bfeef0e7da391c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_174.bin",
+      "shard_sha256": "31a9c251b7bf976ac5e17ecb743bd47ff4f81cbb4066118f60dc927c5f63838b",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 175,
+      "source_coordinate": "h_spatial_v6_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "cd0f6675d69d2d90a3ba335e5e14fdda159238da9875294af3745e73e00bb000",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_175.bin",
+      "shard_sha256": "6c97b7aba12df958d434a2698d76b14c69a908a2da682bf4dc0ad9af9ec31fd1",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 176,
+      "source_coordinate": "h_spatial_v6_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "2849583ab9da8bbf6812e0375815a23e569dd1c0f997f62362e65482b8ca3bb0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_176.bin",
+      "shard_sha256": "6810b57151c7d946cf35f96254e5e395541dd7ec5b64fe000c7f1fe0f78f8d3b",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 177,
+      "source_coordinate": "h_spatial_v6_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "36544a280e3d2077cc4b26078452a01028747e2a269b4dfa8839181f3609a6e1",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_177.bin",
+      "shard_sha256": "1f324efb62d181297c4330359c8d829d9fbd55493bf31f8df80f5f6427290cb0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 178,
+      "source_coordinate": "h_spatial_v6_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "97494430e43cfe48fd099f2c3fbd075dce96816819dae54a7cc1f74521a7cd0f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_178.bin",
+      "shard_sha256": "ac337decee89ed61d365bc3d967c2ca234f530120907197ea7f09fe625df9556",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 179,
+      "source_coordinate": "h_spatial_v6_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "da8048a5956ac3d2296e75a2e23ec0ae005313c4ac45cbfc4ad783a6a0b3a1e0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_179.bin",
+      "shard_sha256": "8e2d0e35c2f9f3bc57fb48c388cd58a8328d197c8bec771c30092c5ec6551639",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 180,
+      "source_coordinate": "h_spatial_v6_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "b1aa837d3e420c9cfa5260f04ea0ead7862a3b81d549c1c4ff947089024a99c0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_180.bin",
+      "shard_sha256": "fcdbe583f79a56af1ad92f614ee5fc3d31ebc3190d285d273ca3eac145c62cb5",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 181,
+      "source_coordinate": "h_spatial_v6_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "48231b73f17f650a92d2e242dff62ba38db3b89ab5043318530e8fdc49f4793f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_181.bin",
+      "shard_sha256": "934a334c0d6c2ae6bad5b4c40a53d17a9022fb15c4d35f72909a63076fcd8073",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 182,
+      "source_coordinate": "h_spatial_v6_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "856074fe8b4d567faa24359e891fafd94eee98b045c47b7289cc6c474e2d3293",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_182.bin",
+      "shard_sha256": "a7316a266805e6924eabadf22be4ace1e211c5cb7f55dba40c4e1e0658bae64f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 183,
+      "source_coordinate": "h_spatial_v6_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "4b01df77ac8db4df41fdcd70719ba694a087aad346751f74ebddfb679de36361",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_183.bin",
+      "shard_sha256": "8a19d63b6a1e3c20f7864a6d816bd3e5f7995fbdaeddc8fc4dafd1f8c09cdb7c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 184,
+      "source_coordinate": "h_spatial_v6_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "711b2691aaaa35a21638fce06c17f703644dce3f2dbe5d6a8039860e76a229a4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_184.bin",
+      "shard_sha256": "e941123ab15e231ce3d7484abddeca05f2ce13f55f6b8815008f56d3e5e386b7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 185,
+      "source_coordinate": "h_spatial_v6_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "bb06e5c3a92a0d2449178a9c2890aa78c3b11cedd4c583e189f53f5afbde60ca",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_185.bin",
+      "shard_sha256": "7d9d919f59fcb44917906efb102759f4f9caaa783234f63c425d69bbc58cbaed",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 186,
+      "source_coordinate": "h_spatial_v6_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "d0ca01fa8507c28b79593f27edce2385cf3d2ef953a3791e839510e61e64f73e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_186.bin",
+      "shard_sha256": "7d66c6a5c2c0e7ab0c6e43091c633f248118b74da474bad1bc8949453115e856",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 187,
+      "source_coordinate": "h_spatial_v6_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "1234fe4e9e710aeea44fff9a6b28801293075724118c68a529b263f3e12deb81",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_187.bin",
+      "shard_sha256": "b35ca3ceca9df521ac263e28e870b3ac1133d450dda24d402a038cb520b2b8c1",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 188,
+      "source_coordinate": "h_spatial_v6_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "7065855ded2d30ccf39c0dabfc3adfb500e6fc4311b6e491e112c4333609748f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_188.bin",
+      "shard_sha256": "e64bbbc1afcbc91ddc26d07a7b8b40390f7278359309ec41fd52faadcc77fc04",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 189,
+      "source_coordinate": "h_spatial_v6_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "aa881c8f560d4bb81753e8aa6867179cb1640e79a3bbdb581f1777d7ac7813e7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_189.bin",
+      "shard_sha256": "718db43e93a72ae77dc93a86b7b43f18f1c4f4389a9c25d88df09299234072f3",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 190,
+      "source_coordinate": "h_spatial_v6_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "b22548980b046a801db6bd5e1162d951fb9ef1a8e23fece4b9b84c433c872660",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_190.bin",
+      "shard_sha256": "0df417953ced5a3911db1bc2b8b0476dd48a16bbb7c27b6c789ff15be40d4ca7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 191,
+      "source_coordinate": "h_spatial_v6_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "13f41e2033388af80e45ea6e87183298ba70264d5685b7cd3c04c7c463e978ff",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_191.bin",
+      "shard_sha256": "db93100d1ac1d0b84746f468f3163399f45bd5224003181df0f2e60aba488eaf",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 192,
+      "source_coordinate": "h_spatial_v7_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "1de2fabb36c02311bd445c75e52b9ee32bdd3dcb86fb456486f96ece51fc4838",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_192.bin",
+      "shard_sha256": "1102a0d0e88314adb66728f968b556be85c676b85e5ad409b5e88f035948025c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 193,
+      "source_coordinate": "h_spatial_v7_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "75992188a6446120d8c63036ad191cf03b0de1921fdc0b8934ab67d821bf6003",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_193.bin",
+      "shard_sha256": "a4206a81afdbac6d9b254cba96feca9982bf710735e5b50a2c0adad01d56798f",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 194,
+      "source_coordinate": "h_spatial_v7_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "97dd69494deb7bf3f535a8663ad048306e7329d6491f8b4818a3dc6398196e28",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_194.bin",
+      "shard_sha256": "a23ef91fc0be53930ec411caac0a73a30052005fcb85c909e86c651618608539",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 195,
+      "source_coordinate": "h_spatial_v7_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "48a054a52b4a4143e0145be1ac0dac3c554056dd175661c8a49418e6536e6bb8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_195.bin",
+      "shard_sha256": "160131902b90c09b653d8376a59d081447359d7acf9234dd261ae7fe79181489",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 196,
+      "source_coordinate": "h_spatial_v7_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "47a004cab8ec76a7a29447c102e59abda8c5c08017f37acbb0e2518fcd9a7d50",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_196.bin",
+      "shard_sha256": "f5bdf5b45412c67d5b0344c88fdb3f615d67ac251f2f65248feb6204c47573cd",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 197,
+      "source_coordinate": "h_spatial_v7_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "48e9e9a5abc14775f11df6b1bfcbc15bb6818138c5363d32a67049f3b9e9f139",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_197.bin",
+      "shard_sha256": "369257bfe56c5004002412b30e545330e8f2427c1fa2290a51eb59cd706ee08c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 198,
+      "source_coordinate": "h_spatial_v7_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "3afa8ffd406f0f449f6b7c65db1a5490fafa699db9b8aec8071c2b26c622f3cb",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_198.bin",
+      "shard_sha256": "40c63f76b81dd8c2ccc1342fd5b8eee8f98d066b52c4489b02d09f2a82a15670",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 199,
+      "source_coordinate": "h_spatial_v7_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "31c9a2279ca500405ee9f6e29a8785f582141abe20617333b881c3bb23a35f44",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_199.bin",
+      "shard_sha256": "8f907ca9251724082e781458b3b5dea00e724ce6fec80b3d2c51e77fd5c003be",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 200,
+      "source_coordinate": "h_spatial_v7_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "2308ec2d6ffb927be58b218918f6d924608c8ad8a63be72038ad84efb4169b22",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_200.bin",
+      "shard_sha256": "bcbff3c621916e55bc03e61a0d404c02e1f2b8df6d53d91db54239e997c8187b",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 201,
+      "source_coordinate": "h_spatial_v7_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "475f898c309d38bc7ee03290b38e03e4eb188a64b46bcf836934f861f5983107",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_201.bin",
+      "shard_sha256": "b49787bca2138fb2dd96798baea325007ec836d7b720ca209e10a6b06308ee72",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 202,
+      "source_coordinate": "h_spatial_v7_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "2477410a53195401378bc4f074759b6ccfe868d32df3fc331133a1a0d721d4fc",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_202.bin",
+      "shard_sha256": "974e5cffa47f4aa6537101276975cd4df8806883408e83507cc2bd2e5c273f0b",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 203,
+      "source_coordinate": "h_spatial_v7_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "585deb1399b7f4e39addc62d0b807aa568213fcca346081483fe70b2a005faef",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_203.bin",
+      "shard_sha256": "13a3cdab205500a45ed7ccbb6bb755fa2635768dec6498cd69f2630faade7032",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 204,
+      "source_coordinate": "h_spatial_v7_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "117950666bab04866716595b499ab45df891f2f468e4cd39ec13b1e11b9c16b6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_204.bin",
+      "shard_sha256": "c7aa98b12a8a8a92324b8b9d3cc9766c03fe61df2f4c9a38f305fe625fee3071",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 205,
+      "source_coordinate": "h_spatial_v7_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "dae3007baa9d2682cffe393ffe50d9584daf252bfef6db4e88b7e808f10ecc19",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_205.bin",
+      "shard_sha256": "a17b1726bac1829e80f4630f9fd895a177196933a5bdab62b87c2ac3adc990f2",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 206,
+      "source_coordinate": "h_spatial_v7_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "86e69b949d88158b812c862e67cae99a34a7d5521e5fc5fb950db5c13b30cab7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_206.bin",
+      "shard_sha256": "0750ee4cda628e1c4a41a2fc57b95f426929282dfbe139a87c6fbb47e00acb50",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 207,
+      "source_coordinate": "h_spatial_v7_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "9eea58b01beeddf9b139a78f822d583b1097c407e5de322310087aa55923457c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_207.bin",
+      "shard_sha256": "626a1d2bf3cecd5cdb2910b22d23682a4b99e53454ac04b25b3d3daf272dadb5",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 208,
+      "source_coordinate": "h_spatial_v7_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "ace81dddc6bf52cb9f2fc5b46195789f6c0fae11ac007acc90a26f102662d807",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_208.bin",
+      "shard_sha256": "61cc5e3a706ec1b8092410c227b7a0a12fbf4a8ec4291d9dd1b1be1377af6958",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 209,
+      "source_coordinate": "h_spatial_v7_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "ebfc6b49823c90da56f61dc750aba31824aa48d38973b6308354ce8ece5c0345",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_209.bin",
+      "shard_sha256": "66e9029c45cad634f14c7b2bad89a66f36e178f13c6c21536bec6742490fd2db",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 210,
+      "source_coordinate": "h_spatial_v7_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "9925486de1b93bd78a4df940dcee9d5bb86ab76da0a96a73d668620f76f4cbe1",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_210.bin",
+      "shard_sha256": "0a806a7e0730d1e800fee07fd2ee5104964af54fed6839c03196b3776416c2ab",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 211,
+      "source_coordinate": "h_spatial_v7_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "94aa2643249f74b77696a69f2929b28e586b4d3195002dbc36a8afbe59ce1e45",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_211.bin",
+      "shard_sha256": "1544d7bf70a85c2de95635a8cb9fef107a33550fb6f409938f70ebe6566fb844",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 212,
+      "source_coordinate": "h_spatial_v7_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "4c107d7221a6749558db37583f64a74efb614b44590345345894b9766908e5fb",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_212.bin",
+      "shard_sha256": "30ac0a51d0dc6bc28b6c88a28bc5cff618fc8fd109c907deeff8993c311bb6a7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 213,
+      "source_coordinate": "h_spatial_v7_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "ee9c6f33c8d314d8ba8100aa48e26c9e423878419a32770461f83d17610a68e4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_213.bin",
+      "shard_sha256": "92374e22fe6fba369ecd49defaa130d6aa755332188915f8777d723c48f68c9e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 214,
+      "source_coordinate": "h_spatial_v7_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "5b3765c6a60d2e07ce621ae1a9cbad722a4dc62a2d5c79ce69b7044bfcb92a95",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_214.bin",
+      "shard_sha256": "5408d451e858eb2c5c6c0708760336c2cb5a0a636cab050fabdd5af20a2adf3d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 215,
+      "source_coordinate": "h_spatial_v7_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "77da0217e0c3fd67dac6a4bb05892ac3f54e44bfe80a0557e1d23f4014ee8c60",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_215.bin",
+      "shard_sha256": "6a2fbfa959f6475f8526124859382727875fae968dd49b64840c544184e90936",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 216,
+      "source_coordinate": "h_spatial_v7_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "04b8455fe9000363945ef8a15621ef04de2ad39ea00078a5310d079fa29f74f3",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_216.bin",
+      "shard_sha256": "f0dacab56993145323267cacd3e809cc3c15862204402fccf5daeb33fd3a2713",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 217,
+      "source_coordinate": "h_spatial_v7_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "5bc7af00e5a0a9d37e6a842350263be8312b89d635377634efe6a8587c59492a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_217.bin",
+      "shard_sha256": "284d03fc1f1f1204d1104b91b3856147e8ef39d0909a969fbd834fbb132a3668",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 218,
+      "source_coordinate": "h_spatial_v7_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "a11f3dbd0755f0db93fc8f816c7f6f7c4e14d042f24955b188830ac39ba4426a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_218.bin",
+      "shard_sha256": "c47757b9db8e6f4c690b310b0386dd22f77c654edd056c15039a02bf2ea93c6c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 219,
+      "source_coordinate": "h_spatial_v7_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "f24b4866a1dcb32fbd276fc200d07ea2fecbca12663b5450ed42854c7507cf74",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_219.bin",
+      "shard_sha256": "214e5c1e19de8abc868d481feb4738b3060d8e31e948cb657baa49fa6f6a8b81",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 220,
+      "source_coordinate": "h_spatial_v7_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "bb4455f8f5ef6f33d460a9b511b344a3652ec18fcb387f6bd2757b101f0698bf",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_220.bin",
+      "shard_sha256": "274065a53e7c2e51c8539f898c4206d3ca10ed926a9e7d8c602fdec1bb4ee8fb",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 221,
+      "source_coordinate": "h_spatial_v7_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "cb3306d70d9f3b02a073d685d7e8bdc0209956ff3d3f74dfcfca716b54a89fd3",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_221.bin",
+      "shard_sha256": "e4d02445fdfc4a76fef0802c546a335588e9f0c70ef3570b56033eb3718b74b0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 222,
+      "source_coordinate": "h_spatial_v7_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "db96e064dbb2a3e2206e9102eecd130c4bb75290b42ff7e18b473952f789d96f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_222.bin",
+      "shard_sha256": "5eaaaeb3c4cb6ddfe665a9296c662f73c86871431a389e7091fc4175e0409c5d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 223,
+      "source_coordinate": "h_spatial_v7_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "fbd383e9339664397f8679a2f97675a355a5ad1e3efc214f6e22e8ef685cc773",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_223.bin",
+      "shard_sha256": "ac2a4db665b01d8d81a17d152248758d6a5624e422ffcdb58be93a802d7ff221",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 224,
+      "source_coordinate": "h_spatial_v8_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "d135c0a2cba691f6317ab5760ea72f587e405c2288178741aa2ecb06c76a992c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_224.bin",
+      "shard_sha256": "a43a67ddfc13faa0d55715967082499009949c39e3d2aea6d6513a7513d47ef5",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 225,
+      "source_coordinate": "h_spatial_v8_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "047d726f668ac552d44b64a0e362a9741c6c7d5d61aa9a31dca800d8d5126bfa",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_225.bin",
+      "shard_sha256": "d24467e6d8ea1e05fa8805015ad00163b811b098ba69c8eb0d4b55c8166b0ac5",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 226,
+      "source_coordinate": "h_spatial_v8_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "d43921f509fe6ea1e6ee039f7041ac45584e027d67b3817cbac5a9fd5f76a460",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_226.bin",
+      "shard_sha256": "1076a394b3bad14cf222fca98ae0344b3a2fa083d81d79e7495267ac9c77d8a4",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 227,
+      "source_coordinate": "h_spatial_v8_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "75437145ded2fc9cfd6e0c749f8f3b7696a10538d0177c38442382503253e05e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_227.bin",
+      "shard_sha256": "1d7d4e0de8b78637d4d2541073dfac16a8aa664f1063533760966c1fd657bd5c",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 228,
+      "source_coordinate": "h_spatial_v8_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "a4a93731a2c5365090ff3a7b4e3f5d402f8daa396aaab158d049211d58e9b3e4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_228.bin",
+      "shard_sha256": "1bad6bc8d0a9084722da3a7fcdf52658ccb9dac21af697ccc7021ae6eeabe268",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 229,
+      "source_coordinate": "h_spatial_v8_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "0675bedc2b552da9b53a6d37d30b019ea032c75a2d71374378e0e909e108d91e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_229.bin",
+      "shard_sha256": "89879c577e78d57b031ec10ff03f2798f2b46f23b4b1fd22441e0f9a43aedd30",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 230,
+      "source_coordinate": "h_spatial_v8_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "d0f3c1c5176cca0746177a080c08b6bac471892e3d0125194b6e3736d85a896a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_230.bin",
+      "shard_sha256": "853124dff206916d2edcb07e877e54c299573d88509cfd0a2d8f885914b59674",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 231,
+      "source_coordinate": "h_spatial_v8_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "0a4be097f1a75a51715b20eb60b105d13f85e9921f01abb85c84a2b233b88bf2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_231.bin",
+      "shard_sha256": "66067d468d437c2e59c54e40df19164753525fdd104ba0ecdc1fc23bd0d153c7",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 232,
+      "source_coordinate": "h_spatial_v8_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "4654512d460425bee041c527c4e131d9963a4fff627e04401013fd43c1bad15a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_232.bin",
+      "shard_sha256": "e99fe19939cc94706ee46b98ab06d26a0c3937bb57f50858c131ad2140ab4070",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 233,
+      "source_coordinate": "h_spatial_v8_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "8e4a7c566d753a3962921833ec302746c7808ec18eadec3c8e8d2a556cd7cdcd",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_233.bin",
+      "shard_sha256": "532f7f11e93b65757e4fcbb835f833fbfe902bbf49f900e50e652407f883c389",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 234,
+      "source_coordinate": "h_spatial_v8_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "700cbc62a2aaf9d4c83fc07e71f2f3dcab53e7082f7e71984a75fe8bcfdfe56f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_234.bin",
+      "shard_sha256": "7ea9234f8514374f9423ba30cb92bdab7e01b0b327cdf3e085a929db0fececdc",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 235,
+      "source_coordinate": "h_spatial_v8_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "ccf36622dd10bf1fcad3ba3225e0503e05391b87ed732f81daf358e0ea012601",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_235.bin",
+      "shard_sha256": "18922d49cb26b3bc8e54448fc50aca6a3efb1a13f3787ad2c4020400d55e876e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 236,
+      "source_coordinate": "h_spatial_v8_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "a6a95401898d63435b3780c7e28a24816a144be77bd15298f8f9730ff97119b1",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_236.bin",
+      "shard_sha256": "bc7bbadfdd71012622f7c2a3c3cb648d3497df89b975f64aafaec518f8da35d0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 237,
+      "source_coordinate": "h_spatial_v8_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "21b93e7d5980473804b344e4a38ab4c3654fed163413cd85bd180a9a2d472071",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_237.bin",
+      "shard_sha256": "c1d6aed17c675afa988e8c04ab8bd0ef858e74d427f347b0d34552e4884c7b94",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 238,
+      "source_coordinate": "h_spatial_v8_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "5d960c8ec71164d791c96a42352eadf54543d121f0a2590cd0157c2b428e4adc",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_238.bin",
+      "shard_sha256": "bd123717926ee613514c709bba5f2a53bdbd682dc0e9e8b42399576b47bfde97",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 239,
+      "source_coordinate": "h_spatial_v8_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "d9965e1fcf2bf890c2f91bf65f97d07a37cee74b903f8e29934e43cd597335b2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_239.bin",
+      "shard_sha256": "81c015e9875fabad7cb6f59aea5347307b5b84d235c037174f9e32f79bb89157",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 240,
+      "source_coordinate": "h_spatial_v8_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "ecdfda334fcee7f4981f4852ca1b5f90d41bc9226154a14184a95aeffddb575f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_240.bin",
+      "shard_sha256": "bed63bc31b858696e96347e93f1d42fd00f7b5db0148d5ac8a764f446617f30b",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 241,
+      "source_coordinate": "h_spatial_v8_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "c4915ddbd49c9e38cffc07019014b081cf1edc48c24daa9f10f814f1916001a6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_241.bin",
+      "shard_sha256": "cb92d9b0b60f813db4edbe175ab9701c9591d16ca308acb8070feda8fa9aac86",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 242,
+      "source_coordinate": "h_spatial_v8_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "81700c378ffaddc5aa6f9f1d6cfcbf6fb81e4e3a91c77c3cb1194f81f4d5283b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_242.bin",
+      "shard_sha256": "d6f811160cadb128d0e722044f41df82da6955860d146ef5d8ee3d99bf4ee1b8",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 243,
+      "source_coordinate": "h_spatial_v8_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "967a152e886cb53654afc1cbd8ac4d517fd4f38217ea2f3286c030562cda8cb6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_243.bin",
+      "shard_sha256": "47e2ed9f64d2c88fbbb8b1fe4f9c4f91825856d4625a54ab2f8ca61b05394ad7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 244,
+      "source_coordinate": "h_spatial_v8_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "d0ac675a992df7c623549431ce73e9316945abc777d256efe361ec3349a916d3",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_244.bin",
+      "shard_sha256": "8c5f286eb0cdf220ef65229b9b86f240e5785a0e961f7d80aa849b0b099800cf",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 245,
+      "source_coordinate": "h_spatial_v8_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "2f55749699cb802333029b34bad689677d7db9c7be6ec4dc5c5561481be83d29",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_245.bin",
+      "shard_sha256": "cc253e9b2c7405eb43bd7c815c6baba19d265a1dbcb531402a0586958e739777",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 246,
+      "source_coordinate": "h_spatial_v8_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "7106663d48d57efb4d25234822013d620a2e383f278681004b8f6afa280cdce5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_246.bin",
+      "shard_sha256": "468bfa24cdcc843e5ef56c91e780db115509d212d3d63fbab1fe7ee965697af0",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 247,
+      "source_coordinate": "h_spatial_v8_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "d00a3156fba9a939772f5c763f9bb810cf22d963cfc54f7de20c5f1d70bcc510",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_247.bin",
+      "shard_sha256": "927f06f4fbb113cdbecf8fac4829549b573267f10052fce349c510192c069eda",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 248,
+      "source_coordinate": "h_spatial_v8_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "ead53f0cd780c8e85c7fe3018bac357ea17b01bbf51c983aa7456bf573917cec",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_248.bin",
+      "shard_sha256": "26e165400e98cc70f4a28ff26f37c13b6da864f43b3ff3fab1252973e050b875",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 249,
+      "source_coordinate": "h_spatial_v8_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "706c0c040243dc2f7ae6143ec6bd1cf5abfdf4bc8fad8fc0a91a3830365b1c37",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_249.bin",
+      "shard_sha256": "b3d52059f6d73bdbf1920f58b75e1c080c881dbf6729e80597a09648e0f96379",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 250,
+      "source_coordinate": "h_spatial_v8_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "aa077384f125736b117ab52b1828a0c0ecba1ad2323d41b1305be30aedcc07fb",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_250.bin",
+      "shard_sha256": "bfd4da386fe4ac2b53155cb90ce7fcaa2ceba4abb0b5823f48104e5ce0992e98",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 251,
+      "source_coordinate": "h_spatial_v8_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "b315da6da2c6b9c76e2b96e249b7447f4a8f874c0e7bd591092146e9215f5acf",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_251.bin",
+      "shard_sha256": "adedade714f2383b46554563edf7cce374bcd21621245f9ad158e09c535a13cd",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 252,
+      "source_coordinate": "h_spatial_v8_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "3b507a8d47ee6ee28ad2a3bf1a31a21382869d540703ca34a49bf60d0bbdd5a0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_252.bin",
+      "shard_sha256": "b503faaa40b36111f18b105610707e858f5e4abc405da15120d5d2dca0c4308a",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 253,
+      "source_coordinate": "h_spatial_v8_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "f740d14d702805c4f2cf6304e2117bb475c78d7fdccebef23b68ba850c62ac78",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_253.bin",
+      "shard_sha256": "d96232581325caa8e577f798c7a8857acbc9f67971bb03ac099ff1f09df2ea06",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 254,
+      "source_coordinate": "h_spatial_v8_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "a5ad876a2059784678a42fb588e1087d883b923911056f92114c9534b906bd07",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_254.bin",
+      "shard_sha256": "9ab4602a6846d5add7dbc8aba0aacee9e509867f8e90b6f4ec99a8fd8491e8b1",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 255,
+      "source_coordinate": "h_spatial_v8_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "a82d0da06df66b7a354daaad31fae8d30764bc8874691afdc803d064fe825730",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_255.bin",
+      "shard_sha256": "5813b398c777f48b7d9c8b1d8d1172c2dd38f98cf3f3db043da97b5621c179fd",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 256,
+      "source_coordinate": "h_spatial_v9_spinor0",
+      "nonzero_terms": 56389,
+      "sha256": "bc990d62e8f7a84ac678404e2b6443ca5960e94048ca977ed890f3873210d201",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_256.bin",
+      "shard_sha256": "2776604af05fdf3fba07c354b29aa4c4b82317dc8742bbfc19a090176988fee9",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 257,
+      "source_coordinate": "h_spatial_v9_spinor1",
+      "nonzero_terms": 56389,
+      "sha256": "5304fd811a8d8b65bbf445f89a5a15acc0cf7bd82676d490e0aa5bf5b84f0751",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_257.bin",
+      "shard_sha256": "e842101f83d7554abd28d79ce25126bb5e6f5630e8412e8aac58a6383c4a9d0a",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 258,
+      "source_coordinate": "h_spatial_v9_spinor2",
+      "nonzero_terms": 56389,
+      "sha256": "72bd761f1e6110f02f1ad2f8fe227773dabc50ae43e18dfa1be66cdf451b6b63",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_258.bin",
+      "shard_sha256": "7421951d5a921d0d8eb65868a6e2637f4d6b6c1ddf380227fe1debdaacc582bd",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 259,
+      "source_coordinate": "h_spatial_v9_spinor3",
+      "nonzero_terms": 56389,
+      "sha256": "ad40f1d72ff54749e026a7667e1d1437c3c4dbd5f9f743773e943830d25b4e17",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_259.bin",
+      "shard_sha256": "9a3934d7c58ed12ca4fc588eff6c9854e5dbd42409608f7905ee9adc85438493",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 260,
+      "source_coordinate": "h_spatial_v9_spinor4",
+      "nonzero_terms": 56389,
+      "sha256": "6cde2af295f432b8e635dd35944e7ca78a1964996c23611a115e01a868fbd0f2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_260.bin",
+      "shard_sha256": "c984cbc7bebcd0a93b9038acf1d9bc2fa9d14edf022229156f29265497709619",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 261,
+      "source_coordinate": "h_spatial_v9_spinor5",
+      "nonzero_terms": 56389,
+      "sha256": "fc31342c309f5dd9f9e910e128c1fec73c045ab6733e30db254a908831d733bc",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_261.bin",
+      "shard_sha256": "3255b9a407be91033496e4c876f0a00fc232046c1467a50022d723d1ee02cf46",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 262,
+      "source_coordinate": "h_spatial_v9_spinor6",
+      "nonzero_terms": 56389,
+      "sha256": "1a79dac577397a39bb155a9721daa1d77a512f6a1bccf3b8fbf287f3c2321fd4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_262.bin",
+      "shard_sha256": "d92e6ae3d05a5cfe7cf8a6e77019a89b30019f7c722bab5f3f761a1ab39929b9",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 263,
+      "source_coordinate": "h_spatial_v9_spinor7",
+      "nonzero_terms": 56389,
+      "sha256": "56a2313a7b569b79f4670f159a35df198f31eaa103535033b67d0a8ec3b6b0c8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_263.bin",
+      "shard_sha256": "caf25d756cc53a1550179d0991ce2e3b9032537b555e35c85f917d1bbe61e21d",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 264,
+      "source_coordinate": "h_spatial_v9_spinor8",
+      "nonzero_terms": 56389,
+      "sha256": "ffd4ec6bbfe2706cb4f75e16c6ca144c98bc529ef8d09a3fe3336813ba1890c5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_264.bin",
+      "shard_sha256": "4fcc621450f3fb505734b4b7118f4963e06766d6def623e2570d4ec80ffa6329",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 265,
+      "source_coordinate": "h_spatial_v9_spinor9",
+      "nonzero_terms": 56389,
+      "sha256": "76e706a54df70040f7470302c91f512dc405662bba6f69f41e242295ee254b60",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_265.bin",
+      "shard_sha256": "9fde746665a8f9211173dc44383debf54625cac40d26b23125bb890c52457f65",
+      "shard_byte_count": 3778155,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 266,
+      "source_coordinate": "h_spatial_v9_spinor10",
+      "nonzero_terms": 56389,
+      "sha256": "1f9af40a97b1b10468bd4662b3f83f844b45fa0dde72c9b1dff5a6f55bd06b8d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_266.bin",
+      "shard_sha256": "3345eb5a88faa4c40747bcbfbf5b317481ac65cdf792cae566dd08797e37376f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 267,
+      "source_coordinate": "h_spatial_v9_spinor11",
+      "nonzero_terms": 56389,
+      "sha256": "844fb8f34c7932a046884032ef2014363b6eb4ad179e0e32879f6a09768acad9",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_267.bin",
+      "shard_sha256": "668fee13b856e627b20697985f6a106d42e0e66cbf277762992924a36c16fb89",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 268,
+      "source_coordinate": "h_spatial_v9_spinor12",
+      "nonzero_terms": 56389,
+      "sha256": "e0d6ced7c653494a6c97357398acc0085a424982bed1544b26ec924b2e36af70",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_268.bin",
+      "shard_sha256": "654f8b5c5c2628146a20b54149d9d20762cd0da65404a2320770c1b5c2f9dc9a",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 269,
+      "source_coordinate": "h_spatial_v9_spinor13",
+      "nonzero_terms": 56389,
+      "sha256": "94b0f5de07446d3483071c00d5c95462deff909eeb7528feda332e7917b829c2",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_269.bin",
+      "shard_sha256": "8b043fa090ef53e281b5c18248dc3e989c18eb4e0a426981749704192019fca4",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 270,
+      "source_coordinate": "h_spatial_v9_spinor14",
+      "nonzero_terms": 56389,
+      "sha256": "399b9341e2a049a70c06c887ce8a31f43741d57933761af939d8daa7d4b7905f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_270.bin",
+      "shard_sha256": "5532b2a1d9dd0fae0d492f30f86b8f5c8c8fcf3aeeed20a33f64fcc39118b70f",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 271,
+      "source_coordinate": "h_spatial_v9_spinor15",
+      "nonzero_terms": 56389,
+      "sha256": "c579ce222ce6ea32b06b656a5865b116a3a3b9de9ceb2a9b341525ef4b8c5310",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_271.bin",
+      "shard_sha256": "e72a2a5a2e464a5b5d63b6dfeb8f6524040f6277f2c65f4717b220aef92779fa",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 272,
+      "source_coordinate": "h_spatial_v9_spinor16",
+      "nonzero_terms": 56389,
+      "sha256": "8c01f9ee3758a2a15fecfe3933343383adb10a32ffda64589cd5654d93bc1038",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_272.bin",
+      "shard_sha256": "66cd880e698efef3931e22f7fbc176dd40fb4506a583b922d676fb7012310220",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 273,
+      "source_coordinate": "h_spatial_v9_spinor17",
+      "nonzero_terms": 56389,
+      "sha256": "6352619388386b7e91a47e34e241750cb22e5e9a9f648bd525c087ae19a20a8b",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_273.bin",
+      "shard_sha256": "0a4c434b49c7e52593fb584cd82fc458b7e4050858a1557a9f60d2a6ff02783d",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 274,
+      "source_coordinate": "h_spatial_v9_spinor18",
+      "nonzero_terms": 56389,
+      "sha256": "62aada44e3f78d61ca62fc90bd05c94051fea4e94034bb4309994414bca37eb6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_274.bin",
+      "shard_sha256": "910ff787cfcb6f9a3a0fcdd01cc9f72430e0a5afd621f8a46d3d3425c3741d1b",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 275,
+      "source_coordinate": "h_spatial_v9_spinor19",
+      "nonzero_terms": 56389,
+      "sha256": "89a29c8e331e991ebf65d02a1868eb50ae31db86b7c32348a1c2848bcad48662",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_275.bin",
+      "shard_sha256": "317b6837e63d17606f2db33d583fca4573c37b53d21dbc42a65bc058092f0907",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 276,
+      "source_coordinate": "h_spatial_v9_spinor20",
+      "nonzero_terms": 56389,
+      "sha256": "f4ab216141c29d26c2f33425a86ba42665347c7f8b494308e1c3d516873cf725",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_276.bin",
+      "shard_sha256": "f46a181a7990f99bf78438a9d6edc043eda3ea66afae6caeed4469cb22d1f403",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 277,
+      "source_coordinate": "h_spatial_v9_spinor21",
+      "nonzero_terms": 56389,
+      "sha256": "dba2404e5d934051037319d724aeeabcb6c2257b916b76d2fe099b74c8acc6dd",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_277.bin",
+      "shard_sha256": "cd34ca5ffae7fd3731a70ac8bb2bcd13e97dc9e40a153d78da25ac1c7f1a5059",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 278,
+      "source_coordinate": "h_spatial_v9_spinor22",
+      "nonzero_terms": 56389,
+      "sha256": "a555ae5ac5682a5237bb9b2d9d29b31d25b38442c486fd92c7ff2dd63adf1692",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_278.bin",
+      "shard_sha256": "af03b26cf094c7d039c5cf8ec46c2b27fa7ddf7a495d74b2c99f9afb81b5a8b8",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 279,
+      "source_coordinate": "h_spatial_v9_spinor23",
+      "nonzero_terms": 56389,
+      "sha256": "85705d5c47796389ef44f7a498b304d606159516b23fa5937f389f23f2cd6efa",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_279.bin",
+      "shard_sha256": "4f4130fac355105db08559499f0c0244f9eb1807538907f5ae5c4607b16c8560",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 280,
+      "source_coordinate": "h_spatial_v9_spinor24",
+      "nonzero_terms": 56389,
+      "sha256": "72a1d12b2c56edf48d403f6ccb8f6eafe19038a2368f3910c3db5d59e3a73862",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_280.bin",
+      "shard_sha256": "44e39d90bd2a90f16999a824581946ab9529089661911fcfbd0cb45446c88d32",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 281,
+      "source_coordinate": "h_spatial_v9_spinor25",
+      "nonzero_terms": 56389,
+      "sha256": "74ed6b34a645560443f4071abc34f026c53f707816f71c2b9dea8533e145e51a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_281.bin",
+      "shard_sha256": "fd0511075326d6b7ea617c1712c16da5e55889f7926969e2d27f0f327757115c",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 282,
+      "source_coordinate": "h_spatial_v9_spinor26",
+      "nonzero_terms": 56389,
+      "sha256": "286c9952e21da7a86ad6bdf783d8c273946f33d84817524d83fb2be6c08b83d6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_282.bin",
+      "shard_sha256": "f9d243a919d08dfe32280cfb4cbfb71d08eb346b565a85e9b35a44df4c7b98d7",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 283,
+      "source_coordinate": "h_spatial_v9_spinor27",
+      "nonzero_terms": 56389,
+      "sha256": "baeace47b5502201f05c1c2c0065f1b88925b6e879410f478073956504f0bce9",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_283.bin",
+      "shard_sha256": "b56a6861a20c2053154457deb757eaa20336769c3c9ebc0449396dccd526243a",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 284,
+      "source_coordinate": "h_spatial_v9_spinor28",
+      "nonzero_terms": 56389,
+      "sha256": "7613d308131170dbf5ea1ef87010fb75b0a4e2457617683b0960ffa6924ebbb4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_284.bin",
+      "shard_sha256": "c2adff0bf446be34afa2c3cb852d8272f5aa21ce71d903e0fa3a40b09dd7d65e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 285,
+      "source_coordinate": "h_spatial_v9_spinor29",
+      "nonzero_terms": 56389,
+      "sha256": "53030fb0e8f83edc9e5acf456e25e3707df951ce1ed4c78bd03827fe6fa898cc",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_285.bin",
+      "shard_sha256": "a32582bc455bbca8e0e0a31820fb8ddc94af4fc7b96debcaaf2197ea6f3e8b6e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 286,
+      "source_coordinate": "h_spatial_v9_spinor30",
+      "nonzero_terms": 56389,
+      "sha256": "0679b7adeb4eb9059641921e955d319feae404fd9ebcd0ab049ccb8419517b12",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_286.bin",
+      "shard_sha256": "952cba151b4688553c2e589fda8bb5f823197a7dd6c448f485bb669f0eb830b3",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 287,
+      "source_coordinate": "h_spatial_v9_spinor31",
+      "nonzero_terms": 56389,
+      "sha256": "75c07cac7f34423685e278393854175e36ed8e244adb560b1cf1d582241d764a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_287.bin",
+      "shard_sha256": "e1e4932ddb4ba5f41d7926ab1f712a27a6829301be45aeb591f476686871762e",
+      "shard_byte_count": 3778156,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 288,
+      "source_coordinate": "h_spatial_v10_spinor0",
+      "nonzero_terms": 51790,
+      "sha256": "78b446d3a625df7d77f6bbe111a407d9d5d47336489fb3204f82d99d1a7dca71",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_288.bin",
+      "shard_sha256": "3cefa34e73196790cbb651246c0118606c1158c85b54b1a177b228a74cebb104",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 289,
+      "source_coordinate": "h_spatial_v10_spinor1",
+      "nonzero_terms": 51790,
+      "sha256": "33749b82fd74f497f65af717da0513e96108a210edeadd91005d4d3a7e0ed4ca",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_289.bin",
+      "shard_sha256": "efe17161b605b902533f7b601a1b9f7b11df6df3eaf5570ac317aa9a9d8f2b50",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 290,
+      "source_coordinate": "h_spatial_v10_spinor2",
+      "nonzero_terms": 51790,
+      "sha256": "c08fe9432d50765f2f2799d834fa06e038d495c056ea0562f6c5c8579f4a9c0a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_290.bin",
+      "shard_sha256": "203a21f0e3db9235c0974466dfbc5a1e112a591e04f6c147b185e20b404134f1",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 291,
+      "source_coordinate": "h_spatial_v10_spinor3",
+      "nonzero_terms": 51790,
+      "sha256": "4d226c3d36a91040096a97ba61d55271db058be91cca66e17d2a7a2d9972408a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_291.bin",
+      "shard_sha256": "c8e35fafb94429c50cb47b092dd9346591ec46325be72c227ffdf27c3c14c295",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 292,
+      "source_coordinate": "h_spatial_v10_spinor4",
+      "nonzero_terms": 51790,
+      "sha256": "7032b062ad887d5ae4e88558fd3445263d8b41c02edafd8d4dc989413f8f6561",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_292.bin",
+      "shard_sha256": "598814e28d335b3b5e0a9f67f032f1e3201696a6ef612993117b012eae09517d",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 293,
+      "source_coordinate": "h_spatial_v10_spinor5",
+      "nonzero_terms": 51790,
+      "sha256": "2ff84b475500c365f361fa9f00a77d1d768f88759d7f9789fbcf87da484dac99",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_293.bin",
+      "shard_sha256": "c5e59473dc9820d0156e18cdb943853ab3ca054b74f242b728604d64b6e41bcd",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 294,
+      "source_coordinate": "h_spatial_v10_spinor6",
+      "nonzero_terms": 51790,
+      "sha256": "43ee9a99eec1c7aaec096e94b2400068e66dbb5f09fb3b780872b3f69e3c4bdc",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_294.bin",
+      "shard_sha256": "2adede4fc9a3f6220a50ce0f829b31b3e8bd3908c59f3e9c8dcca98337c2d833",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 295,
+      "source_coordinate": "h_spatial_v10_spinor7",
+      "nonzero_terms": 51790,
+      "sha256": "81e1a674bd6530127ecefda8da61ec5802b3f2c7b277cc195d14e8c36f1adf24",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_295.bin",
+      "shard_sha256": "e8e080904c6b872496af0677f3b8503a8978c661f1ee06f1ea516d5e76dfc98f",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 296,
+      "source_coordinate": "h_spatial_v10_spinor8",
+      "nonzero_terms": 51790,
+      "sha256": "23b887a48f384f2cd240254c1d4d366d3ca814049c72c71e5093a4ac0a59dbd0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_296.bin",
+      "shard_sha256": "d8fed3fc827d3d452f51dd4bafc0c88d05df7c2e7f16650b731ac70821f076f0",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 297,
+      "source_coordinate": "h_spatial_v10_spinor9",
+      "nonzero_terms": 51790,
+      "sha256": "e9d0e7b1d817fa92b9f5baad41a6e2ef55639dcd6eb7ca25dc0536530675a07a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_297.bin",
+      "shard_sha256": "87d0284f782816f2e25e0c9b8532d0bd8ddd98aa6c1a81b69f9dfe4f9bc5a984",
+      "shard_byte_count": 3470023,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 298,
+      "source_coordinate": "h_spatial_v10_spinor10",
+      "nonzero_terms": 51790,
+      "sha256": "0f535d42cc3e9d01b1136d5c30fa2d0f9e83ea911cf25aa698b3e4436d2e021c",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_298.bin",
+      "shard_sha256": "1d61e369fe20b780a2857507936879780aa917326bb122bada7709d0c3de6114",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 299,
+      "source_coordinate": "h_spatial_v10_spinor11",
+      "nonzero_terms": 51790,
+      "sha256": "d7d19f59f6f0abee5ae71e03127e78c12c2ef66aaca9fa260693566b52190578",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_299.bin",
+      "shard_sha256": "253549593d58db57dcff1c86794ffdc21e26fcf7690ed83e0ff5f7dc87614d9f",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 300,
+      "source_coordinate": "h_spatial_v10_spinor12",
+      "nonzero_terms": 51790,
+      "sha256": "375b42efc42cbec5a34135f085e3665acfdc926c28c71046e695bde9ebf30c00",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_300.bin",
+      "shard_sha256": "7b111a22450763c85f518ae8b765e16512b0dd85202337cb1789308932e24068",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 301,
+      "source_coordinate": "h_spatial_v10_spinor13",
+      "nonzero_terms": 51790,
+      "sha256": "e1878be902d9bb5a1aefed263e84b2dcd290642a8331af7d7a0a5aa223f18a5f",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_301.bin",
+      "shard_sha256": "8dd586fd8033a303efb25c88ab69144e6380732a38b75427f34d74b00348aedd",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 302,
+      "source_coordinate": "h_spatial_v10_spinor14",
+      "nonzero_terms": 51790,
+      "sha256": "05807ed12142a1c6abc867f85365ecef9860040354fbe3be6bec18f9290cbe0d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_302.bin",
+      "shard_sha256": "a4ecf09bb07982fb34ce4d67c49d8518d74ab40f593a385fbf3b054ae6aa0dfb",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 303,
+      "source_coordinate": "h_spatial_v10_spinor15",
+      "nonzero_terms": 51790,
+      "sha256": "25a092ff0a4f9f32b7008ca78197991d72a397f06c953dd7ea165a3d33db2196",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_303.bin",
+      "shard_sha256": "17606e0a1ff7e7b95406dbffd262b7d6924f9c48db129d73d76cea6159706c12",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 304,
+      "source_coordinate": "h_spatial_v10_spinor16",
+      "nonzero_terms": 51790,
+      "sha256": "d3b4f1b34d52b36496fd6bfdbeab2607550a0f70aae5809e9b293e26071037a8",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_304.bin",
+      "shard_sha256": "0f06d68e6ed21952769548f5727061bbe1a5b15de90ecdb0d34d0c9552d5f07c",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 305,
+      "source_coordinate": "h_spatial_v10_spinor17",
+      "nonzero_terms": 51790,
+      "sha256": "435081e20d599bd8d858423b6ea3501ac59c210f5e64b9ed865cd6045c586cce",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_305.bin",
+      "shard_sha256": "de55c5f68f84f602d68319ea6990f9dfc4790d7ebd9a36bbb27787abf191bd0a",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 306,
+      "source_coordinate": "h_spatial_v10_spinor18",
+      "nonzero_terms": 51790,
+      "sha256": "3385f2022f666f5cfacdbd506d6138e064d62fbe76b3ed0914382c8c5decead5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_306.bin",
+      "shard_sha256": "e16e8e64aee8116f774e74674b0f388d90a83d021da8faa85531e201eaa533f2",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 307,
+      "source_coordinate": "h_spatial_v10_spinor19",
+      "nonzero_terms": 51790,
+      "sha256": "a4cb3c8ad2f7dd2051e3b57586ae9f37f26315040163d6dbc827aae0098287d0",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_307.bin",
+      "shard_sha256": "82d83e47a64a8e894fd3be2f030e2c5cbd60f325ae30281e5f745fc5bdc69565",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 308,
+      "source_coordinate": "h_spatial_v10_spinor20",
+      "nonzero_terms": 51790,
+      "sha256": "916763efed1992c58435b5297b21c3e1c8affb78092189769f65e32ae49a02b6",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_308.bin",
+      "shard_sha256": "a6f7ef798fb4f339799cf54c75eab0f5cbbc8371b5b3affb9703f00c5c63ba86",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 309,
+      "source_coordinate": "h_spatial_v10_spinor21",
+      "nonzero_terms": 51790,
+      "sha256": "7633650376dbd80ed60d08a3b7a9262efa1062a935375018c339dd469b3dbfa5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_309.bin",
+      "shard_sha256": "a7c17b50899c9c7a51437cf90943e4e13936597d4de2e83a2322ec3f58cdeb3c",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 310,
+      "source_coordinate": "h_spatial_v10_spinor22",
+      "nonzero_terms": 51790,
+      "sha256": "9c443f8c793b3f4e07ffadded8ea32f26dafdc90299abd8fe75151638d63be49",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_310.bin",
+      "shard_sha256": "dee8e473a3bbbbde1a48df39b2f5d9022fcb8f5443ceae42a0380e198f22e3f1",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 311,
+      "source_coordinate": "h_spatial_v10_spinor23",
+      "nonzero_terms": 51790,
+      "sha256": "90217526e4f5013858e13eab46b2f30e61b02420d5993e995dfd3009aac665c9",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_311.bin",
+      "shard_sha256": "3c684d7819ab978c6064feec4edd343014f9bffb5b06eec1f6ee74a4032e6d50",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 312,
+      "source_coordinate": "h_spatial_v10_spinor24",
+      "nonzero_terms": 51790,
+      "sha256": "96bca90b8e35e88d74259d7358cec228e0cffd7fa6d782c4d57828728d37b34e",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_312.bin",
+      "shard_sha256": "ae63211b46aac0dc545c1b5942c0adc14f648b40e54d2d250ee5890e395f7dd6",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 313,
+      "source_coordinate": "h_spatial_v10_spinor25",
+      "nonzero_terms": 51790,
+      "sha256": "baa3b02da2e0d269f1df0f853c5266b37b4ce5da447eb354931d7314129ee3f4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_313.bin",
+      "shard_sha256": "035544ed92394319e5821517350b2d49b5dad54aac33e8673f04374552847a55",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 314,
+      "source_coordinate": "h_spatial_v10_spinor26",
+      "nonzero_terms": 51790,
+      "sha256": "f3ac296eec3ac2220fc47966caa4f4056e63914573e345fb5e79ce863345094d",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_314.bin",
+      "shard_sha256": "6cfff69f1db33d81174c211e6e24dbe2e54cbbff1bec0c27d5436a15b4c2c792",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 315,
+      "source_coordinate": "h_spatial_v10_spinor27",
+      "nonzero_terms": 51790,
+      "sha256": "680947b05dc28d5acbad5cf206615f0899fb9e66196456aa54f8daf5c0381c2a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_315.bin",
+      "shard_sha256": "cc167c6e3113f5376feb35f76236088b5a69275de7da8ed40ac323ae0105a52c",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 316,
+      "source_coordinate": "h_spatial_v10_spinor28",
+      "nonzero_terms": 51790,
+      "sha256": "04f9c1fd6506a07af94cf4f829ef09dd6a9036242ed28d05d5b056fcfe14f836",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_316.bin",
+      "shard_sha256": "4678c3937d2d1cd118fdc744a811eabbdde0c80601fd04819084e769e82ffd89",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 317,
+      "source_coordinate": "h_spatial_v10_spinor29",
+      "nonzero_terms": 51790,
+      "sha256": "82d78102389de3f78acad53b1f748a8f13d5574e6f7c53d66a7a04f2df54639a",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_317.bin",
+      "shard_sha256": "758607f94ae8f8b23eff4d7f0b523ce71fe0ee0abbcc6dca693b40915ccfee62",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 318,
+      "source_coordinate": "h_spatial_v10_spinor30",
+      "nonzero_terms": 51790,
+      "sha256": "6ba2a4b221e58c2e507aa9ed6f5dd3e07b072015049375a7797d2dfea5318ea5",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_318.bin",
+      "shard_sha256": "b64e3b6b356a78db6ab599dadcc3867c9c03a15e3a2c8d630958b88bb43c266e",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 319,
+      "source_coordinate": "h_spatial_v10_spinor31",
+      "nonzero_terms": 51790,
+      "sha256": "72c73955355732cea4977cf09ee729638669784dae7c52942f8b02e32bbb42d7",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_319.bin",
+      "shard_sha256": "f415349ddd96e5c45c49e5fd238cabcef95c21b184ebde7227808e31a9e7da66",
+      "shard_byte_count": 3470024,
+      "shard_reused": true
+    },
+    {
+      "ordinal": 320,
+      "source_coordinate": "scale",
+      "nonzero_terms": 5312,
+      "sha256": "fe6812e36a75429bc24a7b6666fc7779b491b29dddd244877ce049bc1dedd8c4",
+      "shard_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json.columns/column_320.bin",
+      "shard_sha256": "8189a6fdcb5b027f511bdaf4f9ebd8517e689c5a1e845a9eee35b98fb1f35b7b",
+      "shard_byte_count": 355981,
+      "shard_reused": true
+    }
+  ],
+  "total_nonzero_terms": 17719920,
+  "operator_sha256": "80acbad466e7b61a9693322e0178f46d586e252014841d486277d9a4d29a84c6",
+  "physical_target_component_adapter_complete": false,
+  "exact_polynomial_kernel_derived": false
+}

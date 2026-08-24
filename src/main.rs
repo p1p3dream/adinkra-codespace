@@ -35,6 +35,7 @@ mod eleven_dimensional_b5_majorana_target_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
 mod eleven_dimensional_complete_f;
+mod eleven_dimensional_complete_f_kernel;
 mod eleven_dimensional_constrained_geometry_jet;
 mod eleven_dimensional_covariant_cohomology_gate;
 mod eleven_dimensional_direct_local_lorentz;
@@ -307,6 +308,13 @@ fn main() {
         "adynkra-11d-level18-momentum-build" => cmd_adynkra_11d_level18_momentum_build(&args),
         "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
         "adynkra-11d-complete-f-build" => cmd_adynkra_11d_complete_f_build(&args),
+        "adynkra-11d-superfield-curvature-hash" => cmd_adynkra_11d_superfield_curvature_hash(&args),
+        "adynkra-11d-superfield-curvature-kernel" => {
+            cmd_adynkra_11d_superfield_curvature_kernel(&args)
+        }
+        "adynkra-11d-superfield-curvature-sector-kernel" => {
+            cmd_adynkra_11d_superfield_curvature_sector_kernel(&args)
+        }
         "adynkra-11d-superderivative-normal-form-build" => {
             cmd_adynkra_11d_superderivative_normal_form_build(&args)
         }
@@ -648,6 +656,14 @@ fn print_usage(prog: &str) {
     eprintln!("  adynkra-11d-complete-f-build [json]");
     eprintln!(
         "                          Join exact geometry sectors and gate the route to F and K"
+    );
+    eprintln!("  adynkra-11d-superfield-curvature-hash [json]");
+    eprintln!("  adynkra-11d-superfield-curvature-kernel [certificate-json] [output-json]");
+    eprintln!(
+        "  adynkra-11d-superfield-curvature-sector-kernel [certificate-json] [sector-tag] [output-json]"
+    );
+    eprintln!(
+        "                          Hash all 321 exact gauge-fixed X2/X5/J-/raw-W/direct-Riemann diagnostic columns"
     );
     eprintln!("  adynkra-11d-superderivative-normal-form-build [json]");
     eprintln!("                          Certify the exact ordered-D and formal-momentum algebra");
@@ -2137,7 +2153,10 @@ fn cmd_adynkra_11d_second_momentum_gpu_rank_28(args: &[String]) {
         eprintln!("prime must be a pinned unsigned 32-bit prime");
         std::process::exit(2);
     });
-    let input_directories = args[4..].iter().map(std::path::PathBuf::from).collect::<Vec<_>>();
+    let input_directories = args[4..]
+        .iter()
+        .map(std::path::PathBuf::from)
+        .collect::<Vec<_>>();
     let report = second_momentum_full_gpu_jobs::publish_declared_28_rank(
         prime,
         &input_directories,
@@ -3241,17 +3260,182 @@ fn cmd_adynkra_11d_complete_f_build(args: &[String]) {
     }
 }
 
-fn cmd_adynkra_11d_superderivative_normal_form_build(args: &[String]) {
-    let path = args.get(2).map(String::as_str).unwrap_or(
-        "results/adynkra_11d_superderivative_normal_form.json",
-    );
-    let report = eleven_dimensional_superderivative_normal_form::write_artifact(
-        std::path::Path::new(path),
+fn cmd_adynkra_11d_superfield_curvature_hash(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json");
+    let started = std::time::Instant::now();
+    let completed = std::cell::Cell::new(0_usize);
+    let certificate =
+        eleven_dimensional_complete_f::write_gauge_fixed_superfield_operator_certificate(
+            std::path::Path::new(path),
+            |column| {
+                let count = completed.get() + 1;
+                completed.set(count);
+                let unix_milliseconds = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_millis())
+                    .unwrap_or_default();
+                eprintln!(
+                    "{{\"event\":\"column_complete\",\"unix_milliseconds\":{unix_milliseconds},\"elapsed_seconds\":{:.3},\"completed\":{count},\"total\":321,\"ordinal\":{},\"source_coordinate\":{},\"nonzero_terms\":{},\"sha256\":{},\"shard_path\":{},\"shard_sha256\":{},\"shard_byte_count\":{},\"shard_reused\":{}}}",
+                    started.elapsed().as_secs_f64(),
+                    column.ordinal,
+                    serde_json::to_string(&column.source_coordinate).unwrap(),
+                    column.nonzero_terms,
+                    serde_json::to_string(&column.sha256).unwrap(),
+                    serde_json::to_string(&column.shard_path).unwrap(),
+                    serde_json::to_string(&column.shard_sha256).unwrap(),
+                    serde_json::to_string(&column.shard_byte_count).unwrap(),
+                    column.shard_reused,
+                );
+            },
+        )
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&certificate).unwrap());
+}
+
+fn cmd_adynkra_11d_superfield_curvature_kernel(args: &[String]) {
+    if args.len() > 4 {
+        eprintln!(
+            "Usage: adinkra-codespace adynkra-11d-superfield-curvature-kernel [certificate-json] [output-json]"
+        );
+        std::process::exit(2);
+    }
+    let input = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json");
+    let output = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_kernel_p0.json");
+    let certificate = eleven_dimensional_complete_f_kernel::derive_streamed_kernel(
+        std::path::Path::new(input),
+        eleven_dimensional_complete_f_kernel::DEFAULT_PRIME,
     )
     .unwrap_or_else(|error| {
-        eprintln!("Failed to write {path}: {error}");
+        eprintln!("Kernel extraction failed: {error}");
         std::process::exit(2);
     });
+    let encoded = serde_json::to_vec_pretty(&certificate).unwrap();
+    let output_path = std::path::Path::new(output);
+    let temporary = output_path.with_extension(format!("json.{}.tmp", std::process::id()));
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", parent.display());
+            std::process::exit(2);
+        });
+    }
+    {
+        use std::io::Write;
+        let mut file = std::fs::File::create(&temporary).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(&encoded).unwrap_or_else(|error| {
+            eprintln!("Failed to write {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(b"\n").unwrap();
+        file.sync_all().unwrap_or_else(|error| {
+            eprintln!("Failed to sync {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+    }
+    std::fs::rename(&temporary, output_path).unwrap_or_else(|error| {
+        eprintln!(
+            "Failed to publish {} as {}: {error}",
+            temporary.display(),
+            output_path.display()
+        );
+        std::process::exit(2);
+    });
+    println!("{}", String::from_utf8(encoded).unwrap());
+}
+
+fn cmd_adynkra_11d_superfield_curvature_sector_kernel(args: &[String]) {
+    if args.len() > 5 {
+        eprintln!(
+            "Usage: adinkra-codespace adynkra-11d-superfield-curvature-sector-kernel [certificate-json] [sector-tag] [output-json]"
+        );
+        std::process::exit(2);
+    }
+    let input = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v3_riemann_20260824.json");
+    let sector = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("9")
+        .parse::<u8>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid sector tag: {error}");
+            std::process::exit(2);
+        });
+    let output = args.get(4).map(String::as_str).unwrap_or(
+        "results/adynkra_11d_gauge_fixed_invariant_supercurvature_riemann_kernel_p0.json",
+    );
+    let certificate = eleven_dimensional_complete_f_kernel::derive_streamed_sector_kernel(
+        std::path::Path::new(input),
+        eleven_dimensional_complete_f_kernel::DEFAULT_PRIME,
+        sector,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Sector-kernel extraction failed: {error}");
+        std::process::exit(2);
+    });
+    let encoded = serde_json::to_vec_pretty(&certificate).unwrap();
+    let output_path = std::path::Path::new(output);
+    let temporary = output_path.with_extension(format!("json.{}.tmp", std::process::id()));
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", parent.display());
+            std::process::exit(2);
+        });
+    }
+    {
+        use std::io::Write;
+        let mut file = std::fs::File::create(&temporary).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(&encoded).unwrap_or_else(|error| {
+            eprintln!("Failed to write {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(b"\n").unwrap();
+        file.sync_all().unwrap_or_else(|error| {
+            eprintln!("Failed to sync {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+    }
+    std::fs::rename(&temporary, output_path).unwrap_or_else(|error| {
+        eprintln!(
+            "Failed to publish {} as {}: {error}",
+            temporary.display(),
+            output_path.display()
+        );
+        std::process::exit(2);
+    });
+    println!("{}", String::from_utf8(encoded).unwrap());
+}
+
+fn cmd_adynkra_11d_superderivative_normal_form_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_superderivative_normal_form.json");
+    let report =
+        eleven_dimensional_superderivative_normal_form::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
@@ -3326,7 +3510,9 @@ fn cmd_adynkra_11d_physical_k_audit(args: &[String]) {
 
 fn cmd_adynkra_11d_physical_k_validate(args: &[String]) {
     let specification = args.get(2).unwrap_or_else(|| {
-        eprintln!("Usage: adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
+        eprintln!(
+            "Usage: adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]"
+        );
         std::process::exit(2);
     });
     let checkpoint_directory = args

@@ -1,0 +1,12 @@
+{"event":"kernel_shard_validation","unix_milliseconds":1787605048728,"elapsed_seconds":0.814,"validated":32,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605049636,"elapsed_seconds":1.723,"validated":64,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605050557,"elapsed_seconds":2.644,"validated":96,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605051467,"elapsed_seconds":3.554,"validated":128,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605052347,"elapsed_seconds":4.434,"validated":160,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605053228,"elapsed_seconds":5.314,"validated":192,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605054110,"elapsed_seconds":6.197,"validated":224,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605054991,"elapsed_seconds":7.077,"validated":256,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605055871,"elapsed_seconds":7.958,"validated":288,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605056675,"elapsed_seconds":8.762,"validated":320,"total":321}
+{"event":"kernel_shard_validation","unix_milliseconds":1787605056678,"elapsed_seconds":8.765,"validated":321,"total":321}
+{"event":"kernel_progress","unix_milliseconds":1787605056718,"elapsed_seconds":8.805,"rows_examined":1058,"entries_examined":3794,"total_entries":18931260,"rank":321,"columns":321,"entries_per_second":430.9}

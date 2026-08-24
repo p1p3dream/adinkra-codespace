@@ -1,0 +1,16 @@
+{
+  "schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-kernel-v1",
+  "input_schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v2",
+  "input_operator_sha256": "80acbad466e7b61a9693322e0178f46d586e252014841d486277d9a4d29a84c6",
+  "prime": 1073741783,
+  "columns": 321,
+  "exact_input_terms": 17719920,
+  "merged_rows_examined": 6040,
+  "shard_entries_examined": 50167,
+  "rank_over_gaussian_extension": 321,
+  "nullity_upper_bound": 0,
+  "full_column_rank": true,
+  "stopped_after_full_rank": true,
+  "elapsed_seconds": 0.214070542,
+  "proof_boundary": "full rank modulo a good prime proves exact column independence over Q(i); modular rank deficiency alone does not prove an exact kernel, and this certificate covers only the declared gauge-fixed invariant-supercurvature operator"
+}

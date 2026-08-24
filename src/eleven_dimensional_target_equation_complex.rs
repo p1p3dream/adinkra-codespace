@@ -113,6 +113,29 @@ impl MomentumMonomial {
             exponents: std::array::from_fn(|axis| self.exponents[axis] + other.exponents[axis]),
         }
     }
+
+    pub fn checked_multiply(&self, other: &Self) -> Result<Self, String> {
+        let mut exponents = [0_u8; VECTOR_DIMENSION];
+        for (axis, slot) in exponents.iter_mut().enumerate() {
+            *slot = self.exponents[axis]
+                .checked_add(other.exponents[axis])
+                .ok_or_else(|| format!("momentum exponent overflow on axis {axis}"))?;
+        }
+        Ok(Self { exponents })
+    }
+
+    /// Convert the wider superderivative normal-form exponents without
+    /// silently truncating a formal momentum degree.
+    pub fn try_from_u16(exponents: [u16; VECTOR_DIMENSION]) -> Result<Self, String> {
+        let mut narrowed = [0_u8; VECTOR_DIMENSION];
+        for (axis, exponent) in exponents.into_iter().enumerate() {
+            narrowed[axis] = u8::try_from(exponent)
+                .map_err(|_| format!("momentum exponent {exponent} on axis {axis} exceeds u8"))?;
+        }
+        Ok(Self {
+            exponents: narrowed,
+        })
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
@@ -170,6 +193,30 @@ impl ExactPolynomialMatrix {
                 real_denominator: *value.real.denom(),
                 imaginary_numerator: *value.imaginary.numer(),
                 imaginary_denominator: *value.imaginary.denom(),
+            })
+            .collect()
+    }
+
+    /// Sparse terms in one input column, ordered canonically by output row
+    /// and formal momentum monomial.  This is the typed bridge used by source
+    /// curvature adapters without exposing the matrix's private coefficient
+    /// representation.
+    pub fn column_terms(&self, column: usize) -> Vec<(usize, ExactPolynomialCoefficient)> {
+        assert!(column < self.columns);
+        self.entries
+            .iter()
+            .filter(|((_, entry_column, _), _)| *entry_column == column)
+            .map(|((row, _, monomial), value)| {
+                (
+                    *row,
+                    ExactPolynomialCoefficient {
+                        monomial: monomial.clone(),
+                        real_numerator: *value.real.numer(),
+                        real_denominator: *value.real.denom(),
+                        imaginary_numerator: *value.imaginary.numer(),
+                        imaginary_denominator: *value.imaginary.denom(),
+                    },
+                )
             })
             .collect()
     }

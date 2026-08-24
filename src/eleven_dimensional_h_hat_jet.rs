@@ -37,6 +37,44 @@ pub struct LinearizedFrameSuperfields {
     pub lorentz_two_form: BTreeMap<usize, CanonicalSuperPolynomial>,
 }
 
+/// Deterministic Cartesian basis of the 320-dimensional gamma-traceless
+/// vector-spinor.  The free coordinates are the ten spatial vector slots.
+/// For each spatial basis vector `H_i=e_s`, the time component is solved from
+/// `-Gamma^0 H_0 + sum_i Gamma^i H_i=0` as
+/// `H_0=-Gamma^0 Gamma^i e_s` in the repository's mostly-plus convention.
+/// Every basis vector therefore has exactly two signed nonzero coordinates.
+pub fn canonical_gamma_traceless_frame_basis() -> Vec<BTreeMap<usize, ExactQi>> {
+    let gammas = crate::eleven_dimensional_majorana::real_gamma_matrices();
+    let gamma_zero = &gammas[0];
+    let mut basis = Vec::with_capacity((VECTOR_DIMENSION - 1) * SPINOR_DIMENSION);
+    for spatial_vector in 1..VECTOR_DIMENSION {
+        for spatial_spinor in 0..SPINOR_DIMENSION {
+            let mut vector = BTreeMap::new();
+            vector.insert(
+                spatial_spinor * VECTOR_DIMENSION + spatial_vector,
+                ExactQi::one(),
+            );
+            for intermediate in 0..SPINOR_DIMENSION {
+                let right = i64::from(gammas[spatial_vector][intermediate][spatial_spinor]);
+                if right == 0 {
+                    continue;
+                }
+                for time_spinor in 0..SPINOR_DIMENSION {
+                    let left = i64::from(gamma_zero[time_spinor][intermediate]);
+                    if left != 0 {
+                        vector.insert(
+                            time_spinor * VECTOR_DIMENSION,
+                            ExactQi::from_integer(-left * right),
+                        );
+                    }
+                }
+            }
+            basis.push(vector);
+        }
+    }
+    basis
+}
+
 /// Canonical representative of the gamma-traceless `H_hat=P_320 H` target.
 /// The local gamma-trace and Lorentz-two-form directions are removed before
 /// any differential jet is formed, so downstream operators act on the
@@ -267,6 +305,50 @@ where
     Ok(())
 }
 
+/// Stream only the first spinor derivative of `H_alpha{}^c`.
+///
+/// Eq. (25)'s bosonic frame depends on `D H` but not on the much larger
+/// ordered `D D H` jet.  Keeping this bounded visitor separate prevents the
+/// direct frame-to-Riemann path from constructing 1,024 unused second-spinor
+/// descendants for every stored `H` coordinate.  Coordinates and polynomial
+/// normal forms are identical to the `DH` sector of
+/// [`visit_linearized_frame_jet`].
+pub fn visit_d_h_jet<F>(input: &LinearizedFrameSuperfields, mut emit: F) -> Result<(), String>
+where
+    F: FnMut(LinearizedFrameJetEntry) -> Result<(), String>,
+{
+    if let Some(component) = input
+        .h
+        .keys()
+        .find(|component| **component >= H_COMPONENT_DIMENSION)
+    {
+        return Err(format!(
+            "H component {component} is outside dimension {H_COMPONENT_DIMENSION}"
+        ));
+    }
+    if let Some(component) = input
+        .h
+        .iter()
+        .find_map(|(component, polynomial)| polynomial.terms.is_empty().then_some(component))
+    {
+        return Err(format!(
+            "H component {component} has a zero polynomial and must be omitted"
+        ));
+    }
+
+    for (&component, polynomial) in &input.h {
+        let (h_spinor, vector) = h_indices(component);
+        for derivative in 0..SPINOR_DIMENSION {
+            emit(LinearizedFrameJetEntry {
+                sector: LinearizedFrameJetSector::DH,
+                coordinate: dh_index(derivative, h_spinor, vector),
+                polynomial: left_multiply_d(derivative, polynomial)?,
+            })?;
+        }
+    }
+    Ok(())
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct LinearizedFrameJetReport {
     pub schema_version: &'static str,
@@ -434,6 +516,29 @@ mod tests {
         assert!(representative.h.is_empty());
         assert!(representative.lorentz_two_form.is_empty());
     }
+
+    #[test]
+    fn canonical_gamma_traceless_basis_has_320_fixed_independent_vectors() {
+        let basis = canonical_gamma_traceless_frame_basis();
+        assert_eq!(basis.len(), 320);
+        for (ordinal, vector) in basis.into_iter().enumerate() {
+            assert_eq!(vector.len(), 2, "basis ordinal {ordinal}");
+            let input = LinearizedFrameSuperfields {
+                h: vector
+                    .iter()
+                    .map(|(&coordinate, coefficient)| {
+                        (
+                            coordinate,
+                            CanonicalSuperPolynomial::scalar(coefficient.clone()),
+                        )
+                    })
+                    .collect(),
+                ..LinearizedFrameSuperfields::default()
+            };
+            let representative = canonical_physical_frame_representative(&input).unwrap();
+            assert_eq!(representative.h, input.h, "basis ordinal {ordinal}");
+        }
+    }
     use crate::eleven_dimensional_superderivative_normal_form::translation_action;
 
     #[test]
@@ -445,6 +550,31 @@ mod tests {
         assert_eq!(report.probe_p_h_entries, 11);
         assert!(report.callback_bounded_streaming);
         assert!(report.physical_coordinate_orderings_matched);
+    }
+
+    #[test]
+    fn first_d_h_visitor_exactly_matches_the_full_jet_d_h_sector() {
+        let mut input = LinearizedFrameSuperfields::default();
+        input.h.insert(
+            5 * VECTOR_DIMENSION + 9,
+            CanonicalSuperPolynomial::scalar(ExactQi::from_rational(3, 7)),
+        );
+        let mut bounded = Vec::new();
+        visit_d_h_jet(&input, |entry| {
+            bounded.push(entry);
+            Ok(())
+        })
+        .unwrap();
+        let mut full = Vec::new();
+        visit_linearized_frame_jet(&input, |entry| {
+            if entry.sector == LinearizedFrameJetSector::DH {
+                full.push(entry);
+            }
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(bounded, full);
+        assert_eq!(bounded.len(), SPINOR_DIMENSION);
     }
 
     #[test]
