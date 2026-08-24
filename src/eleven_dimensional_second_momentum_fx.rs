@@ -12,6 +12,8 @@ use std::path::Path;
 
 use num_bigint::BigInt;
 use num_rational::Ratio;
+use num_traits::ToPrimitive;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -388,6 +390,31 @@ pub struct SecondMomentumFxStreamingAccumulator {
     contraction_terms_by_channel: [u64; SECOND_MOMENTUM_FX_GAUGE_CHANNELS],
 }
 
+/// One already-summed exact functional coefficient. This is the proof-safe
+/// boundary for producers that exploit linearity and project before
+/// materializing a component stream.
+#[derive(Clone)]
+pub(crate) struct SecondMomentumFxProjectedEntry {
+    pub source_momentum: DegreeTwoMomentumMonomial,
+    pub sector: SecondMomentumFxSector,
+    pub seed_ordinal: usize,
+    pub bucket: usize,
+    pub coefficient: ExactGaussian,
+}
+
+/// A complete projected column. `observed_terms` retains the semantic count
+/// of nonzero component terms before projection, while `entries` contains
+/// only the exact nonzero functional rows.
+#[derive(Clone)]
+pub(crate) struct SecondMomentumFxProjectedColumn {
+    pub coefficient_column: usize,
+    pub gauge_channel: SecondMomentumGaugeChannel,
+    pub gauge_branch: SecondMomentumGaugeBranch,
+    pub observed_terms: u64,
+    pub observed_groups: Vec<(DegreeTwoMomentumMonomial, SecondMomentumFxSector)>,
+    pub entries: Vec<SecondMomentumFxProjectedEntry>,
+}
+
 #[derive(Serialize)]
 struct CheckpointHashPayload<'a> {
     schema_version: &'a str,
@@ -727,42 +754,254 @@ fn solve_sparse_rows(
     branch: Option<&str>,
     sector: Option<SecondMomentumFxSector>,
 ) -> ExactRankSummary {
-    let mut system = ExactPolynomialSystem::new(second_momentum_coefficient_specs(), true);
-    for (key, coefficients) in rows {
-        if !row_selected(key, channel, branch, sector) {
-            continue;
-        }
-        let output_momentum = key
-            .group
-            .gauge_branch
-            .output_momentum(key.group.source_momentum)
-            .expect("validated streaming p2 functional output momentum");
-        let polynomial_key = PolynomialConstraintKey {
-            gauge_form_degree: key.group.gauge_channel.form_degree(),
-            parameter_component: key.seed_ordinal * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED
-                + key.bucket,
-            output_sector: format!(
-                "{}:{}:source-p2-{}",
-                key.group.sector.label(),
-                key.group.gauge_branch.label(),
-                key.group.source_momentum.compact_label()
-            ),
-            output_coordinate: key.bucket,
-            spinor_derivative_mask: 0,
-            spinor_derivative_order: key.group.gauge_branch.derivative_order(),
-            momentum_monomial: output_momentum,
+    let selected = rows
+        .iter()
+        .filter(|(key, _)| row_selected(key, channel, branch, sector))
+        .collect::<Vec<_>>();
+    let active_columns = selected
+        .iter()
+        .flat_map(|(_, coefficients)| coefficients.keys().copied())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    if modular_full_column_rank(&selected, &active_columns).unwrap_or(false) {
+        let rank = active_columns.len();
+        return ExactRankSummary {
+            equation_count: selected.len(),
+            variable_count: SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS,
+            rank,
+            nullity: SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS - rank,
+            outcome: if rank == SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS {
+                "unique".to_string()
+            } else {
+                "family".to_string()
+            },
         };
-        for (column, coefficient) in coefficients {
-            system.add_coefficient(polynomial_key.clone(), *column, coefficient.clone());
+    }
+    let mut basis = vec![None::<Vec<ExactGaussian>>; active_columns.len()];
+    let mut rank = 0_usize;
+    for (_, coefficients) in &selected {
+        let mut vector = vec![ExactGaussian::zero(); active_columns.len()];
+        for (column, coefficient) in *coefficients {
+            let index = active_columns
+                .binary_search(column)
+                .expect("active sparse column is indexed");
+            vector[index] = coefficient.clone();
+        }
+        for pivot in 0..active_columns.len() {
+            if vector[pivot].is_zero() {
+                continue;
+            }
+            if let Some(pivot_row) = &basis[pivot] {
+                let factor = divide_gaussian(&vector[pivot], &pivot_row[pivot]);
+                for column in pivot..active_columns.len() {
+                    let product = multiply_gaussian(&factor, &pivot_row[column]);
+                    vector[column].real -= product.real;
+                    vector[column].imaginary -= product.imaginary;
+                }
+            } else {
+                basis[pivot] = Some(vector);
+                rank += 1;
+                break;
+            }
+        }
+        if rank == active_columns.len() {
+            break;
         }
     }
-    let solution = system.solve();
     ExactRankSummary {
-        equation_count: solution.equation_count,
-        variable_count: solution.variable_count,
-        rank: solution.rank,
-        nullity: solution.nullity,
-        outcome: format!("{:?}", solution.outcome).to_ascii_lowercase(),
+        equation_count: selected.len(),
+        variable_count: SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS,
+        rank,
+        nullity: SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS - rank,
+        outcome: if rank == SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS {
+            "unique".to_string()
+        } else {
+            "family".to_string()
+        },
+    }
+}
+
+const RANK_PRIME: u64 = 2_147_483_647;
+
+#[derive(Clone, Copy)]
+struct ModularGaussian {
+    real: u64,
+    imaginary: u64,
+}
+
+impl ModularGaussian {
+    const ZERO: Self = Self {
+        real: 0,
+        imaginary: 0,
+    };
+
+    fn is_zero(self) -> bool {
+        self.real == 0 && self.imaginary == 0
+    }
+
+    fn subtract(self, right: Self) -> Self {
+        Self {
+            real: field_sub(self.real, right.real),
+            imaginary: field_sub(self.imaginary, right.imaginary),
+        }
+    }
+
+    fn multiply(self, right: Self) -> Self {
+        Self {
+            real: field_sub(
+                field_mul(self.real, right.real),
+                field_mul(self.imaginary, right.imaginary),
+            ),
+            imaginary: field_add(
+                field_mul(self.real, right.imaginary),
+                field_mul(self.imaginary, right.real),
+            ),
+        }
+    }
+
+    fn divide(self, right: Self) -> Self {
+        debug_assert!(!right.is_zero());
+        let norm = field_add(
+            field_mul(right.real, right.real),
+            field_mul(right.imaginary, right.imaginary),
+        );
+        debug_assert_ne!(norm, 0);
+        let inverse_norm = field_pow(norm, RANK_PRIME - 2);
+        self.multiply(Self {
+            real: field_mul(right.real, inverse_norm),
+            imaginary: field_mul(
+                if right.imaginary == 0 {
+                    0
+                } else {
+                    RANK_PRIME - right.imaginary
+                },
+                inverse_norm,
+            ),
+        })
+    }
+}
+
+fn field_add(left: u64, right: u64) -> u64 {
+    let sum = left + right;
+    if sum >= RANK_PRIME {
+        sum - RANK_PRIME
+    } else {
+        sum
+    }
+}
+
+fn field_sub(left: u64, right: u64) -> u64 {
+    if left >= right {
+        left - right
+    } else {
+        left + RANK_PRIME - right
+    }
+}
+
+fn field_mul(left: u64, right: u64) -> u64 {
+    (left * right) % RANK_PRIME
+}
+
+fn field_pow(mut base: u64, mut exponent: u64) -> u64 {
+    let mut result = 1;
+    while exponent != 0 {
+        if exponent & 1 != 0 {
+            result = field_mul(result, base);
+        }
+        base = field_mul(base, base);
+        exponent >>= 1;
+    }
+    result
+}
+
+fn bigint_mod_prime(value: &BigInt, prime: &BigInt) -> u64 {
+    let residue = (value % prime)
+        .to_i64()
+        .expect("rank-prime residue fits i64");
+    if residue < 0 {
+        (residue + RANK_PRIME as i64) as u64
+    } else {
+        residue as u64
+    }
+}
+
+fn ratio_mod_prime(value: &Ratio<BigInt>, prime: &BigInt) -> Option<u64> {
+    let numerator = bigint_mod_prime(value.numer(), prime);
+    let denominator = bigint_mod_prime(value.denom(), prime);
+    (denominator != 0).then(|| field_mul(numerator, field_pow(denominator, RANK_PRIME - 2)))
+}
+
+fn gaussian_mod_prime(value: &ExactGaussian, prime: &BigInt) -> Option<ModularGaussian> {
+    Some(ModularGaussian {
+        real: ratio_mod_prime(&value.real, prime)?,
+        imaginary: ratio_mod_prime(&value.imaginary, prime)?,
+    })
+}
+
+/// A full-rank image over GF(p^2), with p = 3 mod 4, proves full column rank
+/// over Q(i). A deficient or undefined modular image is never trusted and
+/// falls through to the characteristic-zero eliminator below.
+fn modular_full_column_rank(
+    selected: &[(&FunctionalRowKey, &BTreeMap<usize, ExactGaussian>)],
+    active_columns: &[usize],
+) -> Option<bool> {
+    if active_columns.is_empty() {
+        return Some(false);
+    }
+    let prime = BigInt::from(RANK_PRIME);
+    let mut basis = vec![None::<Vec<ModularGaussian>>; active_columns.len()];
+    let mut rank = 0;
+    for (_, coefficients) in selected {
+        let mut vector = vec![ModularGaussian::ZERO; active_columns.len()];
+        for (column, coefficient) in *coefficients {
+            let index = active_columns
+                .binary_search(column)
+                .expect("active modular column is indexed");
+            vector[index] = gaussian_mod_prime(coefficient, &prime)?;
+        }
+        for pivot in 0..active_columns.len() {
+            if vector[pivot].is_zero() {
+                continue;
+            }
+            if let Some(pivot_row) = &basis[pivot] {
+                let factor = vector[pivot].divide(pivot_row[pivot]);
+                for column in pivot..active_columns.len() {
+                    vector[column] = vector[column].subtract(factor.multiply(pivot_row[column]));
+                }
+            } else {
+                basis[pivot] = Some(vector);
+                rank += 1;
+                break;
+            }
+        }
+        if rank == active_columns.len() {
+            return Some(true);
+        }
+    }
+    Some(false)
+}
+
+fn multiply_gaussian(left: &ExactGaussian, right: &ExactGaussian) -> ExactGaussian {
+    ExactGaussian {
+        real: left.real.clone() * right.real.clone()
+            - left.imaginary.clone() * right.imaginary.clone(),
+        imaginary: left.real.clone() * right.imaginary.clone()
+            + left.imaginary.clone() * right.real.clone(),
+    }
+}
+
+fn divide_gaussian(left: &ExactGaussian, right: &ExactGaussian) -> ExactGaussian {
+    debug_assert!(!right.is_zero());
+    let denominator =
+        right.real.clone() * right.real.clone() + right.imaginary.clone() * right.imaginary.clone();
+    ExactGaussian {
+        real: (left.real.clone() * right.real.clone()
+            + left.imaginary.clone() * right.imaginary.clone())
+            / denominator.clone(),
+        imaginary: (left.imaginary.clone() * right.real.clone()
+            - left.real.clone() * right.imaginary.clone())
+            / denominator,
     }
 }
 
@@ -785,6 +1024,124 @@ impl SecondMomentumFxStreamingAccumulator {
             wedge_terms_by_channel: [0; SECOND_MOMENTUM_FX_GAUGE_CHANNELS],
             contraction_terms_by_channel: [0; SECOND_MOMENTUM_FX_GAUGE_CHANNELS],
         })
+    }
+
+    /// Merge a producer-side exact linear projection without replaying every
+    /// component term through the functional hash. The whole column is
+    /// validated before mutation, so an error cannot leave a partial fold.
+    pub(crate) fn push_projected_column(
+        &mut self,
+        column: SecondMomentumFxProjectedColumn,
+    ) -> Result<(), String> {
+        if column.coefficient_column >= SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS
+            || column.observed_terms == 0
+            || column.observed_groups.is_empty()
+            || column.entries.is_empty()
+            || self.observed_columns.contains(&column.coefficient_column)
+        {
+            return Err("invalid or duplicate projected second-momentum column".to_string());
+        }
+        let groups = column
+            .observed_groups
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        if groups.len() != column.observed_groups.len()
+            || column
+                .observed_groups
+                .windows(2)
+                .any(|pair| pair[0] >= pair[1])
+        {
+            return Err("projected second-momentum groups are not canonical".to_string());
+        }
+        let mut previous = None;
+        let mut local_rows = Vec::with_capacity(column.entries.len());
+        for entry in column.entries {
+            if entry.source_momentum.total_degree() != 2
+                || entry.seed_ordinal >= SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()
+                || entry.bucket >= SECOND_MOMENTUM_FX_BUCKETS_PER_SEED
+                || entry.coefficient.is_zero()
+                || !groups.contains(&(entry.source_momentum, entry.sector))
+            {
+                return Err("invalid projected second-momentum row".to_string());
+            }
+            let order_key = (
+                entry.source_momentum,
+                entry.sector,
+                entry.seed_ordinal,
+                entry.bucket,
+            );
+            if previous.is_some_and(|prior| prior >= order_key) {
+                return Err("projected second-momentum rows are not canonical".to_string());
+            }
+            previous = Some(order_key);
+            local_rows.push((
+                FunctionalRowKey {
+                    group: FunctionalGroupKey {
+                        gauge_channel: column.gauge_channel,
+                        gauge_branch: column.gauge_branch,
+                        source_momentum: entry.source_momentum,
+                        sector: entry.sector,
+                    },
+                    seed_ordinal: entry.seed_ordinal,
+                    bucket: entry.bucket,
+                },
+                entry.coefficient,
+            ));
+        }
+        let degree = column.gauge_channel.form_degree();
+        let observed_terms = self
+            .observed_terms
+            .checked_add(column.observed_terms)
+            .ok_or_else(|| "projected second-momentum term count overflow".to_string())?;
+        let channel_terms = self.terms_by_channel[degree]
+            .checked_add(column.observed_terms)
+            .ok_or_else(|| "projected channel term count overflow".to_string())?;
+        let wedge_terms = match column.gauge_branch {
+            SecondMomentumGaugeBranch::P2D13Wedge => Some(
+                self.wedge_terms_by_channel[degree]
+                    .checked_add(column.observed_terms)
+                    .ok_or_else(|| "projected wedge term count overflow".to_string())?,
+            ),
+            SecondMomentumGaugeBranch::P3D11Contraction { .. } => None,
+        };
+        let contraction_terms = match column.gauge_branch {
+            SecondMomentumGaugeBranch::P2D13Wedge => None,
+            SecondMomentumGaugeBranch::P3D11Contraction { .. } => Some(
+                self.contraction_terms_by_channel[degree]
+                    .checked_add(column.observed_terms)
+                    .ok_or_else(|| "projected contraction term count overflow".to_string())?,
+            ),
+        };
+
+        self.observed_terms = observed_terms;
+        self.terms_by_channel[degree] = channel_terms;
+        if let Some(value) = wedge_terms {
+            self.wedge_terms_by_channel[degree] = value;
+        }
+        if let Some(value) = contraction_terms {
+            self.contraction_terms_by_channel[degree] = value;
+        }
+        self.observed_channels.insert(degree);
+        self.observed_columns.insert(column.coefficient_column);
+        for (source_momentum, sector) in groups {
+            self.observed_monomials.insert(source_momentum);
+            self.groups.insert(FunctionalGroupKey {
+                gauge_channel: column.gauge_channel,
+                gauge_branch: column.gauge_branch,
+                source_momentum,
+                sector,
+            });
+        }
+        for (key, coefficient) in local_rows {
+            let replaced = self
+                .rows
+                .entry(key)
+                .or_default()
+                .insert(column.coefficient_column, coefficient);
+            debug_assert!(replaced.is_none());
+        }
+        Ok(())
     }
 
     pub fn push(&mut self, term: SecondMomentumFxColumnTerm) -> Result<(), String> {
@@ -818,61 +1175,129 @@ impl SecondMomentumFxStreamingAccumulator {
         let canonical_functional_rows_sha256 =
             sparse_functional_rows_sha256(&self.groups, &self.rows, None);
         self.provenance.expected_canonical_stream_sha256 = canonical_functional_rows_sha256.clone();
-        let per_column_functional_rows_sha256 = (0..SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS)
-            .map(|column| sparse_functional_rows_sha256(&self.groups, &self.rows, Some(column)))
-            .collect::<Vec<_>>();
-        let channel_ranks = (0..SECOND_MOMENTUM_FX_GAUGE_CHANNELS)
-            .map(|degree| {
-                let channel = SecondMomentumGaugeChannel::new(degree).unwrap();
-                SecondMomentumFxChannelRank {
-                    gauge_form_degree: degree,
-                    observed_terms: usize::try_from(self.terms_by_channel[degree]).unwrap(),
-                    wedge_terms: usize::try_from(self.wedge_terms_by_channel[degree]).unwrap(),
-                    contraction_terms: usize::try_from(self.contraction_terms_by_channel[degree])
-                        .unwrap(),
-                    x2: solve_sparse_rows(
-                        &self.rows,
-                        Some(channel),
-                        None,
-                        Some(SecondMomentumFxSector::X2),
-                    ),
-                    x5: solve_sparse_rows(
-                        &self.rows,
-                        Some(channel),
-                        None,
-                        Some(SecondMomentumFxSector::X5),
-                    ),
-                    joint: solve_sparse_rows(&self.rows, Some(channel), None, None),
-                }
-            })
-            .collect::<Vec<_>>();
-        let branch_ranks = ["p2_d13_wedge", "p3_d11_contraction"]
-            .into_iter()
-            .map(|branch| SecondMomentumFxBranchRank {
-                branch: branch.to_string(),
-                observed_terms: if branch == "p2_d13_wedge" {
-                    self.wedge_terms_by_channel.iter().sum::<u64>()
-                } else {
-                    self.contraction_terms_by_channel.iter().sum::<u64>()
-                } as usize,
-                x2: solve_sparse_rows(
-                    &self.rows,
-                    None,
-                    Some(branch),
-                    Some(SecondMomentumFxSector::X2),
-                ),
-                x5: solve_sparse_rows(
-                    &self.rows,
-                    None,
-                    Some(branch),
-                    Some(SecondMomentumFxSector::X5),
-                ),
-                joint: solve_sparse_rows(&self.rows, None, Some(branch), None),
-            })
-            .collect::<Vec<_>>();
-        let global_x2 = solve_sparse_rows(&self.rows, None, None, Some(SecondMomentumFxSector::X2));
-        let global_x5 = solve_sparse_rows(&self.rows, None, None, Some(SecondMomentumFxSector::X5));
-        let global_joint = solve_sparse_rows(&self.rows, None, None, None);
+        let empty_column_sha256 =
+            sparse_functional_rows_sha256(&self.groups, &self.rows, Some(usize::MAX));
+        let ((per_column_functional_rows_sha256, channel_ranks), (branch_ranks, globals)) =
+            rayon::join(
+                || {
+                    rayon::join(
+                        || {
+                            (0..SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS)
+                                .into_par_iter()
+                                .map(|column| {
+                                    if self.observed_columns.contains(&column) {
+                                        sparse_functional_rows_sha256(
+                                            &self.groups,
+                                            &self.rows,
+                                            Some(column),
+                                        )
+                                    } else {
+                                        empty_column_sha256.clone()
+                                    }
+                                })
+                                .collect::<Vec<_>>()
+                        },
+                        || {
+                            (0..SECOND_MOMENTUM_FX_GAUGE_CHANNELS)
+                                .into_par_iter()
+                                .map(|degree| {
+                                    let channel = SecondMomentumGaugeChannel::new(degree).unwrap();
+                                    SecondMomentumFxChannelRank {
+                                        gauge_form_degree: degree,
+                                        observed_terms: usize::try_from(
+                                            self.terms_by_channel[degree],
+                                        )
+                                        .unwrap(),
+                                        wedge_terms: usize::try_from(
+                                            self.wedge_terms_by_channel[degree],
+                                        )
+                                        .unwrap(),
+                                        contraction_terms: usize::try_from(
+                                            self.contraction_terms_by_channel[degree],
+                                        )
+                                        .unwrap(),
+                                        x2: solve_sparse_rows(
+                                            &self.rows,
+                                            Some(channel),
+                                            None,
+                                            Some(SecondMomentumFxSector::X2),
+                                        ),
+                                        x5: solve_sparse_rows(
+                                            &self.rows,
+                                            Some(channel),
+                                            None,
+                                            Some(SecondMomentumFxSector::X5),
+                                        ),
+                                        joint: solve_sparse_rows(
+                                            &self.rows,
+                                            Some(channel),
+                                            None,
+                                            None,
+                                        ),
+                                    }
+                                })
+                                .collect::<Vec<_>>()
+                        },
+                    )
+                },
+                || {
+                    rayon::join(
+                        || {
+                            ["p2_d13_wedge", "p3_d11_contraction"]
+                                .into_par_iter()
+                                .map(|branch| SecondMomentumFxBranchRank {
+                                    branch: branch.to_string(),
+                                    observed_terms: if branch == "p2_d13_wedge" {
+                                        self.wedge_terms_by_channel.iter().sum::<u64>()
+                                    } else {
+                                        self.contraction_terms_by_channel.iter().sum::<u64>()
+                                    } as usize,
+                                    x2: solve_sparse_rows(
+                                        &self.rows,
+                                        None,
+                                        Some(branch),
+                                        Some(SecondMomentumFxSector::X2),
+                                    ),
+                                    x5: solve_sparse_rows(
+                                        &self.rows,
+                                        None,
+                                        Some(branch),
+                                        Some(SecondMomentumFxSector::X5),
+                                    ),
+                                    joint: solve_sparse_rows(&self.rows, None, Some(branch), None),
+                                })
+                                .collect::<Vec<_>>()
+                        },
+                        || {
+                            let ((global_x2, global_x5), global_joint) = rayon::join(
+                                || {
+                                    rayon::join(
+                                        || {
+                                            solve_sparse_rows(
+                                                &self.rows,
+                                                None,
+                                                None,
+                                                Some(SecondMomentumFxSector::X2),
+                                            )
+                                        },
+                                        || {
+                                            solve_sparse_rows(
+                                                &self.rows,
+                                                None,
+                                                None,
+                                                Some(SecondMomentumFxSector::X5),
+                                            )
+                                        },
+                                    )
+                                },
+                                || solve_sparse_rows(&self.rows, None, None, None),
+                            );
+                            (global_x2, global_x5, global_joint)
+                        },
+                    )
+                },
+            );
+        let (global_x2, global_x5, global_joint) = globals;
         let sparse_functional_coefficients = self.rows.values().map(BTreeMap::len).sum();
         let report = SecondMomentumFxStreamingReport {
             schema_version: SECOND_MOMENTUM_FX_STREAMING_REPORT_SCHEMA.to_string(),
@@ -1533,6 +1958,107 @@ mod tests {
             original,
             second_momentum_fx_functional_rows_sha256(&mutated).unwrap()
         );
+    }
+
+    #[test]
+    fn modular_full_rank_fast_path_and_exact_fallback_agree() {
+        let channel = SecondMomentumGaugeChannel::new(0).unwrap();
+        let group = FunctionalGroupKey {
+            gauge_channel: channel,
+            gauge_branch: SecondMomentumGaugeBranch::P2D13Wedge,
+            source_momentum: DegreeTwoMomentumMonomial::from_pair(0, 0).unwrap(),
+            sector: SecondMomentumFxSector::X2,
+        };
+        let row_key = |bucket| FunctionalRowKey {
+            group: group.clone(),
+            seed_ordinal: 0,
+            bucket,
+        };
+        let mut full = SparseFunctionalRows::new();
+        full.insert(
+            row_key(0),
+            BTreeMap::from([(0, ExactGaussian::from_integer(1))]),
+        );
+        full.insert(
+            row_key(1),
+            BTreeMap::from([(1, ExactGaussian::from_integer(1))]),
+        );
+        assert_eq!(solve_sparse_rows(&full, None, None, None).rank, 2);
+
+        let mut deficient = SparseFunctionalRows::new();
+        deficient.insert(
+            row_key(0),
+            BTreeMap::from([
+                (0, ExactGaussian::from_integer(1)),
+                (1, ExactGaussian::from_integer(1)),
+            ]),
+        );
+        deficient.insert(
+            row_key(1),
+            BTreeMap::from([
+                (0, ExactGaussian::from_integer(2)),
+                (1, ExactGaussian::from_integer(2)),
+            ]),
+        );
+        assert_eq!(solve_sparse_rows(&deficient, None, None, None).rank, 1);
+
+        let noninvertible_mod_prime = ExactGaussian {
+            real: Ratio::new(BigInt::from(1), BigInt::from(RANK_PRIME)),
+            imaginary: Ratio::from_integer(BigInt::from(0)),
+        };
+        let singular_modular_image = SparseFunctionalRows::from([(
+            row_key(0),
+            BTreeMap::from([(0, noninvertible_mod_prime)]),
+        )]);
+        assert_eq!(
+            solve_sparse_rows(&singular_modular_image, None, None, None).rank,
+            1
+        );
+    }
+
+    #[test]
+    fn projected_column_validation_is_transactional() {
+        let source = synthetic_source(synthetic_terms());
+        let mut accumulator = SecondMomentumFxStreamingAccumulator::new(
+            source.provenance.clone(),
+            source.coverage.clone(),
+        )
+        .unwrap();
+        let monomial = DegreeTwoMomentumMonomial::from_pair(0, 0).unwrap();
+        let valid_entry = SecondMomentumFxProjectedEntry {
+            source_momentum: monomial,
+            sector: SecondMomentumFxSector::X2,
+            seed_ordinal: 0,
+            bucket: 0,
+            coefficient: ExactGaussian::from_integer(1),
+        };
+        let invalid = SecondMomentumFxProjectedColumn {
+            coefficient_column: 0,
+            gauge_channel: SecondMomentumGaugeChannel::new(0).unwrap(),
+            gauge_branch: SecondMomentumGaugeBranch::P2D13Wedge,
+            observed_terms: 2,
+            observed_groups: vec![(monomial, SecondMomentumFxSector::X2)],
+            entries: vec![valid_entry.clone(), valid_entry.clone()],
+        };
+        assert!(accumulator.push_projected_column(invalid).is_err());
+        assert_eq!(accumulator.observed_terms, 0);
+        assert!(accumulator.rows.is_empty());
+        assert!(accumulator.observed_columns.is_empty());
+
+        let valid = SecondMomentumFxProjectedColumn {
+            coefficient_column: 0,
+            gauge_channel: SecondMomentumGaugeChannel::new(0).unwrap(),
+            gauge_branch: SecondMomentumGaugeBranch::P2D13Wedge,
+            observed_terms: 1,
+            observed_groups: vec![(monomial, SecondMomentumFxSector::X2)],
+            entries: vec![valid_entry],
+        };
+        accumulator.push_projected_column(valid.clone()).unwrap();
+        let rows = accumulator.rows.clone();
+        assert!(accumulator.push_projected_column(valid).is_err());
+        assert_eq!(accumulator.observed_terms, 1);
+        assert_eq!(accumulator.rows, rows);
+        assert_eq!(accumulator.observed_columns, BTreeSet::from([0]));
     }
 
     #[test]

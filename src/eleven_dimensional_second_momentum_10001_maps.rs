@@ -10,9 +10,12 @@
 
 use num_bigint::BigInt;
 use num_traits::Zero;
+use rayon::prelude::*;
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::hash_map::Entry;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -153,23 +156,23 @@ struct CsrAction {
 #[derive(Debug)]
 struct ExteriorReplayModel {
     spinors: [Weight; 32],
-    left: HashMap<(u8, Weight), Vec<u16>>,
-    right: HashMap<(u8, Weight), Vec<u16>>,
+    left: FxHashMap<(u8, Weight), Vec<u16>>,
+    right: FxHashMap<(u8, Weight), Vec<u16>>,
     spaces: BTreeMap<Weight, Arc<Vec<u32>>>,
     actions: BTreeMap<(Weight, usize), Arc<CsrAction>>,
 }
 
 #[derive(Debug, Clone)]
-struct CoupledComponent {
+pub(crate) struct CoupledComponent {
     weight: Weight,
-    masks: Arc<Vec<u32>>,
-    coefficients: Vec<i128>,
+    pub(crate) masks: Arc<Vec<u32>>,
+    pub(crate) coefficients: Vec<i128>,
 }
 
 #[derive(Debug, Clone)]
-struct EmbeddedSourceMap {
-    copy: usize,
-    components: BTreeMap<usize, CoupledComponent>,
+pub(crate) struct EmbeddedSourceMap {
+    pub(crate) copy: usize,
+    pub(crate) components: BTreeMap<usize, CoupledComponent>,
 }
 
 impl ExteriorReplayModel {
@@ -208,7 +211,7 @@ impl ExteriorReplayModel {
             .copied()
             .enumerate()
             .map(|(index, mask)| (mask, u32::try_from(index).unwrap()))
-            .collect::<HashMap<_, _>>();
+            .collect::<FxHashMap<_, _>>();
         let lowering_pairs = (0..32)
             .filter_map(|occupied| {
                 lowered_spinor_index(occupied, root, &self.spinors)
@@ -252,7 +255,7 @@ impl ExteriorReplayModel {
 
     fn lower(&mut self, source: &DenseState, root: usize) -> DenseState {
         let action = self.action(source.weight, root);
-        let mut accumulator = vec![0_i128; action.target_dimension];
+        let mut accumulator = vec![0_i64; action.target_dimension];
         for (source_index, coefficient) in source.coefficients.iter().copied().enumerate() {
             if coefficient == 0 {
                 continue;
@@ -262,18 +265,17 @@ impl ExteriorReplayModel {
             for edge in first..last {
                 let destination = usize::try_from(action.destination_indices[edge]).unwrap();
                 accumulator[destination] = accumulator[destination]
-                    .checked_add(i128::from(coefficient) * i128::from(action.signs[edge]))
-                    .expect("level-12 lowering accumulator exceeds i128");
+                    .checked_add(
+                        coefficient
+                            .checked_mul(i64::from(action.signs[edge]))
+                            .expect("level-12 lowering product exceeds i64"),
+                    )
+                    .expect("level-12 descendant coefficient exceeds i64");
             }
         }
         DenseState {
             weight: action.target_weight,
-            coefficients: accumulator
-                .into_iter()
-                .map(|value| {
-                    i64::try_from(value).expect("level-12 descendant coefficient exceeds i64")
-                })
-                .collect(),
+            coefficients: accumulator,
         }
     }
 
@@ -320,25 +322,22 @@ fn dynkin_highest_weight(label: &str) -> Weight {
     std::array::from_fn(|index| 2 * labels[index..4].iter().sum::<i8>() + labels[4])
 }
 
-fn mask_weight(mask: u16, offset: usize, weights: &[Weight; 32]) -> Weight {
-    let mut weight = [0_i8; 5];
-    for local in 0..16 {
-        if mask & (1 << local) == 0 {
-            continue;
-        }
-        for axis in 0..5 {
-            weight[axis] += weights[offset + local][axis];
-        }
-    }
-    weight
-}
-
-fn half_groups(offset: usize, weights: &[Weight; 32]) -> HashMap<(u8, Weight), Vec<u16>> {
-    let mut groups = HashMap::<(u8, Weight), Vec<u16>>::new();
+fn half_groups(offset: usize, weights: &[Weight; 32]) -> FxHashMap<(u8, Weight), Vec<u16>> {
+    let mut groups = FxHashMap::<(u8, Weight), Vec<u16>>::default();
+    let mut degrees = vec![0_u8; usize::from(u16::MAX) + 1];
+    let mut mask_weights = vec![[0_i8; 5]; usize::from(u16::MAX) + 1];
     for raw in 0_u32..=u32::from(u16::MAX) {
         let mask = raw as u16;
+        if mask != 0 {
+            let local = mask.trailing_zeros() as usize;
+            let previous = mask & (mask - 1);
+            degrees[usize::from(mask)] = degrees[usize::from(previous)] + 1;
+            mask_weights[usize::from(mask)] = std::array::from_fn(|axis| {
+                mask_weights[usize::from(previous)][axis] + weights[offset + local][axis]
+            });
+        }
         groups
-            .entry((mask.count_ones() as u8, mask_weight(mask, offset, weights)))
+            .entry((degrees[usize::from(mask)], mask_weights[usize::from(mask)]))
             .or_default()
             .push(mask);
     }
@@ -348,8 +347,8 @@ fn half_groups(offset: usize, weights: &[Weight; 32]) -> HashMap<(u8, Weight), V
 fn weight_basis(
     degree: u8,
     target: Weight,
-    left: &HashMap<(u8, Weight), Vec<u16>>,
-    right: &HashMap<(u8, Weight), Vec<u16>>,
+    left: &FxHashMap<(u8, Weight), Vec<u16>>,
+    right: &FxHashMap<(u8, Weight), Vec<u16>>,
 ) -> Vec<u32> {
     let mut basis = Vec::new();
     for left_degree in 0..=degree.min(16) {
@@ -543,42 +542,95 @@ fn for_each_term(map: &EmbeddedSourceMap, mut visitor: impl FnMut(SecondMomentum
     }
 }
 
+fn any_term(
+    map: &EmbeddedSourceMap,
+    mut predicate: impl FnMut(SecondMomentum10001SourceTerm) -> bool,
+) -> bool {
+    for (&spinor, component) in &map.components {
+        for (&mask, &coefficient) in component.masks.iter().zip(&component.coefficients) {
+            if coefficient != 0
+                && predicate(SecondMomentum10001SourceTerm {
+                    source_copy: map.copy,
+                    intermediate_spinor_weight_index: spinor,
+                    exterior_mask: mask,
+                    coefficient,
+                })
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 fn raising_residuals(map: &EmbeddedSourceMap) -> [usize; 5] {
     let spinors = spinor_weights();
-    std::array::from_fn(|root| {
-        let mut residual = HashMap::<(usize, u32), i128>::new();
-        for_each_term(map, |term| {
-            for occupied in 0..32 {
-                if term.exterior_mask & (1_u32 << occupied) == 0 {
-                    continue;
+    let raised: [[Option<usize>; 32]; 5] = std::array::from_fn(|root| {
+        std::array::from_fn(|index| raised_spinor_index(index, root, &spinors))
+    });
+    (0..5)
+        .into_par_iter()
+        .map(|root| {
+            let mut residual = FxHashMap::<u64, i128>::default();
+            for_each_term(map, |term| {
+                let mut occupied_mask = term.exterior_mask;
+                while occupied_mask != 0 {
+                    let occupied = occupied_mask.trailing_zeros() as usize;
+                    occupied_mask &= occupied_mask - 1;
+                    let Some(replacement) = raised[root][occupied] else {
+                        continue;
+                    };
+                    if term.exterior_mask & (1_u32 << replacement) != 0 {
+                        continue;
+                    }
+                    let output_mask =
+                        (term.exterior_mask ^ (1_u32 << occupied)) | (1_u32 << replacement);
+                    let key = ((term.intermediate_spinor_weight_index as u64) << 32)
+                        | u64::from(output_mask);
+                    add_residual(
+                        &mut residual,
+                        key,
+                        term.coefficient
+                            .checked_mul(i128::from(exterior_replacement_sign(
+                                term.exterior_mask,
+                                occupied,
+                                replacement,
+                            )))
+                            .expect("raising residual product exceeds i128"),
+                    );
                 }
-                let Some(replacement) = raised_spinor_index(occupied, root, &spinors) else {
-                    continue;
-                };
-                if term.exterior_mask & (1_u32 << replacement) != 0 {
-                    continue;
+                if let Some(next_spinor) = raised[root][term.intermediate_spinor_weight_index] {
+                    let key = ((next_spinor as u64) << 32) | u64::from(term.exterior_mask);
+                    add_residual(&mut residual, key, term.coefficient);
                 }
-                let output_mask =
-                    (term.exterior_mask ^ (1_u32 << occupied)) | (1_u32 << replacement);
-                *residual
-                    .entry((term.intermediate_spinor_weight_index, output_mask))
-                    .or_insert(0) += term.coefficient
-                    * i128::from(exterior_replacement_sign(
-                        term.exterior_mask,
-                        occupied,
-                        replacement,
-                    ));
+            });
+            residual.len()
+        })
+        .collect::<Vec<_>>()
+        .try_into()
+        .expect("five simple-root residual counts")
+}
+
+fn add_residual(residual: &mut FxHashMap<u64, i128>, key: u64, delta: i128) {
+    if delta == 0 {
+        return;
+    }
+    match residual.entry(key) {
+        Entry::Occupied(mut entry) => {
+            let sum = entry
+                .get()
+                .checked_add(delta)
+                .expect("raising residual exceeds i128");
+            if sum == 0 {
+                entry.remove();
+            } else {
+                *entry.get_mut() = sum;
             }
-            if let Some(next_spinor) =
-                raised_spinor_index(term.intermediate_spinor_weight_index, root, &spinors)
-            {
-                *residual
-                    .entry((next_spinor, term.exterior_mask))
-                    .or_insert(0) += term.coefficient;
-            }
-        });
-        residual.values().filter(|value| **value != 0).count()
-    })
+        }
+        Entry::Vacant(entry) => {
+            entry.insert(delta);
+        }
+    }
 }
 
 fn single_term_raising_entries(term: SecondMomentum10001SourceTerm) -> usize {
@@ -638,25 +690,68 @@ fn map_audit(
     }
 }
 
-fn map_dot(left: &EmbeddedSourceMap, right: &EmbeddedSourceMap) -> BigInt {
-    let mut total = BigInt::zero();
-    for (spinor, left_component) in &left.components {
-        let Some(right_component) = right.components.get(spinor) else {
-            continue;
-        };
-        assert_eq!(left_component.weight, right_component.weight);
-        assert_eq!(left_component.masks, right_component.masks);
-        for (&left, &right) in left_component
-            .coefficients
-            .iter()
-            .zip(&right_component.coefficients)
-        {
-            if left != 0 && right != 0 {
-                total += BigInt::from(left) * BigInt::from(right);
-            }
+struct CheckedBigAccumulator {
+    total: BigInt,
+    pending: i128,
+}
+
+impl CheckedBigAccumulator {
+    fn new() -> Self {
+        Self {
+            total: BigInt::zero(),
+            pending: 0,
         }
     }
-    total
+
+    fn add_product(&mut self, left: i128, right: i128) {
+        let Some(product) = left.checked_mul(right) else {
+            self.flush();
+            self.total += BigInt::from(left) * BigInt::from(right);
+            return;
+        };
+        if let Some(sum) = self.pending.checked_add(product) {
+            self.pending = sum;
+        } else {
+            self.flush();
+            self.pending = product;
+        }
+    }
+
+    fn flush(&mut self) {
+        if self.pending != 0 {
+            self.total += self.pending;
+            self.pending = 0;
+        }
+    }
+
+    fn finish(mut self) -> BigInt {
+        self.flush();
+        self.total
+    }
+}
+
+fn map_gram(first: &EmbeddedSourceMap, second: &EmbeddedSourceMap) -> (BigInt, BigInt, BigInt) {
+    let mut gram00 = CheckedBigAccumulator::new();
+    let mut gram01 = CheckedBigAccumulator::new();
+    let mut gram11 = CheckedBigAccumulator::new();
+    for (spinor, first_component) in &first.components {
+        let second_component = second
+            .components
+            .get(spinor)
+            .expect("source maps have identical spinor components");
+        assert_eq!(first_component.weight, second_component.weight);
+        assert_eq!(first_component.masks, second_component.masks);
+        for (&left, &right) in first_component
+            .coefficients
+            .iter()
+            .zip(&second_component.coefficients)
+        {
+            gram00.add_product(left, left);
+            gram01.add_product(left, right);
+            gram11.add_product(right, right);
+        }
+    }
+    (gram00.finish(), gram01.finish(), gram11.finish())
 }
 
 fn map_specs() -> Vec<SecondMomentum10001MapSpec> {
@@ -737,45 +832,59 @@ pub fn second_momentum_10001_map_specs() -> Vec<SecondMomentum10001MapSpec> {
     map_specs()
 }
 
-pub fn verify_second_momentum_10001_maps() -> SecondMomentum10001MapReport {
+fn verify_second_momentum_10001_maps_internal(
+    retain_source_maps: bool,
+) -> (SecondMomentum10001MapReport, Option<[EmbeddedSourceMap; 2]>) {
     for (bytes, expected) in SOURCE_KERNELS.into_iter().zip(SOURCE_KERNEL_SHA256) {
         assert_eq!(sha256(bytes), expected);
     }
     let certificate = abstract_coupling();
-    let mut model = ExteriorReplayModel::new();
-    let first = materialize_source(&mut model, &certificate, 1, SOURCE_KERNELS[0]);
-    let second = materialize_source(&mut model, &certificate, 2, SOURCE_KERNELS[1]);
-    let embedded_sources = vec![
-        map_audit(
-            &first,
-            SOURCE_KERNEL_SHA256[0],
-            certificate.product_weight_domain_dimension,
-        ),
-        map_audit(
-            &second,
-            SOURCE_KERNEL_SHA256[1],
-            certificate.product_weight_domain_dimension,
-        ),
-    ];
+    let (first, second) = rayon::join(
+        || {
+            let mut model = ExteriorReplayModel::new();
+            materialize_source(&mut model, &certificate, 1, SOURCE_KERNELS[0])
+        },
+        || {
+            let mut model = ExteriorReplayModel::new();
+            materialize_source(&mut model, &certificate, 2, SOURCE_KERNELS[1])
+        },
+    );
+    let ((first_audit, second_audit), ((gram00, gram01, gram11), recoupling)) = rayon::join(
+        || {
+            rayon::join(
+                || {
+                    map_audit(
+                        &first,
+                        SOURCE_KERNEL_SHA256[0],
+                        certificate.product_weight_domain_dimension,
+                    )
+                },
+                || {
+                    map_audit(
+                        &second,
+                        SOURCE_KERNEL_SHA256[1],
+                        certificate.product_weight_domain_dimension,
+                    )
+                },
+            )
+        },
+        || {
+            rayon::join(
+                || map_gram(&first, &second),
+                crate::eleven_dimensional_second_momentum_recoupling::verify,
+            )
+        },
+    );
+    let embedded_sources = vec![first_audit, second_audit];
 
-    let gram00 = map_dot(&first, &first);
-    let gram01 = map_dot(&first, &second);
-    let gram11 = map_dot(&second, &second);
     let determinant = &gram00 * &gram11 - &gram01 * &gram01;
     let source_map_rank = if determinant != BigInt::zero() { 2 } else { 1 };
 
-    let recoupling = crate::eleven_dimensional_second_momentum_recoupling::verify();
     assert!(recoupling.passed);
     let paths = recoupling_paths(&recoupling);
     let recoupling_path_rank = recoupling.multiplicity_space_rank;
     let combined_variable_rank = source_map_rank * recoupling_path_rank;
-    let source_mutation_detected = {
-        let mut detected = false;
-        for_each_term(&first, |term| {
-            detected |= single_term_raising_entries(term) != 0;
-        });
-        detected
-    };
+    let source_mutation_detected = any_term(&first, |term| single_term_raising_entries(term) != 0);
     let [delta, gamma, trace] = recoupling.symmetric_traceless_embedding_coefficients;
     let recoupling_mutation_detected =
         delta + 11 * gamma == 0 && 2 * delta + 11 * trace == 0 && 2 * delta + 11 * (trace + 1) != 0;
@@ -802,7 +911,7 @@ pub fn verify_second_momentum_10001_maps() -> SecondMomentum10001MapReport {
         && recoupling_mutation_detected
         && specs.len() == 4;
 
-    SecondMomentum10001MapReport {
+    let report = SecondMomentum10001MapReport {
         schema_version: "adynkra-11d-second-momentum-10001-highest-weight-maps-v1".to_string(),
         role: "exact highest-weight map checkpoints for two level-12 10002 source copies times the trace and symmetric-traceless 10001 momentum paths".to_string(),
         source_dynkin_label: SOURCE_DYNKIN_LABEL.to_string(),
@@ -835,7 +944,22 @@ pub fn verify_second_momentum_10001_maps() -> SecondMomentum10001MapReport {
         full_physical_fag_established: false,
         passed,
         boundary: "This certifies four independent highest-weight seeds from the two exact level-12 10002 embeddings and the two exact 10001 momentum paths. It does not yet descend those seeds into complete component Clebsch-Gordan maps. The 00100 and 00010 sources remain, and full physical F A G_p is false.".to_string(),
-    }
+    };
+    let source_maps = retain_source_maps.then_some([first, second]);
+    (report, source_maps)
+}
+
+pub fn verify_second_momentum_10001_maps() -> SecondMomentum10001MapReport {
+    verify_second_momentum_10001_maps_internal(false).0
+}
+
+pub(crate) fn verify_second_momentum_10001_maps_with_embedded_sources()
+-> (SecondMomentum10001MapReport, [EmbeddedSourceMap; 2]) {
+    let (report, source_maps) = verify_second_momentum_10001_maps_internal(true);
+    (
+        report,
+        source_maps.expect("retained 10001 source maps were not returned"),
+    )
 }
 
 pub fn write_second_momentum_10001_map_artifact(

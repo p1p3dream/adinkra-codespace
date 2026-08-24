@@ -6,7 +6,6 @@
 //! matrix has only 77 columns, so rank certification remains a small exact
 //! host operation after the accelerator has produced its functional rows.
 
-use std::collections::BTreeMap;
 #[cfg(feature = "cuda")]
 use std::fs::{self, File};
 #[cfg(feature = "cuda")]
@@ -24,20 +23,21 @@ use sha2::{Digest, Sha256};
 
 use crate::eleven_dimensional_k_fag_solver::ExactGaussian;
 use crate::eleven_dimensional_second_momentum_fx::{
-    DegreeTwoMomentumMonomial, SecondMomentumFxSector, SecondMomentumGaugeBranch,
-    SecondMomentumGaugeChannel, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
-    SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS,
+    DegreeTwoMomentumMonomial, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
+    SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS, SecondMomentumFxSector, SecondMomentumGaugeBranch,
+    SecondMomentumGaugeChannel,
 };
 
-pub(crate) const GPU_FX_SCHEMA: &str = "adynkra-11d-second-momentum-gpu-fx-v2";
+pub(crate) const GPU_FX_SCHEMA: &str = "adynkra-11d-second-momentum-gpu-fx-v3-one-seed";
 pub(crate) const GPU_FX_PRIMES: [u32; 3] = [1_073_741_783, 1_073_741_723, 1_073_741_719];
 pub(crate) const MOMENTUM_PAIR_COUNT: usize = 66;
 pub(crate) const SECTOR_COUNT: usize = 2;
 pub(crate) const GAUGE_DEGREE_COUNT: usize = 6;
+pub(crate) const GPU_FX_FUNCTIONAL_SEEDS: [u64; 1] = [SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS[0]];
 pub(crate) const FUNCTIONAL_ROW_COUNT: usize = GAUGE_DEGREE_COUNT
     * MOMENTUM_PAIR_COUNT
     * SECTOR_COUNT
-    * SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()
+    * GPU_FX_FUNCTIONAL_SEEDS.len()
     * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
@@ -191,6 +191,8 @@ pub(crate) struct GpuFxColumnReport {
     pub source_label: String,
     pub source_copy: usize,
     pub prime: u32,
+    pub functional_seeds: [u64; 1],
+    pub functional_row_count: usize,
     pub device_name: String,
     pub static_semantic_sha256: String,
     pub flat_plan_sha256: String,
@@ -279,11 +281,7 @@ fn subtract_mod(left: u32, right: u32, prime: u32) -> u32 {
 }
 
 fn negate_mod(value: u32, prime: u32) -> u32 {
-    if value == 0 {
-        0
-    } else {
-        prime - value
-    }
+    if value == 0 { 0 } else { prime - value }
 }
 
 fn multiply_mod(left: u32, right: u32, prime: u32) -> u32 {
@@ -367,7 +365,7 @@ fn functional_row(
         SecondMomentumFxSector::X5 => 1,
     };
     ((((degree * MOMENTUM_PAIR_COUNT + pair_ordinal(pair[0], pair[1])) * SECTOR_COUNT + sector)
-        * SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()
+        * GPU_FX_FUNCTIONAL_SEEDS.len()
         + seed)
         * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED)
         + bucket
@@ -517,6 +515,10 @@ fn static_semantic_sha256(
     let mut hash = Sha256::new();
     hash.update(GPU_FX_SCHEMA.as_bytes());
     hash.update(prime.to_le_bytes());
+    hash.update((GPU_FX_FUNCTIONAL_SEEDS.len() as u64).to_le_bytes());
+    for seed in GPU_FX_FUNCTIONAL_SEEDS {
+        hash.update(seed.to_le_bytes());
+    }
     for entries in gauge {
         hash.update((entries.len() as u64).to_le_bytes());
         for entry in entries {
@@ -619,7 +621,11 @@ pub(crate) fn accumulate_column_cpu(
                                 functional_mask,
                                 sector,
                             );
-                        for (seed, (bucket, sign)) in assignments.into_iter().enumerate() {
+                        for (seed, (bucket, sign)) in assignments
+                            .into_iter()
+                            .take(GPU_FX_FUNCTIONAL_SEEDS.len())
+                            .enumerate()
+                        {
                             let row = functional_row(degree, pair, sector, seed, bucket);
                             let contribution = if sign > 0 { value } else { value.negate(prime) };
                             rows[row] = rows[row].add(contribution, prime);
@@ -688,18 +694,24 @@ pub(crate) fn rank_columns(
     }
 
     let width = columns.len();
-    let mut basis = BTreeMap::<usize, Vec<GaussianResidue>>::new();
+    // Pivot indices are dense and bounded by the small physical column
+    // inventory. A direct table avoids tree lookups, and one reusable row
+    // avoids an allocation for every functional coordinate.
+    let mut basis = vec![None::<Vec<GaussianResidue>>; width];
+    let mut rank = 0_usize;
+    let mut row = vec![GaussianResidue::zero(); width];
     for row_index in 0..FUNCTIONAL_ROW_COUNT {
-        let mut row = columns
-            .iter()
-            .map(|column| column.rows[row_index])
-            .collect::<Vec<_>>();
+        for (value, column) in row.iter_mut().zip(columns) {
+            *value = column.rows[row_index];
+        }
         loop {
             let Some(pivot) = row.iter().position(|value| !value.is_zero()) else {
                 break;
             };
-            if let Some(existing) = basis.get(&pivot) {
-                let factor = row[pivot].multiply(gaussian_inverse(existing[pivot], prime), prime);
+            if let Some(existing) = &basis[pivot] {
+                // Stored pivots are normalized, so the elimination factor is
+                // already row[pivot]. Avoid a finite-field inversion here.
+                let factor = row[pivot];
                 for column in pivot..width {
                     row[column] = row[column].add(
                         factor.multiply(existing[column], prime).negate(prime),
@@ -711,11 +723,12 @@ pub(crate) fn rank_columns(
                 for value in &mut row[pivot..] {
                     *value = value.multiply(inverse, prime);
                 }
-                basis.insert(pivot, row);
+                basis[pivot] = Some(row.clone());
+                rank += 1;
                 break;
             }
         }
-        if basis.len() == width {
+        if rank == width {
             break;
         }
     }
@@ -725,13 +738,15 @@ pub(crate) fn rank_columns(
     for ordinal in &ordinals {
         hash.update((*ordinal as u64).to_le_bytes());
     }
+    let mut hash_row = Vec::with_capacity(width * 8);
     for row in 0..FUNCTIONAL_ROW_COUNT {
+        hash_row.clear();
         for column in columns {
-            hash.update(column.rows[row].real.to_le_bytes());
-            hash.update(column.rows[row].imaginary.to_le_bytes());
+            hash_row.extend_from_slice(&column.rows[row].real.to_le_bytes());
+            hash_row.extend_from_slice(&column.rows[row].imaginary.to_le_bytes());
         }
+        hash.update(&hash_row);
     }
-    let rank = basis.len();
     Ok(ModularRankCertificate {
         schema_version: GPU_FX_SCHEMA,
         prime,
@@ -759,11 +774,14 @@ fn gaussian_inverse(value: GaussianResidue, prime: u32) -> GaussianResidue {
 
 #[cfg(feature = "cuda")]
 mod cuda_backend {
-    use std::cell::Cell;
-    use std::ffi::{c_char, c_void, CStr};
+    use std::cell::{Cell, RefCell};
+    #[cfg(test)]
+    use std::collections::BTreeMap;
+    use std::ffi::{CStr, c_char, c_void};
     use std::marker::PhantomData;
     use std::ptr::NonNull;
     use std::rc::Rc;
+    use std::sync::{Arc, Mutex};
 
     use super::*;
 
@@ -913,6 +931,30 @@ mod cuda_backend {
         total_milliseconds: f32,
     }
 
+    #[derive(Clone, Copy, Debug, Default, Serialize)]
+    #[repr(C)]
+    pub(crate) struct CudaMultiColumnStats {
+        pub unique_count: u64,
+        pub active_columns: u32,
+        reserved: u32,
+        pub nonzero_terms: [u64; 32],
+        pub expanded_contributions: [u64; 32],
+        pub resident_bytes: u64,
+        pub buffer_high_water_bytes: u64,
+        pub device_hard_cap_bytes: u64,
+        pub upload_milliseconds: f32,
+        pub contract_milliseconds: f32,
+        pub finalize_milliseconds: f32,
+        pub download_milliseconds: f32,
+        pub total_milliseconds: f32,
+    }
+
+    #[derive(Clone, Debug)]
+    pub(crate) struct CudaMultiColumnBatch {
+        pub columns: Vec<Vec<GaussianResidue>>,
+        pub stats: CudaMultiColumnStats,
+    }
+
     unsafe extern "C" {
         fn adynkra_fx_cuda_create(
             device: i32,
@@ -954,6 +996,25 @@ mod cuda_backend {
             output_real: *mut u32,
             output_imaginary: *mut u32,
             stats: *mut CudaRecouplingStats,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_reserve_multicol(
+            context: *mut c_void,
+            unique_capacity: u32,
+            active_columns: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_accumulate_recoupled_multicol(
+            context: *mut c_void,
+            keys: *const u64,
+            key_major_values: *const CudaWideValue,
+            unique_count: u32,
+            active_columns: u32,
+            row_major_output_real: *mut u32,
+            row_major_output_imaginary: *mut u32,
+            stats: *mut CudaMultiColumnStats,
             error: *mut c_char,
             error_capacity: usize,
         ) -> i32;
@@ -1050,6 +1111,9 @@ mod cuda_backend {
         static_semantic_sha256: String,
         flat_plan_sha256: String,
         device_name: String,
+        multicol_host_values: Vec<CudaWideValue>,
+        multicol_host_real: Vec<u32>,
+        multicol_host_imaginary: Vec<u32>,
         _not_send_or_sync: PhantomData<Rc<()>>,
     }
 
@@ -1354,6 +1418,9 @@ mod cuda_backend {
                 static_semantic_sha256: static_data.semantic_sha256.clone(),
                 flat_plan_sha256,
                 device_name,
+                multicol_host_values: Vec::new(),
+                multicol_host_real: Vec::new(),
+                multicol_host_imaginary: Vec::new(),
                 _not_send_or_sync: PhantomData,
             })
         }
@@ -1392,6 +1459,155 @@ mod cuda_backend {
             }
         }
 
+        pub(crate) fn reserve_multicol(
+            &mut self,
+            unique_capacity: usize,
+            active_columns: usize,
+        ) -> Result<(), String> {
+            if unique_capacity == 0 || !(1..=32).contains(&active_columns) {
+                return Err("invalid CUDA multi-column reservation dimensions".to_string());
+            }
+            let value_capacity = unique_capacity
+                .checked_mul(active_columns)
+                .ok_or_else(|| "CUDA multi-column host value capacity overflow".to_string())?;
+            let row_capacity = FUNCTIONAL_ROW_COUNT
+                .checked_mul(active_columns)
+                .ok_or_else(|| "CUDA multi-column host row capacity overflow".to_string())?;
+            self.multicol_host_values
+                .try_reserve_exact(
+                    value_capacity.saturating_sub(self.multicol_host_values.capacity()),
+                )
+                .map_err(|error| format!("reserve multi-column host values: {error}"))?;
+            self.multicol_host_real
+                .try_reserve_exact(row_capacity.saturating_sub(self.multicol_host_real.capacity()))
+                .map_err(|error| format!("reserve multi-column host real rows: {error}"))?;
+            self.multicol_host_imaginary
+                .try_reserve_exact(
+                    row_capacity.saturating_sub(self.multicol_host_imaginary.capacity()),
+                )
+                .map_err(|error| format!("reserve multi-column host imaginary rows: {error}"))?;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_reserve_multicol(
+                    self.context.as_ptr(),
+                    u32::try_from(unique_capacity)
+                        .map_err(|_| "CUDA multi-column capacity exceeds u32".to_string())?,
+                    active_columns as u32,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(error_string(&error))
+            }
+        }
+
+        pub(crate) fn accumulate_reduced_multicol(
+            &mut self,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+        ) -> Result<CudaMultiColumnBatch, String> {
+            let mut columns = (0..active_columns)
+                .map(|_| Vec::with_capacity(FUNCTIONAL_ROW_COUNT))
+                .collect::<Vec<_>>();
+            let stats = self.accumulate_reduced_multicol_into(
+                keys,
+                key_major_values,
+                active_columns,
+                &mut columns,
+            )?;
+            Ok(CudaMultiColumnBatch { columns, stats })
+        }
+
+        pub(crate) fn accumulate_reduced_multicol_into(
+            &mut self,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+            columns: &mut [Vec<GaussianResidue>],
+        ) -> Result<CudaMultiColumnStats, String> {
+            if keys.is_empty() || !(1..=32).contains(&active_columns) {
+                return Err("invalid CUDA multi-column batch dimensions".to_string());
+            }
+            let expected_values = keys
+                .len()
+                .checked_mul(active_columns)
+                .ok_or_else(|| "CUDA multi-column value shape overflow".to_string())?;
+            if key_major_values.len() != expected_values {
+                return Err("CUDA multi-column key-major value shape mismatch".to_string());
+            }
+            let output_len = FUNCTIONAL_ROW_COUNT
+                .checked_mul(active_columns)
+                .ok_or_else(|| "CUDA multi-column row shape overflow".to_string())?;
+            if columns.len() != active_columns
+                || columns
+                    .iter()
+                    .any(|column| column.capacity() < FUNCTIONAL_ROW_COUNT)
+                || self.multicol_host_values.capacity() < expected_values
+                || self.multicol_host_real.capacity() < output_len
+                || self.multicol_host_imaginary.capacity() < output_len
+            {
+                return Err(
+                    "CUDA multi-column host buffers were not reserved before accumulation"
+                        .to_string(),
+                );
+            }
+            self.multicol_host_values.clear();
+            self.multicol_host_values
+                .extend(key_major_values.iter().map(|&value| {
+                    let bits = value as u128;
+                    CudaWideValue {
+                        low: bits as u64,
+                        high: (value >> 64) as i64,
+                        overflow: 0,
+                        reserved: 0,
+                    }
+                }));
+            self.multicol_host_real.resize(output_len, 0);
+            self.multicol_host_imaginary.resize(output_len, 0);
+            let mut stats = CudaMultiColumnStats::default();
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_accumulate_recoupled_multicol(
+                    self.context.as_ptr(),
+                    keys.as_ptr(),
+                    self.multicol_host_values.as_ptr(),
+                    u32::try_from(keys.len())
+                        .map_err(|_| "CUDA multi-column key count exceeds u32".to_string())?,
+                    active_columns as u32,
+                    self.multicol_host_real.as_mut_ptr(),
+                    self.multicol_host_imaginary.as_mut_ptr(),
+                    &mut stats,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            if stats.unique_count != keys.len() as u64
+                || stats.active_columns != active_columns as u32
+            {
+                return Err("CUDA multi-column result shape invariant failed".to_string());
+            }
+            for column in columns.iter_mut() {
+                column.resize(FUNCTIONAL_ROW_COUNT, GaussianResidue::zero());
+            }
+            for row in 0..FUNCTIONAL_ROW_COUNT {
+                for column in 0..active_columns {
+                    let index = row * active_columns + column;
+                    columns[column][row] = GaussianResidue {
+                        real: self.multicol_host_real[index],
+                        imaginary: self.multicol_host_imaginary[index],
+                    };
+                }
+            }
+            Ok(stats)
+        }
+
         #[cfg(test)]
         fn set_legacy_contraction(&mut self, enabled: bool) -> Result<(), String> {
             let mut error = [0_i8; ERROR_CAPACITY];
@@ -1410,7 +1626,10 @@ mod cuda_backend {
             }
         }
 
-        fn set_recoupling_hard_cap(&mut self, hard_cap_bytes: u64) -> Result<(), String> {
+        pub(crate) fn set_recoupling_hard_cap(
+            &mut self,
+            hard_cap_bytes: u64,
+        ) -> Result<(), String> {
             let mut error = [0_i8; ERROR_CAPACITY];
             let status = unsafe {
                 adynkra_fx_cuda_set_recoupling_hard_cap(
@@ -1819,8 +2038,37 @@ mod cuda_backend {
         }
     }
 
-    struct PersistentSparseContext {
+    struct PersistentSparseOwner {
         raw: NonNull<c_void>,
+        operation_lock: Mutex<()>,
+    }
+
+    // The C context and its accounting are protected by operation_lock. Every
+    // handle retains this owner, so the context cannot be destroyed first.
+    unsafe impl Send for PersistentSparseOwner {}
+    unsafe impl Sync for PersistentSparseOwner {}
+
+    impl PersistentSparseOwner {
+        fn lock(&self) -> Result<std::sync::MutexGuard<'_, ()>, String> {
+            self.operation_lock
+                .lock()
+                .map_err(|_| "persistent sparse operation lock is poisoned".to_string())
+        }
+    }
+
+    impl Drop for PersistentSparseOwner {
+        fn drop(&mut self) {
+            let _guard = self
+                .operation_lock
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            unsafe { adynkra_fx_cuda_sparse_context_destroy(self.raw.as_ptr()) };
+        }
+    }
+
+    #[derive(Clone)]
+    struct PersistentSparseContext {
+        owner: Arc<PersistentSparseOwner>,
     }
 
     impl PersistentSparseContext {
@@ -1835,15 +2083,21 @@ mod cuda_backend {
                 )
             };
             NonNull::new(raw)
-                .map(|raw| Self { raw })
+                .map(|raw| Self {
+                    owner: Arc::new(PersistentSparseOwner {
+                        raw,
+                        operation_lock: Mutex::new(()),
+                    }),
+                })
                 .ok_or_else(|| error_string(&error))
         }
 
         fn upload(&self, entries: &[CudaSparseEntry]) -> Result<PersistentSparseHandle, String> {
+            let _guard = self.owner.lock()?;
             let mut error = [0_i8; ERROR_CAPACITY];
             let raw = unsafe {
                 adynkra_fx_cuda_sparse_handle_upload(
-                    self.raw.as_ptr(),
+                    self.owner.raw.as_ptr(),
                     entries.as_ptr(),
                     u32::try_from(entries.len())
                         .map_err(|_| "persistent sparse input exceeds u32".to_string())?,
@@ -1852,12 +2106,20 @@ mod cuda_backend {
                 )
             };
             NonNull::new(raw)
-                .map(|raw| PersistentSparseHandle { raw })
+                .map(|raw| PersistentSparseHandle {
+                    raw,
+                    owner: Arc::clone(&self.owner),
+                })
                 .ok_or_else(|| error_string(&error))
         }
 
         fn resident_bytes(&self) -> u64 {
-            unsafe { adynkra_fx_cuda_sparse_resident_bytes(self.raw.as_ptr()) }
+            let _guard = self
+                .owner
+                .operation_lock
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            unsafe { adynkra_fx_cuda_sparse_resident_bytes(self.owner.raw.as_ptr()) }
         }
 
         fn lower(
@@ -1865,11 +2127,12 @@ mod cuda_backend {
             handle: &PersistentSparseHandle,
             root: usize,
         ) -> Result<(PersistentSparseHandle, CudaSparseLoweringStats), String> {
+            let _guard = self.owner.lock()?;
             let mut error = [0_i8; ERROR_CAPACITY];
             let mut stats = CudaSparseLoweringStats::default();
             let raw = unsafe {
                 adynkra_fx_cuda_sparse_handle_lower(
-                    self.raw.as_ptr(),
+                    self.owner.raw.as_ptr(),
                     handle.raw.as_ptr(),
                     u32::try_from(root).map_err(|_| "persistent root exceeds u32".to_string())?,
                     &mut stats,
@@ -1878,17 +2141,26 @@ mod cuda_backend {
                 )
             };
             NonNull::new(raw)
-                .map(|raw| (PersistentSparseHandle { raw }, stats))
+                .map(|raw| {
+                    (
+                        PersistentSparseHandle {
+                            raw,
+                            owner: Arc::clone(&self.owner),
+                        },
+                        stats,
+                    )
+                })
                 .ok_or_else(|| error_string(&error))
         }
 
         fn download(&self, handle: &PersistentSparseHandle) -> Result<Vec<(u64, i64)>, String> {
+            let _guard = self.owner.lock()?;
             let count = unsafe { adynkra_fx_cuda_sparse_handle_count(handle.raw.as_ptr()) };
             let mut entries = vec![CudaSparseEntry { key: 0, value: 0 }; count as usize];
             let mut error = [0_i8; ERROR_CAPACITY];
             let status = unsafe {
                 adynkra_fx_cuda_sparse_handle_download(
-                    self.raw.as_ptr(),
+                    self.owner.raw.as_ptr(),
                     handle.raw.as_ptr(),
                     entries.as_mut_ptr(),
                     count,
@@ -1921,11 +2193,12 @@ mod cuda_backend {
             let mut buffer = vec![CudaSparseEntry { key: 0, value: 0 }; chunk_terms];
             let mut start = 0_u32;
             while start < count {
+                let _guard = self.owner.lock()?;
                 let take = (count - start).min(chunk_terms as u32);
                 let mut error = [0_i8; ERROR_CAPACITY];
                 let status = unsafe {
                     adynkra_fx_cuda_sparse_handle_download_range(
-                        self.raw.as_ptr(),
+                        self.owner.raw.as_ptr(),
                         handle.raw.as_ptr(),
                         start,
                         buffer.as_mut_ptr(),
@@ -1944,19 +2217,50 @@ mod cuda_backend {
             }
             Ok(u64::from(count))
         }
-    }
 
-    impl Drop for PersistentSparseContext {
-        fn drop(&mut self) {
-            unsafe { adynkra_fx_cuda_sparse_context_destroy(self.raw.as_ptr()) };
+        fn download_range_into(
+            &self,
+            handle: &PersistentSparseHandle,
+            start: u32,
+            entries: &mut [CudaSparseEntry],
+        ) -> Result<(), String> {
+            let _guard = self.owner.lock()?;
+            let take = u32::try_from(entries.len())
+                .map_err(|_| "persistent sparse download range exceeds u32".to_string())?;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_sparse_handle_download_range(
+                    self.owner.raw.as_ptr(),
+                    handle.raw.as_ptr(),
+                    start,
+                    entries.as_mut_ptr(),
+                    take,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(error_string(&error))
+            }
         }
     }
 
     struct PersistentSparseHandle {
         raw: NonNull<c_void>,
+        owner: Arc<PersistentSparseOwner>,
     }
 
+    // A handle is immutable after construction. Its owning context is kept
+    // alive by PersistentGroupLaneState and all access is serialized there.
+    unsafe impl Send for PersistentSparseHandle {}
+
     impl PersistentSparseHandle {
+        fn term_count(&self) -> u32 {
+            unsafe { adynkra_fx_cuda_sparse_handle_count(self.raw.as_ptr()) }
+        }
+
         fn maximum_absolute_coefficient(&self) -> u64 {
             unsafe { adynkra_fx_cuda_sparse_handle_max_abs(self.raw.as_ptr()) }
         }
@@ -1964,7 +2268,647 @@ mod cuda_backend {
 
     impl Drop for PersistentSparseHandle {
         fn drop(&mut self) {
+            let _guard = self
+                .owner
+                .operation_lock
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
             unsafe { adynkra_fx_cuda_sparse_handle_destroy(self.raw.as_ptr()) };
+        }
+    }
+
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    struct PersistentHighestIdentity {
+        term_count: usize,
+        maximum_absolute_coefficient: u64,
+        semantic_sha256: String,
+    }
+
+    fn persistent_highest_identity(
+        highest: &crate::eleven_dimensional_level16_couplings::CanonicalSparseHighest64,
+    ) -> std::io::Result<PersistentHighestIdentity> {
+        let mut hash = Sha256::new();
+        hash.update(b"adynkra-persistent-canonical-highest64-v1");
+        hash.update((highest.term_count() as u64).to_le_bytes());
+        hash.update(highest.maximum_absolute_coefficient().to_le_bytes());
+        highest.visit_terms(|key, coefficient| {
+            hash.update(key.to_le_bytes());
+            hash.update(coefficient.to_le_bytes());
+            Ok(())
+        })?;
+        Ok(PersistentHighestIdentity {
+            term_count: highest.term_count(),
+            maximum_absolute_coefficient: highest.maximum_absolute_coefficient(),
+            semantic_sha256: format!("{:x}", hash.finalize()),
+        })
+    }
+
+    #[derive(Clone, Debug)]
+    enum PersistentLanePreflight {
+        Two(crate::eleven_dimensional_second_momentum_20001_fx::SecondMomentum20001GpuColumnPreflight),
+        Three(crate::eleven_dimensional_second_momentum_30001_fx::SecondMomentum30001GpuColumnPreflight),
+        Full {
+            value: crate::eleven_dimensional_second_momentum_full_fx::FullFxColumnPreflight,
+            map_directory: std::path::PathBuf,
+        },
+    }
+
+    impl PersistentLanePreflight {
+        fn local_ordinal(&self) -> usize {
+            match self {
+                Self::Two(value) => value.local_column_ordinal,
+                Self::Three(value) => value.local_column_ordinal,
+                Self::Full { value, .. } => value.global_column_ordinal,
+            }
+        }
+
+        fn global_ordinal(&self) -> usize {
+            match self {
+                Self::Two(value) => value.global_column_ordinal,
+                Self::Three(value) => value.global_column_ordinal,
+                Self::Full { value, .. } => value.global_column_ordinal,
+            }
+        }
+
+        fn source_copy(&self) -> usize {
+            match self {
+                Self::Two(value) => value.source_copy,
+                Self::Three(value) => value.source_copy,
+                Self::Full { value, .. } => value.source_copy,
+            }
+        }
+
+        fn word_count(&self) -> usize {
+            match self {
+                Self::Two(value) => value.pbw_word_count,
+                Self::Three(value) => value.pbw_word_count,
+                Self::Full { value, .. } => value.pbw_word_count,
+            }
+        }
+    }
+
+    enum PersistentWordHandle {
+        Highest,
+        Owned(PersistentSparseHandle),
+    }
+
+    pub(crate) struct PersistentGroupLaneState {
+        // Drop the cached immutable handle before its owner. Drop::drop also
+        // takes it explicitly so this invariant does not depend on field order.
+        highest: Option<PersistentSparseHandle>,
+        highest_identity: Option<PersistentHighestIdentity>,
+        // All lanes share one internally serialized context so the large
+        // lowering scratch allocation is reused instead of split three ways.
+        context: PersistentSparseContext,
+        preflight: PersistentLanePreflight,
+        summary: PersistentLoweringSummary,
+        host_staging_cap_bytes: u64,
+        download_chunk_terms: usize,
+    }
+
+    impl Drop for PersistentGroupLaneState {
+        fn drop(&mut self) {
+            drop(self.highest.take());
+        }
+    }
+
+    impl PersistentGroupLaneState {
+        fn resolve<'a>(
+            &'a self,
+            handle: &'a PersistentWordHandle,
+        ) -> std::io::Result<&'a PersistentSparseHandle> {
+            match handle {
+                PersistentWordHandle::Highest => self.highest.as_ref().ok_or_else(|| {
+                    std::io::Error::other("persistent lane highest handle is not initialized")
+                }),
+                PersistentWordHandle::Owned(handle) => Ok(handle),
+            }
+        }
+
+        fn ensure_highest(
+            &mut self,
+            highest: &crate::eleven_dimensional_level16_couplings::CanonicalSparseHighest64,
+        ) -> std::io::Result<PersistentWordHandle> {
+            let identity = persistent_highest_identity(highest)?;
+            if let Some(expected) = &self.highest_identity {
+                if expected != &identity {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "persistent lane canonical highest identity changed between words",
+                    ));
+                }
+            } else {
+                let handle =
+                    upload_canonical_highest(&self.context, highest, self.host_staging_cap_bytes)?;
+                if handle.term_count() as usize != identity.term_count {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "persistent lane highest term count changed during upload",
+                    ));
+                }
+                self.summary.maximum_absolute_coefficient = identity.maximum_absolute_coefficient;
+                self.summary.peak_immutable_handle_bytes =
+                    self.summary.peak_immutable_handle_bytes.max(
+                        u64::from(handle.term_count())
+                            * std::mem::size_of::<CudaSparseEntry>() as u64,
+                    );
+                self.highest = Some(handle);
+                self.highest_identity = Some(identity);
+            }
+            Ok(PersistentWordHandle::Highest)
+        }
+
+        fn lower_word(
+            &mut self,
+            source: &PersistentWordHandle,
+            roots: &[u8],
+            maximum: &mut i128,
+        ) -> std::io::Result<PersistentWordHandle> {
+            if roots.is_empty() || roots.iter().any(|root| !(1..=5).contains(root)) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "persistent lane PBW word contains an invalid simple root",
+                ));
+            }
+            let mut owned = None;
+            for &simple_root in roots {
+                let base = match owned.as_ref() {
+                    Some(handle) => handle,
+                    None => self.resolve(source)?,
+                };
+                let (next, stats) = self
+                    .context
+                    .lower(base, usize::from(simple_root - 1))
+                    .map_err(std::io::Error::other)?;
+                let next_maximum = next.maximum_absolute_coefficient();
+                *maximum = (*maximum).max(i128::from(next_maximum));
+                self.summary.maximum_absolute_coefficient =
+                    self.summary.maximum_absolute_coefficient.max(next_maximum);
+                self.summary.roots_lowered =
+                    self.summary.roots_lowered.checked_add(1).ok_or_else(|| {
+                        std::io::Error::other("persistent lane root count overflow")
+                    })?;
+                self.summary.input_entry_visits = self
+                    .summary
+                    .input_entry_visits
+                    .checked_add(stats.input_count)
+                    .ok_or_else(|| std::io::Error::other("persistent lane input count overflow"))?;
+                self.summary.expanded_entry_visits = self
+                    .summary
+                    .expanded_entry_visits
+                    .checked_add(stats.expanded_count)
+                    .ok_or_else(|| {
+                        std::io::Error::other("persistent lane expansion count overflow")
+                    })?;
+                self.summary.output_entry_visits = self
+                    .summary
+                    .output_entry_visits
+                    .checked_add(stats.output_count)
+                    .ok_or_else(|| {
+                        std::io::Error::other("persistent lane output count overflow")
+                    })?;
+                self.summary.gpu_milliseconds += f64::from(stats.total_milliseconds);
+                self.summary.scratch_high_water_bytes = self
+                    .summary
+                    .scratch_high_water_bytes
+                    .max(stats.scratch_high_water_bytes);
+                self.summary.peak_immutable_handle_bytes = self
+                    .summary
+                    .peak_immutable_handle_bytes
+                    .max(stats.immutable_handle_bytes);
+                owned = Some(next);
+            }
+            owned
+                .map(PersistentWordHandle::Owned)
+                .ok_or_else(|| std::io::Error::other("persistent lane lowering produced no handle"))
+        }
+
+        fn download_terms(
+            &self,
+            handle: &PersistentWordHandle,
+            visit: &mut dyn FnMut(u64, i64) -> std::io::Result<()>,
+        ) -> std::io::Result<u64> {
+            let handle = self.resolve(handle)?;
+            let count = handle.term_count();
+            let mut buffer = vec![
+                CudaSparseEntry { key: 0, value: 0 };
+                self.download_chunk_terms.min(count as usize)
+            ];
+            let mut start = 0_u32;
+            while start < count {
+                let take = (count - start).min(self.download_chunk_terms as u32) as usize;
+                self.context
+                    .download_range_into(handle, start, &mut buffer[..take])
+                    .map_err(std::io::Error::other)?;
+                // Do exact host recoupling outside the shared CUDA lock. Other
+                // lanes can lower or download their next chunk concurrently.
+                for entry in &buffer[..take] {
+                    visit(entry.key, entry.value)?;
+                }
+                start += take as u32;
+            }
+            Ok(u64::from(count))
+        }
+    }
+
+    pub(crate) struct PersistentGroupLaneAdapter {
+        lanes: Vec<Mutex<PersistentGroupLaneState>>,
+    }
+
+    impl PersistentGroupLaneAdapter {
+        pub(crate) fn new(
+            plan: &crate::second_momentum_gpu_group::PreparedColumnGroup,
+            device: i32,
+            shared_device_hard_cap_bytes: u64,
+            host_staging_cap_bytes: u64,
+            download_chunk_terms: usize,
+            full_map_directory: Option<&std::path::Path>,
+        ) -> Result<Self, String> {
+            if plan.active_columns == 0
+                || plan.active_columns != plan.members.len()
+                || download_chunk_terms == 0
+                || download_chunk_terms > u32::MAX as usize
+                || host_staging_cap_bytes == 0
+            {
+                return Err("invalid persistent group lane adapter configuration".to_string());
+            }
+            let context = PersistentSparseContext::new(device, shared_device_hard_cap_bytes)?;
+            let mut lanes = Vec::with_capacity(plan.active_columns);
+            for (lane_index, member) in plan.members.iter().enumerate() {
+                if member.local_ordinal != plan.ordered_local_ordinals[lane_index]
+                    || member.global_ordinal != plan.ordered_global_ordinals[lane_index]
+                    || member.source_copy != plan.ordered_source_copies[lane_index]
+                {
+                    return Err("persistent group lane identity order changed".to_string());
+                }
+                let preflight = match plan.tranche.as_str() {
+                    "20001" => PersistentLanePreflight::Two(
+                        crate::eleven_dimensional_second_momentum_20001_fx::gpu_column_preflight(
+                            member.local_ordinal,
+                        )
+                        .map_err(|error| error.to_string())?,
+                    ),
+                    "30001" => PersistentLanePreflight::Three(
+                        crate::eleven_dimensional_second_momentum_30001_fx::gpu_column_preflight(
+                            member.local_ordinal,
+                        )
+                        .map_err(|error| error.to_string())?,
+                    ),
+                    "00001" | "01001" | "10001" | "11001" => {
+                        let map_directory = full_map_directory.ok_or_else(|| {
+                            "full-inventory persistent group requires its exact map directory"
+                                .to_string()
+                        })?;
+                        PersistentLanePreflight::Full {
+                            value: crate::eleven_dimensional_second_momentum_full_fx::
+                                gpu_column_preflight(member.global_ordinal, map_directory)
+                                .map_err(|error| error.to_string())?,
+                            map_directory: map_directory.to_path_buf(),
+                        }
+                    }
+                    _ => {
+                        return Err(
+                            "persistent group tranche must be 00001, 01001, 10001, 11001, 20001, or 30001"
+                                .to_string(),
+                        );
+                    }
+                };
+                if preflight.local_ordinal() != member.local_ordinal
+                    || preflight.global_ordinal() != member.global_ordinal
+                    || preflight.source_copy() != member.source_copy
+                    || preflight.word_count() != plan.pbw_word_count
+                {
+                    return Err("persistent group preflight identity changed".to_string());
+                }
+                lanes.push(Mutex::new(PersistentGroupLaneState {
+                    highest: None,
+                    highest_identity: None,
+                    context: context.clone(),
+                    preflight,
+                    summary: PersistentLoweringSummary {
+                        enabled: true,
+                        device_hard_cap_bytes: shared_device_hard_cap_bytes,
+                        download_chunk_terms,
+                        ..PersistentLoweringSummary::default()
+                    },
+                    host_staging_cap_bytes,
+                    download_chunk_terms,
+                }));
+            }
+            Ok(Self { lanes })
+        }
+
+        pub(crate) fn run_lane_word(
+            &self,
+            lane_index: usize,
+            expected_local_ordinal: usize,
+            expected_global_ordinal: usize,
+            expected_source_copy: usize,
+            word_ordinal: usize,
+            emit_term: &mut dyn FnMut(RecoupledSourceTerm) -> Result<(), String>,
+        ) -> Result<crate::second_momentum_gpu_group::LaneWordCompletion, String> {
+            let lane = self
+                .lanes
+                .get(lane_index)
+                .ok_or_else(|| "persistent group lane index is out of range".to_string())?;
+            let mut state = lane
+                .lock()
+                .map_err(|_| "persistent group lane lock is poisoned".to_string())?;
+            if state.preflight.local_ordinal() != expected_local_ordinal
+                || state.preflight.global_ordinal() != expected_global_ordinal
+                || state.preflight.source_copy() != expected_source_copy
+                || word_ordinal >= state.preflight.word_count()
+            {
+                return Err("persistent group run-lane identity changed".to_string());
+            }
+
+            let state = RefCell::new(&mut *state);
+            let mut emitted_terms = 0_u64;
+            let mut observed_end = None;
+            let preflight = state.borrow().preflight.clone();
+            let metadata = match preflight {
+                PersistentLanePreflight::Two(preflight) => {
+                    crate::eleven_dimensional_second_momentum_20001_fx::
+                        visit_gpu_column_word_contribution_events_from_handles(
+                            &preflight,
+                            word_ordinal,
+                            |highest| state.borrow_mut().ensure_highest(highest),
+                            |source, roots, maximum| {
+                                state.borrow_mut().lower_word(source, roots, maximum)
+                            },
+                            |handle, visit| state.borrow().download_terms(handle, visit),
+                            |event| {
+                                use crate::eleven_dimensional_second_momentum_20001_fx::
+                                    SecondMomentum20001GpuColumnEvent;
+                                match event {
+                                    SecondMomentum20001GpuColumnEvent::Term {
+                                        requested_word_ordinal,
+                                        term,
+                                    } => {
+                                        if requested_word_ordinal != word_ordinal {
+                                            return Err(std::io::Error::other(
+                                                "persistent 20001 lane term word changed",
+                                            ));
+                                        }
+                                        emit_term(term).map_err(std::io::Error::other)?;
+                                        emitted_terms = emitted_terms.checked_add(1).ok_or_else(|| {
+                                            std::io::Error::other(
+                                                "persistent lane raw-term count overflow",
+                                            )
+                                        })?;
+                                    }
+                                    SecondMomentum20001GpuColumnEvent::WordEnd {
+                                        requested_word_ordinal,
+                                        raw_terms_emitted,
+                                    } => {
+                                        if requested_word_ordinal != word_ordinal
+                                            || raw_terms_emitted != emitted_terms
+                                            || observed_end.replace(raw_terms_emitted).is_some()
+                                        {
+                                            return Err(std::io::Error::other(
+                                                "persistent 20001 lane word-end accounting changed",
+                                            ));
+                                        }
+                                    }
+                                    SecondMomentum20001GpuColumnEvent::WordLoweringStart {
+                                        requested_word_ordinal,
+                                        ..
+                                    }
+                                    | SecondMomentum20001GpuColumnEvent::WordStart {
+                                        requested_word_ordinal,
+                                        ..
+                                    } if requested_word_ordinal != word_ordinal => {
+                                        return Err(std::io::Error::other(
+                                            "persistent 20001 lane boundary word changed",
+                                        ));
+                                    }
+                                    SecondMomentum20001GpuColumnEvent::WordLoweringStart { .. }
+                                    | SecondMomentum20001GpuColumnEvent::WordStart { .. } => {}
+                                }
+                                Ok(())
+                            },
+                        )
+                }
+                PersistentLanePreflight::Three(preflight) => {
+                    crate::eleven_dimensional_second_momentum_30001_fx::
+                        visit_gpu_column_word_contribution_events_from_handles(
+                            &preflight,
+                            word_ordinal,
+                            |highest| state.borrow_mut().ensure_highest(highest),
+                            |source, roots, maximum| {
+                                state.borrow_mut().lower_word(source, roots, maximum)
+                            },
+                            |handle, visit| state.borrow().download_terms(handle, visit),
+                            |event| {
+                                use crate::eleven_dimensional_second_momentum_30001_fx::
+                                    SecondMomentum30001GpuColumnEvent;
+                                match event {
+                                    SecondMomentum30001GpuColumnEvent::Term {
+                                        requested_word_ordinal,
+                                        term,
+                                    } => {
+                                        if requested_word_ordinal != word_ordinal {
+                                            return Err(std::io::Error::other(
+                                                "persistent 30001 lane term word changed",
+                                            ));
+                                        }
+                                        emit_term(term).map_err(std::io::Error::other)?;
+                                        emitted_terms = emitted_terms.checked_add(1).ok_or_else(|| {
+                                            std::io::Error::other(
+                                                "persistent lane raw-term count overflow",
+                                            )
+                                        })?;
+                                    }
+                                    SecondMomentum30001GpuColumnEvent::WordEnd {
+                                        requested_word_ordinal,
+                                        raw_terms_emitted,
+                                    } => {
+                                        if requested_word_ordinal != word_ordinal
+                                            || raw_terms_emitted != emitted_terms
+                                            || observed_end.replace(raw_terms_emitted).is_some()
+                                        {
+                                            return Err(std::io::Error::other(
+                                                "persistent 30001 lane word-end accounting changed",
+                                            ));
+                                        }
+                                    }
+                                    SecondMomentum30001GpuColumnEvent::WordLoweringStart {
+                                        requested_word_ordinal,
+                                        ..
+                                    }
+                                    | SecondMomentum30001GpuColumnEvent::WordStart {
+                                        requested_word_ordinal,
+                                        ..
+                                    } if requested_word_ordinal != word_ordinal => {
+                                        return Err(std::io::Error::other(
+                                            "persistent 30001 lane boundary word changed",
+                                        ));
+                                    }
+                                    SecondMomentum30001GpuColumnEvent::WordLoweringStart { .. }
+                                    | SecondMomentum30001GpuColumnEvent::WordStart { .. } => {}
+                                }
+                                Ok(())
+                            },
+                        )
+                }
+                PersistentLanePreflight::Full {
+                    value: preflight,
+                    map_directory,
+                } => crate::eleven_dimensional_second_momentum_full_fx::
+                    visit_gpu_column_contribution_events_range_from_handles(
+                        &preflight,
+                        &map_directory,
+                        word_ordinal,
+                        word_ordinal + 1,
+                        |highest| state.borrow_mut().ensure_highest(highest),
+                        |source, roots, maximum| {
+                            state.borrow_mut().lower_word(source, roots, maximum)
+                        },
+                        |handle, visit| state.borrow().download_terms(handle, visit),
+                        |event| {
+                            use crate::eleven_dimensional_second_momentum_full_fx::
+                                FullFxColumnEvent;
+                            match event {
+                                FullFxColumnEvent::Term {
+                                    requested_word_ordinal,
+                                    term,
+                                } => {
+                                    if requested_word_ordinal != word_ordinal {
+                                        return Err(std::io::Error::other(
+                                            "persistent full-inventory lane term word changed",
+                                        ));
+                                    }
+                                    emit_term(term).map_err(std::io::Error::other)?;
+                                    emitted_terms = emitted_terms.checked_add(1).ok_or_else(|| {
+                                        std::io::Error::other(
+                                            "persistent full-inventory raw-term count overflow",
+                                        )
+                                    })?;
+                                }
+                                FullFxColumnEvent::WordEnd {
+                                    requested_word_ordinal,
+                                    raw_terms_emitted,
+                                } => {
+                                    if requested_word_ordinal != word_ordinal
+                                        || raw_terms_emitted != emitted_terms
+                                        || observed_end.replace(raw_terms_emitted).is_some()
+                                    {
+                                        return Err(std::io::Error::other(
+                                            "persistent full-inventory word-end accounting changed",
+                                        ));
+                                    }
+                                }
+                                FullFxColumnEvent::WordLoweringStart {
+                                    requested_word_ordinal,
+                                    ..
+                                }
+                                | FullFxColumnEvent::WordStart {
+                                    requested_word_ordinal,
+                                    ..
+                                } if requested_word_ordinal != word_ordinal => {
+                                    return Err(std::io::Error::other(
+                                        "persistent full-inventory boundary word changed",
+                                    ));
+                                }
+                                FullFxColumnEvent::WordLoweringStart { .. }
+                                | FullFxColumnEvent::WordStart { .. } => {}
+                            }
+                            Ok(())
+                        },
+                    ),
+            }
+            .map_err(|error| error.to_string())?;
+            if metadata.global_ordinal != expected_global_ordinal
+                || metadata.source_copy != expected_source_copy
+                || metadata.raising_residuals != [0; 5]
+                || observed_end != Some(emitted_terms)
+            {
+                return Err("persistent group lane completion identity changed".to_string());
+            }
+            Ok(crate::second_momentum_gpu_group::LaneWordCompletion {
+                lane_index,
+                local_ordinal: expected_local_ordinal,
+                global_ordinal: expected_global_ordinal,
+                source_copy: expected_source_copy,
+                word_ordinal,
+                raw_terms: emitted_terms,
+            })
+        }
+
+        pub(crate) fn summaries(&self) -> Result<Vec<PersistentLoweringSummary>, String> {
+            self.lanes
+                .iter()
+                .map(|lane| {
+                    let state = lane
+                        .lock()
+                        .map_err(|_| "persistent group lane lock is poisoned".to_string())?;
+                    let mut summary = state.summary;
+                    summary.scratch_high_water_bytes = summary
+                        .scratch_high_water_bytes
+                        .max(state.context.resident_bytes());
+                    Ok(summary)
+                })
+                .collect()
+        }
+
+        pub(crate) fn collect_parity_prefix(
+            &self,
+            maximum_terms_per_lane: usize,
+        ) -> Result<Vec<Vec<RecoupledSourceTerm>>, String> {
+            if maximum_terms_per_lane == 0 {
+                return Err("persistent parity prefix must be nonzero".to_string());
+            }
+            let mut output = (0..self.lanes.len())
+                .map(|_| Vec::with_capacity(maximum_terms_per_lane))
+                .collect::<Vec<_>>();
+            let word_count = self
+                .lanes
+                .first()
+                .ok_or_else(|| "persistent group has no lanes".to_string())?
+                .lock()
+                .map_err(|_| "persistent group lane lock is poisoned".to_string())?
+                .preflight
+                .word_count();
+            for word_ordinal in 0..word_count {
+                for (lane_index, terms) in output.iter_mut().enumerate() {
+                    if terms.len() == maximum_terms_per_lane {
+                        continue;
+                    }
+                    let (local, global, copy) = {
+                        let state = self.lanes[lane_index]
+                            .lock()
+                            .map_err(|_| "persistent group lane lock is poisoned".to_string())?;
+                        (
+                            state.preflight.local_ordinal(),
+                            state.preflight.global_ordinal(),
+                            state.preflight.source_copy(),
+                        )
+                    };
+                    self.run_lane_word(
+                        lane_index,
+                        local,
+                        global,
+                        copy,
+                        word_ordinal,
+                        &mut |term| {
+                            if terms.len() < maximum_terms_per_lane {
+                                terms.push(term);
+                            }
+                            Ok(())
+                        },
+                    )?;
+                }
+                if output
+                    .iter()
+                    .all(|terms| terms.len() == maximum_terms_per_lane)
+                {
+                    break;
+                }
+            }
+            if output.iter().any(Vec::is_empty) {
+                return Err("persistent parity replay produced an empty lane".to_string());
+            }
+            Ok(output)
         }
     }
 
@@ -2407,6 +3351,411 @@ mod cuda_backend {
             }
         }
 
+        fn capture_cpu_20001_word(
+            local_ordinal: usize,
+            word_ordinal: usize,
+        ) -> (
+            crate::eleven_dimensional_second_momentum_20001_fx::SecondMomentum20001GpuColumnPreflight,
+            Vec<RecoupledSourceTerm>,
+        ){
+            const COMPLETE: &str = "CPU one-word canary complete";
+            use crate::eleven_dimensional_second_momentum_20001_fx::SecondMomentum20001GpuColumnEvent;
+            let preflight =
+                crate::eleven_dimensional_second_momentum_20001_fx::gpu_column_preflight(
+                    local_ordinal,
+                )
+                .unwrap();
+            let mut terms = Vec::new();
+            let result = crate::eleven_dimensional_second_momentum_20001_fx::
+                visit_gpu_column_contribution_events_from(
+                    &preflight,
+                    word_ordinal,
+                    |event| match event {
+                        SecondMomentum20001GpuColumnEvent::Term {
+                            requested_word_ordinal,
+                            term,
+                        } => {
+                            assert_eq!(requested_word_ordinal, word_ordinal);
+                            terms.push(term);
+                            Ok(())
+                        }
+                        SecondMomentum20001GpuColumnEvent::WordEnd {
+                            requested_word_ordinal,
+                            raw_terms_emitted,
+                        } if requested_word_ordinal == word_ordinal => {
+                            assert_eq!(raw_terms_emitted, terms.len() as u64);
+                            Err(std::io::Error::other(COMPLETE))
+                        }
+                        _ => Ok(()),
+                    },
+                );
+            match result {
+                Err(error) if error.to_string() == COMPLETE => {}
+                Err(error) => panic!("CPU one-word capture failed: {error}"),
+                Ok(_) => panic!("CPU one-word capture did not stop at its word boundary"),
+            }
+            (preflight, terms)
+        }
+
+        fn contract_streamed_expected(
+            static_data: &ModularFxStaticData,
+            global_ordinal: usize,
+            terms: &[RecoupledSourceTerm],
+        ) -> Vec<GaussianResidue> {
+            let mut cuda = CudaModularFx::new(static_data, 0).unwrap();
+            let mut rows = vec![GaussianResidue::zero(); FUNCTIONAL_ROW_COUNT];
+            for chunk in terms.chunks(131_072) {
+                let (delta, _) = cuda.accumulate_terms(chunk, global_ordinal).unwrap();
+                for (row, value) in rows.iter_mut().zip(delta) {
+                    *row = row.add(value, static_data.prime());
+                }
+            }
+            rows
+        }
+
+        fn run_real_persistent_group_word_canary(local_ordinals: &[usize], word_ordinal: usize) {
+            use crate::second_momentum_gpu_group::{
+                GpuFxTranche, GroupRuntimeIdentity, GroupWordOrchestrationConfig,
+                prepare_cuda_column_group,
+            };
+            let prime = GPU_FX_PRIMES[0];
+            let static_data = ModularFxStaticData::build(prime).unwrap();
+            let flat_plan_sha256 = {
+                let cuda = CudaModularFx::new(&static_data, 0).unwrap();
+                cuda.flat_plan_sha256().to_string()
+            };
+            let plan = prepare_cuda_column_group(
+                GpuFxTranche::Two0001,
+                local_ordinals,
+                GroupRuntimeIdentity {
+                    prime,
+                    static_semantic_sha256: static_data.semantic_sha256().to_string(),
+                    flat_plan_sha256,
+                },
+            )
+            .unwrap();
+            let captured = local_ordinals
+                .iter()
+                .map(|&local| capture_cpu_20001_word(local, word_ordinal))
+                .collect::<Vec<_>>();
+            let expected_rows = captured
+                .iter()
+                .map(|(preflight, terms)| {
+                    contract_streamed_expected(&static_data, preflight.global_column_ordinal, terms)
+                })
+                .collect::<Vec<_>>();
+
+            let mut executor = super::super::PersistentCudaGroupExecutor::new(
+                plan,
+                &static_data,
+                0,
+                262_144,
+                12 * 1024 * 1024 * 1024,
+                512 * 1024 * 1024,
+                512 * 1024 * 1024,
+                131_072,
+            )
+            .unwrap();
+            let mut observed = vec![Vec::new(); local_ordinals.len()];
+            let report = executor
+                .run_word_synchronous(
+                    GroupWordOrchestrationConfig {
+                        start_word_ordinal: word_ordinal,
+                        end_word_ordinal_exclusive: word_ordinal + 1,
+                        first_global_batch_ordinal: 0,
+                        raw_batch_term_cap_per_lane: 131_072,
+                        max_union_keys_per_batch: 262_144,
+                        aggregate_host_payload_cap_bytes: 512 * 1024 * 1024,
+                    },
+                    |lane, observed_word, term| {
+                        assert_eq!(observed_word, word_ordinal);
+                        observed[lane].push(term.clone());
+                        Ok(())
+                    },
+                    |_| Ok(()),
+                    |completed_word, completions| {
+                        assert_eq!(completed_word, word_ordinal);
+                        assert_eq!(completions.len(), local_ordinals.len());
+                        Ok(())
+                    },
+                )
+                .unwrap();
+            assert_eq!(report.completed_words, 1);
+            for lane in 0..local_ordinals.len() {
+                assert_eq!(observed[lane], captured[lane].1, "raw lane {lane}");
+                assert_eq!(executor.final_columns()[lane], expected_rows[lane]);
+            }
+            let summaries = executor.lowering_summaries().unwrap();
+            assert_eq!(summaries.len(), local_ordinals.len());
+            assert!(summaries.iter().all(|summary| {
+                summary.enabled
+                    && summary.roots_lowered != 0
+                    && summary.maximum_absolute_coefficient != 0
+            }));
+            let budget = executor.device_budget();
+            let reserved = budget.contraction_hard_cap_bytes
+                + budget.shared_lowering_hard_cap_bytes
+                + budget.reserved_headroom_bytes;
+            assert!(reserved <= budget.aggregate_hard_cap_bytes);
+            eprintln!(
+                "{}",
+                serde_json::json!({
+                    "event": "persistent_group_one_word_canary",
+                    "width": local_ordinals.len(),
+                    "word_ordinal": word_ordinal,
+                    "raw_terms_per_lane": captured.iter().map(|entry| entry.1.len()).collect::<Vec<_>>(),
+                    "union_batches": report.union_batches,
+                    "aggregate_device_cap_bytes": budget.aggregate_hard_cap_bytes,
+                    "shared_lowering_cap_bytes": budget.shared_lowering_hard_cap_bytes,
+                })
+            );
+        }
+
+        #[test]
+        fn persistent_group_device_budget_is_aggregate() {
+            let budget = super::super::PersistentGroupDeviceBudget::partition(
+                1024 * 1024 * 1024,
+                256 * 1024 * 1024,
+                3,
+            )
+            .unwrap();
+            assert_eq!(budget.active_lanes, 3);
+            assert!(
+                budget.contraction_hard_cap_bytes
+                    + budget.shared_lowering_hard_cap_bytes
+                    + budget.reserved_headroom_bytes
+                    <= budget.aggregate_hard_cap_bytes
+            );
+            assert!(
+                super::super::PersistentGroupDeviceBudget::partition(64 * 1024 * 1024, 1, 2,)
+                    .is_err()
+            );
+        }
+
+        #[test]
+        #[ignore = "runs exact real width-2 and width-3 persistent one-word group canaries"]
+        fn persistent_group_real_width_2_and_3_one_word_parity() {
+            run_real_persistent_group_word_canary(&[0, 1], 1);
+            run_real_persistent_group_word_canary(&[4, 5, 6], 1);
+        }
+
+        #[test]
+        #[ignore = "runs exact real width-2 one-word parity through two prime contexts"]
+        fn persistent_multi_prime_real_width_2_one_word_parity() {
+            use crate::second_momentum_gpu_group::{
+                GpuFxTranche, GroupRuntimeIdentity, GroupWordOrchestrationConfig,
+                prepare_cuda_column_group,
+            };
+            let local_ordinals = [0, 1];
+            let word_ordinal = 1;
+            let captured = local_ordinals
+                .iter()
+                .map(|&local| capture_cpu_20001_word(local, word_ordinal))
+                .collect::<Vec<_>>();
+            let mut static_data = Vec::new();
+            let mut plans = Vec::new();
+            let mut expected = Vec::new();
+            for &prime in &GPU_FX_PRIMES[1..] {
+                let data = ModularFxStaticData::build(prime).unwrap();
+                let flat_plan_sha256 = {
+                    let cuda = CudaModularFx::new(&data, 0).unwrap();
+                    cuda.flat_plan_sha256().to_string()
+                };
+                plans.push(
+                    prepare_cuda_column_group(
+                        GpuFxTranche::Two0001,
+                        &local_ordinals,
+                        GroupRuntimeIdentity {
+                            prime,
+                            static_semantic_sha256: data.semantic_sha256().to_string(),
+                            flat_plan_sha256,
+                        },
+                    )
+                    .unwrap(),
+                );
+                expected.push(
+                    captured
+                        .iter()
+                        .map(|(preflight, terms)| {
+                            contract_streamed_expected(
+                                &data,
+                                preflight.global_column_ordinal,
+                                terms,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                );
+                static_data.push(data);
+            }
+            let mut executor = super::super::PersistentCudaMultiPrimeGroupExecutor::new(
+                plans,
+                &static_data,
+                0,
+                262_144,
+                12 * 1024 * 1024 * 1024,
+                512 * 1024 * 1024,
+                512 * 1024 * 1024,
+                131_072,
+                None,
+            )
+            .unwrap();
+            let mut observed = vec![Vec::new(); local_ordinals.len()];
+            let mut batch_counts = vec![0_u64; static_data.len()];
+            let report = executor
+                .run_word_synchronous_batched(
+                    GroupWordOrchestrationConfig {
+                        start_word_ordinal: word_ordinal,
+                        end_word_ordinal_exclusive: word_ordinal + 1,
+                        first_global_batch_ordinal: 0,
+                        raw_batch_term_cap_per_lane: 131_072,
+                        max_union_keys_per_batch: 262_144,
+                        aggregate_host_payload_cap_bytes: 512 * 1024 * 1024,
+                    },
+                    |lane, observed_word, terms| {
+                        assert_eq!(observed_word, word_ordinal);
+                        observed[lane].extend_from_slice(terms);
+                        Ok(())
+                    },
+                    |prime_slot, prime, _| {
+                        assert_eq!(prime, GPU_FX_PRIMES[prime_slot + 1]);
+                        batch_counts[prime_slot] += 1;
+                        Ok(())
+                    },
+                    |completed_word, completions| {
+                        assert_eq!(completed_word, word_ordinal);
+                        assert_eq!(completions.len(), local_ordinals.len());
+                        Ok(())
+                    },
+                )
+                .unwrap();
+            assert_eq!(report.completed_words, 1);
+            assert!(
+                batch_counts
+                    .iter()
+                    .all(|count| *count == report.union_batches)
+            );
+            for lane in 0..local_ordinals.len() {
+                assert_eq!(observed[lane], captured[lane].1, "raw lane {lane}");
+            }
+            for (prime_slot, expected_columns) in expected.iter().enumerate() {
+                assert_eq!(
+                    executor.final_columns(prime_slot).unwrap(),
+                    expected_columns
+                );
+            }
+            assert_eq!(executor.batches_folded().unwrap(), report.union_batches);
+            eprintln!(
+                "{}",
+                serde_json::json!({
+                    "event": "persistent_multi_prime_one_word_canary",
+                    "prime_indices": [1, 2],
+                    "width": local_ordinals.len(),
+                    "word_ordinal": word_ordinal,
+                    "raw_terms_per_lane": captured.iter().map(|entry| entry.1.len()).collect::<Vec<_>>(),
+                    "union_batches": report.union_batches,
+                    "device_budget": executor.device_budget(),
+                })
+            );
+        }
+
+        #[test]
+        #[ignore = "runs the unified full-inventory adapter against established column 62"]
+        fn persistent_full_adapter_matches_established_30001_word() {
+            use crate::second_momentum_gpu_group::{
+                GpuFxTranche, GroupRuntimeIdentity, GroupWordOrchestrationConfig,
+                prepare_cuda_column_group,
+            };
+            let prime = GPU_FX_PRIMES[0];
+            let static_data = ModularFxStaticData::build(prime).unwrap();
+            let flat_plan_sha256 = {
+                let cuda = CudaModularFx::new(&static_data, 0).unwrap();
+                cuda.flat_plan_sha256().to_string()
+            };
+            let plan = prepare_cuda_column_group(
+                GpuFxTranche::Three0001,
+                &[0],
+                GroupRuntimeIdentity {
+                    prime,
+                    static_semantic_sha256: static_data.semantic_sha256().to_string(),
+                    flat_plan_sha256,
+                },
+            )
+            .unwrap();
+            let config = GroupWordOrchestrationConfig {
+                start_word_ordinal: 1,
+                end_word_ordinal_exclusive: 2,
+                first_global_batch_ordinal: 0,
+                raw_batch_term_cap_per_lane: 131_072,
+                max_union_keys_per_batch: 262_144,
+                aggregate_host_payload_cap_bytes: 512 * 1024 * 1024,
+            };
+            let mut established = super::super::PersistentCudaGroupExecutor::new(
+                plan.clone(),
+                &static_data,
+                0,
+                262_144,
+                12 * 1024 * 1024 * 1024,
+                512 * 1024 * 1024,
+                512 * 1024 * 1024,
+                131_072,
+            )
+            .unwrap();
+            let mut established_terms = Vec::new();
+            established
+                .run_word_synchronous(
+                    config.clone(),
+                    |lane, word, term| {
+                        assert_eq!(lane, 0);
+                        assert_eq!(word, 1);
+                        established_terms.push(term.clone());
+                        Ok(())
+                    },
+                    |_| Ok(()),
+                    |_, _| Ok(()),
+                )
+                .unwrap();
+            let established_rows = established.final_columns()[0].clone();
+            drop(established);
+
+            let mut unified = super::super::PersistentCudaGroupExecutor::new_full(
+                plan,
+                &static_data,
+                0,
+                262_144,
+                12 * 1024 * 1024 * 1024,
+                512 * 1024 * 1024,
+                512 * 1024 * 1024,
+                131_072,
+                std::path::Path::new("unused-for-established-column-parity"),
+            )
+            .unwrap();
+            let mut unified_terms = Vec::new();
+            unified
+                .run_word_synchronous(
+                    config,
+                    |lane, word, term| {
+                        assert_eq!(lane, 0);
+                        assert_eq!(word, 1);
+                        unified_terms.push(term.clone());
+                        Ok(())
+                    },
+                    |_| Ok(()),
+                    |_, _| Ok(()),
+                )
+                .unwrap();
+            assert_eq!(unified_terms, established_terms);
+            assert_eq!(unified.final_columns()[0], established_rows);
+            assert_eq!(
+                unified.final_column_semantic_sha256(),
+                vec![column_semantic_sha256(
+                    prime,
+                    62,
+                    static_data.semantic_sha256(),
+                    &established_rows,
+                )]
+            );
+        }
+
         #[test]
         fn cuda_matches_fused_cpu_reference() {
             let static_data = ModularFxStaticData::build(GPU_FX_PRIMES[0]).unwrap();
@@ -2447,6 +3796,236 @@ mod cuda_backend {
                     legacy_timing.nonzero_terms_after_reduce,
                     "prime {prime}"
                 );
+            }
+        }
+
+        fn assert_multicol_exact_width(width: usize, prime: u32) {
+            let static_data = ModularFxStaticData::build(prime).unwrap();
+            let base = sample_column(257);
+            let mut distinct_lanes = Vec::new();
+            for lane in 0..3 {
+                let mut reduced = BTreeMap::<u64, i128>::new();
+                for (ordinal, term) in base.terms.iter().enumerate() {
+                    if lane == 1 && ordinal % 7 == 0 {
+                        continue;
+                    }
+                    let coefficient = match lane {
+                        0 => term.coefficient,
+                        1 => term.coefficient * 3 + 1,
+                        _ => -term.coefficient * 5 - 2,
+                    };
+                    *reduced
+                        .entry(pack_recoupling_key(term).unwrap())
+                        .or_default() += coefficient;
+                }
+                reduced.retain(|_, coefficient| *coefficient != 0);
+                distinct_lanes.push(reduced);
+            }
+            let lanes = (0..width)
+                .map(|lane| distinct_lanes[lane % distinct_lanes.len()].clone())
+                .collect::<Vec<_>>();
+            let mut union = BTreeMap::<u64, Vec<i128>>::new();
+            for (lane, reduced) in lanes.iter().enumerate() {
+                for (&key, &coefficient) in reduced {
+                    union.entry(key).or_insert_with(|| vec![0; width])[lane] = coefficient;
+                }
+            }
+            union.retain(|_, values| values.iter().any(|value| *value != 0));
+            let keys = union.keys().copied().collect::<Vec<_>>();
+            let values = union
+                .values()
+                .flat_map(|values| values.iter().copied())
+                .collect::<Vec<_>>();
+
+            let mut cuda = CudaModularFx::new(&static_data, 0).unwrap();
+            let mut expected_rows = Vec::new();
+            let mut expected_expanded = Vec::new();
+            for (lane, reduced) in lanes.iter().enumerate() {
+                let terms = reduced
+                    .iter()
+                    .map(|(&key, &coefficient)| {
+                        let (momentum_pair, free_spinor, exterior_mask) =
+                            unpack_recoupling_key(key).unwrap();
+                        RecoupledSourceTerm {
+                            momentum_pair,
+                            free_spinor,
+                            exterior_mask,
+                            coefficient,
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                let (rows, timing) = cuda.accumulate_terms(&terms, 10_000 + lane).unwrap();
+                expected_rows.push(rows);
+                expected_expanded.push(timing.expanded_contributions);
+            }
+            cuda.reserve_multicol(keys.len(), width).unwrap();
+            let reserved_bytes = cuda.resident_bytes();
+            let observed = cuda
+                .accumulate_reduced_multicol(&keys, &values, width)
+                .unwrap();
+            assert_eq!(observed.columns, expected_rows, "width {width}");
+            assert_eq!(observed.stats.unique_count, keys.len() as u64);
+            assert_eq!(observed.stats.active_columns, width as u32);
+            assert_eq!(observed.stats.resident_bytes, reserved_bytes);
+            assert!(observed.stats.buffer_high_water_bytes >= reserved_bytes);
+            for lane in 0..width {
+                assert_eq!(
+                    observed.stats.nonzero_terms[lane],
+                    lanes[lane].len() as u64,
+                    "width {width} lane {lane}"
+                );
+                assert_eq!(
+                    observed.stats.expanded_contributions[lane], expected_expanded[lane],
+                    "width {width} lane {lane}"
+                );
+            }
+        }
+
+        #[test]
+        fn multicol_cuda_exact_parity_for_production_widths() {
+            for prime in GPU_FX_PRIMES {
+                for width in [1, 2, 3] {
+                    assert_multicol_exact_width(width, prime);
+                }
+            }
+        }
+
+        #[test]
+        fn multicol_cuda_exact_parity_through_width_32() {
+            for width in [4, 8, 15, 32] {
+                assert_multicol_exact_width(width, GPU_FX_PRIMES[0]);
+            }
+        }
+
+        #[test]
+        fn multicol_cuda_rejects_unreserved_malformed_and_all_zero_inputs() {
+            let static_data = ModularFxStaticData::build(GPU_FX_PRIMES[0]).unwrap();
+            let key = pack_recoupling_key(&sample_column(1).terms[0]).unwrap();
+            let mut cuda = CudaModularFx::new(&static_data, 0).unwrap();
+            cuda.reserve_multicol(2, 2).unwrap();
+            assert!(cuda.accumulate_reduced_multicol(&[key], &[1], 2).is_err());
+            assert!(
+                cuda.accumulate_reduced_multicol(&[key], &[1, 2, 3], 3)
+                    .is_err()
+            );
+            assert!(
+                cuda.accumulate_reduced_multicol(&[key], &[0, 0], 2)
+                    .unwrap_err()
+                    .contains("all-zero")
+            );
+            assert!(
+                cuda.accumulate_reduced_multicol(&[key | (1_u64 << 63)], &[1, 0], 2)
+                    .unwrap_err()
+                    .contains("canonical")
+            );
+            assert!(
+                cuda.accumulate_reduced_multicol(&[key, key], &[1, 0, 0, 1], 2)
+                    .unwrap_err()
+                    .contains("canonical")
+            );
+
+            let mut capped = CudaModularFx::new(&static_data, 0).unwrap();
+            capped
+                .set_recoupling_hard_cap(capped.resident_bytes())
+                .unwrap();
+            assert!(
+                capped
+                    .reserve_multicol(1, 2)
+                    .unwrap_err()
+                    .contains("device cap")
+            );
+        }
+
+        #[test]
+        #[ignore = "benchmarks exact production multi-column contraction on real 30002 prefixes"]
+        fn benchmark_real_30002_multicol_production() {
+            const TERMS: usize = 131_072;
+            const LOCALS: [usize; 3] = [12, 13, 14];
+            const STOP: &str = "real multi-column prefix complete";
+            let captured = LOCALS
+                .into_iter()
+                .map(|local| {
+                    let mut terms = Vec::with_capacity(TERMS);
+                    let result = crate::eleven_dimensional_second_momentum_30001_fx::
+                        visit_gpu_column_contributions(local, |term| {
+                            if terms.len() == TERMS {
+                                return Err(std::io::Error::other(STOP));
+                            }
+                            terms.push(term);
+                            Ok(())
+                        });
+                    match result {
+                        Err(error) if error.to_string() == STOP => {}
+                        Err(error) => panic!("real lane {local} capture failed: {error}"),
+                        Ok(_) => assert_eq!(terms.len(), TERMS),
+                    }
+                    terms
+                })
+                .collect::<Vec<_>>();
+            let reduced = captured
+                .iter()
+                .map(|terms| {
+                    let mut lane = BTreeMap::<u64, i128>::new();
+                    for term in terms {
+                        let entry = lane.entry(pack_recoupling_key(term).unwrap()).or_default();
+                        *entry = entry.checked_add(term.coefficient).unwrap();
+                    }
+                    lane.retain(|_, coefficient| *coefficient != 0);
+                    lane
+                })
+                .collect::<Vec<_>>();
+
+            for prime in GPU_FX_PRIMES {
+                let static_data = ModularFxStaticData::build(prime).unwrap();
+                for width in [1_usize, 2, 3] {
+                    let mut union = BTreeMap::<u64, Vec<i128>>::new();
+                    for (lane, coefficients) in reduced[..width].iter().enumerate() {
+                        for (&key, &coefficient) in coefficients {
+                            union.entry(key).or_insert_with(|| vec![0; width])[lane] = coefficient;
+                        }
+                    }
+                    let keys = union.keys().copied().collect::<Vec<_>>();
+                    let values = union
+                        .values()
+                        .flat_map(|values| values.iter().copied())
+                        .collect::<Vec<_>>();
+                    let mut cuda = CudaModularFx::new(&static_data, 0).unwrap();
+                    let mut expected = Vec::new();
+                    let mut expected_expanded = Vec::new();
+                    let mut sequential_contract_ms = 0_f64;
+                    for (lane, terms) in captured[..width].iter().enumerate() {
+                        let (rows, timing) = cuda.accumulate_terms(terms, 74 + lane).unwrap();
+                        expected.push(rows);
+                        expected_expanded.push(timing.expanded_contributions);
+                        sequential_contract_ms += f64::from(timing.contract_milliseconds);
+                    }
+                    cuda.reserve_multicol(keys.len(), width).unwrap();
+                    let observed = cuda
+                        .accumulate_reduced_multicol(&keys, &values, width)
+                        .unwrap();
+                    assert_eq!(observed.columns, expected, "prime {prime} width {width}");
+                    assert_eq!(
+                        &observed.stats.expanded_contributions[..width],
+                        expected_expanded,
+                        "prime {prime} width {width}"
+                    );
+                    eprintln!(
+                        "{}",
+                        serde_json::json!({
+                            "event": "multicol_production_prefix",
+                            "prime": prime,
+                            "active_columns": width,
+                            "terms_per_column": TERMS,
+                            "union_keys": keys.len(),
+                            "sequential_contract_ms": sequential_contract_ms,
+                            "multicol_contract_ms": observed.stats.contract_milliseconds,
+                            "contract_speedup": sequential_contract_ms
+                                / f64::from(observed.stats.contract_milliseconds),
+                            "resident_bytes": observed.stats.resident_bytes,
+                            "high_water_bytes": observed.stats.buffer_high_water_bytes,
+                        })
+                    );
+                }
             }
         }
 
@@ -2554,11 +4133,13 @@ mod cuda_backend {
                 exterior_mask: 0xfff0_0000,
                 coefficient: 0,
             };
-            assert!(canonical
-                .terms
-                .iter()
-                .all(|term| pack_recoupling_key(term).unwrap()
-                    != pack_recoupling_key(&cancel).unwrap()));
+            assert!(
+                canonical
+                    .terms
+                    .iter()
+                    .all(|term| pack_recoupling_key(term).unwrap()
+                        != pack_recoupling_key(&cancel).unwrap())
+            );
             cancel.coefficient = 123_456_789;
             let mut cancel_negative = cancel;
             cancel_negative.coefficient = -cancel.coefficient;
@@ -2645,15 +4226,17 @@ mod cuda_backend {
         fn cuda_streaming_caps_fail_before_batch_allocation() {
             let static_data = ModularFxStaticData::build(GPU_FX_PRIMES[0]).unwrap();
             let cuda = CudaModularFx::new(&static_data, 0).unwrap();
-            assert!(CudaStreamingColumnAccumulator::new(
-                cuda,
-                CudaStreamingConfig {
-                    batch_terms: 1_000_000,
-                    host_hard_cap_bytes: 1,
-                    device_hard_cap_bytes: 256 * 1024 * 1024,
-                },
-            )
-            .is_err());
+            assert!(
+                CudaStreamingColumnAccumulator::new(
+                    cuda,
+                    CudaStreamingConfig {
+                        batch_terms: 1_000_000,
+                        host_hard_cap_bytes: 1,
+                        device_hard_cap_bytes: 256 * 1024 * 1024,
+                    },
+                )
+                .is_err()
+            );
 
             let required = sparse_lowering_host_bytes(250_000_000).unwrap();
             assert!(required > DEFAULT_STREAM_HOST_HARD_CAP_BYTES);
@@ -2737,9 +4320,10 @@ mod cuda_backend {
             let other = PersistentSparseContext::new(0, 1024 * 1024).unwrap();
             let mut wrong_owner_stats = CudaSparseLoweringStats::default();
             let mut error = [0_i8; ERROR_CAPACITY];
+            let _other_guard = other.owner.lock().unwrap();
             let wrong_owner = unsafe {
                 adynkra_fx_cuda_sparse_handle_lower(
-                    other.raw.as_ptr(),
+                    other.owner.raw.as_ptr(),
                     handle.raw.as_ptr(),
                     0,
                     &mut wrong_owner_stats,
@@ -2749,8 +4333,9 @@ mod cuda_backend {
             };
             assert!(wrong_owner.is_null());
             assert!(error_string(&error).contains("invalid persistent sparse lowering input"));
+            drop(_other_guard);
             drop(other);
-            // The C boundary defers destruction until the final immutable
+            // Arc ownership keeps the context alive until its final immutable
             // handle is released, preventing a dangling raw owner pointer.
             drop(context);
             drop(handle);
@@ -2767,9 +4352,11 @@ mod cuda_backend {
             assert_eq!(telemetry[1].input_count, 0);
 
             let too_large = vec![((3_u64 << 32) | 0x0000_0fff, i64::MAX / 13 + 1)];
-            assert!(lower_sparse_word_exact(&too_large, &[0], 0)
-                .unwrap_err()
-                .contains("coefficient bound"));
+            assert!(
+                lower_sparse_word_exact(&too_large, &[0], 0)
+                    .unwrap_err()
+                    .contains("coefficient bound")
+            );
         }
 
         #[test]
@@ -2998,7 +4585,590 @@ mod cuda_backend {
 }
 
 #[cfg(feature = "cuda")]
-pub(crate) use cuda_backend::{lower_sparse_exact, CudaModularFx};
+pub(crate) use cuda_backend::{
+    CudaModularFx, CudaMultiColumnBatch, CudaMultiColumnStats, lower_sparse_exact,
+};
+
+#[cfg(feature = "cuda")]
+const PERSISTENT_GROUP_DEVICE_HEADROOM_BYTES: u64 = 64 * 1024 * 1024;
+
+#[cfg(feature = "cuda")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+pub(crate) struct PersistentGroupDeviceBudget {
+    pub aggregate_hard_cap_bytes: u64,
+    pub contraction_hard_cap_bytes: u64,
+    pub shared_lowering_hard_cap_bytes: u64,
+    pub active_lanes: usize,
+    pub reserved_headroom_bytes: u64,
+}
+
+#[cfg(feature = "cuda")]
+impl PersistentGroupDeviceBudget {
+    fn partition(
+        aggregate_hard_cap_bytes: u64,
+        contraction_hard_cap_bytes: u64,
+        active_lanes: usize,
+    ) -> Result<Self, String> {
+        if active_lanes == 0 || active_lanes > 3 || contraction_hard_cap_bytes == 0 {
+            return Err("invalid persistent group device budget shape".to_string());
+        }
+        let lowering_total = aggregate_hard_cap_bytes
+            .checked_sub(PERSISTENT_GROUP_DEVICE_HEADROOM_BYTES)
+            .and_then(|bytes| bytes.checked_sub(contraction_hard_cap_bytes))
+            .ok_or_else(|| {
+                "aggregate CUDA cap cannot cover contraction plus 64 MiB headroom".to_string()
+            })?;
+        if lowering_total < 4 * std::mem::size_of::<u32>() as u64 + 8 {
+            return Err("aggregate CUDA cap leaves no usable shared lowering budget".to_string());
+        }
+        let reserved = contraction_hard_cap_bytes
+            .checked_add(lowering_total)
+            .and_then(|bytes| bytes.checked_add(PERSISTENT_GROUP_DEVICE_HEADROOM_BYTES))
+            .ok_or_else(|| "persistent aggregate device budget overflow".to_string())?;
+        if reserved > aggregate_hard_cap_bytes {
+            return Err("persistent aggregate device budget exceeds its hard cap".to_string());
+        }
+        Ok(Self {
+            aggregate_hard_cap_bytes,
+            contraction_hard_cap_bytes,
+            shared_lowering_hard_cap_bytes: lowering_total,
+            active_lanes,
+            reserved_headroom_bytes: PERSISTENT_GROUP_DEVICE_HEADROOM_BYTES,
+        })
+    }
+}
+
+/// Owns the contraction context and one serialized persistent lowering
+/// context shared by all group lanes under one checked device allocation budget.
+#[cfg(feature = "cuda")]
+pub(crate) struct PersistentCudaGroupExecutor {
+    contraction: crate::second_momentum_gpu_group::CudaGroupBatchExecutor,
+    lanes: cuda_backend::PersistentGroupLaneAdapter,
+    budget: PersistentGroupDeviceBudget,
+}
+
+#[cfg(feature = "cuda")]
+impl PersistentCudaGroupExecutor {
+    pub(crate) fn new(
+        plan: crate::second_momentum_gpu_group::PreparedColumnGroup,
+        static_data: &ModularFxStaticData,
+        device: i32,
+        max_union_keys: usize,
+        aggregate_device_hard_cap_bytes: u64,
+        contraction_device_hard_cap_bytes: u64,
+        per_lane_host_staging_cap_bytes: u64,
+        download_chunk_terms: usize,
+    ) -> Result<Self, String> {
+        Self::new_with_full_map_directory(
+            plan,
+            static_data,
+            device,
+            max_union_keys,
+            aggregate_device_hard_cap_bytes,
+            contraction_device_hard_cap_bytes,
+            per_lane_host_staging_cap_bytes,
+            download_chunk_terms,
+            None,
+        )
+    }
+
+    pub(crate) fn new_full(
+        plan: crate::second_momentum_gpu_group::PreparedColumnGroup,
+        static_data: &ModularFxStaticData,
+        device: i32,
+        max_union_keys: usize,
+        aggregate_device_hard_cap_bytes: u64,
+        contraction_device_hard_cap_bytes: u64,
+        per_lane_host_staging_cap_bytes: u64,
+        download_chunk_terms: usize,
+        map_directory: &std::path::Path,
+    ) -> Result<Self, String> {
+        Self::new_with_full_map_directory(
+            plan,
+            static_data,
+            device,
+            max_union_keys,
+            aggregate_device_hard_cap_bytes,
+            contraction_device_hard_cap_bytes,
+            per_lane_host_staging_cap_bytes,
+            download_chunk_terms,
+            Some(map_directory),
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn new_with_full_map_directory(
+        plan: crate::second_momentum_gpu_group::PreparedColumnGroup,
+        static_data: &ModularFxStaticData,
+        device: i32,
+        max_union_keys: usize,
+        aggregate_device_hard_cap_bytes: u64,
+        contraction_device_hard_cap_bytes: u64,
+        per_lane_host_staging_cap_bytes: u64,
+        download_chunk_terms: usize,
+        map_directory: Option<&std::path::Path>,
+    ) -> Result<Self, String> {
+        let budget = PersistentGroupDeviceBudget::partition(
+            aggregate_device_hard_cap_bytes,
+            contraction_device_hard_cap_bytes,
+            plan.active_columns,
+        )?;
+        let contraction = crate::second_momentum_gpu_group::CudaGroupBatchExecutor::new(
+            plan.clone(),
+            static_data,
+            device,
+            max_union_keys,
+            budget.contraction_hard_cap_bytes,
+        )?;
+        let lanes = cuda_backend::PersistentGroupLaneAdapter::new(
+            &plan,
+            device,
+            budget.shared_lowering_hard_cap_bytes,
+            per_lane_host_staging_cap_bytes,
+            download_chunk_terms,
+            map_directory,
+        )?;
+        Ok(Self {
+            contraction,
+            lanes,
+            budget,
+        })
+    }
+
+    pub(crate) fn run_word_synchronous<O, B, W>(
+        &mut self,
+        config: crate::second_momentum_gpu_group::GroupWordOrchestrationConfig,
+        observe_raw_term: O,
+        observe_batch: B,
+        complete_word: W,
+    ) -> Result<crate::second_momentum_gpu_group::GroupWordOrchestrationReport, String>
+    where
+        O: FnMut(usize, usize, &RecoupledSourceTerm) -> Result<(), String>,
+        B: FnMut(&crate::second_momentum_gpu_group::GroupBatchObservation) -> Result<(), String>,
+        W: FnMut(
+            usize,
+            &[crate::second_momentum_gpu_group::LaneWordCompletion],
+        ) -> Result<(), String>,
+    {
+        let lanes = &self.lanes;
+        self.contraction.run_word_synchronous(
+            config,
+            &|lane_index,
+              expected_local_ordinal,
+              expected_global_ordinal,
+              expected_source_copy,
+              word_ordinal,
+              emit_term| {
+                lanes.run_lane_word(
+                    lane_index,
+                    expected_local_ordinal,
+                    expected_global_ordinal,
+                    expected_source_copy,
+                    word_ordinal,
+                    emit_term,
+                )
+            },
+            observe_raw_term,
+            observe_batch,
+            complete_word,
+        )
+    }
+
+    pub(crate) fn run_word_synchronous_batched<O, B, W>(
+        &mut self,
+        config: crate::second_momentum_gpu_group::GroupWordOrchestrationConfig,
+        observe_raw_batch: O,
+        observe_batch: B,
+        complete_word: W,
+    ) -> Result<crate::second_momentum_gpu_group::GroupWordOrchestrationReport, String>
+    where
+        O: FnMut(usize, usize, &[RecoupledSourceTerm]) -> Result<(), String>,
+        B: FnMut(&crate::second_momentum_gpu_group::GroupBatchObservation) -> Result<(), String>,
+        W: FnMut(
+            usize,
+            &[crate::second_momentum_gpu_group::LaneWordCompletion],
+        ) -> Result<(), String>,
+    {
+        let lanes = &self.lanes;
+        self.contraction.run_word_synchronous_batched(
+            config,
+            &|lane_index,
+              expected_local_ordinal,
+              expected_global_ordinal,
+              expected_source_copy,
+              word_ordinal,
+              emit_term| {
+                lanes.run_lane_word(
+                    lane_index,
+                    expected_local_ordinal,
+                    expected_global_ordinal,
+                    expected_source_copy,
+                    word_ordinal,
+                    emit_term,
+                )
+            },
+            observe_raw_batch,
+            observe_batch,
+            complete_word,
+        )
+    }
+
+    pub(crate) const fn device_budget(&self) -> PersistentGroupDeviceBudget {
+        self.budget
+    }
+
+    pub(crate) fn lowering_summaries(
+        &self,
+    ) -> Result<Vec<cuda_backend::PersistentLoweringSummary>, String> {
+        self.lanes.summaries()
+    }
+
+    pub(crate) fn final_columns(&self) -> &[Vec<GaussianResidue>] {
+        self.contraction.final_columns()
+    }
+
+    pub(crate) fn final_column_semantic_sha256(&self) -> Vec<String> {
+        self.contraction.final_column_semantic_sha256()
+    }
+
+    pub(crate) fn restore_columns(
+        &mut self,
+        columns: Vec<Vec<GaussianResidue>>,
+        batches_folded: u64,
+    ) -> Result<(), String> {
+        self.contraction.restore_columns(columns, batches_folded)
+    }
+
+    pub(crate) const fn batches_folded(&self) -> u64 {
+        self.contraction.batches_folded()
+    }
+
+    pub(crate) fn collect_parity_prefix(
+        &self,
+        maximum_terms_per_lane: usize,
+    ) -> Result<Vec<Vec<RecoupledSourceTerm>>, String> {
+        self.lanes.collect_parity_prefix(maximum_terms_per_lane)
+    }
+}
+
+#[cfg(feature = "cuda")]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct PersistentMultiPrimeDeviceBudget {
+    pub aggregate_hard_cap_bytes: u64,
+    pub initial_per_prime_contraction_hard_cap_bytes: u64,
+    pub contraction_resident_bytes_by_prime: Vec<u64>,
+    pub total_contraction_resident_bytes: u64,
+    pub shared_lowering_hard_cap_bytes: u64,
+    pub active_lanes: usize,
+    pub active_primes: usize,
+    pub reserved_headroom_bytes: u64,
+}
+
+#[cfg(feature = "cuda")]
+impl PersistentMultiPrimeDeviceBudget {
+    fn partition_after_reserve(
+        aggregate_hard_cap_bytes: u64,
+        initial_per_prime_contraction_hard_cap_bytes: u64,
+        contraction_resident_bytes_by_prime: Vec<u64>,
+        active_lanes: usize,
+        active_primes: usize,
+    ) -> Result<Self, String> {
+        if active_lanes == 0
+            || active_lanes > 3
+            || active_primes == 0
+            || active_primes > GPU_FX_PRIMES.len()
+            || initial_per_prime_contraction_hard_cap_bytes == 0
+            || contraction_resident_bytes_by_prime.len() != active_primes
+            || contraction_resident_bytes_by_prime.contains(&0)
+        {
+            return Err("invalid persistent multi-prime device budget shape".to_string());
+        }
+        let total_contraction_resident_bytes = contraction_resident_bytes_by_prime
+            .iter()
+            .try_fold(0_u64, |sum, bytes| sum.checked_add(*bytes))
+            .ok_or_else(|| "multi-prime contraction resident-byte overflow".to_string())?;
+        let shared_lowering_hard_cap_bytes = aggregate_hard_cap_bytes
+            .checked_sub(PERSISTENT_GROUP_DEVICE_HEADROOM_BYTES)
+            .and_then(|bytes| bytes.checked_sub(total_contraction_resident_bytes))
+            .ok_or_else(|| {
+                "aggregate CUDA cap cannot cover every prime plus 64 MiB headroom".to_string()
+            })?;
+        if shared_lowering_hard_cap_bytes < 4 * std::mem::size_of::<u32>() as u64 + 8 {
+            return Err("aggregate CUDA cap leaves no usable shared lowering budget".to_string());
+        }
+        Ok(Self {
+            aggregate_hard_cap_bytes,
+            initial_per_prime_contraction_hard_cap_bytes,
+            contraction_resident_bytes_by_prime,
+            total_contraction_resident_bytes,
+            shared_lowering_hard_cap_bytes,
+            active_lanes,
+            active_primes,
+            reserved_headroom_bytes: PERSISTENT_GROUP_DEVICE_HEADROOM_BYTES,
+        })
+    }
+}
+
+/// Shares one exact PBW traversal, raw hash stream, lane reduction, and union
+/// batch across several independent prime-specific CUDA contraction contexts.
+/// No exact union payload is cloned between primes.
+#[cfg(feature = "cuda")]
+pub(crate) struct PersistentCudaMultiPrimeGroupExecutor {
+    source_plan: crate::second_momentum_gpu_group::PreparedColumnGroup,
+    bundle_group_id: String,
+    contractions: Vec<crate::second_momentum_gpu_group::CudaGroupBatchExecutor>,
+    lanes: cuda_backend::PersistentGroupLaneAdapter,
+    budget: PersistentMultiPrimeDeviceBudget,
+}
+
+#[cfg(feature = "cuda")]
+impl PersistentCudaMultiPrimeGroupExecutor {
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn new(
+        plans: Vec<crate::second_momentum_gpu_group::PreparedColumnGroup>,
+        static_data: &[ModularFxStaticData],
+        device: i32,
+        max_union_keys: usize,
+        aggregate_device_hard_cap_bytes: u64,
+        per_prime_contraction_hard_cap_bytes: u64,
+        per_lane_host_staging_cap_bytes: u64,
+        download_chunk_terms: usize,
+        map_directory: Option<&std::path::Path>,
+    ) -> Result<Self, String> {
+        if plans.len() != static_data.len() || plans.is_empty() {
+            return Err("multi-prime plans and static data have different shapes".to_string());
+        }
+        let bundle_group_id =
+            crate::second_momentum_gpu_group::multi_prime_group_identity_sha256(&plans)?;
+        let active_lanes = plans[0].active_columns;
+        let mut contractions = Vec::with_capacity(plans.len());
+        for (plan, data) in plans.iter().cloned().zip(static_data) {
+            contractions.push(
+                crate::second_momentum_gpu_group::CudaGroupBatchExecutor::new_for_batch_group(
+                    plan,
+                    bundle_group_id.clone(),
+                    data,
+                    device,
+                    max_union_keys,
+                    per_prime_contraction_hard_cap_bytes,
+                )?,
+            );
+        }
+        let contraction_resident_bytes_by_prime = contractions
+            .iter_mut()
+            .map(|contraction| contraction.tighten_device_hard_cap_to_resident())
+            .collect::<Result<Vec<_>, _>>()?;
+        let budget = PersistentMultiPrimeDeviceBudget::partition_after_reserve(
+            aggregate_device_hard_cap_bytes,
+            per_prime_contraction_hard_cap_bytes,
+            contraction_resident_bytes_by_prime,
+            active_lanes,
+            plans.len(),
+        )?;
+        let source_plan = plans[0].clone();
+        let lanes = cuda_backend::PersistentGroupLaneAdapter::new(
+            &source_plan,
+            device,
+            budget.shared_lowering_hard_cap_bytes,
+            per_lane_host_staging_cap_bytes,
+            download_chunk_terms,
+            map_directory,
+        )?;
+        Ok(Self {
+            source_plan,
+            bundle_group_id,
+            contractions,
+            lanes,
+            budget,
+        })
+    }
+
+    pub(crate) fn run_word_synchronous<O, B, W>(
+        &mut self,
+        config: crate::second_momentum_gpu_group::GroupWordOrchestrationConfig,
+        observe_raw_term: O,
+        mut observe_batch: B,
+        complete_word: W,
+    ) -> Result<crate::second_momentum_gpu_group::GroupWordOrchestrationReport, String>
+    where
+        O: FnMut(usize, usize, &RecoupledSourceTerm) -> Result<(), String>,
+        B: FnMut(
+            usize,
+            u32,
+            &crate::second_momentum_gpu_group::GroupBatchObservation,
+        ) -> Result<(), String>,
+        W: FnMut(
+            usize,
+            &[crate::second_momentum_gpu_group::LaneWordCompletion],
+        ) -> Result<(), String>,
+    {
+        let lanes = &self.lanes;
+        let source_plan = self.source_plan.clone();
+        let contractions = &mut self.contractions;
+        crate::second_momentum_gpu_group::orchestrate_group_words_with_batch_group_id(
+            &source_plan,
+            &self.bundle_group_id,
+            config,
+            &|lane_index,
+              expected_local_ordinal,
+              expected_global_ordinal,
+              expected_source_copy,
+              word_ordinal,
+              emit_term| {
+                lanes.run_lane_word(
+                    lane_index,
+                    expected_local_ordinal,
+                    expected_global_ordinal,
+                    expected_source_copy,
+                    word_ordinal,
+                    emit_term,
+                )
+            },
+            observe_raw_term,
+            |word_ordinal, raw_counts, batch| {
+                for (prime_slot, contraction) in contractions.iter_mut().enumerate() {
+                    let prime = contraction.prime();
+                    let observation = contraction.accumulate_batch(
+                        &batch,
+                        word_ordinal,
+                        None,
+                        raw_counts.clone(),
+                    )?;
+                    observe_batch(prime_slot, prime, &observation)?;
+                }
+                Ok(())
+            },
+            complete_word,
+        )
+    }
+
+    pub(crate) fn run_word_synchronous_batched<O, B, W>(
+        &mut self,
+        config: crate::second_momentum_gpu_group::GroupWordOrchestrationConfig,
+        observe_raw_batch: O,
+        mut observe_batch: B,
+        complete_word: W,
+    ) -> Result<crate::second_momentum_gpu_group::GroupWordOrchestrationReport, String>
+    where
+        O: FnMut(usize, usize, &[RecoupledSourceTerm]) -> Result<(), String>,
+        B: FnMut(
+            usize,
+            u32,
+            &crate::second_momentum_gpu_group::GroupBatchObservation,
+        ) -> Result<(), String>,
+        W: FnMut(
+            usize,
+            &[crate::second_momentum_gpu_group::LaneWordCompletion],
+        ) -> Result<(), String>,
+    {
+        let lanes = &self.lanes;
+        let source_plan = self.source_plan.clone();
+        let contractions = &mut self.contractions;
+        crate::second_momentum_gpu_group::orchestrate_group_words_with_batch_observer(
+            &source_plan,
+            &self.bundle_group_id,
+            config,
+            &|lane_index,
+              expected_local_ordinal,
+              expected_global_ordinal,
+              expected_source_copy,
+              word_ordinal,
+              emit_term| {
+                lanes.run_lane_word(
+                    lane_index,
+                    expected_local_ordinal,
+                    expected_global_ordinal,
+                    expected_source_copy,
+                    word_ordinal,
+                    emit_term,
+                )
+            },
+            observe_raw_batch,
+            |word_ordinal, raw_counts, batch| {
+                for (prime_slot, contraction) in contractions.iter_mut().enumerate() {
+                    let prime = contraction.prime();
+                    let observation = contraction.accumulate_batch(
+                        &batch,
+                        word_ordinal,
+                        None,
+                        raw_counts.clone(),
+                    )?;
+                    observe_batch(prime_slot, prime, &observation)?;
+                }
+                Ok(())
+            },
+            complete_word,
+        )
+    }
+
+    pub(crate) fn device_budget(&self) -> &PersistentMultiPrimeDeviceBudget {
+        &self.budget
+    }
+
+    pub(crate) fn lowering_summaries(
+        &self,
+    ) -> Result<Vec<cuda_backend::PersistentLoweringSummary>, String> {
+        self.lanes.summaries()
+    }
+
+    pub(crate) fn final_columns(
+        &self,
+        prime_slot: usize,
+    ) -> Result<&[Vec<GaussianResidue>], String> {
+        self.contractions
+            .get(prime_slot)
+            .map(crate::second_momentum_gpu_group::CudaGroupBatchExecutor::final_columns)
+            .ok_or_else(|| "multi-prime column slot is out of range".to_string())
+    }
+
+    pub(crate) fn final_column_semantic_sha256(
+        &self,
+        prime_slot: usize,
+    ) -> Result<Vec<String>, String> {
+        self.contractions
+            .get(prime_slot)
+            .map(crate::second_momentum_gpu_group::CudaGroupBatchExecutor::final_column_semantic_sha256)
+            .ok_or_else(|| "multi-prime digest slot is out of range".to_string())
+    }
+
+    pub(crate) fn restore_columns(
+        &mut self,
+        rows_by_prime: Vec<Vec<Vec<GaussianResidue>>>,
+        batches_folded: u64,
+    ) -> Result<(), String> {
+        if rows_by_prime.len() != self.contractions.len() {
+            return Err("multi-prime restore shape changed".to_string());
+        }
+        for (contraction, rows) in self.contractions.iter_mut().zip(rows_by_prime) {
+            contraction.restore_columns(rows, batches_folded)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn batches_folded(&self) -> Result<u64, String> {
+        let first = self
+            .contractions
+            .first()
+            .ok_or_else(|| "multi-prime executor has no contractions".to_string())?
+            .batches_folded();
+        if self
+            .contractions
+            .iter()
+            .any(|contraction| contraction.batches_folded() != first)
+        {
+            return Err("multi-prime contraction batch counts diverged".to_string());
+        }
+        Ok(first)
+    }
+
+    pub(crate) fn collect_parity_prefix(
+        &self,
+        maximum_terms_per_lane: usize,
+    ) -> Result<Vec<Vec<RecoupledSourceTerm>>, String> {
+        self.lanes.collect_parity_prefix(maximum_terms_per_lane)
+    }
+}
 
 #[cfg(feature = "cuda")]
 pub(crate) fn run_cuda_column(
@@ -3316,6 +5486,8 @@ pub(crate) fn run_cuda_column(
         source_label: metadata.source_label,
         source_copy: metadata.source_copy,
         prime,
+        functional_seeds: GPU_FX_FUNCTIONAL_SEEDS,
+        functional_row_count: FUNCTIONAL_ROW_COUNT,
         device_name,
         static_semantic_sha256: static_data.semantic_sha256().to_string(),
         flat_plan_sha256,
@@ -3384,14 +5556,14 @@ pub(crate) fn run_cuda_column(
 }
 
 #[cfg(feature = "cuda")]
-fn encode_modular_column(
+pub(crate) fn encode_modular_column(
     column: &ModularFunctionalColumn,
     static_digest: &str,
     source_digest: &str,
     source_terms: u64,
 ) -> Vec<u8> {
     let mut output = Vec::with_capacity(160 + column.rows.len() * 8);
-    output.extend_from_slice(b"ADFXGPU2");
+    output.extend_from_slice(b"ADFXGPU3");
     output.extend_from_slice(&column.prime.to_le_bytes());
     output.extend_from_slice(&(column.global_ordinal as u32).to_le_bytes());
     output.extend_from_slice(&(column.rows.len() as u32).to_le_bytes());
@@ -3406,7 +5578,7 @@ fn encode_modular_column(
 }
 
 #[cfg(feature = "cuda")]
-fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
     let temporary = path.with_extension(format!("tmp.{}", std::process::id()));
     {
         let file = File::create(&temporary).map_err(|error| error.to_string())?;

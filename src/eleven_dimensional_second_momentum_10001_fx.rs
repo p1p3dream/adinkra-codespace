@@ -14,23 +14,32 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::io;
 use std::path::Path;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use num_bigint::BigInt;
 use num_complex::Complex;
 use num_rational::Ratio;
+use rayon::prelude::*;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
 use crate::eleven_dimensional_k_fag_solver::ExactGaussian;
 use crate::eleven_dimensional_second_momentum_10001_maps::{
-    SecondMomentum10001MapSpec, SecondMomentum10001Path, SecondMomentum10001SourceTerm,
+    EmbeddedSourceMap, SecondMomentum10001MapSpec, SecondMomentum10001Path,
+    SecondMomentum10001SourceTerm,
 };
 use crate::eleven_dimensional_second_momentum_fx::{
-    DegreeTwoMomentumMonomial, ExactRankSummary, SECOND_MOMENTUM_REPRESENTATION_INVENTORY_SHA256,
-    SecondMomentumFxColumnTerm, SecondMomentumFxCoverage, SecondMomentumFxProvenance,
-    SecondMomentumFxSector, SecondMomentumFxSourceKind, SecondMomentumFxStreamingAccumulator,
+    DegreeTwoMomentumMonomial, ExactRankSummary, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
+    SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS, SECOND_MOMENTUM_REPRESENTATION_INVENTORY_SHA256,
+    SecondMomentumFxColumnTerm, SecondMomentumFxCoverage, SecondMomentumFxProjectedColumn,
+    SecondMomentumFxProjectedEntry, SecondMomentumFxProvenance, SecondMomentumFxSector,
+    SecondMomentumFxSourceKind, SecondMomentumFxStreamingAccumulator,
     SecondMomentumFxStreamingCheckpoint, SecondMomentumGaugeBranch, SecondMomentumGaugeChannel,
     canonical_second_momentum_fx_stream_sha256, second_momentum_fx_coefficient_layout_sha256,
+    second_momentum_fx_functional_assignments,
 };
 
 const VECTOR_DIMENSION: usize = 11;
@@ -41,9 +50,151 @@ const GAUGE_FORM_DEGREE: usize = 0;
 const GAUGE_PARAMETER_COMPONENT: usize = 0;
 const GLOBAL_10002_10001_ORDINALS: [usize; 4] = [19, 20, 21, 22];
 const STT_COEFFICIENTS: [i64; 3] = [11, -1, -2];
+const PROJECTED_SECTORS: usize = 2;
 
 type SmallGaussian = Complex<Ratio<i64>>;
 type LorentzVectorSpinor = Vec<Vec<SmallGaussian>>;
+
+const PROGRESS_INTERVAL: Duration = Duration::from_secs(5);
+
+struct FxProgressState {
+    phase: AtomicUsize,
+    processed: AtomicU64,
+    total: AtomicU64,
+    columns_completed: AtomicUsize,
+    stop: AtomicBool,
+    started: Instant,
+}
+
+#[derive(Clone)]
+struct FxProgress {
+    state: Arc<FxProgressState>,
+}
+
+struct FxProgressHeartbeat {
+    state: Arc<FxProgressState>,
+    worker: Option<thread::JoinHandle<()>>,
+}
+
+fn progress_phase_name(phase: usize) -> &'static str {
+    match phase {
+        0 => "validating_and_materializing_maps",
+        1 => "building_recoupling_coefficients",
+        2 => "building_physical_templates",
+        3 => "building_exact_columns",
+        4 => "folding_functional_rows",
+        5 => "finalizing_certificate",
+        6 => "complete",
+        _ => "unknown",
+    }
+}
+
+fn emit_progress(state: &FxProgressState, event: &str) {
+    let processed = state.processed.load(Ordering::Relaxed);
+    let total = state.total.load(Ordering::Relaxed);
+    let elapsed = state.started.elapsed().as_secs_f64();
+    let rate = if elapsed > 0.0 {
+        processed as f64 / elapsed
+    } else {
+        0.0
+    };
+    let eta_seconds = if processed > 0 && processed < total && rate > 0.0 {
+        Some((total - processed) as f64 / rate)
+    } else {
+        None
+    };
+    eprintln!(
+        "{}",
+        serde_json::json!({
+            "schema_version": "adynkra-11d-second-momentum-10001-progress-v1",
+            "event": event,
+            "phase": progress_phase_name(state.phase.load(Ordering::Relaxed)),
+            "elapsed_seconds": elapsed,
+            "processed": processed,
+            "total": total,
+            "percent": if total == 0 { 0.0 } else { 100.0 * processed as f64 / total as f64 },
+            "rate_per_second": rate,
+            "eta_seconds": eta_seconds,
+            "columns_completed": state.columns_completed.load(Ordering::Relaxed),
+            "columns_total": LOCAL_VARIABLES,
+        })
+    );
+}
+
+impl FxProgress {
+    fn start() -> (Self, FxProgressHeartbeat) {
+        let state = Arc::new(FxProgressState {
+            phase: AtomicUsize::new(0),
+            processed: AtomicU64::new(0),
+            total: AtomicU64::new(0),
+            columns_completed: AtomicUsize::new(0),
+            stop: AtomicBool::new(false),
+            started: Instant::now(),
+        });
+        let worker_state = Arc::clone(&state);
+        let worker = thread::spawn(move || {
+            while !worker_state.stop.load(Ordering::Acquire) {
+                thread::park_timeout(PROGRESS_INTERVAL);
+                if !worker_state.stop.load(Ordering::Acquire) {
+                    emit_progress(&worker_state, "heartbeat");
+                }
+            }
+        });
+        emit_progress(&state, "run_start");
+        (
+            Self {
+                state: Arc::clone(&state),
+            },
+            FxProgressHeartbeat {
+                state,
+                worker: Some(worker),
+            },
+        )
+    }
+
+    fn set_phase(&self, phase: usize, total: u64) {
+        self.state.processed.store(0, Ordering::Relaxed);
+        self.state.total.store(total, Ordering::Relaxed);
+        self.state.phase.store(phase, Ordering::Release);
+        emit_progress(&self.state, "phase_start");
+    }
+
+    fn add_processed(&self, count: u64) {
+        self.state.processed.fetch_add(count, Ordering::Relaxed);
+    }
+
+    fn column_complete(&self, spec: &SecondMomentum10001FxVariableSpec, term_count: usize) {
+        self.state.columns_completed.fetch_add(1, Ordering::Relaxed);
+        eprintln!(
+            "{}",
+            serde_json::json!({
+                "schema_version": "adynkra-11d-second-momentum-10001-progress-v1",
+                "event": "column_complete",
+                "elapsed_seconds": self.state.started.elapsed().as_secs_f64(),
+                "local_ordinal": spec.local_ordinal,
+                "global_ordinal": spec.global_77_ordinal,
+                "source_copy": spec.source_copy,
+                "momentum_path": spec.momentum_path,
+                "output_terms": term_count,
+            })
+        );
+    }
+
+    fn finish(&self) {
+        self.state.phase.store(6, Ordering::Release);
+        emit_progress(&self.state, "run_complete");
+    }
+}
+
+impl Drop for FxProgressHeartbeat {
+    fn drop(&mut self) {
+        self.state.stop.store(true, Ordering::Release);
+        if let Some(worker) = self.worker.take() {
+            worker.thread().unpark();
+            let _ = worker.join();
+        }
+    }
+}
 
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 pub struct SecondMomentum10001FxVariableSpec {
@@ -128,8 +279,10 @@ fn sha256_json<T: Serialize>(value: &T) -> String {
     )
 }
 
-fn target_state_lorentz(ordinal: usize) -> LorentzVectorSpinor {
-    let join = crate::eleven_dimensional_b5_majorana_target_join::exact_target_join();
+fn target_state_lorentz_from_join(
+    ordinal: usize,
+    join: &crate::eleven_dimensional_b5_majorana_target_join::ExactB5MajoranaTargetJoin,
+) -> LorentzVectorSpinor {
     let states = crate::eleven_dimensional_bridge::vector_spinor_target_basis_states();
     let state = &states[ordinal];
     let mut output = vec![vec![small_zero(); SPINOR_DIMENSION]; VECTOR_DIMENSION];
@@ -275,11 +428,25 @@ fn recoupling_coefficients(
     usize,
     usize,
 ) {
-    let source = target_state_lorentz(highest_target);
     let join = crate::eleven_dimensional_b5_majorana_target_join::exact_target_join();
     let duals = crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states();
     let dual = &duals[highest_target];
-    let input_residual = gamma_trace(&source)
+    let source = target_state_lorentz_from_join(highest_target, &join);
+    recoupling_coefficients_from(&source, &join, dual, coefficients)
+}
+
+fn recoupling_coefficients_from(
+    source: &LorentzVectorSpinor,
+    join: &crate::eleven_dimensional_b5_majorana_target_join::ExactB5MajoranaTargetJoin,
+    dual: &crate::eleven_dimensional_bridge::VectorSpinorTargetBasisState,
+    coefficients: [i64; 3],
+) -> (
+    BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
+    usize,
+    usize,
+    usize,
+) {
+    let input_residual = gamma_trace(source)
         .into_iter()
         .filter(|value| value != &small_zero())
         .count();
@@ -292,7 +459,7 @@ fn recoupling_coefficients(
     ] {
         for left in 0..VECTOR_DIMENSION {
             for right in left..VECTOR_DIMENSION {
-                let output = recoupled_lorentz(&source, path, left, right, coefficients);
+                let output = recoupled_lorentz(source, path, left, right, coefficients);
                 output_residual += gamma_trace(&output)
                     .into_iter()
                     .filter(|value| value != &small_zero())
@@ -306,7 +473,7 @@ fn recoupling_coefficients(
                         );
                     }
                 }
-                let coefficient = target_coordinate(&output, &join, dual);
+                let coefficient = target_coordinate(&output, join, dual);
                 if coefficient != small_zero() {
                     values.insert((path, [left, right]), coefficient);
                 }
@@ -324,6 +491,70 @@ fn recoupling_coefficients(
         output_residual,
         momentum_trace_residual,
     )
+}
+
+/// Exact primitive momentum-pair coefficients used by the GPU source stream
+/// for either `(10001)` path. The physical target checks are rerun before the
+/// integer schedule is released.
+pub(crate) fn gpu_path_reciprocal_terms(
+    path: crate::eleven_dimensional_second_momentum_full_inventory::MomentumPath,
+) -> Result<(Vec<([u8; 2], i128)>, String), String> {
+    let selected = match path {
+        crate::eleven_dimensional_second_momentum_full_inventory::MomentumPath::Trace => {
+            SecondMomentum10001Path::Trace
+        }
+        crate::eleven_dimensional_second_momentum_full_inventory::MomentumPath::SymmetricTraceless => {
+            SecondMomentum10001Path::SymmetricTraceless
+        }
+        crate::eleven_dimensional_second_momentum_full_inventory::MomentumPath::Unique => {
+            return Err("the (10001) channel requires trace or symmetric-traceless path".to_string());
+        }
+    };
+    let (coefficients, input_residual, output_residual, momentum_trace_residual) =
+        recoupling_coefficients(0, STT_COEFFICIENTS);
+    if input_residual != 0 || output_residual != 0 || momentum_trace_residual != 0 {
+        return Err(
+            "exact (10001) momentum recoupling failed its target residual gates".to_string(),
+        );
+    }
+    let mut terms = Vec::new();
+    for ((candidate, pair), coefficient) in coefficients {
+        if candidate != selected {
+            continue;
+        }
+        if *coefficient.im.numer() != 0
+            || *coefficient.re.denom() != 1
+            || *coefficient.im.denom() != 1
+        {
+            return Err("(10001) GPU path coefficient is not a real integer".to_string());
+        }
+        let coefficient = i128::from(*coefficient.re.numer());
+        if coefficient == 0 {
+            return Err("(10001) GPU path emitted a zero coefficient".to_string());
+        }
+        terms.push((
+            [
+                u8::try_from(pair[0]).map_err(|_| "momentum pair exceeds u8")?,
+                u8::try_from(pair[1]).map_err(|_| "momentum pair exceeds u8")?,
+            ],
+            coefficient,
+        ));
+    }
+    if terms.is_empty() {
+        return Err("(10001) GPU path has no exact momentum terms".to_string());
+    }
+    let mut hash = Sha256::new();
+    hash.update(b"adynkra-11d-second-momentum-10001-gpu-path-v1\0");
+    hash.update(match selected {
+        SecondMomentum10001Path::Trace => b"trace".as_slice(),
+        SecondMomentum10001Path::SymmetricTraceless => b"stt".as_slice(),
+    });
+    hash.update((terms.len() as u64).to_le_bytes());
+    for (pair, coefficient) in &terms {
+        hash.update(pair);
+        hash.update(coefficient.to_le_bytes());
+    }
+    Ok((terms, format!("{:x}", hash.finalize())))
 }
 
 fn small_to_exact(value: &SmallGaussian) -> ExactGaussian {
@@ -371,9 +602,10 @@ fn scale_exact(value: &ExactGaussian, scale: i128) -> ExactGaussian {
     }
 }
 
-fn physical_pivot_templates(highest_target: usize) -> Vec<PhysicalPivotTemplate> {
-    let join = crate::eleven_dimensional_b5_majorana_target_join::exact_target_join();
-    let h = target_state_lorentz(highest_target);
+fn physical_pivot_templates_from(
+    join: &crate::eleven_dimensional_b5_majorana_target_join::ExactB5MajoranaTargetJoin,
+    h: &LorentzVectorSpinor,
+) -> Vec<PhysicalPivotTemplate> {
     (0..SPINOR_DIMENSION)
         .map(|derivative_weight| {
             let mut terms = Vec::new();
@@ -424,7 +656,8 @@ fn physical_pivot_templates(highest_target: usize) -> Vec<PhysicalPivotTemplate>
         .collect()
 }
 
-fn source_terms_by_copy() -> Vec<Vec<SecondMomentum10001SourceTerm>> {
+#[allow(dead_code)]
+fn source_terms_by_copy(progress: &FxProgress) -> Vec<Vec<SecondMomentum10001SourceTerm>> {
     (1..=2)
         .map(|copy| {
             let mut terms = Vec::new();
@@ -432,6 +665,7 @@ fn source_terms_by_copy() -> Vec<Vec<SecondMomentum10001SourceTerm>> {
                 visit_second_momentum_10001_highest_weight_source_terms(copy, |term| {
                     terms.push(term)
                 });
+            progress.add_processed(1);
             terms
         })
         .collect()
@@ -461,6 +695,7 @@ fn build_terms_for_spec(
     source_terms: &[Vec<SecondMomentum10001SourceTerm>],
     recoupling: &BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
     templates: &[PhysicalPivotTemplate],
+    progress: &FxProgress,
 ) -> Vec<SecondMomentumFxColumnTerm> {
     #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
     struct Key {
@@ -471,7 +706,13 @@ fn build_terms_for_spec(
         sector: SecondMomentumFxSector,
     }
     let mut accumulated = BTreeMap::<Key, ExactGaussian>::new();
+    let mut pending_progress = 0_u64;
     for source in &source_terms[spec.source_copy - 1] {
+        pending_progress += 1;
+        if pending_progress == 16_384 {
+            progress.add_processed(pending_progress);
+            pending_progress = 0;
+        }
         let Some((wedge_mask, sign)) =
             crate::eleven_dimensional_level16_couplings::right_wedge_normal_order(
                 source.exterior_mask,
@@ -517,7 +758,8 @@ fn build_terms_for_spec(
             }
         }
     }
-    accumulated
+    progress.add_processed(pending_progress);
+    let terms = accumulated
         .into_iter()
         .filter(|(_, coefficient)| !coefficient.is_zero())
         .map(|(key, coefficient)| SecondMomentumFxColumnTerm {
@@ -532,7 +774,399 @@ fn build_terms_for_spec(
             sector: key.sector,
             coefficient,
         })
+        .collect::<Vec<_>>();
+    progress.column_complete(spec, terms.len());
+    terms
+}
+
+/// Build independent coefficient columns concurrently, then return them in
+/// canonical specification order. Each worker owns its exact accumulator, so
+/// the hot loop has no shared locks. `IndexedParallelIterator::collect`
+/// preserves input order, and the caller folds the completed columns into the
+/// streaming certificate sequentially to keep artifact bytes deterministic.
+fn build_terms_for_specs_parallel(
+    specs: &[SecondMomentum10001FxVariableSpec],
+    source_terms: &[Vec<SecondMomentum10001SourceTerm>],
+    recoupling: &BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
+    templates: &[PhysicalPivotTemplate],
+    progress: &FxProgress,
+) -> Vec<Vec<SecondMomentumFxColumnTerm>> {
+    specs
+        .par_iter()
+        .map(|spec| build_terms_for_spec(spec, source_terms, recoupling, templates, progress))
         .collect()
+}
+
+struct ScalarFunctionalProjection {
+    values: Vec<i128>,
+    observed_terms_per_path: u64,
+    source_l1: u128,
+}
+
+fn scalar_projection_index(
+    derivative_weight: usize,
+    pair: usize,
+    sector: usize,
+    seed: usize,
+    bucket: usize,
+    pair_count: usize,
+) -> usize {
+    ((((derivative_weight * pair_count + pair) * PROJECTED_SECTORS + sector)
+        * SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()
+        + seed)
+        * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED)
+        + bucket
+}
+
+fn projection_pairs(
+    recoupling: &BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
+) -> Result<Vec<([usize; 2], DegreeTwoMomentumMonomial)>, String> {
+    let pairs_for = |path| {
+        recoupling
+            .keys()
+            .filter_map(|(candidate, pair)| (*candidate == path).then_some(*pair))
+            .collect::<Vec<_>>()
+    };
+    let trace = pairs_for(SecondMomentum10001Path::Trace);
+    let symmetric_traceless = pairs_for(SecondMomentum10001Path::SymmetricTraceless);
+    if trace.is_empty() || trace != symmetric_traceless {
+        return Err("10001 momentum paths do not share one canonical pair schedule".to_string());
+    }
+    trace
+        .into_iter()
+        .map(|pair| {
+            Ok((
+                pair,
+                DegreeTwoMomentumMonomial::from_pair(pair[0], pair[1])?,
+            ))
+        })
+        .collect()
+}
+
+fn template_sector(
+    template: &PhysicalPivotTemplate,
+    sector: usize,
+) -> Option<(SecondMomentumFxSector, usize)> {
+    match sector {
+        0 => template
+            .x2
+            .as_ref()
+            .map(|(target, _)| (SecondMomentumFxSector::X2, *target)),
+        1 => template
+            .x5
+            .as_ref()
+            .map(|(target, _)| (SecondMomentumFxSector::X5, *target)),
+        _ => None,
+    }
+}
+
+fn project_source_copy_scalars(
+    source_copy: usize,
+    source_map: &EmbeddedSourceMap,
+    pairs: &[([usize; 2], DegreeTwoMomentumMonomial)],
+    templates: &[PhysicalPivotTemplate],
+    progress: &FxProgress,
+) -> Result<ScalarFunctionalProjection, String> {
+    if source_map.copy != source_copy || source_map.components.len() != SPINOR_DIMENSION {
+        return Err("invalid 10001 embedded source map".to_string());
+    }
+    let value_count = SPINOR_DIMENSION
+        .checked_mul(pairs.len())
+        .and_then(|value| value.checked_mul(PROJECTED_SECTORS))
+        .and_then(|value| value.checked_mul(SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()))
+        .and_then(|value| value.checked_mul(SECOND_MOMENTUM_FX_BUCKETS_PER_SEED))
+        .ok_or_else(|| "10001 projected scalar shape overflow".to_string())?;
+
+    let components = source_map
+        .components
+        .par_iter()
+        .map(|(&derivative_weight, component)| {
+            if derivative_weight >= SPINOR_DIMENSION
+                || component.masks.len() != component.coefficients.len()
+            {
+                return Err("invalid 10001 source component".to_string());
+            }
+            let mut values = vec![0_i128; value_count];
+            let mut observed_terms_per_path = 0_u64;
+            let mut source_l1 = 0_u128;
+            let mut processed_terms = 0_u64;
+            for (&exterior_mask, &coefficient) in
+                component.masks.iter().zip(&component.coefficients)
+            {
+                if coefficient == 0 {
+                    continue;
+                }
+                processed_terms = processed_terms
+                    .checked_add(1)
+                    .ok_or_else(|| "10001 processed source count overflow".to_string())?;
+                source_l1 = source_l1
+                    .checked_add(coefficient.unsigned_abs())
+                    .ok_or_else(|| "10001 source L1 bound overflow".to_string())?;
+                let Some((wedge_mask, sign)) =
+                    crate::eleven_dimensional_level16_couplings::right_wedge_normal_order(
+                        exterior_mask,
+                        derivative_weight,
+                    )
+                else {
+                    continue;
+                };
+                let signed_source = coefficient
+                    .checked_mul(sign)
+                    .ok_or_else(|| "10001 signed source coefficient overflow".to_string())?;
+                let template = &templates[derivative_weight];
+                for (pair_ordinal, (_, monomial)) in pairs.iter().enumerate() {
+                    for sector_ordinal in 0..PROJECTED_SECTORS {
+                        let Some((sector, target)) = template_sector(template, sector_ordinal)
+                        else {
+                            continue;
+                        };
+                        observed_terms_per_path = observed_terms_per_path
+                            .checked_add(1)
+                            .ok_or_else(|| "10001 observed term count overflow".to_string())?;
+                        for (seed, (bucket, hash_sign)) in
+                            second_momentum_fx_functional_assignments(
+                                SecondMomentumGaugeChannel::new(GAUGE_FORM_DEGREE)?,
+                                SecondMomentumGaugeBranch::P2D13Wedge,
+                                *monomial,
+                                GAUGE_PARAMETER_COMPONENT,
+                                target,
+                                wedge_mask,
+                                sector,
+                            )
+                            .into_iter()
+                            .enumerate()
+                        {
+                            let value = signed_source
+                                .checked_mul(i128::from(hash_sign))
+                                .ok_or_else(|| "10001 functional sign overflow".to_string())?;
+                            let index = scalar_projection_index(
+                                derivative_weight,
+                                pair_ordinal,
+                                sector_ordinal,
+                                seed,
+                                bucket,
+                                pairs.len(),
+                            );
+                            values[index] = values[index]
+                                .checked_add(value)
+                                .ok_or_else(|| "10001 projected bucket overflow".to_string())?;
+                        }
+                    }
+                }
+            }
+            progress.add_processed(processed_terms);
+            Ok(ScalarFunctionalProjection {
+                values,
+                observed_terms_per_path,
+                source_l1,
+            })
+        })
+        .collect::<Vec<Result<ScalarFunctionalProjection, String>>>();
+
+    let mut merged = ScalarFunctionalProjection {
+        values: vec![0_i128; value_count],
+        observed_terms_per_path: 0,
+        source_l1: 0,
+    };
+    for component in components {
+        let component = component?;
+        merged.observed_terms_per_path = merged
+            .observed_terms_per_path
+            .checked_add(component.observed_terms_per_path)
+            .ok_or_else(|| "10001 merged observed term count overflow".to_string())?;
+        merged.source_l1 = merged
+            .source_l1
+            .checked_add(component.source_l1)
+            .ok_or_else(|| "10001 merged source L1 overflow".to_string())?;
+        for (target, source) in merged.values.iter_mut().zip(component.values) {
+            *target = target
+                .checked_add(source)
+                .ok_or_else(|| "10001 merged projected bucket overflow".to_string())?;
+        }
+    }
+    if merged.source_l1 > i128::MAX as u128 {
+        return Err("10001 source L1 bound exceeds signed i128".to_string());
+    }
+    Ok(merged)
+}
+
+fn projected_column_from_scalars(
+    spec: &SecondMomentum10001FxVariableSpec,
+    scalar: &ScalarFunctionalProjection,
+    pairs: &[([usize; 2], DegreeTwoMomentumMonomial)],
+    recoupling: &BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
+    templates: &[PhysicalPivotTemplate],
+    progress: &FxProgress,
+) -> Result<SecondMomentumFxProjectedColumn, String> {
+    let mut group_schedule = pairs
+        .iter()
+        .enumerate()
+        .flat_map(|(pair_ordinal, (_, monomial))| {
+            (0..PROJECTED_SECTORS).filter_map(move |sector_ordinal| {
+                templates
+                    .iter()
+                    .find_map(|template| template_sector(template, sector_ordinal))
+                    .map(|(sector, _)| ((*monomial, sector), pair_ordinal, sector_ordinal))
+            })
+        })
+        .collect::<Vec<_>>();
+    group_schedule.sort_by_key(|entry| entry.0);
+    group_schedule.dedup_by_key(|entry| entry.0);
+
+    let mut entries = Vec::new();
+    for &((monomial, sector), pair_ordinal, sector_ordinal) in &group_schedule {
+        let pair = pairs[pair_ordinal].0;
+        let path_coefficient = recoupling
+            .get(&(spec.momentum_path, pair))
+            .ok_or_else(|| "missing 10001 path coefficient".to_string())?;
+        let path_coefficient = small_to_exact(path_coefficient);
+        for seed in 0..SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len() {
+            for bucket in 0..SECOND_MOMENTUM_FX_BUCKETS_PER_SEED {
+                let mut coefficient = ExactGaussian::zero();
+                for (derivative_weight, template) in templates.iter().enumerate() {
+                    let selected = match sector {
+                        SecondMomentumFxSector::X2 => template.x2.as_ref(),
+                        SecondMomentumFxSector::X5 => template.x5.as_ref(),
+                    };
+                    let Some((_, response)) = selected else {
+                        continue;
+                    };
+                    let scalar_value = scalar.values[scalar_projection_index(
+                        derivative_weight,
+                        pair_ordinal,
+                        sector_ordinal,
+                        seed,
+                        bucket,
+                        pairs.len(),
+                    )];
+                    if scalar_value == 0 {
+                        continue;
+                    }
+                    let factor = multiply_exact(&path_coefficient, response);
+                    let contribution = scale_exact(&factor, scalar_value);
+                    coefficient.real += contribution.real;
+                    coefficient.imaginary += contribution.imaginary;
+                }
+                if !coefficient.is_zero() {
+                    entries.push(SecondMomentumFxProjectedEntry {
+                        source_momentum: monomial,
+                        sector,
+                        seed_ordinal: seed,
+                        bucket,
+                        coefficient,
+                    });
+                }
+            }
+        }
+    }
+    progress.column_complete(
+        spec,
+        usize::try_from(scalar.observed_terms_per_path)
+            .map_err(|_| "10001 observed term count exceeds usize".to_string())?,
+    );
+    Ok(SecondMomentumFxProjectedColumn {
+        coefficient_column: spec.global_77_ordinal,
+        gauge_channel: SecondMomentumGaugeChannel::new(GAUGE_FORM_DEGREE)?,
+        gauge_branch: SecondMomentumGaugeBranch::P2D13Wedge,
+        observed_terms: scalar.observed_terms_per_path,
+        observed_groups: group_schedule
+            .into_iter()
+            .map(|(group, _, _)| group)
+            .collect(),
+        entries,
+    })
+}
+
+fn build_projected_columns_parallel(
+    specs: &[SecondMomentum10001FxVariableSpec],
+    source_maps: &[EmbeddedSourceMap; 2],
+    recoupling: &BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
+    templates: &[PhysicalPivotTemplate],
+    progress: &FxProgress,
+) -> Result<Vec<SecondMomentumFxProjectedColumn>, String> {
+    let pairs = projection_pairs(recoupling)?;
+    let (first, second) = rayon::join(
+        || project_source_copy_scalars(1, &source_maps[0], &pairs, templates, progress),
+        || project_source_copy_scalars(2, &source_maps[1], &pairs, templates, progress),
+    );
+    let scalars = [first?, second?];
+    specs
+        .par_iter()
+        .map(|spec| {
+            projected_column_from_scalars(
+                spec,
+                &scalars[spec.source_copy - 1],
+                &pairs,
+                recoupling,
+                templates,
+                progress,
+            )
+        })
+        .collect()
+}
+
+fn first_physical_term(
+    spec: &SecondMomentum10001FxVariableSpec,
+    source_maps: &[EmbeddedSourceMap; 2],
+    recoupling: &BTreeMap<(SecondMomentum10001Path, [usize; 2]), SmallGaussian>,
+    templates: &[PhysicalPivotTemplate],
+) -> Option<SecondMomentumFxColumnTerm> {
+    for (&spinor, component) in &source_maps[spec.source_copy - 1].components {
+        for (&exterior_mask, &coefficient) in component.masks.iter().zip(&component.coefficients) {
+            if coefficient == 0 {
+                continue;
+            }
+            let source = SecondMomentum10001SourceTerm {
+                source_copy: spec.source_copy,
+                intermediate_spinor_weight_index: spinor,
+                exterior_mask,
+                coefficient,
+            };
+            let Some((wedge_mask, sign)) =
+                crate::eleven_dimensional_level16_couplings::right_wedge_normal_order(
+                    source.exterior_mask,
+                    source.intermediate_spinor_weight_index,
+                )
+            else {
+                continue;
+            };
+            let template = &templates[source.intermediate_spinor_weight_index];
+            for (&(path, pair), path_coefficient) in recoupling {
+                if path != spec.momentum_path {
+                    continue;
+                }
+                let base = scale_exact(
+                    &small_to_exact(path_coefficient),
+                    source.coefficient.checked_mul(sign)?,
+                );
+                for (sector, selected) in [
+                    (SecondMomentumFxSector::X2, template.x2.as_ref()),
+                    (SecondMomentumFxSector::X5, template.x5.as_ref()),
+                ] {
+                    let Some((target, response)) = selected else {
+                        continue;
+                    };
+                    let coefficient = multiply_exact(&base, response);
+                    if coefficient.is_zero() {
+                        continue;
+                    }
+                    return Some(SecondMomentumFxColumnTerm {
+                        coefficient_column: spec.global_77_ordinal,
+                        gauge_channel: SecondMomentumGaugeChannel::new(GAUGE_FORM_DEGREE).ok()?,
+                        gauge_branch: SecondMomentumGaugeBranch::P2D13Wedge,
+                        source_momentum: DegreeTwoMomentumMonomial::from_pair(pair[0], pair[1])
+                            .ok()?,
+                        parameter_component: GAUGE_PARAMETER_COMPONENT,
+                        target_coordinate: *target,
+                        spinor_derivative_mask: wedge_mask,
+                        sector,
+                        coefficient,
+                    });
+                }
+            }
+        }
+    }
+    None
 }
 
 fn local_rank(summary: &ExactRankSummary) -> ExactRankSummary {
@@ -579,20 +1213,59 @@ fn map_manifest_sha256(
 }
 
 pub fn verify_second_momentum_10001_fx() -> Result<SecondMomentum10001FxReport, String> {
-    let map_report =
-        crate::eleven_dimensional_second_momentum_10001_maps::verify_second_momentum_10001_maps();
+    let (progress, _heartbeat) = FxProgress::start();
+    progress.set_phase(0, 1);
+    let (map_report, source_maps) = crate::eleven_dimensional_second_momentum_10001_maps::
+        verify_second_momentum_10001_maps_with_embedded_sources();
     if !map_report.passed {
         return Err("second-momentum 10001 source-map certificate failed".to_string());
     }
+    progress.add_processed(1);
     let map_specs =
         crate::eleven_dimensional_second_momentum_10001_maps::second_momentum_10001_map_specs();
     let specs = variable_specs(&map_specs);
-    let source_terms = source_terms_by_copy();
+    let source_nonzero_terms_by_copy = source_maps
+        .iter()
+        .zip(&map_report.embedded_sources)
+        .map(|(source, audit)| {
+            assert_eq!(source.copy, audit.source_copy);
+            audit.coupled_nonzero_terms
+        })
+        .collect::<Vec<_>>();
+    progress.set_phase(1, 2);
+    let target_join = crate::eleven_dimensional_b5_majorana_target_join::exact_target_join();
+    let target_state =
+        target_state_lorentz_from_join(map_report.highest_target_basis_ordinal, &target_join);
+    let target_duals = crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states();
+    let target_dual = &target_duals[map_report.highest_target_basis_ordinal];
+    let (original_recoupling, mutated_recoupling) = rayon::join(
+        || {
+            let result = recoupling_coefficients_from(
+                &target_state,
+                &target_join,
+                target_dual,
+                STT_COEFFICIENTS,
+            );
+            progress.add_processed(1);
+            result
+        },
+        || {
+            let result = recoupling_coefficients_from(
+                &target_state,
+                &target_join,
+                target_dual,
+                [11, -1, -1],
+            );
+            progress.add_processed(1);
+            result
+        },
+    );
     let (recoupling, input_residual, output_residual, momentum_trace_residual) =
-        recoupling_coefficients(map_report.highest_target_basis_ordinal, STT_COEFFICIENTS);
-    let (_, _, mutated_output_residual, mutated_momentum_trace_residual) =
-        recoupling_coefficients(map_report.highest_target_basis_ordinal, [11, -1, -1]);
-    let templates = physical_pivot_templates(map_report.highest_target_basis_ordinal);
+        original_recoupling;
+    let (_, _, mutated_output_residual, mutated_momentum_trace_residual) = mutated_recoupling;
+    progress.set_phase(2, SPINOR_DIMENSION as u64);
+    let templates = physical_pivot_templates_from(&target_join, &target_state);
+    progress.add_processed(SPINOR_DIMENSION as u64);
     let source_fixture_manifest_sha256 = sha256_json(
         &map_report
             .embedded_sources
@@ -625,20 +1298,28 @@ pub fn verify_second_momentum_10001_fx() -> Result<SecondMomentum10001FxReport, 
     };
     let mut harness = SecondMomentumFxStreamingAccumulator::new(provenance, coverage)?;
     let mut emitted_physical_fx_terms = 0_usize;
-    let mut first_term = None;
-    for spec in &specs {
-        let terms = build_terms_for_spec(spec, &source_terms, &recoupling, &templates);
+    let first_term = first_physical_term(&specs[0], &source_maps, &recoupling, &templates);
+    let column_source_terms = source_nonzero_terms_by_copy
+        .iter()
+        .map(|terms| *terms as u64)
+        .sum();
+    progress.set_phase(3, column_source_terms);
+    let projected_columns =
+        build_projected_columns_parallel(&specs, &source_maps, &recoupling, &templates, &progress)?;
+    progress.set_phase(4, LOCAL_VARIABLES as u64);
+    for column in projected_columns {
         emitted_physical_fx_terms = emitted_physical_fx_terms
-            .checked_add(terms.len())
+            .checked_add(
+                usize::try_from(column.observed_terms)
+                    .map_err(|_| "physical p2 F_X term count exceeds usize".to_string())?,
+            )
             .ok_or_else(|| "physical p2 F_X term count overflow".to_string())?;
-        if first_term.is_none() {
-            first_term = terms.first().cloned();
-        }
-        for term in terms {
-            harness.push(term)?;
-        }
+        harness.push_projected_column(column)?;
+        progress.add_processed(1);
     }
+    progress.set_phase(5, 1);
     let typed_harness_checkpoint = harness.finalize()?;
+    progress.add_processed(1);
     let canonical_functional_rows_sha256 = typed_harness_checkpoint
         .report
         .canonical_functional_rows_sha256
@@ -695,7 +1376,7 @@ pub fn verify_second_momentum_10001_fx() -> Result<SecondMomentum10001FxReport, 
         && global_ordinal_mutation_detected
         && stt_mutation_detected;
 
-    Ok(SecondMomentum10001FxReport {
+    let report = SecondMomentum10001FxReport {
         schema_version: "adynkra-11d-second-momentum-10001-physical-fx-slice-v1".to_string(),
         role: "exact physical X2/X5 diagnostic for four 10002 x trace/STT columns on one highest-target, degree-zero-parameter p2D13 slice".to_string(),
         variable_specs: specs,
@@ -705,7 +1386,7 @@ pub fn verify_second_momentum_10001_fx() -> Result<SecondMomentum10001FxReport, 
         gauge_parameter_component: GAUGE_PARAMETER_COMPONENT,
         highest_intermediate_target_basis_ordinal: map_report.highest_target_basis_ordinal,
         target_slice: "single highest (10001) intermediate coordinate; after exact Lorentz-Majorana join and fixed physical F_X, retain the first nonzero canonical X2 and X5 quotient coordinate separately for each derivative-spinor weight".to_string(),
-        source_nonzero_terms_by_copy: source_terms.iter().map(Vec::len).collect(),
+        source_nonzero_terms_by_copy,
         trace_nonzero_momentum_pairs,
         symmetric_traceless_nonzero_momentum_pairs,
         input_target_gamma_trace_residual_entries: input_residual,
@@ -739,7 +1420,9 @@ pub fn verify_second_momentum_10001_fx() -> Result<SecondMomentum10001FxReport, 
         full_physical_f_a_g_p_established: false,
         passed,
         boundary: "This is an exact four-variable diagnostic on one declared p2D13 slice. A saturated four-column rank excludes those four columns only on this slice. A kernel is provisional. The p3D11 contraction branch, five other gauge degrees, remaining parameter and target coordinates, the other 73 p2 variables, J/W, and the generic momentum tower are absent, so full physical F A G_p is false.".to_string(),
-    })
+    };
+    progress.finish();
+    Ok(report)
 }
 
 pub fn write_second_momentum_10001_fx_artifact(
@@ -771,6 +1454,22 @@ pub fn write_second_momentum_10001_fx_artifact(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn gpu_path_schedules_are_exact_integer_and_distinct() {
+        let (trace, trace_sha) = gpu_path_reciprocal_terms(
+            crate::eleven_dimensional_second_momentum_full_inventory::MomentumPath::Trace,
+        )
+        .unwrap();
+        let (stt, stt_sha) = gpu_path_reciprocal_terms(
+            crate::eleven_dimensional_second_momentum_full_inventory::MomentumPath::SymmetricTraceless,
+        )
+        .unwrap();
+        assert_eq!(trace.len(), 11);
+        assert_eq!(stt.len(), 11);
+        assert_ne!(trace, stt);
+        assert_ne!(trace_sha, stt_sha);
+    }
 
     #[test]
     fn four_10002_trace_stt_columns_reach_the_physical_fx_harness() {
@@ -819,8 +1518,19 @@ mod tests {
                 .collect::<Vec<_>>(),
             GLOBAL_10002_10001_ORDINALS
         );
-        assert!(report.emitted_physical_fx_terms > 0);
+        assert_eq!(report.source_nonzero_terms_by_copy, [4_363_766, 580_279]);
+        assert_eq!(report.emitted_physical_fx_terms, 109_579_140);
+        assert_eq!(
+            report.canonical_functional_rows_sha256,
+            "64da5ae07368fbeb135342c49a2fdd14762c3d0cbc9d16e295fd8f0d78f5c34d"
+        );
+        assert_eq!(
+            report.typed_harness_checkpoint.checkpoint_sha256,
+            "4de0865665364188b16c3ffde3aba9c957ac0e1b5bf07138fde1e16d07c7700d"
+        );
         assert_eq!(report.joint_rank.variable_count, 4);
+        assert_eq!(report.joint_rank.rank, 4);
+        assert_eq!(report.joint_rank.nullity, 0);
         assert_eq!(report.joint_rank.rank + report.joint_rank.nullity, 4);
         assert_eq!(
             report

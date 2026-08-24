@@ -1,0 +1,273 @@
+{
+  "artifact_inventory": [
+    {
+      "binary_sha256": "a5b8bdc4669b97999c64e228a9bd115850ac4b11d76b58b4132a42fddfeb1ca3",
+      "column_semantic_sha256": "ee76a742bae8e51699433d352cbd7a4b91003cb7902b3ab732a5e249475355f9",
+      "global_ordinal": 19,
+      "path": "/home/brandon/adynkra-runs/second-momentum-full28-20260824T0322Z/output/second_momentum_10001_column_19_p1073741783.bin",
+      "source_terms": 48001426,
+      "source_terms_sha256": "04533c3a514e34e1fb8cbe3f5ddeb2464b67360add39f07bef1b2db4d01191bb"
+    },
+    {
+      "binary_sha256": "5bdcddf64bdfc1fd1347aca395c9e56b56787cb6d5afcf8a48bc87066b5f4130",
+      "column_semantic_sha256": "8964be09d0638dfee8e03a11e5912a9fcdc556634123da46b521801541fa8e2e",
+      "global_ordinal": 20,
+      "path": "/home/brandon/adynkra-runs/second-momentum-full28-20260824T0322Z/output/second_momentum_10001_column_20_p1073741783.bin",
+      "source_terms": 48001426,
+      "source_terms_sha256": "f40c1b47e645b9322df06f5cdb9bc20feeb02ec6b9bb1767129a0c92922a6bbc"
+    },
+    {
+      "binary_sha256": "709eb775e8f250d0a80001f0224a45dc03d247274c8658fd931d24e8a13304c9",
+      "column_semantic_sha256": "2c7b0683df6bbbdbf2cf85011a5f969427c0aaa38e796e2a47271fd5ec07151c",
+      "global_ordinal": 21,
+      "path": "/home/brandon/adynkra-runs/second-momentum-full28-20260824T0322Z/output/second_momentum_10001_column_21_p1073741783.bin",
+      "source_terms": 6383069,
+      "source_terms_sha256": "e8eef4a24dd4a1e9131f5389d4dd9d8750e6ae2880f0b6c0079c08fdb1398fb5"
+    },
+    {
+      "binary_sha256": "71ec0a915d2a56487fe62c84b58da28740a2c96ea87b20df0c6d5db79064694d",
+      "column_semantic_sha256": "3e9dd811281a18996a1675779cb58e860980f7d47ab3fa71b5deac01aec38a06",
+      "global_ordinal": 22,
+      "path": "/home/brandon/adynkra-runs/second-momentum-full28-20260824T0322Z/output/second_momentum_10001_column_22_p1073741783.bin",
+      "source_terms": 6383069,
+      "source_terms_sha256": "94a9a1b837a4969b0792bd18fc2b437fecd5d2d65dd5ff6e38fdc1f326baa100"
+    },
+    {
+      "binary_sha256": "c573c9ef7961acdfcbf96a9e8e0e967a7acd616331b408c41ae9c37b5955e8de",
+      "column_semantic_sha256": "a3fa0106df838f5f4e3e496a610aa976dcec02066f2a30d10f468b098e7d0051",
+      "global_ordinal": 53,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_53_p1073741783.bin",
+      "source_terms": 663715113,
+      "source_terms_sha256": "b33125486dc3ef3bca088f3fba873f49fa84a38d9eb91403716d9569e8349df4"
+    },
+    {
+      "binary_sha256": "5b7831172e9847e1606ceb5a6f3467624c5f04a4ad1817136394fa3eb2331677",
+      "column_semantic_sha256": "8d120bd2e9476ce39d43d0d747a660e8d9f468b4b166d640117239fd7a8b48b5",
+      "global_ordinal": 54,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_54_p1073741783.bin",
+      "source_terms": 104252159,
+      "source_terms_sha256": "dfd4f968389f1e873cf5cd1bd5f57af56a20b840e14a8c3031af0c560cfab715"
+    },
+    {
+      "binary_sha256": "ae8ea75251aeaffa76c43e050f641f5c12da604d654ebc10282afa48fbada89b",
+      "column_semantic_sha256": "e035afb882a0da73b3b574fb13bda72270a6c4f7e00340e5560a6f63dff84c0c",
+      "global_ordinal": 55,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_55_p1073741783.bin",
+      "source_terms": 668411161,
+      "source_terms_sha256": "741e27591589d29a66ad6c933757245f57f0d16241ad5b01dbae015b06135ce5"
+    },
+    {
+      "binary_sha256": "d05ee0078a0dabbbc44dec622618e3913496dab94c84613452ad0a450485d627",
+      "column_semantic_sha256": "994ced2ac4635b1ee31ae276f35451ecae4603c775a61c66bd0c7ddd615e6456",
+      "global_ordinal": 56,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_56_p1073741783.bin",
+      "source_terms": 668357817,
+      "source_terms_sha256": "bc33db91f768a9795e9b92af1e7365d5c28ade67d61d900e030864218ef4742a"
+    },
+    {
+      "binary_sha256": "9868481b95cb640894c4c180d3640d318e3a41f7fc06d194ae13a3ce438c31e8",
+      "column_semantic_sha256": "10b368e76edb812e31856a17f0687043203a7b8a48d9252dbb58d70e281e8316",
+      "global_ordinal": 57,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_57_p1073741783.bin",
+      "source_terms": 685182773,
+      "source_terms_sha256": "2a959422332212eafa2a895fc0cc575c8c768e8429654b35163032d12ee925d4"
+    },
+    {
+      "binary_sha256": "b1449d7812e4c8ee88c61083c8737ea5987379b05d8fa799566d89d0f32c16df",
+      "column_semantic_sha256": "4440e78d83388b888b7a29a05bbf52c73f82d46917617db0b77103fca81751ff",
+      "global_ordinal": 58,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_58_p1073741783.bin",
+      "source_terms": 685740680,
+      "source_terms_sha256": "4f60087e59bd73e584f7d03a46c4a6691e3053fa2fdc90d921e35aa5f4a35f5b"
+    },
+    {
+      "binary_sha256": "d03ef536766b0f6b1d9e1de6b50dc9329866abeeb266e649d8eb1f462e493ef2",
+      "column_semantic_sha256": "c4d56d5383f2f02c07542af1c9a1d53496d2f862807fa756f3de0137548a8e13",
+      "global_ordinal": 59,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_59_p1073741783.bin",
+      "source_terms": 685878964,
+      "source_terms_sha256": "0e2efd201001df43426cac77026c98bb1a8695c45cd67b6f10407390653587de"
+    },
+    {
+      "binary_sha256": "63754dffb0570c818c69288b6878b0a95c2294e8e0e894b30dab8a89f9b86465",
+      "column_semantic_sha256": "aca68daf6de5c2e2f00ab4641d3b8147a358d864fba0aabf2305d4422987ed11",
+      "global_ordinal": 60,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_60_p1073741783.bin",
+      "source_terms": 692916225,
+      "source_terms_sha256": "d726f21efb75191418688ee8444f2aa046f83415be9dd8034879f4f8a170169e"
+    },
+    {
+      "binary_sha256": "66cb0d5390bf3b6c5a9830e24d38cb4a9e1bd63997b7707b29ec22bd8f8dd1a0",
+      "column_semantic_sha256": "b77ca75b3f664de35e069e965e9073aa89f50910a9b63c26a498c656d9923c6a",
+      "global_ordinal": 61,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_20001_column_61_p1073741783.bin",
+      "source_terms": 593433994,
+      "source_terms_sha256": "ab10633535598d2d9d7091fa2b02d18648e20bd854a6937b0c22909c344c0960"
+    },
+    {
+      "binary_sha256": "bb01b51b76b051c4bd547ef7cd9d5dd20602c5a13536ed77db56aa6768839d71",
+      "column_semantic_sha256": "633465fcc99d1b42355674d9cca0267476ef04d5c7627898254bb0046247febc",
+      "global_ordinal": 62,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_62_p1073741783.bin",
+      "source_terms": 1197981236,
+      "source_terms_sha256": "26f9f71d0e5d63d2ab5ca1d5eb28be53f7ffd9bc5327569d1fecb40f997a35c9"
+    },
+    {
+      "binary_sha256": "f51b7543ff9bfabb2f9c63a447a4a84b1458a54d4a560e3482e5d69d8c77cbbe",
+      "column_semantic_sha256": "e9714fb626a60d9465b490c3720a8397429dbbe36a3312369971655fe6ff956f",
+      "global_ordinal": 63,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_63_p1073741783.bin",
+      "source_terms": 2306092036,
+      "source_terms_sha256": "c3f8892b176808ff5388d550bed328d1c36ba5d71bbf4c9026fbf48cf72f771b"
+    },
+    {
+      "binary_sha256": "cc6bbbe86bbd588f639c8cc38180070269b42e46d3ad314d1db9e387e4ebe66e",
+      "column_semantic_sha256": "9b085b2560d5fb66bcd86a59b3ca581b9cc07f6877583bde6960e4a33e0fb7e2",
+      "global_ordinal": 64,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_64_p1073741783.bin",
+      "source_terms": 2305287449,
+      "source_terms_sha256": "9f4d027e7ae5d6b48963eb0d8aeaa97b3863d5779d8216047affdf390ed75441"
+    },
+    {
+      "binary_sha256": "35db3c4c15e47e5f58ccea9e1de79c7c37826fbf990dbd21fffeb01e5b0f4b76",
+      "column_semantic_sha256": "a8cc7493d46b1528857cb806c4a8ffb465720763fc0316b3dbe9536bcc7d6dee",
+      "global_ordinal": 65,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_65_p1073741783.bin",
+      "source_terms": 1928887045,
+      "source_terms_sha256": "91a27ab9ffd08b1b7a2dcd5082cbc9ea58783ba83d6284e6b7c28a898202ffe0"
+    },
+    {
+      "binary_sha256": "a83966bd3f1aa12b15004c4a0e8b66257d3b135f6f052598400894c45acbc930",
+      "column_semantic_sha256": "0dea2ee588d6e5b95a63ba2893e4acb46d692b57e7ceeb5eea0042171e97e639",
+      "global_ordinal": 66,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_66_p1073741783.bin",
+      "source_terms": 2465510967,
+      "source_terms_sha256": "57ca6eae5277c43f2003afc62c960efe911a215961df50c6613601c1bedb0ede"
+    },
+    {
+      "binary_sha256": "f905248677971dab2cf7278d75eb6481c76ae80d988085b23a24c080c21dc608",
+      "column_semantic_sha256": "5fa567c51e87566ae12d74822132f147b32927e1229b6030024ec6ee0dab7dc5",
+      "global_ordinal": 67,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_67_p1073741783.bin",
+      "source_terms": 2467354620,
+      "source_terms_sha256": "5d9ad4da46ef1800d1bb92a4ebc93514ee529890c6c55d93dc709c8cda694776"
+    },
+    {
+      "binary_sha256": "94eca55ba1ae3cc64ac47c375f218842fa9663bbe8efdbc8c666d078e941ee63",
+      "column_semantic_sha256": "902b0130885c802243585572b2a797dd4a00f84db8dec469bb2bd414d91a34ea",
+      "global_ordinal": 68,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_68_p1073741783.bin",
+      "source_terms": 2468022926,
+      "source_terms_sha256": "9d812d2cc39e1902af003f0c3fbb9e2db253300015df2755a10c5e833419ffe0"
+    },
+    {
+      "binary_sha256": "0562d6798a9a23e90081fab55c4e788de6fad0a54970d032ae3d28f8ae43af87",
+      "column_semantic_sha256": "2fc62e06e21e765e2e1f5343e871e2b3464c32631a47d5b2047f2ee3023e6d77",
+      "global_ordinal": 69,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_69_p1073741783.bin",
+      "source_terms": 2500695433,
+      "source_terms_sha256": "4bd336c98991f4a7f9fbf59ebcaad39a961214209df4ddfc0ec93619210325f4"
+    },
+    {
+      "binary_sha256": "5bdc29a0cd097478aff9dfbab0ccc41187f47e992620b11b1d627b797a3f9654",
+      "column_semantic_sha256": "80230c3646bfea51bf3a5371b2af81017c23c3005e993ec2982c48fce2fd2b34",
+      "global_ordinal": 70,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_70_p1073741783.bin",
+      "source_terms": 2153566547,
+      "source_terms_sha256": "bf30cb71715cdcd4f2e4c144bc4ed5a7aee409b6d026f393e6bb4142f366c95f"
+    },
+    {
+      "binary_sha256": "2e19d4b41a07eb1f677d8afdc10776ed7a1c07a648961d63d93337dfaf24e96c",
+      "column_semantic_sha256": "cbb94844a6688cfba1bf6e7571795b364e6464b28e0ec2cb94942af79e208f6d",
+      "global_ordinal": 71,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_71_p1073741783.bin",
+      "source_terms": 2466335987,
+      "source_terms_sha256": "345643d8cfae77c4b0483f8964d4fe7ca3795131f8406ac41b9b638612378f64"
+    },
+    {
+      "binary_sha256": "cd42a84980e17914f0380aec1a71a5bc03141eb453198644686ed3f8ddf520e8",
+      "column_semantic_sha256": "ffb4dd8d04fdfcb21e6fef6303e230137e72e2b0d0d0da355ded1112e9201052",
+      "global_ordinal": 72,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_72_p1073741783.bin",
+      "source_terms": 2487076570,
+      "source_terms_sha256": "5c66965616768acc1f59aa229e114aca5f1a5b11daaea323eeafd476f030318c"
+    },
+    {
+      "binary_sha256": "d499aee942e1b551488ca663cd0c091cfadfce91e045aaf215f55d7d2101db1b",
+      "column_semantic_sha256": "f6150768449a9a3d7e1963645fc84acfd540cec17f34f02f90b96afb77497b47",
+      "global_ordinal": 73,
+      "path": "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output/second_momentum_30001_column_73_p1073741783.bin",
+      "source_terms": 2167732824,
+      "source_terms_sha256": "c135a4ee3ced259a87691f0da2379fc4fa8484c496edd8c07543f28cd7c530ba"
+    },
+    {
+      "binary_sha256": "00e9c020063437caeee3928e7d5869ae8e397cbcb40d0f5d2bce9a3495094178",
+      "column_semantic_sha256": "203c34907c4d5e58966d12802fdd01c1902daacd92ad5a330dad2d85b88d5ec8",
+      "global_ordinal": 74,
+      "path": "/home/brandon/adynkra-runs/second-momentum-optimized-canary-20260823T230626Z/second_momentum_30001_column_74_p1073741783.bin",
+      "source_terms": 2467944035,
+      "source_terms_sha256": "ca1b1811b5959fb076ee895b82f02119d53c5a91db62fd1e9ff2db7a913b37bb"
+    },
+    {
+      "binary_sha256": "e375261d8f2d8b933173d657dd84c73b3db19ed114e8aea25acae749ff9677c4",
+      "column_semantic_sha256": "035442ec13b2bb3794a0c07c50d14b28c45272f27702372a355bbd44c494a573",
+      "global_ordinal": 75,
+      "path": "/home/brandon/adynkra-runs/second-momentum-optimized-canary-20260823T230626Z/second_momentum_30001_column_75_p1073741783.bin",
+      "source_terms": 2170289933,
+      "source_terms_sha256": "80919a1a005e150bafe67666dd5ff2e0ccc10a476acf984a5a154d78c8c1f401"
+    },
+    {
+      "binary_sha256": "9a33f0ca15c990a8d1f8f74c5f4b5e55b6a13cb3ecc835e9c8a037e033f8c194",
+      "column_semantic_sha256": "ad699150a27db6fc12c950bf348200cd565748890eae01400a40502bd2dcb0b7",
+      "global_ordinal": 76,
+      "path": "/home/brandon/adynkra-runs/second-momentum-optimized-canary-20260823T230626Z/second_momentum_30001_column_76_p1073741783.bin",
+      "source_terms": 2529935358,
+      "source_terms_sha256": "6e07026a54c467e1df56bc4c404f371fbce914bdbd443a12608e7331dda58036"
+    }
+  ],
+  "column_ordinals": [
+    19,
+    20,
+    21,
+    22,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76
+  ],
+  "full_column_rank": true,
+  "input_directories": [
+    "/home/brandon/adynkra-runs/second-momentum-gpu-group-20260821T185528Z/output",
+    "/home/brandon/adynkra-runs/second-momentum-optimized-canary-20260823T230626Z",
+    "/home/brandon/adynkra-runs/second-momentum-full28-20260824T0322Z/output"
+  ],
+  "matrix_sha256": "a0391e244ef30015dbfdb0b41efa12ca40c53610cf3ea8c4d678a919e96ab35c",
+  "nullity_upper_bound": 0,
+  "passed": true,
+  "physical_columns": 28,
+  "prime": 1073741783,
+  "proof_boundary": "All 28 declared-slice columns were decoded from verified ADFXGPU3 artifacts at one pinned prime, and exact Gaussian finite-field elimination supplied the characteristic-zero rank lower bound.",
+  "rank_over_gaussian_extension": 28,
+  "schema_version": "adynkra-11d-second-momentum-declared-28-rank-v1",
+  "static_semantic_sha256": "eff2e32b1aa7ccb35d89acfe7887e6d3cf482c25dfea6243f73836637b99ed65"
+}

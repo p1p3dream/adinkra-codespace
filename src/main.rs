@@ -21,6 +21,7 @@ mod bbbm_source_audit;
 mod bbbm_worldline;
 mod canonical;
 mod central_hypermultiplet_4d;
+mod checkpointable_sha256;
 mod chiral_tensor_4d;
 mod chiral_vector_4d;
 mod chromochar;
@@ -60,6 +61,9 @@ mod eleven_dimensional_second_momentum_20001_fx;
 mod eleven_dimensional_second_momentum_20001_maps;
 mod eleven_dimensional_second_momentum_30001_fx;
 mod eleven_dimensional_second_momentum_30001_maps;
+mod eleven_dimensional_second_momentum_full_fx;
+mod eleven_dimensional_second_momentum_full_inventory;
+mod eleven_dimensional_second_momentum_full_maps;
 mod eleven_dimensional_second_momentum_fx;
 mod eleven_dimensional_second_momentum_gpu;
 mod eleven_dimensional_second_momentum_recoupling;
@@ -125,8 +129,16 @@ mod ranking;
 mod s8_characters;
 mod scalar_tensor_tangent;
 mod search;
+mod second_momentum_cpu_progress;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_full_gpu_jobs;
 #[cfg_attr(not(test), allow(dead_code))]
 mod second_momentum_gpu_checkpoint;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_group;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_jobs;
+mod second_momentum_gpu_multi_prime_checkpoint;
 #[cfg_attr(not(any(feature = "cuda", test)), allow(dead_code))]
 mod second_momentum_gpu_progress;
 #[cfg_attr(not(test), allow(dead_code))]
@@ -148,7 +160,7 @@ mod viz_export;
 use std::time::Instant;
 
 use canonical::{compute_invariants, deduplicate, is_decomposable};
-use code::{enumerate_codes, DoublyEvenCode};
+use code::{DoublyEvenCode, enumerate_codes};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -296,7 +308,48 @@ fn main() {
         "adynkra-11d-second-momentum-component-build" => {
             cmd_adynkra_11d_second_momentum_component_build(&args)
         }
+        "adynkra-11d-second-momentum-10001-fx" => cmd_adynkra_11d_second_momentum_10001_fx(&args),
+        "adynkra-11d-second-momentum-full-map-plan" => {
+            cmd_adynkra_11d_second_momentum_full_map_plan(&args)
+        }
+        "adynkra-11d-second-momentum-full-map-worker" => {
+            cmd_adynkra_11d_second_momentum_full_map_worker(&args)
+        }
+        "adynkra-11d-second-momentum-full-map-status" => {
+            cmd_adynkra_11d_second_momentum_full_map_status(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-plan" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_plan(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-status" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_status(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-worker" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_worker(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-rank" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_rank(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-rank-28" => {
+            cmd_adynkra_11d_second_momentum_gpu_rank_28(&args)
+        }
+        "adynkra-11d-second-momentum-cpu-fx" => cmd_adynkra_11d_second_momentum_cpu_fx(&args),
         "adynkra-11d-second-momentum-gpu-fx" => cmd_adynkra_11d_second_momentum_gpu_fx(&args),
+        "adynkra-11d-second-momentum-gpu-fx-plan" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_plan(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-worker" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_worker(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-multi-prime-worker" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_multi_prime_worker(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-status" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_status(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-import" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_import(&args)
+        }
         "adynkra-11d-second-momentum-gpu-status-reconcile" => {
             cmd_adynkra_11d_second_momentum_gpu_status_reconcile(&args)
         }
@@ -581,16 +634,59 @@ fn print_usage(prog: &str) {
     eprintln!("                          Certify the trace/STT rank-two momentum recoupling");
     eprintln!("  adynkra-11d-second-momentum-component-build [results-dir]");
     eprintln!("                          Build bounded 10001/30001 component-map certificates");
+    eprintln!("  adynkra-11d-second-momentum-10001-fx [json]");
+    eprintln!("                          Publish the exact four-column original 10001 slice");
+    eprintln!("  adynkra-11d-second-momentum-full-map-plan");
+    eprintln!("                          Print the canonical portable 47-job map inventory");
+    eprintln!(
+        "  adynkra-11d-second-momentum-full-map-worker <job-list> [checkpoint-dir] [status-file]"
+    );
+    eprintln!(
+        "                          Build a portable map list such as 0-3,8 with JSONL progress"
+    );
+    eprintln!("  adynkra-11d-second-momentum-full-map-status [checkpoint-dir]");
+    eprintln!("                          Validate durable missing-map coverage and proof gates");
+    eprintln!("  adynkra-11d-second-momentum-full-gpu-plan [output-dir]");
+    eprintln!(
+        "                          Print the 96-job manifest for all 53 non-large-tranche columns"
+    );
+    eprintln!("  adynkra-11d-second-momentum-full-gpu-status <job-list> [output-dir]");
+    eprintln!("                          Summarize portable full-inventory GPU assignments");
+    eprintln!(
+        "  adynkra-11d-second-momentum-full-gpu-worker <job-list> <map-dir> [output-dir] [device] [cpu-parity-terms]"
+    );
+    eprintln!("                          Run resumable missing-column groups with 5-second status");
+    eprintln!(
+        "  adynkra-11d-second-momentum-full-gpu-rank <prime> <output-json> <artifact-dir> [artifact-dir ...]"
+    );
+    eprintln!("                          Verify and rank all 77 same-prime modular columns");
+    eprintln!("  adynkra-11d-second-momentum-cpu-fx <20001|30001> [output-file] [status-file]");
     eprintln!(
         "  adynkra-11d-second-momentum-gpu-fx <20001|30001> <local-column> [prime] [output-dir] [cpu-parity-terms] [device] [status-file]"
     );
     eprintln!("                          Run one exact GPU F_X column with JSONL/status telemetry");
+    eprintln!("  adynkra-11d-second-momentum-gpu-fx-plan [output-dir]");
+    eprintln!(
+        "                          Print or publish the canonical 36-job, three-prime inventory"
+    );
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx-worker <job-list> [output-dir] [device] [cpu-parity-terms]"
+    );
+    eprintln!("                          Run a portable list such as 20001@0 or 30001-g7-p0");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx-multi-prime-worker <same-group-job-list> [output-dir] [device] [cpu-parity-terms]"
+    );
+    eprintln!("                          Traverse exact sources once for 2-3 prime jobs");
+    eprintln!("  adynkra-11d-second-momentum-gpu-fx-status <job-list> [output-dir]");
+    eprintln!("                          Validate coverage and live/stale worker status");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx-import <job-list> <source-dir> [destination-dir]"
+    );
+    eprintln!("                          Verify and import portable completed jobs");
     eprintln!(
         "  adynkra-11d-second-momentum-gpu-status-reconcile <status-file> <child-pid> <exit:N|signal:N|unknown>"
     );
-    eprintln!(
-        "                          Reconcile a non-resumable status snapshot after waiting for its child"
-    );
+    eprintln!("                          Reconcile a status snapshot after waiting for its child");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!(
         "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
@@ -1773,6 +1869,437 @@ fn cmd_adynkra_11d_second_momentum_component_build(args: &[String]) {
     );
 }
 
+fn cmd_adynkra_11d_second_momentum_10001_fx(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-10001-fx [json]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let path = std::path::Path::new(
+        args.get(2)
+            .map(String::as_str)
+            .unwrap_or("results/adynkra_11d_second_momentum_10001_fx.json"),
+    );
+    match eleven_dimensional_second_momentum_10001_fx::write_second_momentum_10001_fx_artifact(path)
+    {
+        Ok(report) => println!("{}", serde_json::to_string_pretty(&report).unwrap()),
+        Err(error) => {
+            eprintln!("second-momentum 10001 F_X build failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_full_map_plan(args: &[String]) {
+    if args.len() != 2 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-map-plan",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = eleven_dimensional_second_momentum_full_maps::worklist();
+    let unique_gpu_groups =
+        eleven_dimensional_second_momentum_full_inventory::missing_unique_gpu_groups();
+    let gpu_groups = eleven_dimensional_second_momentum_full_inventory::missing_gpu_groups();
+    let payload = serde_json::json!({
+        "schema_version": "adynkra-11d-second-momentum-missing-map-plan-v1",
+        "role": "portable exact source-to-intermediate map jobs enabling the 49 columns outside the original 28-column slice",
+        "full_column_layout_sha256": eleven_dimensional_second_momentum_full_inventory::layout_sha256(),
+        "jobs_total": jobs.len(),
+        "columns_enabled": eleven_dimensional_second_momentum_full_inventory::missing_49_column_specs().len(),
+        "unique_path_gpu_columns": unique_gpu_groups.iter().map(Vec::len).sum::<usize>(),
+        "gpu_columns_total": gpu_groups.iter().map(Vec::len).sum::<usize>(),
+        "gpu_groups": gpu_groups.iter().enumerate().map(|(group_index, ordinals)| serde_json::json!({
+            "group_index": group_index,
+            "global_ordinals": ordinals,
+            "width": ordinals.len()
+        })).collect::<Vec<_>>(),
+        "two_path_10001_columns": [15, 16, 17, 18],
+        "jobs": jobs.iter().enumerate().map(|(ordinal, job)| serde_json::json!({
+            "job_ordinal": ordinal,
+            "job_key": job.key(),
+            "target_dynkin_label": job.target_dynkin_label,
+            "source_dynkin_label": job.source_dynkin_label,
+            "source_copy": job.source_copy
+        })).collect::<Vec<_>>()
+    });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&payload).expect("serialize full map plan")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_full_map_worker(args: &[String]) {
+    if args.len() < 3 || args.len() > 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-map-worker <job-list> [checkpoint-dir] [status-file]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = eleven_dimensional_second_momentum_full_maps::parse_job_list(&args[2])
+        .unwrap_or_else(|error| {
+            eprintln!("invalid full-map job list: {error}");
+            std::process::exit(2);
+        });
+    let directory = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/adynkra_11d_second_momentum_full_maps"),
+    );
+    let default_status = directory.join(format!("worker-status-{}.json", std::process::id()));
+    let status_path = args
+        .get(4)
+        .map(std::path::PathBuf::from)
+        .unwrap_or(default_status);
+    let reporter = eleven_dimensional_second_momentum_full_maps::MissingMapProgressReporter::start(
+        status_path,
+        jobs.len(),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("full-map worker status initialization failed: {error}");
+        std::process::exit(2);
+    });
+    match eleven_dimensional_second_momentum_full_maps::run_jobs(directory, &jobs, |event| {
+        reporter.observe(event)
+    }) {
+        Ok(summary) => {
+            reporter.finish(&summary).unwrap_or_else(|error| {
+                eprintln!("full-map worker terminal status failed: {error}");
+                std::process::exit(2);
+            });
+        }
+        Err(error) => {
+            let _ = reporter.fail(&error);
+            eprintln!("full-map worker failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_full_map_status(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-map-status [checkpoint-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let directory = std::path::Path::new(
+        args.get(2)
+            .map(String::as_str)
+            .unwrap_or("results/adynkra_11d_second_momentum_full_maps"),
+    );
+    let summary = eleven_dimensional_second_momentum_full_maps::summarize(directory);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize full-map status")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_full_gpu_plan(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-plan [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let manifest = second_momentum_full_gpu_jobs::build_manifest().unwrap_or_else(|error| {
+        eprintln!("cannot build full GPU work manifest: {error}");
+        std::process::exit(2);
+    });
+    if let Some(directory) = args.get(2) {
+        let path = second_momentum_full_gpu_jobs::write_or_validate_manifest(std::path::Path::new(
+            directory,
+        ))
+        .unwrap_or_else(|error| {
+            eprintln!("cannot publish full GPU work manifest: {error}");
+            std::process::exit(2);
+        });
+        eprintln!("published {}", path.display());
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&manifest).expect("serialize full GPU work manifest")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_full_gpu_status(args: &[String]) {
+    if args.len() < 3 || args.len() > 4 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-status <job-list> [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_full_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid full GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let output_directory = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_full_gpu_fx"),
+    );
+    let summary = second_momentum_full_gpu_jobs::summarize(output_directory, &jobs);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize full GPU status")
+    );
+    if summary
+        .get("failed_count")
+        .and_then(serde_json::Value::as_u64)
+        != Some(0)
+    {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_full_gpu_rank(args: &[String]) {
+    if args.len() < 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-rank <prime> <output-json> <artifact-dir> [artifact-dir ...]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let prime = args[2].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("prime must be a pinned unsigned 32-bit prime");
+        std::process::exit(2);
+    });
+    let output_path = std::path::Path::new(&args[3]);
+    let input_directories = args[4..]
+        .iter()
+        .map(std::path::PathBuf::from)
+        .collect::<Vec<_>>();
+    let report =
+        second_momentum_full_gpu_jobs::publish_full_rank(prime, &input_directories, output_path)
+            .unwrap_or_else(|error| {
+                eprintln!("full 77-column rank aggregation failed: {error}");
+                std::process::exit(2);
+            });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).expect("serialize full rank report")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_rank_28(args: &[String]) {
+    if args.len() < 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-rank-28 <prime> <output-json> <artifact-dir> [artifact-dir ...]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let prime = args[2].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("prime must be a pinned unsigned 32-bit prime");
+        std::process::exit(2);
+    });
+    let input_directories = args[4..].iter().map(std::path::PathBuf::from).collect::<Vec<_>>();
+    let report = second_momentum_full_gpu_jobs::publish_declared_28_rank(
+        prime,
+        &input_directories,
+        std::path::Path::new(&args[3]),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("declared-28 rank aggregation failed: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_full_gpu_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 4 || args.len() > 7 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-worker <job-list> <map-dir> [output-dir] [device] [cpu-parity-terms]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_full_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid full GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let map_directory = std::path::PathBuf::from(&args[3]);
+    let selected_ordinals = jobs
+        .iter()
+        .flat_map(second_momentum_full_gpu_jobs::FullGpuJobKey::global_ordinals)
+        .collect::<Vec<_>>();
+    if selected_ordinals
+        .iter()
+        .any(|ordinal| !(19..=22).contains(ordinal))
+    {
+        let map_summary = eleven_dimensional_second_momentum_full_maps::summarize(&map_directory);
+        if !map_summary.passed {
+            eprintln!(
+                "selected full GPU jobs require all 47 verified maps; found {}/47",
+                map_summary.completed_jobs
+            );
+            std::process::exit(2);
+        }
+    }
+    let output_directory = std::path::PathBuf::from(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_full_gpu_fx"),
+    );
+    let device = args
+        .get(5)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let cpu_parity_terms = args
+        .get(6)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("CPU parity terms must be a positive integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(128);
+    if device < 0 || cpu_parity_terms == 0 {
+        eprintln!("device must be nonnegative and CPU parity terms must be nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_full_gpu_jobs::write_or_validate_manifest(&output_directory).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish full GPU work manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+    let columns = eleven_dimensional_second_momentum_full_inventory::full_column_specs();
+    for (job_ordinal, job) in jobs.iter().enumerate() {
+        match second_momentum_full_gpu_jobs::validate_completed_job(&output_directory, job) {
+            Ok(true) => {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "schema_version": second_momentum_full_gpu_jobs::FULL_GPU_RUN_SCHEMA,
+                        "event": "job_adopted",
+                        "job_id": job.id(),
+                        "job_ordinal": job_ordinal,
+                        "jobs_total": jobs.len()
+                    })
+                );
+                continue;
+            }
+            Ok(false) => {}
+            Err(error) => {
+                eprintln!("cannot adopt {}: {error}", job.id());
+                std::process::exit(2);
+            }
+        }
+        let global_ordinals = job.global_ordinals();
+        let tranche = job.tranche();
+        let source_copies = global_ordinals
+            .iter()
+            .map(|ordinal| columns[*ordinal].source_copy)
+            .collect::<Vec<_>>();
+        let tranche_columns_total = columns
+            .iter()
+            .filter(|column| column.intermediate_dynkin_label == tranche)
+            .count();
+        let job_directory = output_directory.join("jobs").join(job.id());
+        let report_path = second_momentum_full_gpu_jobs::report_path(&output_directory, job);
+        let checkpoint_path = job_directory.join("checkpoint.json");
+        let event_log_path = job_directory.join("events.jsonl");
+        let status_path = job_directory.join("status.json");
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-full-gpu-worker".to_string(),
+            tranche: tranche.clone(),
+            local_ordinal: global_ordinals[0],
+            global_ordinal: global_ordinals[0],
+            tranche_columns_total,
+            prime: job.prime(),
+            device,
+            cpu_parity_terms,
+            output_directory: output_directory.clone(),
+            binary_output_path: report_path.clone(),
+            report_output_path: report_path,
+            status_snapshot_path: status_path,
+            group: Some(GroupProgressConfig {
+                job_id: job.id(),
+                group_id: format!("pending-preflight:{}", job.id()),
+                active_columns: global_ordinals.len(),
+                ordered_local_ordinals: global_ordinals.clone(),
+                ordered_global_ordinals: global_ordinals,
+                ordered_source_copies: source_copies,
+                checkpoint_path,
+                event_log_path,
+                resumable: true,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {} progress reporter: {error}", job.id());
+            std::process::exit(2);
+        });
+        reporter
+            .phase_start("group_execution")
+            .unwrap_or_else(|error| {
+                eprintln!("cannot mark {} started: {error}", job.id());
+                std::process::exit(2);
+            });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            second_momentum_gpu_jobs::run_full_group_job(
+                job,
+                &map_directory,
+                &output_directory,
+                device,
+                cpu_parity_terms,
+                &live,
+            )
+            .and_then(|report| serde_json::to_value(report).map_err(|error| error.to_string()))
+        }));
+        match outcome {
+            Ok(Ok(result)) => {
+                if let Err(error) = reporter.finish_success(result) {
+                    eprintln!("{} terminal status failed: {error}", job.id());
+                    std::process::exit(2);
+                }
+            }
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{} failed: {error}", job.id());
+                std::process::exit(2);
+            }
+            Err(payload) => {
+                let message = payload
+                    .downcast_ref::<&str>()
+                    .copied()
+                    .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                    .unwrap_or("unknown panic");
+                let _ = reporter.finish_failure(format!("panic: {message}"));
+                eprintln!("{} panicked: {message}", job.id());
+                std::process::exit(101);
+            }
+        }
+    }
+    let summary = second_momentum_full_gpu_jobs::summarize(&output_directory, &jobs);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize full GPU worker summary")
+    );
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_full_gpu_worker(_args: &[String]) {
+    eprintln!("full second-momentum GPU worker requires a --features cuda build");
+    std::process::exit(2);
+}
+
 fn cmd_adynkra_11d_second_momentum_gpu_status_reconcile(args: &[String]) {
     if args.len() != 5 {
         eprintln!(
@@ -1831,9 +2358,520 @@ fn cmd_adynkra_11d_second_momentum_gpu_status_reconcile(args: &[String]) {
     }
 }
 
+fn cmd_adynkra_11d_second_momentum_cpu_fx(args: &[String]) {
+    use second_momentum_cpu_progress::{CpuProgressConfig, CpuProgressReporter};
+
+    if args.len() > 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-cpu-fx <20001|30001> [output-file] [status-file]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let tranche = args.get(2).map(String::as_str).unwrap_or_else(|| {
+        eprintln!("missing tranche 20001 or 30001");
+        std::process::exit(2);
+    });
+    let columns_total = match tranche {
+        "20001" => 9,
+        "30001" => 15,
+        _ => {
+            eprintln!("tranche must be 20001 or 30001");
+            std::process::exit(2);
+        }
+    };
+    let output_path = args
+        .get(3)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            std::path::PathBuf::from(format!(
+                "results/adynkra_11d_second_momentum_{tranche}_fx.json"
+            ))
+        });
+    let status_path = args
+        .get(4)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| output_path.with_extension("status.json"));
+    let reporter = CpuProgressReporter::start(CpuProgressConfig {
+        tranche: tranche.to_owned(),
+        columns_total,
+        output_path: output_path.clone(),
+        status_path,
+    })
+    .unwrap_or_else(|error| {
+        eprintln!("CPU progress initialization failed: {error}");
+        std::process::exit(2);
+    });
+
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match tranche {
+        "20001" => eleven_dimensional_second_momentum_20001_fx::write_artifact_with_progress(
+            &output_path,
+            |event| reporter.observe(event),
+        )
+        .and_then(|report| serde_json::to_value(report).map_err(std::io::Error::other)),
+        "30001" => eleven_dimensional_second_momentum_30001_fx::write_artifact_with_progress(
+            &output_path,
+            |event| reporter.observe(event),
+        )
+        .and_then(|report| serde_json::to_value(report).map_err(std::io::Error::other)),
+        _ => unreachable!(),
+    }));
+    match outcome {
+        Ok(Ok(result)) => {
+            if let Err(error) = reporter.finish_success(&result) {
+                eprintln!("CPU terminal status publication failed: {error}");
+                std::process::exit(2);
+            }
+        }
+        Ok(Err(error)) => {
+            let _ = reporter.finish_failure(error.to_string());
+            eprintln!("CPU tranche failed: {error}");
+            std::process::exit(2);
+        }
+        Err(payload) => {
+            let message = payload
+                .downcast_ref::<&str>()
+                .copied()
+                .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                .unwrap_or("unknown panic");
+            let _ = reporter.finish_failure(format!("panic: {message}"));
+            eprintln!("CPU tranche panicked: {message}");
+            std::process::exit(101);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_fx_plan(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-plan [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let manifest = second_momentum_gpu_jobs::build_job_manifest().unwrap_or_else(|error| {
+        eprintln!("cannot build GPU work manifest: {error}");
+        std::process::exit(2);
+    });
+    if let Some(directory) = args.get(2) {
+        let path =
+            second_momentum_gpu_jobs::write_or_validate_manifest(std::path::Path::new(directory))
+                .unwrap_or_else(|error| {
+                    eprintln!("cannot publish GPU work manifest: {error}");
+                    std::process::exit(2);
+                });
+        eprintln!("published {}", path.display());
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&manifest).expect("serialize GPU work manifest")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_fx_status(args: &[String]) {
+    if args.len() < 3 || args.len() > 4 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-status <job-list> [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let output_directory = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let summary = second_momentum_gpu_jobs::summarize_jobs(output_directory, &jobs);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize GPU work status")
+    );
+    if summary
+        .get("failed_count")
+        .and_then(serde_json::Value::as_u64)
+        != Some(0)
+    {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_fx_import(args: &[String]) {
+    if args.len() < 4 || args.len() > 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-import <job-list> <source-dir> [destination-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let source = std::path::Path::new(&args[3]);
+    let destination = std::path::Path::new(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let result = second_momentum_gpu_jobs::import_completed_jobs(source, destination, &jobs)
+        .unwrap_or_else(|error| {
+            eprintln!("GPU job import failed: {error}");
+            std::process::exit(2);
+        });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&result).expect("serialize GPU import report")
+    );
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 3 || args.len() > 6 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-worker <job-list> [output-dir] [device] [cpu-parity-terms]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let output_directory = std::path::PathBuf::from(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let device = args
+        .get(4)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let cpu_parity_terms = args
+        .get(5)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("CPU parity terms must be a positive integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(128);
+    if device < 0 || cpu_parity_terms == 0 {
+        eprintln!("device must be nonnegative and CPU parity terms must be nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_gpu_jobs::write_or_validate_manifest(&output_directory).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish GPU work manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+
+    for (job_ordinal, job) in jobs.iter().enumerate() {
+        match second_momentum_gpu_jobs::validate_completed_job(&output_directory, job) {
+            Ok(true) => {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "schema_version": second_momentum_gpu_jobs::GPU_GROUP_RUN_SCHEMA,
+                        "event": "job_adopted",
+                        "job_id": job.id(),
+                        "job_ordinal": job_ordinal,
+                        "jobs_total": jobs.len()
+                    })
+                );
+                continue;
+            }
+            Ok(false) => {}
+            Err(error) => {
+                eprintln!("cannot adopt {}: {error}", job.id());
+                std::process::exit(2);
+            }
+        }
+        let tranche = job.tranche().unwrap_or_else(|error| {
+            eprintln!("invalid job tranche: {error}");
+            std::process::exit(2);
+        });
+        let local_ordinals = job.local_ordinals().unwrap_or_else(|error| {
+            eprintln!("invalid job group: {error}");
+            std::process::exit(2);
+        });
+        let first_global = if tranche.as_str() == "20001" { 53 } else { 62 };
+        let global_ordinals = local_ordinals
+            .iter()
+            .map(|ordinal| first_global + ordinal)
+            .collect::<Vec<_>>();
+        let job_directory = output_directory.join("jobs").join(job.id());
+        let report_path =
+            second_momentum_gpu_jobs::completed_job_report_path(&output_directory, job);
+        let checkpoint_path = job_directory.join("checkpoint.json");
+        let event_log_path = job_directory.join("events.jsonl");
+        let status_path = job_directory.join("status.json");
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-gpu-fx-worker".to_string(),
+            tranche: tranche.as_str().to_string(),
+            local_ordinal: local_ordinals[0],
+            global_ordinal: global_ordinals[0],
+            tranche_columns_total: if tranche.as_str() == "20001" { 9 } else { 15 },
+            prime: job.prime().unwrap_or_else(|error| {
+                eprintln!("invalid job prime: {error}");
+                std::process::exit(2);
+            }),
+            device,
+            cpu_parity_terms,
+            output_directory: output_directory.clone(),
+            binary_output_path: report_path.clone(),
+            report_output_path: report_path,
+            status_snapshot_path: status_path,
+            group: Some(GroupProgressConfig {
+                job_id: job.id(),
+                group_id: format!("pending-preflight:{}", job.id()),
+                active_columns: local_ordinals.len(),
+                ordered_local_ordinals: local_ordinals.clone(),
+                ordered_global_ordinals: global_ordinals,
+                ordered_source_copies: (1..=local_ordinals.len()).collect(),
+                checkpoint_path,
+                event_log_path,
+                resumable: local_ordinals.len() > 1,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {} progress reporter: {error}", job.id());
+            std::process::exit(2);
+        });
+        reporter
+            .phase_start("group_execution")
+            .unwrap_or_else(|error| {
+                eprintln!("cannot mark {} started: {error}", job.id());
+                std::process::exit(2);
+            });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            if local_ordinals.len() == 1 {
+                second_momentum_gpu_jobs::run_singleton_job(
+                    &output_directory,
+                    job,
+                    device,
+                    cpu_parity_terms,
+                    &live,
+                )
+            } else {
+                second_momentum_gpu_jobs::run_group_job(
+                    job,
+                    &output_directory,
+                    device,
+                    cpu_parity_terms,
+                    &live,
+                )
+                .and_then(|report| serde_json::to_value(report).map_err(|error| error.to_string()))
+            }
+        }));
+        match outcome {
+            Ok(Ok(result)) => {
+                if let Err(error) = reporter.finish_success(result) {
+                    eprintln!("{} terminal status failed: {error}", job.id());
+                    std::process::exit(2);
+                }
+            }
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{} failed: {error}", job.id());
+                std::process::exit(2);
+            }
+            Err(payload) => {
+                let message = payload
+                    .downcast_ref::<&str>()
+                    .copied()
+                    .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                    .unwrap_or("unknown panic");
+                let _ = reporter.finish_failure(format!("panic: {message}"));
+                eprintln!("{} panicked: {message}", job.id());
+                std::process::exit(101);
+            }
+        }
+    }
+    println!(
+        "{}",
+        second_momentum_gpu_jobs::summarize_jobs(&output_directory, &jobs)
+    );
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_worker(_args: &[String]) {
+    eprintln!("GPU group worker requires a Linux build with --features cuda");
+    std::process::exit(2);
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_multi_prime_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 3 || args.len() > 6 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-multi-prime-worker <same-group-job-list> [output-dir] [device] [cpu-parity-terms]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid multi-prime GPU job list: {error}");
+        std::process::exit(2);
+    });
+    if !(2..=3).contains(&jobs.len()) {
+        eprintln!("multi-prime worker requires exactly 2 or 3 jobs");
+        std::process::exit(2);
+    }
+    let first = &jobs[0];
+    if jobs
+        .iter()
+        .any(|job| job.tranche != first.tranche || job.group_index != first.group_index)
+    {
+        eprintln!("multi-prime worker jobs must belong to one tranche/group");
+        std::process::exit(2);
+    }
+    let output_directory = std::path::PathBuf::from(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let device = args
+        .get(4)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let cpu_parity_terms = args
+        .get(5)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("CPU parity terms must be a positive integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(128);
+    let tranche = first.tranche().unwrap_or_else(|error| {
+        eprintln!("invalid multi-prime tranche: {error}");
+        std::process::exit(2);
+    });
+    let local_ordinals = first.local_ordinals().unwrap_or_else(|error| {
+        eprintln!("invalid multi-prime group: {error}");
+        std::process::exit(2);
+    });
+    if local_ordinals.len() < 2 {
+        eprintln!("multi-prime worker currently requires a width-2/3 group");
+        std::process::exit(2);
+    }
+    let first_global = if tranche.as_str() == "20001" { 53 } else { 62 };
+    let global_ordinals = local_ordinals
+        .iter()
+        .map(|ordinal| first_global + ordinal)
+        .collect::<Vec<_>>();
+    let bundle_id = format!(
+        "{}-g{}-mp{}",
+        first.tranche,
+        first.group_index,
+        jobs.iter()
+            .map(|job| job.prime_index.to_string())
+            .collect::<String>()
+    );
+    let bundle_directory = output_directory.join("jobs").join(&bundle_id);
+    let report_path = bundle_directory.join("bundle-result.json");
+    let reporter = ProgressReporter::start(ProgressConfig {
+        command: "adynkra-11d-second-momentum-gpu-fx-multi-prime-worker".to_string(),
+        tranche: tranche.as_str().to_string(),
+        local_ordinal: local_ordinals[0],
+        global_ordinal: global_ordinals[0],
+        tranche_columns_total: if tranche.as_str() == "20001" { 9 } else { 15 },
+        prime: jobs[0].prime().unwrap_or_else(|error| {
+            eprintln!("invalid first bundle prime: {error}");
+            std::process::exit(2);
+        }),
+        device,
+        cpu_parity_terms,
+        output_directory: output_directory.clone(),
+        binary_output_path: report_path.clone(),
+        report_output_path: report_path,
+        status_snapshot_path: bundle_directory.join("status.json"),
+        group: Some(GroupProgressConfig {
+            job_id: bundle_id.clone(),
+            group_id: format!("pending-preflight:{bundle_id}"),
+            active_columns: local_ordinals.len(),
+            ordered_local_ordinals: local_ordinals.clone(),
+            ordered_global_ordinals: global_ordinals,
+            ordered_source_copies: (1..=local_ordinals.len()).collect(),
+            checkpoint_path: bundle_directory.join("checkpoint.json"),
+            event_log_path: bundle_directory.join("events.jsonl"),
+            resumable: true,
+        }),
+    })
+    .unwrap_or_else(|error| {
+        eprintln!("cannot start {bundle_id} progress reporter: {error}");
+        std::process::exit(2);
+    });
+    reporter
+        .phase_start("multi_prime_group_execution")
+        .unwrap_or_else(|error| {
+            eprintln!("cannot mark {bundle_id} started: {error}");
+            std::process::exit(2);
+        });
+    let live = reporter.live_progress();
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        second_momentum_gpu_jobs::run_multi_prime_group_jobs(
+            &jobs,
+            &output_directory,
+            device,
+            cpu_parity_terms,
+            &live,
+        )
+        .and_then(|reports| serde_json::to_value(reports).map_err(|error| error.to_string()))
+    }));
+    match outcome {
+        Ok(Ok(result)) => {
+            if let Err(error) = reporter.finish_success(result) {
+                eprintln!("{bundle_id} terminal status failed: {error}");
+                std::process::exit(2);
+            }
+        }
+        Ok(Err(error)) => {
+            let _ = reporter.finish_failure(&error);
+            eprintln!("{bundle_id} failed: {error}");
+            std::process::exit(2);
+        }
+        Err(payload) => {
+            let message = payload
+                .downcast_ref::<&str>()
+                .copied()
+                .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                .unwrap_or("unknown panic");
+            let _ = reporter.finish_failure(format!("panic: {message}"));
+            eprintln!("{bundle_id} panicked: {message}");
+            std::process::exit(101);
+        }
+    }
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_multi_prime_worker(_args: &[String]) {
+    eprintln!("GPU multi-prime worker requires a Linux build with --features cuda");
+    std::process::exit(2);
+}
+
 #[cfg(feature = "cuda")]
 fn cmd_adynkra_11d_second_momentum_gpu_fx(args: &[String]) {
-    use second_momentum_gpu_progress::{emit_fallback_error, ProgressConfig, ProgressReporter};
+    use second_momentum_gpu_progress::{ProgressConfig, ProgressReporter, emit_fallback_error};
 
     if args.len() > 9 {
         second_momentum_gpu_argument_failure(
@@ -1924,6 +2962,7 @@ fn cmd_adynkra_11d_second_momentum_gpu_fx(args: &[String]) {
         binary_output_path,
         report_output_path,
         status_snapshot_path: status_path,
+        group: None,
     };
     let reporter = ProgressReporter::start(config).unwrap_or_else(|error| {
         emit_fallback_error("progress_initialization_error", &error.to_string());
@@ -3688,7 +4727,7 @@ fn cmd_decompose_probe(args: &[String]) {
 }
 
 fn cmd_cls_g_full_build(args: &[String]) {
-    use four_color::gmatrix_full::{run_build, Side};
+    use four_color::gmatrix_full::{Side, run_build};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,
@@ -3727,7 +4766,7 @@ fn cmd_cls_g_full_build(args: &[String]) {
 }
 
 fn cmd_cls_g_full_verify(args: &[String]) {
-    use four_color::gmatrix_full::{run_verify, Side};
+    use four_color::gmatrix_full::{Side, run_verify};
     let side = match args.get(2).map(String::as_str).unwrap_or("L") {
         "L" | "l" => Side::L,
         "R" | "r" => Side::R,

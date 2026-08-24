@@ -4,6 +4,7 @@
 //! status snapshot alive while the command is inside long CPU or CUDA phases.
 //! The snapshot is explicitly not a resumable computation checkpoint.
 
+use serde::Serialize;
 use serde_json::{Value, json};
 use std::collections::VecDeque;
 use std::fs::{self, File, OpenOptions};
@@ -39,6 +40,20 @@ pub(crate) struct ProgressConfig {
     pub binary_output_path: PathBuf,
     pub report_output_path: PathBuf,
     pub status_snapshot_path: PathBuf,
+    pub group: Option<GroupProgressConfig>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct GroupProgressConfig {
+    pub job_id: String,
+    pub group_id: String,
+    pub active_columns: usize,
+    pub ordered_local_ordinals: Vec<usize>,
+    pub ordered_global_ordinals: Vec<usize>,
+    pub ordered_source_copies: Vec<usize>,
+    pub checkpoint_path: PathBuf,
+    pub event_log_path: PathBuf,
+    pub resumable: bool,
 }
 
 /// Absolute source-visitor counters. Callers should update this once per batch,
@@ -73,6 +88,26 @@ pub(crate) struct GpuBatchProgress {
     pub total_download_ms: f64,
 }
 
+#[derive(Clone, Debug, Default, Serialize)]
+pub(crate) struct GroupLiveProgress {
+    pub group_id: Option<String>,
+    pub words_completed: usize,
+    pub words_total: usize,
+    pub global_batch_ordinal: u64,
+    pub raw_terms_per_column: Vec<u64>,
+    pub last_union_key_count: usize,
+    pub cumulative_union_keys: u64,
+    pub keys_by_present_lane_count: Vec<u64>,
+    pub host_capacity_bytes: u64,
+    pub aggregate_host_cap_bytes: u64,
+    pub device_resident_bytes: u64,
+    pub device_high_water_bytes: u64,
+    pub aggregate_device_cap_bytes: u64,
+    pub checkpoint_generation: u64,
+    pub checkpoint_sha256: Option<String>,
+    pub checkpoint_written_unix_ms: Option<u128>,
+}
+
 #[derive(Debug)]
 struct LiveMetrics {
     word: AtomicU64,
@@ -97,6 +132,7 @@ struct LiveMetrics {
     last_gpu_download_micros: AtomicU64,
     total_gpu_download_micros: AtomicU64,
     rolling_rate: Mutex<RollingRate>,
+    group: Mutex<GroupLiveProgress>,
 }
 
 #[derive(Debug, Default)]
@@ -213,6 +249,19 @@ impl LiveProgress {
             metric.store(milliseconds_to_micros(milliseconds), Ordering::Relaxed);
         }
     }
+
+    pub(crate) fn update_group(&self, mut progress: GroupLiveProgress) {
+        let mut current = lock(&self.metrics.group);
+        if progress.checkpoint_sha256.is_none() {
+            progress
+                .checkpoint_sha256
+                .clone_from(&current.checkpoint_sha256);
+        }
+        if progress.checkpoint_written_unix_ms.is_none() {
+            progress.checkpoint_written_unix_ms = current.checkpoint_written_unix_ms;
+        }
+        *current = progress;
+    }
 }
 
 impl Default for LiveMetrics {
@@ -240,6 +289,7 @@ impl Default for LiveMetrics {
             last_gpu_download_micros: AtomicU64::new(0),
             total_gpu_download_micros: AtomicU64::new(0),
             rolling_rate: Mutex::new(RollingRate::default()),
+            group: Mutex::new(GroupLiveProgress::default()),
         }
     }
 }
@@ -259,6 +309,7 @@ struct ProgressState {
 
 struct Shared {
     config: ProgressConfig,
+    hostname: String,
     started: Instant,
     state: Mutex<ProgressState>,
     output_lock: Mutex<()>,
@@ -282,6 +333,7 @@ impl ProgressReporter {
         let now = Instant::now();
         let shared = Arc::new(Shared {
             config,
+            hostname: machine_hostname(),
             started: now,
             state: Mutex::new(ProgressState {
                 state: "running",
@@ -470,14 +522,25 @@ fn set_terminal_state(
 
 fn emit_and_snapshot(shared: &Shared, event: &'static str) -> io::Result<()> {
     let value = event_value(shared, event);
-    let line = serde_json::to_vec(&value).map_err(io::Error::other)?;
+    let mut line = serde_json::to_vec(&value).map_err(io::Error::other)?;
+    line.push(b'\n');
     {
         let _guard = lock(&shared.output_lock);
         let stdout = io::stdout();
         let mut output = stdout.lock();
         output.write_all(&line)?;
-        output.write_all(b"\n")?;
         output.flush()?;
+        if let Some(group) = &shared.config.group {
+            if let Some(parent) = group.event_log_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            let mut log = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&group.event_log_path)?;
+            log.write_all(&line)?;
+            log.flush()?;
+        }
     }
     let _guard = lock(&shared.status_lock);
     write_json_atomic(&shared.config.status_snapshot_path, &value)
@@ -490,6 +553,7 @@ fn event_value(shared: &Shared, event: &'static str) -> Value {
     let columns_per_second = state.columns_completed as f64 / elapsed.max(f64::EPSILON);
     let primes_per_second = state.primes_completed as f64 / elapsed.max(f64::EPSILON);
     let live = live_snapshot(&shared.live_metrics);
+    let group_live = lock(&shared.live_metrics.group).clone();
     let batches_per_second = live.gpu_batches_completed as f64 / elapsed.max(f64::EPSILON);
     let source_terms = state
         .result
@@ -511,6 +575,7 @@ fn event_value(shared: &Shared, event: &'static str) -> Value {
         "phase": state.phase,
         "timestamp_unix_ms": unix_milliseconds(),
         "pid": std::process::id(),
+        "hostname": shared.hostname,
         "command": shared.config.command,
         "tranche": shared.config.tranche,
         "local_column_ordinal": shared.config.local_ordinal,
@@ -519,6 +584,7 @@ fn event_value(shared: &Shared, event: &'static str) -> Value {
         "prime": shared.config.prime,
         "device": shared.config.device,
         "cpu_parity_terms": shared.config.cpu_parity_terms,
+        "group": &shared.config.group,
         "heartbeat_interval_seconds": HEARTBEAT_INTERVAL.as_secs(),
         "elapsed_seconds": elapsed,
         "phase_elapsed_seconds": phase_elapsed,
@@ -564,6 +630,7 @@ fn event_value(shared: &Shared, event: &'static str) -> Value {
                 "download": live.total_gpu_download_ms
             }
         },
+        "group_progress": group_live,
         "throughput": {
             "columns_per_second": columns_per_second,
             "primes_per_second": primes_per_second,
@@ -581,12 +648,18 @@ fn event_value(shared: &Shared, event: &'static str) -> Value {
             "output_directory": shared.config.output_directory.display().to_string(),
             "binary_output_path": shared.config.binary_output_path.display().to_string(),
             "report_output_path": shared.config.report_output_path.display().to_string(),
-            "status_snapshot_path": shared.config.status_snapshot_path.display().to_string()
+            "status_snapshot_path": shared.config.status_snapshot_path.display().to_string(),
+            "checkpoint_path": shared.config.group.as_ref().map(|group| group.checkpoint_path.display().to_string()),
+            "event_log_path": shared.config.group.as_ref().map(|group| group.event_log_path.display().to_string())
         },
         "status_snapshot": {
             "path": shared.config.status_snapshot_path.display().to_string(),
-            "resumable": false,
-            "semantics": "atomic observational status only; it cannot resume computation"
+            "resumable": shared.config.group.as_ref().is_some_and(|group| group.resumable),
+            "semantics": if shared.config.group.as_ref().is_some_and(|group| group.resumable) {
+                "observational snapshot plus separately durable word-boundary checkpoint"
+            } else {
+                "atomic observational status only; it cannot resume computation"
+            }
         },
         "message": state.message,
         "error": state.error,
@@ -893,6 +966,21 @@ fn unix_milliseconds() -> u128 {
         .as_millis()
 }
 
+fn machine_hostname() -> String {
+    std::env::var("HOSTNAME")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| {
+            std::process::Command::new("hostname")
+                .output()
+                .ok()
+                .filter(|output| output.status.success())
+                .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_owned())
+                .filter(|value| !value.is_empty())
+        })
+        .unwrap_or_else(|| "unknown".to_owned())
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct ReconciliationResult {
     pub reconciled: bool,
@@ -901,7 +989,8 @@ pub(crate) struct ReconciliationResult {
 
 /// Finalize a still-running observational snapshot after a supervisor has
 /// waited for the owning child. This covers uncatchable SIGKILL and OOM kills.
-/// A terminal snapshot is preserved byte for byte.
+/// A terminal snapshot is preserved byte for byte. Group snapshots may point
+/// at a separate resumable checkpoint; reconciliation never edits it.
 ///
 /// A shell supervisor should `wait` for the child, then invoke the matching
 /// status-reconcile CLI with the child's PID and observed exit or signal.
@@ -929,11 +1018,11 @@ pub(crate) fn reconcile_status_snapshot(
         .get("status_snapshot")
         .and_then(|value| value.get("resumable"))
         .and_then(Value::as_bool)
-        != Some(false)
+        .is_none()
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            "file is not a non-resumable GPU status snapshot",
+            "file is not a GPU status snapshot",
         ));
     }
     let recorded_pid = status.get("pid").and_then(Value::as_u64);
@@ -1060,6 +1149,29 @@ unsafe extern "C" {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn group_updates_retain_the_last_durable_checkpoint_identity() {
+        let live = LiveProgress {
+            metrics: Arc::new(LiveMetrics::default()),
+        };
+        live.update_group(GroupLiveProgress {
+            checkpoint_generation: 3,
+            checkpoint_sha256: Some("a".repeat(64)),
+            checkpoint_written_unix_ms: Some(42),
+            ..GroupLiveProgress::default()
+        });
+        live.update_group(GroupLiveProgress {
+            checkpoint_generation: 3,
+            global_batch_ordinal: 9,
+            ..GroupLiveProgress::default()
+        });
+        let observed = lock(&live.metrics.group).clone();
+        assert_eq!(observed.checkpoint_generation, 3);
+        assert_eq!(observed.global_batch_ordinal, 9);
+        assert_eq!(observed.checkpoint_sha256, Some("a".repeat(64)));
+        assert_eq!(observed.checkpoint_written_unix_ms, Some(42));
+    }
     use std::io::Read;
 
     #[test]
@@ -1110,6 +1222,7 @@ mod tests {
             binary_output_path: directory.join("column.bin"),
             report_output_path: directory.join("column.json"),
             status_snapshot_path: status_snapshot_path.clone(),
+            group: None,
         })
         .unwrap();
         reporter.phase_start("column_execution").unwrap();
@@ -1147,6 +1260,7 @@ mod tests {
             binary_output_path: directory.join("column.bin"),
             report_output_path: directory.join("column.json"),
             status_snapshot_path: status_snapshot_path.clone(),
+            group: None,
         })
         .unwrap();
         reporter.phase_start("column_execution").unwrap();
@@ -1197,6 +1311,7 @@ mod tests {
             binary_output_path: directory.join("column.bin"),
             report_output_path: directory.join("column.json"),
             status_snapshot_path: status_snapshot_path.clone(),
+            group: None,
         })
         .unwrap();
         reporter.phase_start("column_execution").unwrap();
@@ -1232,6 +1347,7 @@ mod tests {
             binary_output_path: directory.join("column.bin"),
             report_output_path: directory.join("column.json"),
             status_snapshot_path: status_snapshot_path.clone(),
+            group: None,
         })
         .unwrap();
         reporter.phase_start("blocked_cpu_work").unwrap();
@@ -1271,6 +1387,7 @@ mod tests {
             binary_output_path: directory.join("column.bin"),
             report_output_path: directory.join("column.json"),
             status_snapshot_path: status_snapshot_path.clone(),
+            group: None,
         })
         .unwrap();
         let live = reporter.live_progress();

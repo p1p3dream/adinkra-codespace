@@ -11,7 +11,7 @@ constexpr uint32_t kGaugeDegrees = 6;
 constexpr uint32_t kSpinors = 32;
 constexpr uint32_t kMomentumPairs = 66;
 constexpr uint32_t kSectors = 2;
-constexpr uint32_t kSeeds = 4;
+constexpr uint32_t kSeeds = 1;
 constexpr uint32_t kBuckets = 32;
 constexpr size_t kDeviceHeadroomBytes = 64ULL * 1024 * 1024;
 constexpr uint32_t kRows =
@@ -19,9 +19,6 @@ constexpr uint32_t kRows =
 constexpr int kRecouplingSemanticKeyBits = 45;
 __device__ __constant__ uint64_t kFunctionalSeeds[kSeeds] = {
     0x5d120f0213aa0001ULL,
-    0x5d120f0213aa0002ULL,
-    0x5d120f0213aa0003ULL,
-    0x5d120f0213aa0004ULL,
 };
 
 struct GaussianResidue {
@@ -146,6 +143,22 @@ struct RecouplingStats {
   float total_milliseconds;
 };
 
+struct MultiColumnStats {
+  uint64_t unique_count;
+  uint32_t active_columns;
+  uint32_t reserved;
+  uint64_t nonzero_terms[32];
+  uint64_t expanded_contributions[32];
+  uint64_t resident_bytes;
+  uint64_t buffer_high_water_bytes;
+  uint64_t device_hard_cap_bytes;
+  float upload_milliseconds;
+  float contract_milliseconds;
+  float finalize_milliseconds;
+  float download_milliseconds;
+  float total_milliseconds;
+};
+
 struct Context {
   int device = 0;
   uint32_t prime = 0;
@@ -180,6 +193,16 @@ struct Context {
   uint32_t *recoupling_overflow = nullptr;
   void *cub_temporary = nullptr;
   size_t cub_temporary_capacity = 0;
+  uint32_t multicol_key_capacity = 0;
+  uint32_t multicol_lane_capacity = 0;
+  uint64_t *multicol_keys = nullptr;
+  WideValue *multicol_values = nullptr;
+  unsigned long long *multicol_output_real_wide = nullptr;
+  unsigned long long *multicol_output_imaginary_wide = nullptr;
+  uint32_t *multicol_output_real = nullptr;
+  uint32_t *multicol_output_imaginary = nullptr;
+  unsigned long long *multicol_expanded = nullptr;
+  uint32_t *multicol_overflow = nullptr;
   uint64_t allocated_bytes = 0;
   uint64_t buffer_high_water_bytes = 0;
   uint64_t recoupling_hard_cap_bytes = UINT64_MAX;
@@ -239,6 +262,14 @@ void destroy(Context *context) {
   cudaFree(context->recoupling_nonzero_count);
   cudaFree(context->recoupling_overflow);
   cudaFree(context->cub_temporary);
+  cudaFree(context->multicol_keys);
+  cudaFree(context->multicol_values);
+  cudaFree(context->multicol_output_real_wide);
+  cudaFree(context->multicol_output_imaginary_wide);
+  cudaFree(context->multicol_output_real);
+  cudaFree(context->multicol_output_imaginary);
+  cudaFree(context->multicol_expanded);
+  cudaFree(context->multicol_overflow);
   if (context->started != nullptr) {
     cudaEventDestroy(context->started);
   }
@@ -273,18 +304,16 @@ __device__ __forceinline__ uint32_t negate_mod(uint32_t value,
   return value == 0 ? 0 : prime - value;
 }
 
-__device__ __forceinline__ uint32_t multiply_mod(uint32_t left,
-                                                  uint32_t right,
-                                                  uint32_t prime) {
-  const uint64_t product = static_cast<uint64_t>(left) * right;
-  // The production primes are 2^30-c for c <= 105.  Two exact folds avoid
-  // integer division in the contraction hot path.  Keep the generic path for
-  // supported custom primes.
+__device__ __forceinline__ uint32_t reduce_u64_mod(uint64_t value,
+                                                    uint32_t prime) {
+  // The production primes are 2^30-c for c <= 105. Two exact folds reduce
+  // any u64 value below 2p, so one subtraction finishes without division.
+  // Keep the generic path for supported custom primes.
   constexpr uint64_t mask = (1ULL << 30) - 1;
   if (prime < (1U << 30)) {
     const uint32_t c = (1U << 30) - prime;
     if (c <= 128) {
-      uint64_t residue = (product & mask) + (product >> 30) * c;
+      uint64_t residue = (value & mask) + (value >> 30) * c;
       residue = (residue & mask) + (residue >> 30) * c;
       if (residue >= prime) {
         residue -= prime;
@@ -292,7 +321,13 @@ __device__ __forceinline__ uint32_t multiply_mod(uint32_t left,
       return static_cast<uint32_t>(residue);
     }
   }
-  return static_cast<uint32_t>(product % prime);
+  return static_cast<uint32_t>(value % prime);
+}
+
+__device__ __forceinline__ uint32_t multiply_mod(uint32_t left,
+                                                  uint32_t right,
+                                                  uint32_t prime) {
+  return reduce_u64_mod(static_cast<uint64_t>(left) * right, prime);
 }
 
 __device__ __forceinline__ GaussianResidue multiply_gaussian(
@@ -694,6 +729,302 @@ __global__ void accumulate_reduced_plan_kernel(
   }
 }
 
+// Reference direct-to-global implementation retained for parity profiling.
+__global__ void accumulate_reduced_plan_multicol_direct_kernel(
+    const uint64_t *__restrict__ keys,
+    const WideValue *__restrict__ key_major_values, uint32_t unique_count,
+    uint32_t active_columns, const uint32_t *__restrict__ plan_offsets,
+    const PlanEntry *__restrict__ plan_entries,
+    const uint64_t *__restrict__ pair_salts, uint32_t prime,
+    uint32_t pow2_64_mod, unsigned long long *__restrict__ output_real,
+    unsigned long long *__restrict__ output_imaginary,
+    unsigned long long *__restrict__ expanded,
+    uint32_t *__restrict__ overflow) {
+  constexpr uint32_t kThreads = 128;
+  const uint32_t source_index = blockIdx.x;
+  if (source_index >= unique_count) return;
+  const uint32_t lane_width =
+      active_columns <= 1  ? 1
+      : active_columns <= 2  ? 2
+      : active_columns <= 4  ? 4
+      : active_columns <= 8  ? 8
+      : active_columns <= 16 ? 16
+                             : 32;
+  const uint32_t lane = threadIdx.x & (lane_width - 1U);
+  const uint32_t plan_lane = threadIdx.x / lane_width;
+  const uint32_t plan_lanes = kThreads / lane_width;
+  __shared__ uint32_t shared_mask;
+  __shared__ uint32_t shared_free_spinor;
+  __shared__ uint32_t shared_pair;
+  __shared__ uint32_t shared_valid;
+  __shared__ uint32_t shared_coefficients[32];
+  __shared__ uint32_t shared_active[32];
+  __shared__ unsigned long long warp_expanded[4][32];
+
+  if (threadIdx.x == 0) {
+    shared_valid = 0;
+    const uint64_t key = keys[source_index];
+    const uint32_t metadata = static_cast<uint32_t>(key >> 32);
+    const uint32_t pair_left = metadata & 15U;
+    const uint32_t pair_right = (metadata >> 4) & 15U;
+    const uint32_t free_spinor = (metadata >> 8) & 31U;
+    const uint32_t mask = static_cast<uint32_t>(key);
+    if ((metadata >> 13) != 0 || pair_left > pair_right || pair_right >= 11 ||
+        free_spinor >= 32 || __popc(mask) != 12) {
+      atomicExch(overflow, 2U);
+    } else {
+      shared_mask = mask;
+      shared_free_spinor = free_spinor;
+      shared_pair = pair_ordinal(pair_left, pair_right);
+      shared_valid = 1;
+    }
+  }
+  if (threadIdx.x < 32) {
+    const uint32_t column = threadIdx.x;
+    shared_active[column] = 0;
+    shared_coefficients[column] = 0;
+    if (column < active_columns) {
+      const WideValue value = key_major_values[
+          static_cast<uint64_t>(source_index) * active_columns + column];
+      if (value.overflow != 0 || value.reserved != 0) {
+        atomicExch(overflow, 1U);
+      } else if (!wide_is_zero(value)) {
+        shared_coefficients[column] = wide_mod(value, prime, pow2_64_mod);
+        shared_active[column] = 1;
+      }
+    }
+  }
+  __syncthreads();
+  const bool lane_active = shared_valid != 0 && lane < active_columns &&
+                           shared_active[lane] != 0 &&
+                           shared_coefficients[lane] != 0;
+  unsigned long long local_expanded = 0;
+  if (lane_active) {
+    for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
+      const uint32_t schedule = degree * kSpinors + shared_free_spinor;
+      const uint32_t begin = plan_offsets[schedule];
+      const uint32_t end = plan_offsets[schedule + 1];
+      for (uint32_t index = begin + plan_lane; index < end;
+           index += plan_lanes) {
+        const PlanEntry entry = plan_entries[index];
+        const int first_sign = wedge_sign(shared_mask, entry.gauge_spinor);
+        if (first_sign == 0) continue;
+        const uint32_t degree13_mask =
+            shared_mask | (1U << entry.gauge_spinor);
+        const int second_sign =
+            wedge_sign(degree13_mask, entry.template_spinor);
+        if (second_sign == 0) continue;
+        const uint32_t output_mask =
+            degree13_mask | (1U << entry.template_spinor);
+        const uint32_t highest = 31U - __clz(output_mask);
+        const uint32_t functional_mask = output_mask ^ (1U << highest);
+        GaussianResidue contribution = scale_gaussian(
+            entry.coefficient, shared_coefficients[lane], prime);
+        if ((first_sign < 0) != (second_sign < 0)) {
+          contribution = negate_gaussian(contribution, prime);
+        }
+        if (contribution.real == 0 && contribution.imaginary == 0) continue;
+        const uint64_t base = planned_functional_base(
+            entry, functional_mask, shared_pair, pair_salts);
+#pragma unroll
+        for (uint32_t seed = 0; seed < kSeeds; ++seed) {
+          const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
+          const uint32_t bucket =
+              static_cast<uint32_t>(hash) & (kBuckets - 1);
+          const GaussianResidue value =
+              (hash >> 63) == 0 ? contribution
+                                : negate_gaussian(contribution, prime);
+          const uint32_t row = row_ordinal(degree, shared_pair, entry.sector,
+                                           seed, bucket);
+          const uint64_t output =
+              static_cast<uint64_t>(row) * active_columns + lane;
+          atomicAdd(&output_real[output],
+                    static_cast<unsigned long long>(value.real));
+          atomicAdd(&output_imaginary[output],
+                    static_cast<unsigned long long>(value.imaginary));
+        }
+        ++local_expanded;
+      }
+    }
+  }
+  for (uint32_t delta = 16; delta >= lane_width; delta >>= 1) {
+    local_expanded += __shfl_down_sync(0xffffffffU, local_expanded, delta);
+    if (delta == lane_width) break;
+  }
+  const uint32_t thread_in_warp = threadIdx.x & 31U;
+  const uint32_t warp = threadIdx.x >> 5;
+  if (thread_in_warp < lane_width) {
+    warp_expanded[warp][thread_in_warp] = local_expanded;
+  }
+  __syncthreads();
+  if (threadIdx.x < active_columns) {
+    unsigned long long block_expanded = 0;
+#pragma unroll
+    for (uint32_t warp_index = 0; warp_index < 4; ++warp_index) {
+      block_expanded += warp_expanded[warp_index][threadIdx.x];
+    }
+    if (block_expanded != 0) {
+      atomicAdd(&expanded[threadIdx.x], block_expanded);
+    }
+  }
+}
+
+
+// One block owns one (source, degree) pair. The plan response depends only
+// on the semantic source key, not on its per-column scalar coefficients. Build
+// that 64-bin Gaussian response once, then scale and flush it for every active
+// column. This preserves exact finite-field linearity while eliminating both
+// per-entry coefficient multiplies and duplicated per-column plan traversal.
+__global__ void accumulate_reduced_plan_multicol_shared_kernel(
+    const uint64_t *__restrict__ keys,
+    const WideValue *__restrict__ key_major_values, uint32_t unique_count,
+    uint32_t active_columns, const uint32_t *__restrict__ plan_offsets,
+    const PlanEntry *__restrict__ plan_entries,
+    const uint64_t *__restrict__ pair_salts, uint32_t prime,
+    uint32_t pow2_64_mod, unsigned long long *__restrict__ output_real,
+    unsigned long long *__restrict__ output_imaginary,
+    unsigned long long *__restrict__ expanded,
+    uint32_t *__restrict__ overflow) {
+  constexpr uint32_t kThreads = 128;
+  constexpr uint32_t kRowsPerDegreePair = kSectors * kSeeds * kBuckets;
+  const uint32_t source_index = blockIdx.x;
+  const uint32_t degree = blockIdx.y;
+  if (source_index >= unique_count || degree >= kGaugeDegrees) return;
+  extern __shared__ unsigned long long shared_rows[];
+  unsigned long long *shared_real = shared_rows;
+  unsigned long long *shared_imaginary =
+      shared_rows + kRowsPerDegreePair;
+  for (uint32_t index = threadIdx.x; index < kRowsPerDegreePair;
+       index += blockDim.x) {
+    shared_real[index] = 0;
+    shared_imaginary[index] = 0;
+  }
+  __shared__ uint32_t shared_mask;
+  __shared__ uint32_t shared_free_spinor;
+  __shared__ uint32_t shared_pair;
+  __shared__ uint32_t shared_valid;
+  __shared__ uint32_t shared_coefficients[32];
+  __shared__ uint32_t shared_active[32];
+  __shared__ unsigned long long shared_expanded;
+  using CountReduce = cub::BlockReduce<unsigned long long, kThreads>;
+  __shared__ typename CountReduce::TempStorage count_storage;
+
+  if (threadIdx.x == 0) {
+    shared_valid = 0;
+    const uint64_t key = keys[source_index];
+    const uint32_t metadata = static_cast<uint32_t>(key >> 32);
+    const uint32_t pair_left = metadata & 15U;
+    const uint32_t pair_right = (metadata >> 4) & 15U;
+    const uint32_t free_spinor = (metadata >> 8) & 31U;
+    const uint32_t mask = static_cast<uint32_t>(key);
+    if ((metadata >> 13) != 0 || pair_left > pair_right || pair_right >= 11 ||
+        free_spinor >= 32 || __popc(mask) != 12) {
+      atomicExch(overflow, 2U);
+    } else {
+      shared_mask = mask;
+      shared_free_spinor = free_spinor;
+      shared_pair = pair_ordinal(pair_left, pair_right);
+      shared_valid = 1;
+    }
+  }
+  if (threadIdx.x < 32) {
+    const uint32_t column = threadIdx.x;
+    shared_active[column] = 0;
+    shared_coefficients[column] = 0;
+    if (column < active_columns) {
+      const WideValue value = key_major_values[
+          static_cast<uint64_t>(source_index) * active_columns + column];
+      if (value.overflow != 0 || value.reserved != 0) {
+        atomicExch(overflow, 1U);
+      } else if (!wide_is_zero(value)) {
+        shared_coefficients[column] = wide_mod(value, prime, pow2_64_mod);
+        shared_active[column] = 1;
+      }
+    }
+  }
+  __syncthreads();
+  unsigned long long local_expanded = 0;
+  if (shared_valid != 0) {
+    const uint32_t schedule = degree * kSpinors + shared_free_spinor;
+    const uint32_t begin = plan_offsets[schedule];
+    const uint32_t end = plan_offsets[schedule + 1];
+    for (uint32_t index = begin + threadIdx.x; index < end;
+         index += blockDim.x) {
+      const PlanEntry entry = plan_entries[index];
+      const int first_sign = wedge_sign(shared_mask, entry.gauge_spinor);
+      if (first_sign == 0) continue;
+      const uint32_t degree13_mask =
+          shared_mask | (1U << entry.gauge_spinor);
+      const int second_sign =
+          wedge_sign(degree13_mask, entry.template_spinor);
+      if (second_sign == 0) continue;
+      const uint32_t output_mask =
+          degree13_mask | (1U << entry.template_spinor);
+      const uint32_t highest = 31U - __clz(output_mask);
+      const uint32_t functional_mask = output_mask ^ (1U << highest);
+      const uint64_t base = planned_functional_base(
+          entry, functional_mask, shared_pair, pair_salts);
+#pragma unroll
+      for (uint32_t seed = 0; seed < kSeeds; ++seed) {
+        const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
+        GaussianResidue coefficient = entry.coefficient;
+        if (((first_sign < 0) != (second_sign < 0)) !=
+            ((hash >> 63) != 0)) {
+          coefficient = negate_gaussian(coefficient, prime);
+        }
+        const uint32_t bucket =
+            static_cast<uint32_t>(hash) & (kBuckets - 1);
+        const uint32_t local_row =
+            (entry.sector * kSeeds + seed) * kBuckets + bucket;
+        atomicAdd(&shared_real[local_row],
+                  static_cast<unsigned long long>(coefficient.real));
+        atomicAdd(&shared_imaginary[local_row],
+                  static_cast<unsigned long long>(coefficient.imaginary));
+      }
+      ++local_expanded;
+    }
+  }
+  const unsigned long long block_expanded =
+      CountReduce(count_storage).Sum(local_expanded);
+  if (threadIdx.x == 0) shared_expanded = block_expanded;
+  __syncthreads();
+  const uint32_t output_values = kRowsPerDegreePair * active_columns;
+  for (uint32_t index = threadIdx.x; index < output_values;
+       index += blockDim.x) {
+    const uint32_t local_row = index / active_columns;
+    const uint32_t column = index % active_columns;
+    if (shared_active[column] != 0 && shared_coefficients[column] != 0) {
+      const GaussianResidue response{
+          reduce_u64_mod(shared_real[local_row], prime),
+          reduce_u64_mod(shared_imaginary[local_row], prime)};
+      const GaussianResidue value =
+          scale_gaussian(response, shared_coefficients[column], prime);
+      if (value.real != 0 || value.imaginary != 0) {
+        const uint32_t sector = local_row / (kSeeds * kBuckets);
+        const uint32_t seed_bucket = local_row % (kSeeds * kBuckets);
+        const uint32_t seed = seed_bucket / kBuckets;
+        const uint32_t bucket = seed_bucket % kBuckets;
+        const uint32_t row =
+            row_ordinal(degree, shared_pair, sector, seed, bucket);
+        const uint64_t output =
+            static_cast<uint64_t>(row) * active_columns + column;
+        if (value.real != 0) {
+          atomicAdd(&output_real[output],
+                    static_cast<unsigned long long>(value.real));
+        }
+        if (value.imaginary != 0) {
+          atomicAdd(&output_imaginary[output],
+                    static_cast<unsigned long long>(value.imaginary));
+        }
+      }
+    }
+  }
+  if (threadIdx.x < active_columns && shared_active[threadIdx.x] != 0 &&
+      shared_coefficients[threadIdx.x] != 0 && shared_expanded != 0) {
+    atomicAdd(&expanded[threadIdx.x], shared_expanded);
+  }
+}
+
 __global__ void finalize_wide_rows_kernel(
     const unsigned long long *__restrict__ real_wide,
     const unsigned long long *__restrict__ imaginary_wide, uint32_t prime,
@@ -702,6 +1033,19 @@ __global__ void finalize_wide_rows_kernel(
   if (row < kRows) {
     real[row] = static_cast<uint32_t>(real_wide[row] % prime);
     imaginary[row] = static_cast<uint32_t>(imaginary_wide[row] % prime);
+  }
+}
+
+__global__ void finalize_wide_multicol_kernel(
+    const unsigned long long *__restrict__ real_wide,
+    const unsigned long long *__restrict__ imaginary_wide, uint64_t count,
+    uint32_t prime, uint32_t *__restrict__ real,
+    uint32_t *__restrict__ imaginary) {
+  const uint64_t index =
+      static_cast<uint64_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+  if (index < count) {
+    real[index] = static_cast<uint32_t>(real_wide[index] % prime);
+    imaginary[index] = static_cast<uint32_t>(imaginary_wide[index] % prime);
   }
 }
 
@@ -1044,6 +1388,166 @@ uint32_t growth_capacity(uint32_t required) {
     capacity *= 2;
   }
   return capacity < required ? required : capacity;
+}
+
+bool multicol_workspace_bytes(uint32_t key_capacity, uint32_t lane_capacity,
+                              size_t *bytes) {
+  if (key_capacity == 0 || lane_capacity == 0 || lane_capacity > 32) {
+    *bytes = 0;
+    return key_capacity == 0 && lane_capacity == 0;
+  }
+  size_t value_count = 0;
+  size_t row_count = 0;
+  size_t key_bytes = 0;
+  size_t value_bytes = 0;
+  size_t wide_row_bytes = 0;
+  size_t row_bytes = 0;
+  if (!checked_multiply_size(key_capacity, lane_capacity, &value_count) ||
+      !checked_multiply_size(kRows, lane_capacity, &row_count) ||
+      !checked_multiply_size(key_capacity, sizeof(uint64_t), &key_bytes) ||
+      !checked_multiply_size(value_count, sizeof(WideValue), &value_bytes) ||
+      !checked_multiply_size(row_count, 2 * sizeof(unsigned long long),
+                             &wide_row_bytes) ||
+      !checked_multiply_size(row_count, 2 * sizeof(uint32_t), &row_bytes)) {
+    return false;
+  }
+  if (key_bytes > SIZE_MAX - value_bytes ||
+      key_bytes + value_bytes > SIZE_MAX - wide_row_bytes ||
+      key_bytes + value_bytes + wide_row_bytes > SIZE_MAX - row_bytes ||
+      key_bytes + value_bytes + wide_row_bytes + row_bytes >
+          SIZE_MAX - 32 * sizeof(unsigned long long) - sizeof(uint32_t)) {
+    return false;
+  }
+  *bytes = key_bytes + value_bytes + wide_row_bytes + row_bytes +
+           32 * sizeof(unsigned long long) + sizeof(uint32_t);
+  return true;
+}
+
+bool ensure_multicol_workspace(Context *context, uint32_t unique_capacity,
+                               uint32_t active_columns, char *error,
+                               size_t error_capacity) {
+  if (unique_capacity == 0 || active_columns == 0 || active_columns > 32) {
+    set_error(error, error_capacity,
+              "invalid multi-column CUDA reservation dimensions");
+    return false;
+  }
+  if (unique_capacity <= context->multicol_key_capacity &&
+      active_columns <= context->multicol_lane_capacity) {
+    return true;
+  }
+  const uint32_t key_capacity =
+      max(context->multicol_key_capacity, growth_capacity(unique_capacity));
+  const uint32_t lane_capacity =
+      max(context->multicol_lane_capacity, growth_capacity(active_columns));
+  if (lane_capacity > 32) {
+    set_error(error, error_capacity,
+              "multi-column CUDA lane reservation exceeds 32");
+    return false;
+  }
+  size_t new_bytes = 0;
+  size_t old_bytes = 0;
+  if (!multicol_workspace_bytes(key_capacity, lane_capacity, &new_bytes) ||
+      !multicol_workspace_bytes(context->multicol_key_capacity,
+                               context->multicol_lane_capacity, &old_bytes)) {
+    set_error(error, error_capacity,
+              "multi-column CUDA workspace size overflow");
+    return false;
+  }
+  if (new_bytes > UINT64_MAX - context->allocated_bytes) {
+    set_error(error, error_capacity,
+              "multi-column CUDA transient byte count overflow");
+    return false;
+  }
+  const uint64_t transient_peak = context->allocated_bytes + new_bytes;
+  if (transient_peak > context->recoupling_hard_cap_bytes) {
+    set_error(error, error_capacity,
+              "multi-column CUDA workspace exceeds configured device cap");
+    return false;
+  }
+  size_t free_bytes = 0;
+  size_t total_bytes = 0;
+  if (!check_cuda(cudaMemGetInfo(&free_bytes, &total_bytes), error,
+                  error_capacity, "query multi-column CUDA memory") ||
+      new_bytes > free_bytes || free_bytes - new_bytes < kDeviceHeadroomBytes) {
+    if (new_bytes > free_bytes || free_bytes - new_bytes < kDeviceHeadroomBytes) {
+      set_error(error, error_capacity,
+                "insufficient CUDA memory for multi-column workspace");
+    }
+    return false;
+  }
+
+  const size_t value_count =
+      static_cast<size_t>(key_capacity) * lane_capacity;
+  const size_t row_count = static_cast<size_t>(kRows) * lane_capacity;
+  uint64_t *keys = nullptr;
+  WideValue *values = nullptr;
+  unsigned long long *real_wide = nullptr;
+  unsigned long long *imaginary_wide = nullptr;
+  uint32_t *real = nullptr;
+  uint32_t *imaginary = nullptr;
+  unsigned long long *expanded = nullptr;
+  uint32_t *overflow = nullptr;
+  auto cleanup = [&]() {
+    cudaFree(keys);
+    cudaFree(values);
+    cudaFree(real_wide);
+    cudaFree(imaginary_wide);
+    cudaFree(real);
+    cudaFree(imaginary);
+    cudaFree(expanded);
+    cudaFree(overflow);
+  };
+#define MULTICOL_ALLOC(call, action)                                            \
+  do {                                                                          \
+    if (!check_cuda((call), error, error_capacity, (action))) {                 \
+      cleanup();                                                                \
+      return false;                                                             \
+    }                                                                           \
+  } while (false)
+  MULTICOL_ALLOC(cudaMalloc(&keys, key_capacity * sizeof(uint64_t)),
+                 "allocate multi-column keys");
+  MULTICOL_ALLOC(cudaMalloc(&values, value_count * sizeof(WideValue)),
+                 "allocate multi-column values");
+  MULTICOL_ALLOC(cudaMalloc(&real_wide,
+                            row_count * sizeof(unsigned long long)),
+                 "allocate multi-column wide real rows");
+  MULTICOL_ALLOC(cudaMalloc(&imaginary_wide,
+                            row_count * sizeof(unsigned long long)),
+                 "allocate multi-column wide imaginary rows");
+  MULTICOL_ALLOC(cudaMalloc(&real, row_count * sizeof(uint32_t)),
+                 "allocate multi-column real rows");
+  MULTICOL_ALLOC(cudaMalloc(&imaginary, row_count * sizeof(uint32_t)),
+                 "allocate multi-column imaginary rows");
+  MULTICOL_ALLOC(cudaMalloc(&expanded, 32 * sizeof(unsigned long long)),
+                 "allocate multi-column expansion counters");
+  MULTICOL_ALLOC(cudaMalloc(&overflow, sizeof(uint32_t)),
+                 "allocate multi-column overflow flag");
+#undef MULTICOL_ALLOC
+
+  cudaFree(context->multicol_keys);
+  cudaFree(context->multicol_values);
+  cudaFree(context->multicol_output_real_wide);
+  cudaFree(context->multicol_output_imaginary_wide);
+  cudaFree(context->multicol_output_real);
+  cudaFree(context->multicol_output_imaginary);
+  cudaFree(context->multicol_expanded);
+  cudaFree(context->multicol_overflow);
+  context->multicol_keys = keys;
+  context->multicol_values = values;
+  context->multicol_output_real_wide = real_wide;
+  context->multicol_output_imaginary_wide = imaginary_wide;
+  context->multicol_output_real = real;
+  context->multicol_output_imaginary = imaginary;
+  context->multicol_expanded = expanded;
+  context->multicol_overflow = overflow;
+  context->multicol_key_capacity = key_capacity;
+  context->multicol_lane_capacity = lane_capacity;
+  context->allocated_bytes = context->allocated_bytes - old_bytes + new_bytes;
+  context->buffer_high_water_bytes =
+      max(context->buffer_high_water_bytes, transient_peak);
+  context->buffer_high_water_bytes =
+      max(context->buffer_high_water_bytes, context->allocated_bytes);
+  return true;
 }
 
 bool persistent_growth_allowed(PersistentLoweringContext *context,
@@ -1890,6 +2394,219 @@ int adynkra_fx_cuda_reserve_recoupling(void *opaque, uint32_t source_count,
              : 1;
 }
 
+int adynkra_fx_cuda_reserve_multicol(void *opaque, uint32_t unique_capacity,
+                                     uint32_t active_columns, char *error,
+                                     size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr ||
+      !check_cuda(cudaSetDevice(context->device), error, error_capacity,
+                  "select multi-column reservation device")) {
+    if (context == nullptr) {
+      set_error(error, error_capacity,
+                "invalid multi-column CUDA reservation context");
+    }
+    return 1;
+  }
+  return ensure_multicol_workspace(context, unique_capacity, active_columns,
+                                   error, error_capacity)
+             ? 0
+             : 1;
+}
+
+int adynkra_fx_cuda_accumulate_recoupled_multicol(
+    void *opaque, const uint64_t *keys, const WideValue *key_major_values,
+    uint32_t unique_count, uint32_t active_columns,
+    uint32_t *row_major_output_real, uint32_t *row_major_output_imaginary,
+    MultiColumnStats *stats, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || keys == nullptr || key_major_values == nullptr ||
+      unique_count == 0 || active_columns == 0 || active_columns > 32 ||
+      row_major_output_real == nullptr || row_major_output_imaginary == nullptr ||
+      stats == nullptr || unique_count > context->multicol_key_capacity ||
+      active_columns > context->multicol_lane_capacity ||
+      context->multicol_keys == nullptr || context->multicol_values == nullptr ||
+      context->multicol_output_real_wide == nullptr ||
+      context->multicol_output_imaginary_wide == nullptr ||
+      context->multicol_output_real == nullptr ||
+      context->multicol_output_imaginary == nullptr ||
+      context->multicol_expanded == nullptr ||
+      context->multicol_overflow == nullptr) {
+    set_error(error, error_capacity,
+              "invalid or unreserved multi-column CUDA input");
+    return 1;
+  }
+  std::memset(stats, 0, sizeof(*stats));
+  stats->unique_count = unique_count;
+  stats->active_columns = active_columns;
+  uint64_t row_sum_bound = 0;
+  uint64_t expanded_bound = 0;
+  if (!checked_product_u64(unique_count,
+                           context->max_plan_entries_per_degree_free,
+                           static_cast<uint64_t>(context->prime - 1),
+                           &row_sum_bound) ||
+      !checked_product_u64(unique_count, context->max_plan_entries_per_free, 1,
+                           &expanded_bound)) {
+    set_error(error, error_capacity,
+              "multi-column CUDA exact accumulation bound exceeded");
+    return 1;
+  }
+  for (uint32_t source = 0; source < unique_count; ++source) {
+    const uint64_t key = keys[source];
+    const uint32_t metadata = static_cast<uint32_t>(key >> 32);
+    const uint32_t pair_left = metadata & 15U;
+    const uint32_t pair_right = (metadata >> 4) & 15U;
+    const uint32_t free_spinor = (metadata >> 8) & 31U;
+    const uint32_t mask = static_cast<uint32_t>(key);
+    if ((source != 0 && keys[source - 1] >= key) || (metadata >> 13) != 0 ||
+        pair_left > pair_right || pair_right >= 11 || free_spinor >= 32 ||
+        __builtin_popcount(mask) != 12) {
+      set_error(error, error_capacity,
+                "multi-column CUDA keys are not canonical sorted degree-12 data");
+      return 1;
+    }
+    bool any_nonzero = false;
+    for (uint32_t column = 0; column < active_columns; ++column) {
+      const WideValue &value = key_major_values[
+          static_cast<uint64_t>(source) * active_columns + column];
+      if (value.overflow != 0 || value.reserved != 0) {
+        set_error(error, error_capacity,
+                  "invalid multi-column CUDA coefficient encoding");
+        return 1;
+      }
+      if (value.low != 0 || value.high != 0) {
+        any_nonzero = true;
+        ++stats->nonzero_terms[column];
+      }
+    }
+    if (!any_nonzero) {
+      set_error(error, error_capacity,
+                "multi-column CUDA union contains an all-zero key");
+      return 1;
+    }
+  }
+  const size_t value_count =
+      static_cast<size_t>(unique_count) * active_columns;
+  const size_t output_count = static_cast<size_t>(kRows) * active_columns;
+  if (!check_cuda(cudaSetDevice(context->device), error, error_capacity,
+                  "select multi-column CUDA device")) {
+    return 1;
+  }
+#define MULTICOL_CUDA(call, action)                                             \
+  do {                                                                          \
+    if (!check_cuda((call), error, error_capacity, (action))) return 1;          \
+  } while (false)
+  MULTICOL_CUDA(cudaEventRecord(context->stage_events[0], context->stream),
+                "record multi-column start");
+  MULTICOL_CUDA(cudaMemcpyAsync(context->multicol_keys, keys,
+                                unique_count * sizeof(uint64_t),
+                                cudaMemcpyHostToDevice, context->stream),
+                "upload multi-column keys");
+  MULTICOL_CUDA(cudaMemcpyAsync(context->multicol_values, key_major_values,
+                                value_count * sizeof(WideValue),
+                                cudaMemcpyHostToDevice, context->stream),
+                "upload multi-column values");
+  MULTICOL_CUDA(cudaMemsetAsync(context->multicol_output_real_wide, 0,
+                                output_count * sizeof(unsigned long long),
+                                context->stream),
+                "clear multi-column wide real rows");
+  MULTICOL_CUDA(cudaMemsetAsync(context->multicol_output_imaginary_wide, 0,
+                                output_count * sizeof(unsigned long long),
+                                context->stream),
+                "clear multi-column wide imaginary rows");
+  MULTICOL_CUDA(cudaMemsetAsync(context->multicol_expanded, 0,
+                                active_columns * sizeof(unsigned long long),
+                                context->stream),
+                "clear multi-column expansion counters");
+  MULTICOL_CUDA(cudaMemsetAsync(context->multicol_overflow, 0, sizeof(uint32_t),
+                                context->stream),
+                "clear multi-column overflow flag");
+  MULTICOL_CUDA(cudaEventRecord(context->stage_events[1], context->stream),
+                "record multi-column upload finish");
+  constexpr uint32_t threads = 128;
+  constexpr uint32_t rows_per_degree_pair = kSectors * kSeeds * kBuckets;
+  const size_t shared_row_bytes = static_cast<size_t>(rows_per_degree_pair) *
+                                  2 * sizeof(unsigned long long);
+  const dim3 contraction_grid(unique_count, kGaugeDegrees);
+  accumulate_reduced_plan_multicol_shared_kernel<<<
+      contraction_grid, threads, shared_row_bytes, context->stream>>>(
+      context->multicol_keys, context->multicol_values, unique_count,
+      active_columns, context->plan_offsets, context->plan_entries,
+      context->pair_salts, context->prime, context->pow2_64_mod,
+      context->multicol_output_real_wide,
+      context->multicol_output_imaginary_wide, context->multicol_expanded,
+      context->multicol_overflow);
+  MULTICOL_CUDA(cudaGetLastError(),
+                "launch multi-column CUDA contraction");
+  MULTICOL_CUDA(cudaEventRecord(context->stage_events[2], context->stream),
+                "record multi-column contraction finish");
+  constexpr uint32_t finalize_threads = 256;
+  const uint32_t finalize_blocks = static_cast<uint32_t>(
+      (output_count + finalize_threads - 1) / finalize_threads);
+  finalize_wide_multicol_kernel<<<finalize_blocks, finalize_threads, 0,
+                                  context->stream>>>(
+      context->multicol_output_real_wide,
+      context->multicol_output_imaginary_wide, output_count, context->prime,
+      context->multicol_output_real, context->multicol_output_imaginary);
+  MULTICOL_CUDA(cudaGetLastError(),
+                "launch multi-column CUDA row finalization");
+  MULTICOL_CUDA(cudaEventRecord(context->stage_events[3], context->stream),
+                "record multi-column finalization finish");
+  MULTICOL_CUDA(cudaMemcpyAsync(row_major_output_real,
+                                context->multicol_output_real,
+                                output_count * sizeof(uint32_t),
+                                cudaMemcpyDeviceToHost, context->stream),
+                "download multi-column real rows");
+  MULTICOL_CUDA(cudaMemcpyAsync(row_major_output_imaginary,
+                                context->multicol_output_imaginary,
+                                output_count * sizeof(uint32_t),
+                                cudaMemcpyDeviceToHost, context->stream),
+                "download multi-column imaginary rows");
+  MULTICOL_CUDA(cudaMemcpyAsync(stats->expanded_contributions,
+                                context->multicol_expanded,
+                                active_columns * sizeof(unsigned long long),
+                                cudaMemcpyDeviceToHost, context->stream),
+                "download multi-column expansion counters");
+  uint32_t overflow = 0;
+  MULTICOL_CUDA(cudaMemcpyAsync(&overflow, context->multicol_overflow,
+                                sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                context->stream),
+                "download multi-column overflow flag");
+  MULTICOL_CUDA(cudaEventRecord(context->stage_events[4], context->stream),
+                "record multi-column download finish");
+  MULTICOL_CUDA(cudaEventSynchronize(context->stage_events[4]),
+                "finish multi-column CUDA batch");
+  MULTICOL_CUDA(cudaEventElapsedTime(&stats->upload_milliseconds,
+                                     context->stage_events[0],
+                                     context->stage_events[1]),
+                "measure multi-column upload");
+  MULTICOL_CUDA(cudaEventElapsedTime(&stats->contract_milliseconds,
+                                     context->stage_events[1],
+                                     context->stage_events[2]),
+                "measure multi-column contraction");
+  MULTICOL_CUDA(cudaEventElapsedTime(&stats->finalize_milliseconds,
+                                     context->stage_events[2],
+                                     context->stage_events[3]),
+                "measure multi-column finalization");
+  MULTICOL_CUDA(cudaEventElapsedTime(&stats->download_milliseconds,
+                                     context->stage_events[3],
+                                     context->stage_events[4]),
+                "measure multi-column download");
+  MULTICOL_CUDA(cudaEventElapsedTime(&stats->total_milliseconds,
+                                     context->stage_events[0],
+                                     context->stage_events[4]),
+                "measure multi-column total");
+#undef MULTICOL_CUDA
+  if (overflow != 0) {
+    set_error(error, error_capacity,
+              "multi-column CUDA kernel rejected canonical input");
+    return 1;
+  }
+  stats->resident_bytes = context->allocated_bytes;
+  stats->buffer_high_water_bytes = context->buffer_high_water_bytes;
+  stats->device_hard_cap_bytes = context->recoupling_hard_cap_bytes;
+  return 0;
+}
+
 void adynkra_fx_cuda_destroy(void *opaque) {
   destroy(static_cast<Context *>(opaque));
 }
@@ -1984,6 +2701,10 @@ void *adynkra_fx_cuda_sparse_handle_upload(
       count > UINT32_MAX / 13U) {
     set_error(error, error_capacity,
               "invalid persistent sparse handle upload");
+    return nullptr;
+  }
+  if (!check_cuda(cudaSetDevice(context->device), error, error_capacity,
+                  "select persistent sparse upload device")) {
     return nullptr;
   }
   uint64_t max_abs = 0;
@@ -2083,7 +2804,9 @@ int adynkra_fx_cuda_sparse_handle_download_range(
     return 1;
   }
   if (capacity == 0) return 0;
-  if (!check_cuda(cudaMemcpyAsync(
+  if (!check_cuda(cudaSetDevice(context->device), error, error_capacity,
+                  "select persistent sparse ranged-download device") ||
+      !check_cuda(cudaMemcpyAsync(
                       entries, handle->entries + start,
                       static_cast<size_t>(capacity) * sizeof(SparseEntry),
                       cudaMemcpyDeviceToHost, context->stream),
@@ -2111,7 +2834,9 @@ int adynkra_fx_cuda_sparse_handle_download(
     return 1;
   }
   if (handle->count == 0) return 0;
-  if (!check_cuda(cudaMemcpyAsync(
+  if (!check_cuda(cudaSetDevice(context->device), error, error_capacity,
+                  "select persistent sparse download device") ||
+      !check_cuda(cudaMemcpyAsync(
                       entries, handle->entries,
                       static_cast<size_t>(handle->count) * sizeof(SparseEntry),
                       cudaMemcpyDeviceToHost, context->stream),

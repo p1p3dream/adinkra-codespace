@@ -83,6 +83,22 @@ fn source_fixtures() -> [SourceFixture; TRANCHE_COLUMNS] {
     ]
 }
 
+/// Deterministic maximal same-label groups in local-column order. Singleton
+/// entries are retained so callers can select the existing fallback path.
+pub(crate) fn gpu_legal_local_column_groups() -> Vec<Vec<usize>> {
+    let fixtures = source_fixtures();
+    let mut groups = Vec::<Vec<usize>>::new();
+    for (local_ordinal, fixture) in fixtures.iter().enumerate() {
+        match groups.last_mut() {
+            Some(group) if fixtures[group[0]].dynkin_label == fixture.dynkin_label => {
+                group.push(local_ordinal);
+            }
+            _ => groups.push(vec![local_ordinal]),
+        }
+    }
+    groups
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct SecondMomentum30001GpuColumnPreflight {
@@ -493,13 +509,16 @@ fn complete_gpu_word(
 fn validate_completed_gpu_word_stream(
     observed_by_word: &[bool],
     start_word_ordinal: usize,
+    end_word_ordinal_exclusive: usize,
     completed_word_terms: u64,
     emitted_terms: u64,
 ) -> io::Result<()> {
-    if start_word_ordinal > observed_by_word.len()
+    if start_word_ordinal > end_word_ordinal_exclusive
+        || end_word_ordinal_exclusive > observed_by_word.len()
         || observed_by_word
             .iter()
             .skip(start_word_ordinal)
+            .take(end_word_ordinal_exclusive - start_word_ordinal)
             .any(|observed| !observed)
         || completed_word_terms != emitted_terms
     {
@@ -516,11 +535,21 @@ fn validate_map_checkpoint(
     abstract_checkpoint: &crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001AbstractCheckpoint,
     embedded_checkpoint: &crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001EmbeddedCheckpoint,
 ) -> io::Result<()> {
+    let abstract_fixture = source_fixtures()
+        .into_iter()
+        .find(|candidate| candidate.dynkin_label == fixture.dynkin_label && candidate.copy == 1)
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "missing canonical abstract source fixture",
+            )
+        })?;
     let certificate_sha256 = sha256_json(&abstract_checkpoint.certificate);
     if !abstract_checkpoint.passed
         || abstract_checkpoint.source_dynkin_label != fixture.dynkin_label
         || abstract_checkpoint.target_dynkin_label != "30001"
-        || abstract_checkpoint.source_fixture_sha256 != sha256(fixture.bytes)
+        || abstract_checkpoint.source_fixture != abstract_fixture.artifact
+        || abstract_checkpoint.source_fixture_sha256 != sha256(abstract_fixture.bytes)
         || abstract_checkpoint.certificate_sha256 != certificate_sha256
         || !embedded_checkpoint.passed
         || embedded_checkpoint.job.source_dynkin_label != fixture.dynkin_label
@@ -932,6 +961,34 @@ pub(crate) fn visit_gpu_column_contribution_events_from_handles<H, U, L, D, F>(
     start_word_ordinal: usize,
     upload_highest: U,
     lower_word: L,
+    download_terms: D,
+    visit: F,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
+where
+    U: FnOnce(
+        &crate::eleven_dimensional_level16_couplings::CanonicalSparseHighest64,
+    ) -> io::Result<H>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+    D: FnMut(&H, &mut dyn FnMut(u64, i64) -> io::Result<()>) -> io::Result<u64>,
+    F: FnMut(SecondMomentum30001GpuColumnEvent) -> io::Result<()>,
+{
+    visit_gpu_column_contribution_events_range_from_handles(
+        expected_preflight,
+        start_word_ordinal,
+        expected_preflight.pbw_word_count,
+        upload_highest,
+        lower_word,
+        download_terms,
+        visit,
+    )
+}
+
+pub(crate) fn visit_gpu_column_contribution_events_range_from_handles<H, U, L, D, F>(
+    expected_preflight: &SecondMomentum30001GpuColumnPreflight,
+    start_word_ordinal: usize,
+    end_word_ordinal_exclusive: usize,
+    upload_highest: U,
+    lower_word: L,
     mut download_terms: D,
     mut visit: F,
 ) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
@@ -943,10 +1000,12 @@ where
     D: FnMut(&H, &mut dyn FnMut(u64, i64) -> io::Result<()>) -> io::Result<u64>,
     F: FnMut(SecondMomentum30001GpuColumnEvent) -> io::Result<()>,
 {
-    if start_word_ordinal > expected_preflight.pbw_word_count {
+    if start_word_ordinal > end_word_ordinal_exclusive
+        || end_word_ordinal_exclusive > expected_preflight.pbw_word_count
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "(30001) start word ordinal exceeds the preflight PBW plan",
+            "(30001) word range exceeds the preflight PBW plan",
         ));
     }
     let prepared = prepare_gpu_column(expected_preflight.local_column_ordinal)?;
@@ -963,7 +1022,7 @@ where
     let mut current_word_terms = 0_u64;
     let mut current_word_components = 0_u64;
     let accounting = crate::eleven_dimensional_level16_couplings::
-        visit_second_momentum_30001_descendant_handles_from(
+        visit_second_momentum_30001_descendant_handles_range(
             &prepared.abstract_certificate,
             prepared.fixture.copy,
             prepared.fixture.artifact,
@@ -973,6 +1032,7 @@ where
             &prepared.coupled_map_sha256,
             &prepared.words,
             start_word_ordinal,
+            end_word_ordinal_exclusive,
             upload_highest,
             lower_word,
             |event| match event {
@@ -1096,7 +1156,7 @@ where
                 }
             },
         )?;
-    if accounting.requested_pbw_words != prepared.words.len() - start_word_ordinal
+    if accounting.requested_pbw_words != end_word_ordinal_exclusive - start_word_ordinal
         || accounting.source_dynkin_label != prepared.preflight.source_dynkin_label
         || accounting.source_copy != prepared.preflight.source_copy
         || accounting.source_fixture != prepared.preflight.source_fixture
@@ -1113,6 +1173,7 @@ where
     validate_completed_gpu_word_stream(
         &observed_by_word,
         start_word_ordinal,
+        end_word_ordinal_exclusive,
         completed_word_terms,
         emitted_terms,
     )?;
@@ -1124,6 +1185,36 @@ where
             terms: Vec::new(),
             raising_residuals: prepared.raising_residuals,
         },
+    )
+}
+
+pub(crate) fn visit_gpu_column_word_contribution_events_from_handles<H, U, L, D, F>(
+    expected_preflight: &SecondMomentum30001GpuColumnPreflight,
+    word_ordinal: usize,
+    upload_highest: U,
+    lower_word: L,
+    download_terms: D,
+    visit: F,
+) -> io::Result<crate::eleven_dimensional_second_momentum_gpu::GpuFxColumnInput>
+where
+    U: FnOnce(
+        &crate::eleven_dimensional_level16_couplings::CanonicalSparseHighest64,
+    ) -> io::Result<H>,
+    L: FnMut(&H, &[u8], &mut i128) -> io::Result<H>,
+    D: FnMut(&H, &mut dyn FnMut(u64, i64) -> io::Result<()>) -> io::Result<u64>,
+    F: FnMut(SecondMomentum30001GpuColumnEvent) -> io::Result<()>,
+{
+    let end = word_ordinal
+        .checked_add(1)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "PBW word ordinal overflow"))?;
+    visit_gpu_column_contribution_events_range_from_handles(
+        expected_preflight,
+        word_ordinal,
+        end,
+        upload_highest,
+        lower_word,
+        download_terms,
+        visit,
     )
 }
 
@@ -1245,6 +1336,7 @@ where
     validate_completed_gpu_word_stream(
         &observed_by_word,
         start_word_ordinal,
+        observed_by_word.len(),
         completed_word_terms,
         emitted_terms,
     )?;
@@ -1272,6 +1364,12 @@ pub(crate) fn build_gpu_column_input(
 }
 
 pub fn construct() -> io::Result<SecondMomentum30001FxReport> {
+    construct_with_progress(|_| Ok(()))
+}
+
+pub(crate) fn construct_with_progress(
+    mut progress: impl FnMut(crate::second_momentum_cpu_progress::CpuTrancheEvent) -> io::Result<()>,
+) -> io::Result<SecondMomentum30001FxReport> {
     let started = Instant::now();
     let map_aggregate_bytes = fs::read(MAP_AGGREGATE_ARTIFACT)?;
     let map_aggregate: crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001Report =
@@ -1383,6 +1481,12 @@ pub fn construct() -> io::Result<SecondMomentum30001FxReport> {
     for (local_ordinal, fixture) in fixtures.into_iter().enumerate() {
         let column_started = Instant::now();
         let global_ordinal = FIRST_GLOBAL_ORDINAL + local_ordinal;
+        progress(
+            crate::second_momentum_cpu_progress::CpuTrancheEvent::ColumnStarted {
+                local_ordinal,
+                global_ordinal,
+            },
+        )?;
         let embedded_checkpoint = read_json::<
             crate::eleven_dimensional_second_momentum_30001_maps::SecondMomentum30001EmbeddedCheckpoint,
         >(&embedded_checkpoint_path(fixture.dynkin_label, fixture.copy))?;
@@ -1436,8 +1540,19 @@ pub fn construct() -> io::Result<SecondMomentum30001FxReport> {
             .into_iter()
             .chain(observed_process_rss_bytes())
             .max();
+        progress(
+            crate::second_momentum_cpu_progress::CpuTrancheEvent::ColumnCompleted {
+                local_ordinal,
+                global_ordinal,
+                elapsed_milliseconds: column_started.elapsed().as_millis(),
+                gauge_residual_terms: exact_gauge_residual_terms,
+                projected_terms,
+                observed_rss_bytes: maximum_observed_process_rss_bytes,
+            },
+        )?;
     }
 
+    progress(crate::second_momentum_cpu_progress::CpuTrancheEvent::Finalizing)?;
     let expected_ordinals =
         (FIRST_GLOBAL_ORDINAL..FIRST_GLOBAL_ORDINAL + TRANCHE_COLUMNS).collect::<Vec<_>>();
     let harness_checkpoint = harness
@@ -1570,7 +1685,14 @@ pub fn validate(report: &SecondMomentum30001FxReport) -> io::Result<()> {
 }
 
 pub fn write_artifact(path: &Path) -> io::Result<SecondMomentum30001FxReport> {
-    let report = construct()?;
+    write_artifact_with_progress(path, |_| Ok(()))
+}
+
+pub(crate) fn write_artifact_with_progress(
+    path: &Path,
+    progress: impl FnMut(crate::second_momentum_cpu_progress::CpuTrancheEvent) -> io::Result<()>,
+) -> io::Result<SecondMomentum30001FxReport> {
+    let report = construct_with_progress(progress)?;
     validate(&report)?;
     if let Some(parent) = path.parent().filter(|value| !value.as_os_str().is_empty()) {
         fs::create_dir_all(parent)?;
@@ -1621,6 +1743,14 @@ mod tests {
     }
 
     #[test]
+    fn gpu_preflight_accepts_a_noncanonical_source_copy() {
+        let preflight = gpu_column_preflight(14).unwrap();
+        assert_eq!(preflight.global_column_ordinal, 76);
+        assert_eq!(preflight.source_dynkin_label, "30002");
+        assert_eq!(preflight.source_copy, 3);
+    }
+
+    #[test]
     fn gpu_pbw_plan_digest_binds_order_and_word_boundaries() {
         let words = vec![vec![1, 2], vec![3], vec![4, 5]];
         let mut reordered = words.clone();
@@ -1650,15 +1780,16 @@ mod tests {
 
     #[test]
     fn gpu_word_stream_accepts_an_all_empty_suffix_but_not_a_gap() {
-        assert!(validate_completed_gpu_word_stream(&[false, true, true, true], 1, 0, 0).is_ok());
+        assert!(validate_completed_gpu_word_stream(&[false, true, false], 1, 2, 0, 0).is_ok());
+        assert!(validate_completed_gpu_word_stream(&[false, true, true, true], 1, 4, 0, 0).is_ok());
         assert_eq!(
-            validate_completed_gpu_word_stream(&[false, true, false, true], 1, 0, 0)
+            validate_completed_gpu_word_stream(&[false, true, false, true], 1, 4, 0, 0)
                 .unwrap_err()
                 .kind(),
             io::ErrorKind::InvalidData
         );
         assert_eq!(
-            validate_completed_gpu_word_stream(&[true], 0, 0, 1)
+            validate_completed_gpu_word_stream(&[true], 0, 1, 0, 1)
                 .unwrap_err()
                 .kind(),
             io::ErrorKind::InvalidData
@@ -1696,6 +1827,16 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(opaque_error.kind(), io::ErrorKind::InvalidInput);
+        let word_error = visit_gpu_column_word_contribution_events_from_handles(
+            &preflight,
+            1,
+            |_| -> io::Result<()> { panic!("invalid word must not upload") },
+            |_, _, _| -> io::Result<()> { panic!("invalid word must not lower") },
+            |_, _| -> io::Result<u64> { panic!("invalid word must not download") },
+            |_| -> io::Result<()> { panic!("invalid word must not stream events") },
+        )
+        .unwrap_err();
+        assert_eq!(word_error.kind(), io::ErrorKind::InvalidInput);
     }
 
     #[test]
