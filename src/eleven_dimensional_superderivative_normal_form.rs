@@ -134,27 +134,30 @@ impl CanonicalSuperPolynomial {
     }
 }
 
-fn majorana_translation_bilinears() -> Vec<Vec<Vec<i64>>> {
-    let charge = crate::eleven_dimensional_majorana::real_charge_conjugation();
-    let gammas = crate::eleven_dimensional_majorana::real_gamma_matrices();
-    gammas
-        .iter()
-        .map(|gamma| {
-            let mut bilinear = vec![vec![0_i64; SPINOR_DIMENSION]; SPINOR_DIMENSION];
-            for row in 0..SPINOR_DIMENSION {
-                for pivot in 0..SPINOR_DIMENSION {
-                    if charge[row][pivot] == 0 {
-                        continue;
-                    }
-                    for column in 0..SPINOR_DIMENSION {
-                        bilinear[row][column] +=
-                            i64::from(charge[row][pivot]) * i64::from(gamma[pivot][column]);
+fn majorana_translation_bilinears() -> &'static Vec<Vec<Vec<i64>>> {
+    static BILINEARS: OnceLock<Vec<Vec<Vec<i64>>>> = OnceLock::new();
+    BILINEARS.get_or_init(|| {
+        let charge = crate::eleven_dimensional_majorana::real_charge_conjugation();
+        let gammas = crate::eleven_dimensional_majorana::real_gamma_matrices();
+        gammas
+            .iter()
+            .map(|gamma| {
+                let mut bilinear = vec![vec![0_i64; SPINOR_DIMENSION]; SPINOR_DIMENSION];
+                for row in 0..SPINOR_DIMENSION {
+                    for pivot in 0..SPINOR_DIMENSION {
+                        if charge[row][pivot] == 0 {
+                            continue;
+                        }
+                        for column in 0..SPINOR_DIMENSION {
+                            bilinear[row][column] +=
+                                i64::from(charge[row][pivot]) * i64::from(gamma[pivot][column]);
+                        }
                     }
                 }
-            }
-            bilinear
-        })
-        .collect()
+                bilinear
+            })
+            .collect()
+    })
 }
 
 fn translation_action_with(
@@ -184,7 +187,7 @@ pub fn translation_action(
     if alpha >= SPINOR_DIMENSION || beta >= SPINOR_DIMENSION {
         return Err("spinor derivative is outside 0..32".to_string());
     }
-    translation_action_with(&majorana_translation_bilinears(), alpha, beta, polynomial)
+    translation_action_with(majorana_translation_bilinears(), alpha, beta, polynomial)
 }
 
 fn left_multiply_with(
@@ -268,7 +271,7 @@ pub fn left_multiply_d(
     alpha: usize,
     polynomial: &CanonicalSuperPolynomial,
 ) -> Result<CanonicalSuperPolynomial, String> {
-    left_multiply_with(&majorana_translation_bilinears(), alpha, polynomial)
+    left_multiply_with(majorana_translation_bilinears(), alpha, polynomial)
 }
 
 fn anticommutator_with(
@@ -318,7 +321,7 @@ fn build_report() -> SuperderivativeNormalFormReport {
     let bilinears = majorana_translation_bilinears();
     let symmetric_bilinear_residual_entries = (0..VECTOR_DIMENSION)
         .flat_map(|axis| {
-            let bilinears = &bilinears;
+            let bilinears = bilinears;
             (0..SPINOR_DIMENSION).flat_map(move |alpha| {
                 (0..SPINOR_DIMENSION).map(move |beta| {
                     usize::from(bilinears[axis][alpha][beta] != bilinears[axis][beta][alpha])
@@ -333,9 +336,9 @@ fn build_report() -> SuperderivativeNormalFormReport {
     let mut reached_axes = [false; VECTOR_DIMENSION];
     for alpha in 0..SPINOR_DIMENSION {
         for beta in 0..SPINOR_DIMENSION {
-            let expected = translation_action_with(&bilinears, alpha, beta, &scalar)
+            let expected = translation_action_with(bilinears, alpha, beta, &scalar)
                 .expect("constant momentum exponents cannot overflow");
-            let actual = anticommutator_with(&bilinears, alpha, beta, &scalar)
+            let actual = anticommutator_with(bilinears, alpha, beta, &scalar)
                 .expect("constant momentum exponents cannot overflow");
             constant_anticommutator_residual_pairs += usize::from(actual != expected);
             for key in expected.terms.keys() {
@@ -344,11 +347,11 @@ fn build_report() -> SuperderivativeNormalFormReport {
                 }
             }
             for gamma in 0..SPINOR_DIMENSION {
-                let degree_one = left_multiply_with(&bilinears, gamma, &scalar)
+                let degree_one = left_multiply_with(bilinears, gamma, &scalar)
                     .expect("constant momentum exponents cannot overflow");
-                let actual = anticommutator_with(&bilinears, alpha, beta, &degree_one)
+                let actual = anticommutator_with(bilinears, alpha, beta, &degree_one)
                     .expect("degree-one momentum exponents cannot overflow");
-                let expected = translation_action_with(&bilinears, alpha, beta, &degree_one)
+                let expected = translation_action_with(bilinears, alpha, beta, &degree_one)
                     .expect("degree-one momentum exponents cannot overflow");
                 degree_one_overlap_residual_triples += usize::from(actual != expected);
             }
@@ -359,9 +362,9 @@ fn build_report() -> SuperderivativeNormalFormReport {
         .flat_map(|alpha| (0..SPINOR_DIMENSION).map(move |beta| (alpha, beta)))
         .find(|&(alpha, beta)| (0..VECTOR_DIMENSION).any(|axis| bilinears[axis][alpha][beta] != 0))
         .expect("11D translation bilinear is nonzero");
-    let actual = anticommutator_with(&bilinears, nonzero_pair.0, nonzero_pair.1, &scalar)
+    let actual = anticommutator_with(bilinears, nonzero_pair.0, nonzero_pair.1, &scalar)
         .expect("constant momentum exponents cannot overflow");
-    let mutated = translation_action_with(&bilinears, nonzero_pair.0, nonzero_pair.1, &scalar)
+    let mutated = translation_action_with(bilinears, nonzero_pair.0, nonzero_pair.1, &scalar)
         .expect("constant momentum exponents cannot overflow")
         .scaled(&ExactQi::from_integer(2));
     let mutation_rejected = actual != mutated;

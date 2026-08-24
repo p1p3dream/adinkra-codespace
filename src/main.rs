@@ -41,6 +41,7 @@ mod eleven_dimensional_first_superspace_jet;
 mod eleven_dimensional_free_complex;
 mod eleven_dimensional_gauge;
 mod eleven_dimensional_hook_bianchi;
+mod eleven_dimensional_h_hat_jet;
 mod eleven_dimensional_j1_lorentz_residual;
 mod eleven_dimensional_k_fag_solver;
 mod eleven_dimensional_level16_couplings;
@@ -307,6 +308,7 @@ fn main() {
         "adynkra-11d-superderivative-normal-form-build" => {
             cmd_adynkra_11d_superderivative_normal_form_build(&args)
         }
+        "adynkra-11d-h-hat-jet-build" => cmd_adynkra_11d_h_hat_jet_build(&args),
         "adynkra-11d-physical-k-audit" => cmd_adynkra_11d_physical_k_audit(&args),
         "adynkra-11d-physical-k-validate" => cmd_adynkra_11d_physical_k_validate(&args),
         "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
@@ -641,6 +643,8 @@ fn print_usage(prog: &str) {
     );
     eprintln!("  adynkra-11d-superderivative-normal-form-build [json]");
     eprintln!("                          Certify the exact ordered-D and formal-momentum algebra");
+    eprintln!("  adynkra-11d-h-hat-jet-build [json]");
+    eprintln!("                          Build the bounded H/scale/Lorentz polynomial jet stream");
     eprintln!("  adynkra-11d-physical-k-audit [json]");
     eprintln!("                          Audit and bind the physical K input boundary");
     eprintln!("  adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
@@ -3234,6 +3238,22 @@ fn cmd_adynkra_11d_superderivative_normal_form_build(args: &[String]) {
         eprintln!("Failed to write {path}: {error}");
         std::process::exit(2);
     });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_h_hat_jet_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_linearized_frame_jet.json");
+    let report = eleven_dimensional_h_hat_jet::write_artifact(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);
