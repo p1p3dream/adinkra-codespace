@@ -1,0 +1,53 @@
+{
+  "schema_version": "adynkra-11d-second-momentum-missing-maps-v1-embedded",
+  "job": {
+    "target_dynkin_label": "11001",
+    "source_dynkin_label": "10002",
+    "source_copy": 2
+  },
+  "source_fixture": "level12_10002_highest_weight_kernel_2.i16le",
+  "source_fixture_sha256": "ec51e06970fcff1b7b719d7ee5c3d9a69775fdf6558334c400d1540dbd81c7a1",
+  "coefficient_width_bytes": 2,
+  "abstract_certificate_sha256": "c575f6d9d42c4b1bdda81d58773720475a2d17f45fa3ed93e3bbda1a098ece21",
+  "coupled_map_sha256": "caea7ea777642cb274241b54609ac5d9d14bc5615e3e40981997c620a849ff8b",
+  "target_dimension": 10240,
+  "elapsed_milliseconds": 729,
+  "observed_process_rss_bytes": 837337088,
+  "certificate": {
+    "schema_version": "adynkra-11d-second-momentum-11001-embedded-coupling-v1",
+    "role": "exact application of the shared abstract coupling to one exterior embedding",
+    "source_dynkin_label": "10002",
+    "source_copy": 2,
+    "source_fixture": "level12_10002_highest_weight_kernel_2.i16le",
+    "target_dynkin_label": "11001",
+    "abstract_coupling_source_copy": 1,
+    "product_weight_domain_dimension": 13,
+    "primitive_domain_coefficients": [
+      3,
+      -1,
+      -1,
+      -4,
+      2,
+      4,
+      -2,
+      -4,
+      -4,
+      2,
+      4,
+      -4,
+      8
+    ],
+    "coupled_nonzero_terms": 57915,
+    "exact_raising_residual_terms_by_simple_root": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "maximum_absolute_checked_accumulator": 24,
+    "shared_abstract_coupling_applied": true,
+    "passed": true
+  },
+  "passed": true
+}

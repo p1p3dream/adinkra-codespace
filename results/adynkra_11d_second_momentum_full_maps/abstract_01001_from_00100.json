@@ -1,0 +1,172 @@
+{
+  "schema_version": "adynkra-11d-second-momentum-missing-maps-v1-abstract",
+  "target_dynkin_label": "01001",
+  "source_dynkin_label": "00100",
+  "source_fixture": "level12_00100_highest_weight_kernel.i16le",
+  "source_fixture_sha256": "8f3812e7d448f71194b3f4ffc925795515ae6edee8ce331427f34c4aae82ea7e",
+  "coefficient_width_bytes": 2,
+  "certificate_sha256": "15b56ee0b869e08955f853bff83b805e8247bf2300e9868a9a34d6e3b3c062fb",
+  "elapsed_milliseconds": 1067,
+  "observed_process_rss_bytes": 2241118208,
+  "certificate": {
+    "schema_version": "adynkra-11d-second-momentum-01001-abstract-coupling-v1",
+    "role": "exact canonical abstract coupling into (01001)",
+    "source_dynkin_label": "00100",
+    "source_fixture_copy": 1,
+    "target_dynkin_label": "01001",
+    "basis_method": "lexicographic PBW lowering words with exact exterior-realization Gram rank",
+    "dependency_test": "two-prime modular Gram nullspace with CRT and rational reconstruction; accepted only after the unchanged canonical domain has rank n-1 over both primes and the reconstructed primitive has zero characteristic-zero raising residual in every ambient coordinate",
+    "product_weight_domain_dimension": 4,
+    "source_weight_spaces_used": 4,
+    "source_weight_multiplicities": [
+      [
+        [
+          2,
+          2,
+          0,
+          0,
+          0
+        ],
+        1
+      ],
+      [
+        [
+          2,
+          2,
+          0,
+          0,
+          2
+        ],
+        1
+      ],
+      [
+        [
+          2,
+          2,
+          0,
+          2,
+          0
+        ],
+        1
+      ],
+      [
+        [
+          2,
+          2,
+          2,
+          0,
+          0
+        ],
+        1
+      ]
+    ],
+    "domain_basis": [
+      {
+        "free_spinor_index": 0,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "source_weight": [
+          2,
+          2,
+          0,
+          0,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "free_spinor_index": 1,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          1,
+          -1
+        ],
+        "source_weight": [
+          2,
+          2,
+          0,
+          0,
+          2
+        ],
+        "pbw_word_simple_roots": [
+          3,
+          4
+        ]
+      },
+      {
+        "free_spinor_index": 2,
+        "free_spinor_weight": [
+          1,
+          1,
+          1,
+          -1,
+          1
+        ],
+        "source_weight": [
+          2,
+          2,
+          0,
+          2,
+          0
+        ],
+        "pbw_word_simple_roots": [
+          3
+        ]
+      },
+      {
+        "free_spinor_index": 4,
+        "free_spinor_weight": [
+          1,
+          1,
+          -1,
+          1,
+          1
+        ],
+        "source_weight": [
+          2,
+          2,
+          2,
+          0,
+          0
+        ],
+        "pbw_word_simple_roots": []
+      }
+    ],
+    "gram_matrix_rank": 3,
+    "kernel_dimension": 1,
+    "primitive_domain_coefficients": [
+      1,
+      -2,
+      2,
+      -2
+    ],
+    "primitive_coefficient_gcd": 1,
+    "maximum_absolute_primitive_coefficient": 2,
+    "exact_raising_residual_terms_by_simple_root": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "maximum_absolute_checked_accumulator": 2,
+    "storage_type": "i64 coefficients with checked i128 accumulation",
+    "exterior_action_storage": "precomputed CSR over sorted exterior-mask weight spaces",
+    "csr_actions_built": 26,
+    "csr_nonzero_entries": 12539158,
+    "multiplicity_one": true,
+    "passed": true
+  },
+  "passed": true
+}
