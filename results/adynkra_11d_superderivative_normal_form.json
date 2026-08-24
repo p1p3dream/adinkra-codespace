@@ -1,0 +1,22 @@
+{
+  "schema_version": "adynkra-11d-superderivative-normal-form-v1",
+  "role": "exact canonical ordered-superderivative and formal-momentum algebra for the complete H_hat jet",
+  "basis": "real 32-component Majorana spinors; descending spinor-index exterior monomials; eleven commuting Lorentz momentum variables",
+  "relation": "D_alpha D_beta + D_beta D_alpha = i (C Gamma^a)_{alpha beta} p_a",
+  "vector_dimension": 11,
+  "spinor_dimension": 32,
+  "symmetric_bilinear_entries_checked": 11264,
+  "symmetric_bilinear_residual_entries": 0,
+  "constant_anticommutator_pairs_checked": 1024,
+  "constant_anticommutator_residual_pairs": 0,
+  "degree_one_overlap_triples_checked": 32768,
+  "degree_one_overlap_residual_triples": 0,
+  "formal_momentum_axes_reached": 11,
+  "mutation_rejected": true,
+  "ordered_superderivative_normal_form_complete": true,
+  "h_hat_first_jet_composed": false,
+  "complete_physical_f_implemented": false,
+  "passed": true,
+  "result": "All 1,024 spinor anticommutators and all 32,768 degree-one overlap ambiguities reduce exactly to the same eleven-momentum normal form.",
+  "boundary": "This certifies the flat ordered-D algebra required by the full constrained-frame calculation. It does not yet derive D C, mixed anholonomy, J, torsion, or W from one compensator-eliminated H_hat jet, and therefore does not by itself complete physical F or determine physical K."
+}

@@ -460,7 +460,7 @@ fn eq28_lowered_upper_one_gammas() -> &'static Vec<Vec<Vec<i16>>> {
     })
 }
 
-pub fn eq26_spinor_anholonomy_operator() -> Eq26FactoredOperator {
+fn build_eq26_spinor_anholonomy_operator() -> Eq26FactoredOperator {
     let mut blocks = Vec::with_capacity(55 + 462);
     for degree in [2, 5] {
         for mask in masks_of_degree(degree) {
@@ -486,6 +486,15 @@ pub fn eq26_spinor_anholonomy_operator() -> Eq26FactoredOperator {
         dimension: SPINOR_ANHOLONOMY_DIMENSION,
         blocks,
     }
+}
+
+fn cached_eq26_spinor_anholonomy_operator() -> &'static Eq26FactoredOperator {
+    static OPERATOR: OnceLock<Eq26FactoredOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_eq26_spinor_anholonomy_operator)
+}
+
+pub fn eq26_spinor_anholonomy_operator() -> Eq26FactoredOperator {
+    cached_eq26_spinor_anholonomy_operator().clone()
 }
 
 fn insertion_sign(mask: u16, index: usize) -> i64 {
@@ -1043,7 +1052,12 @@ pub fn apply_h_sector_j(second_jets: &BTreeMap<usize, ExactQi>) -> BTreeMap<usiz
 /// Solve the Table 3 spinorial Lorentz connection from
 /// `T_{alpha,[de]}=(2/55)(Gamma_de)_alpha{}^gamma T_{gamma b}{}^b`.
 pub fn c_alpha_b_c_to_spinorial_connection_operator() -> SparseQiOperator {
-    build_c_alpha_b_c_to_spinorial_connection_operator(55)
+    cached_c_alpha_b_c_to_spinorial_connection_operator().clone()
+}
+
+fn cached_c_alpha_b_c_to_spinorial_connection_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(|| build_c_alpha_b_c_to_spinorial_connection_operator(55))
 }
 
 fn build_c_alpha_b_c_to_spinorial_connection_operator(trace_denominator: i64) -> SparseQiOperator {
@@ -1098,7 +1112,7 @@ fn build_c_alpha_b_c_to_spinorial_connection_operator(trace_denominator: i64) ->
 pub fn apply_spinorial_connection(
     c_alpha_b_c: &BTreeMap<usize, ExactQi>,
 ) -> BTreeMap<usize, ExactQi> {
-    c_alpha_b_c_to_spinorial_connection_operator().apply_sparse(c_alpha_b_c)
+    cached_c_alpha_b_c_to_spinorial_connection_operator().apply_sparse(c_alpha_b_c)
 }
 
 /// Solve the vectorial Lorentz connection from the fourth conventional
@@ -1243,7 +1257,12 @@ pub fn c_alpha_beta_gamma_to_j_one_operator() -> SparseQiOperator {
 /// connection coordinate is `omega_[de]`, so the trace contracts it with
 /// `Gamma^de`, including the raised-index sign on boost pairs.
 pub fn spinorial_connection_to_j_one_operator() -> SparseQiOperator {
-    build_spinorial_connection_to_j_one_operator(33, false)
+    cached_spinorial_connection_to_j_one_operator().clone()
+}
+
+fn cached_spinorial_connection_to_j_one_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(|| build_spinorial_connection_to_j_one_operator(33, false))
 }
 
 fn build_spinorial_connection_to_j_one_operator(
@@ -1283,7 +1302,7 @@ pub fn apply_j_one(
 ) -> BTreeMap<usize, ExactQi> {
     let mut output = c_alpha_beta_gamma_to_j_one_operator().apply_sparse(c_alpha_beta_gamma);
     for (index, value) in
-        spinorial_connection_to_j_one_operator().apply_sparse(spinorial_connection)
+        cached_spinorial_connection_to_j_one_operator().apply_sparse(spinorial_connection)
     {
         add_sparse(&mut output, index, value);
     }
@@ -2791,7 +2810,7 @@ fn j_one_anholonomy_for_lorentz_basis(
     gamma_pair: &[Vec<i16>],
     swap_d_indices: bool,
 ) -> BTreeMap<usize, ExactQi> {
-    let eq26 = eq26_spinor_anholonomy_operator();
+    let eq26 = cached_eq26_spinor_anholonomy_operator();
     let mut output = BTreeMap::new();
     for block in &eq26.blocks {
         for delta in 0..SPINOR_DIMENSION {
@@ -2854,9 +2873,9 @@ fn j_one_lorentz_basis_parts() -> Vec<JOneLorentzBasisParts> {
             let d_delta = inject_d_lorentz_compensator_into_d_delta(&d_psi_two);
             let delta_c = apply_eq28_delta_sector_to_c_alpha_b_c(&d_delta, &BTreeMap::new());
             let explicit_c = apply_eq28_delta_sector_to_c_alpha_b_c(&BTreeMap::new(), &d_psi_two);
-            let connection_from_delta = spinorial_connection_to_j_one_operator()
+            let connection_from_delta = cached_spinorial_connection_to_j_one_operator()
                 .apply_sparse(&apply_spinorial_connection(&delta_c));
-            let connection_explicit = spinorial_connection_to_j_one_operator()
+            let connection_explicit = cached_spinorial_connection_to_j_one_operator()
                 .apply_sparse(&apply_spinorial_connection(&explicit_c));
             output.push(JOneLorentzBasisParts {
                 anholonomy_direct,
@@ -3098,7 +3117,7 @@ fn equation_26_probe() -> (usize, bool) {
 }
 
 fn equation_26_block_normalization_residuals() -> usize {
-    eq26_spinor_anholonomy_operator()
+    cached_eq26_spinor_anholonomy_operator()
         .blocks
         .iter()
         .filter(|block| {

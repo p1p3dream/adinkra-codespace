@@ -16,6 +16,7 @@ use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{self, BufWriter, Write};
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 use serde::Serialize;
 
@@ -24,7 +25,7 @@ use crate::eleven_dimensional_first_superspace_jet::{
 };
 use crate::eleven_dimensional_physical_curvature::{self as physical, ExactQi, PhysicalXImage};
 
-pub const SCHEMA_VERSION: &str = "adynkra-11d-complete-physical-f-construction-v1";
+pub const SCHEMA_VERSION: &str = "adynkra-11d-complete-physical-f-construction-v2";
 
 /// All geometry coordinates needed by the source-fixed operators that are
 /// currently executable.  These coordinates must eventually be produced by
@@ -189,7 +190,7 @@ pub struct CompletePhysicalFConstructionReport {
     pub boundary: &'static str,
 }
 
-pub fn verify() -> CompletePhysicalFConstructionReport {
+fn build_report() -> CompletePhysicalFConstructionReport {
     let probe = deterministic_probe();
     let geometry_level_join_implemented = !probe.x.x_two_11000.is_empty()
         && !probe.x.x_five_10002.is_empty()
@@ -203,11 +204,13 @@ pub fn verify() -> CompletePhysicalFConstructionReport {
     let jet = first_jet::verify();
     let local_lorentz = crate::eleven_dimensional_j1_lorentz_residual::verify();
     let target = crate::eleven_dimensional_target_equation_complex::verify();
+    let derivative_normal_form = crate::eleven_dimensional_superderivative_normal_form::verify();
     let passed = geometry_level_join_implemented
         && curvature.bounded_slice_passed
         && jet.passed
         && local_lorentz.passed
-        && target.passed;
+        && target.passed
+        && derivative_normal_form.passed;
 
     CompletePhysicalFConstructionReport {
         schema_version: SCHEMA_VERSION,
@@ -276,7 +279,7 @@ pub fn verify() -> CompletePhysicalFConstructionReport {
         probe_w_2001_entries: probe.first_jet.w_2001.len(),
         probe_w_2021_entries: probe.first_jet.w_2021.len(),
         h_hat_to_consistent_geometry_jet_implemented: false,
-        ordered_superderivative_normal_form_complete: false,
+        ordered_superderivative_normal_form_complete: derivative_normal_form.passed,
         local_lorentz_orbit_descends_through_j_t_w: false,
         target_curvature_adapter_implemented: false,
         target_bianchi_euler_noether_composition_certified: false,
@@ -284,11 +287,16 @@ pub fn verify() -> CompletePhysicalFConstructionReport {
         complete_f_operator_sha256: None,
         exact_polynomial_target_kernel_derived: false,
         pointwise_or_bounded_kernel_is_accepted_as_physical_k: false,
-        next_executable_step: "derive the complete linearized H_hat jet directly from the full constrained superframe, including compensator elimination and ordered D_alpha D_beta = -D_beta D_alpha + i Gamma^a_alpha,beta p_a reductions; require the pure p=2 Lorentz orbit to vanish after the assembled invariant curvature map",
+        next_executable_step: "use the certified ordered-superderivative normal form to derive the complete linearized H_hat jet directly from the full constrained superframe, including compensator elimination; require the pure p=2 Lorentz orbit to vanish after the assembled invariant curvature map",
         passed,
-        result: "The previously separate X, J, connection, torsion, and W operators now have one exact geometry-level assembly. Complete F still waits on one consistent H_hat-to-geometry-jet map and the target-curvature adapter; no fitted J counterterm or premature K is introduced.",
-        boundary: "Passing this report certifies only the exact geometry-level union and its source gates. It does not certify that independently supplied geometry coordinates arise from one H_hat jet. Physical F requires the missing full-frame jet, generic formal momentum normal form, local-Lorentz descent, and target curvature/Bianchi composition. Physical K is then the exact polynomial target-side kernel of the hashed complete F, not a numerical or bounded-slice nullspace.",
+        result: "The previously separate X, J, connection, torsion, and W operators now have one exact geometry-level assembly, and the complete flat ordered-superderivative momentum normal form is certified. Complete F still waits on one consistent H_hat-to-geometry-jet map and the target-curvature adapter; no fitted J counterterm or premature K is introduced.",
+        boundary: "Passing this report certifies only the exact geometry-level union, its source gates, and the flat ordered-superderivative algebra. It does not certify that independently supplied geometry coordinates arise from one H_hat jet. Physical F requires the missing full-frame jet, local-Lorentz descent, and target curvature/Bianchi composition. Physical K is then the exact polynomial target-side kernel of the hashed complete F, not a numerical or bounded-slice nullspace.",
     }
+}
+
+pub fn verify() -> CompletePhysicalFConstructionReport {
+    static REPORT: OnceLock<CompletePhysicalFConstructionReport> = OnceLock::new();
+    REPORT.get_or_init(build_report).clone()
 }
 
 fn atomic_json<T: Serialize>(path: &Path, value: &T) -> io::Result<()> {
@@ -339,7 +347,7 @@ mod tests {
     fn incomplete_h_hat_composition_cannot_claim_f_or_k() {
         let report = verify();
         assert!(!report.h_hat_to_consistent_geometry_jet_implemented);
-        assert!(!report.ordered_superderivative_normal_form_complete);
+        assert!(report.ordered_superderivative_normal_form_complete);
         assert!(!report.local_lorentz_orbit_descends_through_j_t_w);
         assert!(!report.target_curvature_adapter_implemented);
         assert!(!report.complete_physical_f_implemented);

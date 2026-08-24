@@ -1,5 +1,5 @@
 {
-  "schema_version": "adynkra-11d-complete-physical-f-construction-v1",
+  "schema_version": "adynkra-11d-complete-physical-f-construction-v2",
   "role": "exact geometry-level physical-F assembly and fail-closed route to a target-kernel-derived K",
   "source_hashes": [
     "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
@@ -65,7 +65,7 @@
   "probe_w_2001_entries": 30,
   "probe_w_2021_entries": 44,
   "h_hat_to_consistent_geometry_jet_implemented": false,
-  "ordered_superderivative_normal_form_complete": false,
+  "ordered_superderivative_normal_form_complete": true,
   "local_lorentz_orbit_descends_through_j_t_w": false,
   "target_curvature_adapter_implemented": false,
   "target_bianchi_euler_noether_composition_certified": false,
@@ -73,8 +73,8 @@
   "complete_f_operator_sha256": null,
   "exact_polynomial_target_kernel_derived": false,
   "pointwise_or_bounded_kernel_is_accepted_as_physical_k": false,
-  "next_executable_step": "derive the complete linearized H_hat jet directly from the full constrained superframe, including compensator elimination and ordered D_alpha D_beta = -D_beta D_alpha + i Gamma^a_alpha,beta p_a reductions; require the pure p=2 Lorentz orbit to vanish after the assembled invariant curvature map",
+  "next_executable_step": "use the certified ordered-superderivative normal form to derive the complete linearized H_hat jet directly from the full constrained superframe, including compensator elimination; require the pure p=2 Lorentz orbit to vanish after the assembled invariant curvature map",
   "passed": true,
-  "result": "The previously separate X, J, connection, torsion, and W operators now have one exact geometry-level assembly. Complete F still waits on one consistent H_hat-to-geometry-jet map and the target-curvature adapter; no fitted J counterterm or premature K is introduced.",
-  "boundary": "Passing this report certifies only the exact geometry-level union and its source gates. It does not certify that independently supplied geometry coordinates arise from one H_hat jet. Physical F requires the missing full-frame jet, generic formal momentum normal form, local-Lorentz descent, and target curvature/Bianchi composition. Physical K is then the exact polynomial target-side kernel of the hashed complete F, not a numerical or bounded-slice nullspace."
+  "result": "The previously separate X, J, connection, torsion, and W operators now have one exact geometry-level assembly, and the complete flat ordered-superderivative momentum normal form is certified. Complete F still waits on one consistent H_hat-to-geometry-jet map and the target-curvature adapter; no fitted J counterterm or premature K is introduced.",
+  "boundary": "Passing this report certifies only the exact geometry-level union, its source gates, and the flat ordered-superderivative algebra. It does not certify that independently supplied geometry coordinates arise from one H_hat jet. Physical F requires the missing full-frame jet, local-Lorentz descent, and target curvature/Bianchi composition. Physical K is then the exact polynomial target-side kernel of the hashed complete F, not a numerical or bounded-slice nullspace."
 }
