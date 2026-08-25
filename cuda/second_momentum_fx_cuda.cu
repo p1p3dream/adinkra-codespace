@@ -697,10 +697,11 @@ __global__ void accumulate_p3_kernel(
   }
 }
 
-// One block owns one reduced semantic source key. Threads are split into a
-// power-of-two column lane and a plan lane, so all active columns traverse the
-// same flat-plan entries in one SIMT launch while retaining disjoint persistent
-// output columns. Coefficients arrive already reduced modulo the active prime.
+// One block owns one reduced semantic source key. All 128 threads traverse the
+// flat plan exactly once, then fan each surviving contribution across the
+// active output columns. This avoids repeating contraction, wedge, hash, and
+// row-address work for every column while retaining disjoint persistent rows.
+// Coefficients arrive already reduced modulo the active prime.
 __global__ void accumulate_p3_multicol_kernel(
     const uint64_t *__restrict__ keys,
     const uint32_t *__restrict__ key_major_coefficients,
@@ -715,22 +716,22 @@ __global__ void accumulate_p3_multicol_kernel(
   constexpr uint32_t kThreads = 128;
   const uint32_t source_index = blockIdx.x;
   if (source_index >= unique_count) return;
-  const uint32_t lane_width =
-      active_columns <= 1    ? 1
-      : active_columns <= 2  ? 2
-      : active_columns <= 4  ? 4
-      : active_columns <= 8  ? 8
-      : active_columns <= 16 ? 16
-                             : 32;
-  const uint32_t lane = threadIdx.x & (lane_width - 1U);
-  const uint32_t plan_lane = threadIdx.x / lane_width;
-  const uint32_t plan_lanes = kThreads / lane_width;
   __shared__ uint32_t shared_mask;
   __shared__ uint32_t shared_free_spinor;
   __shared__ uint32_t shared_pair;
   __shared__ uint32_t shared_valid;
   __shared__ uint32_t shared_coefficients[32];
-  __shared__ unsigned long long warp_expanded[4][32];
+  __shared__ unsigned long long warp_expanded[4];
+  constexpr uint32_t kRowsPerDegreePair =
+      kSectors * kContractionAxes * kSeeds * kBuckets;
+  constexpr uint32_t kAggregatedColumns = 3;
+  // A bin receives no more than the u32-bounded flat-plan entry count and
+  // every residue is below the pinned 30-bit prime, so the unreduced sum is
+  // strictly below 2^62 and cannot overflow u64.
+  __shared__ unsigned long long
+      shared_real[kAggregatedColumns * kRowsPerDegreePair];
+  __shared__ unsigned long long
+      shared_imaginary[kAggregatedColumns * kRowsPerDegreePair];
 
   if (threadIdx.x == 0) {
     shared_valid = 0;
@@ -759,21 +760,28 @@ __global__ void accumulate_p3_multicol_kernel(
   }
   __syncthreads();
 
-  const uint32_t coefficient =
-      lane < active_columns ? shared_coefficients[lane] : 0;
-  const bool lane_active =
-      shared_valid != 0 && coefficient != 0 && coefficient < prime;
-  if (lane < active_columns && coefficient >= prime) {
+  if (threadIdx.x < active_columns &&
+      shared_coefficients[threadIdx.x] >= prime) {
     atomicExch(invalid, 2U);
   }
   unsigned long long local_expanded = 0;
-  if (lane_active) {
+  if (shared_valid != 0) {
     for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
+      if (active_columns <= kAggregatedColumns) {
+        const uint32_t shared_count =
+            active_columns * kRowsPerDegreePair;
+        for (uint32_t index = threadIdx.x; index < shared_count;
+             index += kThreads) {
+          shared_real[index] = 0;
+          shared_imaginary[index] = 0;
+        }
+        __syncthreads();
+      }
       const uint32_t schedule = degree * kSpinors + shared_free_spinor;
       const uint32_t begin = plan_offsets[schedule];
       const uint32_t end = plan_offsets[schedule + 1];
-      for (uint32_t index = begin + plan_lane; index < end;
-           index += plan_lanes) {
+      for (uint32_t index = begin + threadIdx.x; index < end;
+           index += kThreads) {
         const P3PlanEntry entry = plan_entries[index];
         const int first_sign =
             contraction_sign(shared_mask, entry.contracted_spinor);
@@ -787,12 +795,6 @@ __global__ void accumulate_p3_multicol_kernel(
             degree11_mask | (1U << entry.template_spinor);
         const uint32_t highest = 31U - __clz(degree12_mask);
         const uint32_t functional_mask = degree12_mask ^ (1U << highest);
-        GaussianResidue value =
-            scale_gaussian(entry.coefficient, coefficient, prime);
-        if ((first_sign < 0) != (second_sign < 0)) {
-          value = negate_gaussian(value, prime);
-        }
-        if (value.real == 0 && value.imaginary == 0) continue;
         const uint64_t base = splitmix64(
             entry.functional_salt ^
             rotate_left(static_cast<uint64_t>(functional_mask), 43) ^
@@ -802,39 +804,92 @@ __global__ void accumulate_p3_multicol_kernel(
           const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
           const uint32_t bucket =
               static_cast<uint32_t>(hash) & (kBuckets - 1);
-          const GaussianResidue contribution =
-              (hash >> 63) == 0 ? value : negate_gaussian(value, prime);
           const uint32_t row = p3_row_ordinal(
               degree, shared_pair, entry.sector, entry.contraction_axis, seed,
               bucket);
-          const uint64_t output =
-              static_cast<uint64_t>(lane) * kP3Rows + row;
-          atomic_add_mod(&output_real[output], contribution.real, prime);
-          atomic_add_mod(&output_imaginary[output], contribution.imaginary,
-                         prime);
+          const uint32_t local_row =
+              (((entry.sector * kContractionAxes + entry.contraction_axis) *
+                 kSeeds +
+                 seed) *
+                kBuckets) +
+              bucket;
+          for (uint32_t column = 0; column < active_columns; ++column) {
+            const uint32_t coefficient = shared_coefficients[column];
+            if (coefficient == 0 || coefficient >= prime) continue;
+            GaussianResidue contribution =
+                scale_gaussian(entry.coefficient, coefficient, prime);
+            if (((first_sign < 0) != (second_sign < 0)) !=
+                ((hash >> 63) != 0)) {
+              contribution = negate_gaussian(contribution, prime);
+            }
+            if (contribution.real == 0 && contribution.imaginary == 0) {
+              continue;
+            }
+            if (active_columns <= kAggregatedColumns) {
+              const uint32_t shared_output =
+                  column * kRowsPerDegreePair + local_row;
+              atomicAdd(&shared_real[shared_output],
+                        static_cast<unsigned long long>(contribution.real));
+              atomicAdd(
+                  &shared_imaginary[shared_output],
+                  static_cast<unsigned long long>(contribution.imaginary));
+            } else {
+              const uint64_t output =
+                  static_cast<uint64_t>(column) * kP3Rows + row;
+              atomic_add_mod(&output_real[output], contribution.real, prime);
+              atomic_add_mod(&output_imaginary[output], contribution.imaginary,
+                             prime);
+            }
+          }
         }
         ++local_expanded;
       }
+      if (active_columns <= kAggregatedColumns) {
+        __syncthreads();
+        const uint32_t shared_count =
+            active_columns * kRowsPerDegreePair;
+        for (uint32_t index = threadIdx.x; index < shared_count;
+             index += kThreads) {
+          const uint32_t column = index / kRowsPerDegreePair;
+          const uint32_t local_row = index % kRowsPerDegreePair;
+          const uint32_t row =
+              (degree * kMomentumPairs + shared_pair) * kRowsPerDegreePair +
+              local_row;
+          const uint64_t output =
+              static_cast<uint64_t>(column) * kP3Rows + row;
+          const uint32_t real =
+              static_cast<uint32_t>(shared_real[index] % prime);
+          const uint32_t imaginary =
+              static_cast<uint32_t>(shared_imaginary[index] % prime);
+          atomic_add_mod(&output_real[output], real, prime);
+          atomic_add_mod(&output_imaginary[output], imaginary, prime);
+        }
+        __syncthreads();
+      }
     }
   }
-  for (uint32_t delta = 16; delta >= lane_width; delta >>= 1) {
+  for (uint32_t delta = 16; delta != 0; delta >>= 1) {
     local_expanded += __shfl_down_sync(0xffffffffU, local_expanded, delta);
-    if (delta == lane_width) break;
   }
   const uint32_t thread_in_warp = threadIdx.x & 31U;
   const uint32_t warp = threadIdx.x >> 5;
-  if (thread_in_warp < lane_width) {
-    warp_expanded[warp][thread_in_warp] = local_expanded;
+  if (thread_in_warp == 0) {
+    warp_expanded[warp] = local_expanded;
   }
   __syncthreads();
-  if (threadIdx.x < active_columns) {
+  if (threadIdx.x == 0) {
     unsigned long long block_expanded = 0;
 #pragma unroll
     for (uint32_t warp_index = 0; warp_index < 4; ++warp_index) {
-      block_expanded += warp_expanded[warp_index][threadIdx.x];
+      block_expanded += warp_expanded[warp_index];
     }
-    if (block_expanded != 0) {
-      atomicAdd(&expanded[threadIdx.x], block_expanded);
+    if (block_expanded != 0 && shared_valid != 0) {
+      for (uint32_t column = 0; column < active_columns; ++column) {
+        const uint32_t coefficient = shared_coefficients[column];
+        if (coefficient != 0 && coefficient < prime) {
+          atomicAdd(&expanded[column], block_expanded);
+        }
+      }
     }
   }
 }
