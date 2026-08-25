@@ -1,0 +1,21 @@
+{
+  "schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-sector-kernel-v1",
+  "input_schema_version": "adynkra-11d-gauge-fixed-invariant-supercurvature-operator-v4",
+  "input_certificate_sha256": "f215e25920f5c0d21f7cc7a8d996efd89857fb397025fc523af4e81fda853c5a",
+  "input_operator_sha256": "efd3a848b64f073a2ab0a9f419bb9515322078dbae99a676576e22cd1b6a01d3",
+  "fully_validated_shards": 321,
+  "sector_tag": 9,
+  "sector_name": "LinearizedRiemann",
+  "prime": 1073741783,
+  "columns": 321,
+  "exact_input_terms": 35611900,
+  "exact_sector_terms": 1211340,
+  "merged_rows_examined": 181895,
+  "sector_entries_examined": 568907,
+  "rank_over_gaussian_extension": 321,
+  "nullity_upper_bound": 0,
+  "full_column_rank": true,
+  "stopped_after_full_rank": true,
+  "elapsed_seconds": 16.557185375,
+  "proof_boundary": "sector-only modular full rank proves exact independence of the declared source columns after projection to this one diagnostic sector over Q(i); it does not establish physical target completeness or the physical K quotient"
+}

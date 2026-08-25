@@ -1982,16 +1982,23 @@ fn validate_column_shard(
         if tag == GaugeFixedInvariantOutputSector::W2021Raw.tag()
             || tag == GaugeFixedInvariantOutputSector::DirectCandidateFourForm.tag()
         {
-            let map = if tag == GaugeFixedInvariantOutputSector::W2021Raw.tag() {
-                &mut raw_w
+            let source_coordinate = usize::try_from(coordinate)
+                .map_err(|_| "column coordinate exceeds usize".to_string())?;
+            let (map, target_coordinate) = if tag == GaugeFixedInvariantOutputSector::W2021Raw.tag()
+            {
+                (
+                    &mut raw_w,
+                    target_four_form_lexicographic_ordinal(w_source_four_form_indices(
+                        source_coordinate,
+                    )?),
+                )
             } else {
-                &mut candidate_four_form
+                (&mut candidate_four_form, source_coordinate)
             };
             add_polynomial_map_value(
                 map,
                 (
-                    usize::try_from(coordinate)
-                        .map_err(|_| "column coordinate exceeds usize".to_string())?,
+                    target_coordinate,
                     OrderedSuperderivativeMonomial {
                         exterior_spinor_mask: exterior,
                         momentum: crate::eleven_dimensional_superderivative_normal_form::FormalMomentumMonomial {
@@ -3244,6 +3251,71 @@ mod tests {
         assert!(!candidate.is_empty());
         assert!(stats.raw_w_comparison_residual_terms > 0);
         assert!(stats.raw_w_bianchi_residual_terms > 0);
+
+        // The persisted raw-W tag retains source numeric-mask ordering, while
+        // the candidate tag is already in target lexicographic ordering. Build
+        // a minimal real shard and require adoption to reproduce the live
+        // diagnostic counts exactly. This catches treating raw-W ordinals as
+        // target ordinals during resume validation.
+        let mut persisted = raw_w;
+        persisted.extend(
+            candidate
+                .into_iter()
+                .map(|entry| GaugeFixedInvariantOutputEntry {
+                    sector: GaugeFixedInvariantOutputSector::DirectCandidateFourForm,
+                    coordinate: entry.component,
+                    monomial: entry.monomial,
+                    coefficient: entry.coefficient,
+                }),
+        );
+        persisted.sort_by(invariant_entry_cmp);
+        let source = "h_ordering_probe";
+        let ordinal = 0_usize;
+        let directory = std::env::temp_dir().join(format!(
+            "adynkra-col3-raw-w-ordering-test-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        let path = directory.join("column_000.bin");
+        let mut shard = Vec::new();
+        let mut file_hasher = Sha256::new();
+        write_hashed(&mut shard, &mut file_hasher, SUPERFIELD_COLUMN_SHARD_MAGIC).unwrap();
+        write_hashed(
+            &mut shard,
+            &mut file_hasher,
+            &(ordinal as u64).to_le_bytes(),
+        )
+        .unwrap();
+        write_hashed(
+            &mut shard,
+            &mut file_hasher,
+            &(source.len() as u64).to_le_bytes(),
+        )
+        .unwrap();
+        write_hashed(&mut shard, &mut file_hasher, source.as_bytes()).unwrap();
+        let mut semantic = Sha256::new();
+        semantic.update(SUPERFIELD_OPERATOR_COLUMN_SCHEMA);
+        semantic.update((ordinal as u64).to_le_bytes());
+        hash_bytes_with_length(&mut semantic, source.as_bytes());
+        for entry in &persisted {
+            hash_invariant_entry(&mut semantic, entry);
+            encode_invariant_entry(&mut shard, &mut file_hasher, entry).unwrap();
+        }
+        let count = persisted.len() as u64;
+        semantic.update(count.to_le_bytes());
+        write_hashed(&mut shard, &mut file_hasher, &count.to_le_bytes()).unwrap();
+        write_hashed(&mut shard, &mut file_hasher, semantic.finalize().as_slice()).unwrap();
+        fs::write(&path, shard).unwrap();
+        let adopted = validate_column_shard(&path, ordinal, source).unwrap();
+        assert_eq!(
+            adopted.raw_w_bianchi_residual_terms,
+            stats.raw_w_bianchi_residual_terms
+        );
+        assert_eq!(
+            adopted.raw_w_candidate_residual_terms,
+            stats.raw_w_comparison_residual_terms
+        );
+        fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]
