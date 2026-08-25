@@ -259,6 +259,17 @@ pub(crate) struct P3ModularFlatPlan {
 pub(crate) struct P3RawFanoutTable {
     prime: u32,
     counts: Vec<u64>,
+    within_byte: Vec<u32>,
+    cross_byte: Vec<u32>,
+}
+
+const P3_FANOUT_BYTE_COUNT: usize = 4;
+const P3_FANOUT_BYTE_VALUES: usize = 256;
+const P3_FANOUT_BYTE_PAIRS: usize = 6;
+
+fn p3_fanout_byte_pair_index(left: usize, right: usize) -> usize {
+    debug_assert!(left < right && right < P3_FANOUT_BYTE_COUNT);
+    left * (2 * P3_FANOUT_BYTE_COUNT - left - 1) / 2 + right - left - 1
 }
 
 impl P3ModularFlatPlan {
@@ -295,9 +306,104 @@ impl P3ModularFlatPlan {
                 }
             }
         }
+        let row_totals = counts
+            .chunks_exact(32)
+            .map(|row| {
+                row.iter().try_fold(0_u64, |total, &count| {
+                    total
+                        .checked_add(count)
+                        .ok_or_else(|| "p3 raw fanout row total overflow".to_string())
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut within_byte = vec![0_u32; 32 * P3_FANOUT_BYTE_COUNT * P3_FANOUT_BYTE_VALUES];
+        for free in 0..32 {
+            for byte in 0..P3_FANOUT_BYTE_COUNT {
+                for mask in 0..P3_FANOUT_BYTE_VALUES {
+                    let mut total = 0_u64;
+                    for contracted_bit in 0..8 {
+                        if mask & (1 << contracted_bit) == 0 {
+                            continue;
+                        }
+                        let contracted = byte * 8 + contracted_bit;
+                        total = total
+                            .checked_add(row_totals[free * 32 + contracted])
+                            .ok_or_else(|| "p3 raw fanout byte total overflow".to_string())?;
+                        for template_bit in 0..8 {
+                            if template_bit == contracted_bit || mask & (1 << template_bit) == 0 {
+                                continue;
+                            }
+                            let template = byte * 8 + template_bit;
+                            total = total
+                                .checked_sub(counts[free * 32 * 32 + contracted * 32 + template])
+                                .ok_or_else(|| "p3 raw fanout within-byte underflow".to_string())?;
+                        }
+                    }
+                    within_byte
+                        [(free * P3_FANOUT_BYTE_COUNT + byte) * P3_FANOUT_BYTE_VALUES + mask] =
+                        u32::try_from(total)
+                            .map_err(|_| "p3 raw fanout within-byte exceeds u32".to_string())?;
+                }
+            }
+        }
+        let mut cross_byte =
+            vec![0_u32; 32 * P3_FANOUT_BYTE_PAIRS * P3_FANOUT_BYTE_VALUES * P3_FANOUT_BYTE_VALUES];
+        for free in 0..32 {
+            for left_byte in 0..P3_FANOUT_BYTE_COUNT {
+                for right_byte in left_byte + 1..P3_FANOUT_BYTE_COUNT {
+                    let pair = p3_fanout_byte_pair_index(left_byte, right_byte);
+                    let pair_base = (free * P3_FANOUT_BYTE_PAIRS + pair)
+                        * P3_FANOUT_BYTE_VALUES
+                        * P3_FANOUT_BYTE_VALUES;
+                    for left_mask in 0..P3_FANOUT_BYTE_VALUES {
+                        let mut contribution_by_right_bit = [0_u64; 8];
+                        for left_bit in 0..8 {
+                            if left_mask & (1 << left_bit) == 0 {
+                                continue;
+                            }
+                            let left = left_byte * 8 + left_bit;
+                            for (right_bit, contribution) in
+                                contribution_by_right_bit.iter_mut().enumerate()
+                            {
+                                let right = right_byte * 8 + right_bit;
+                                let bidirectional = counts[free * 32 * 32 + left * 32 + right]
+                                    .checked_add(counts[free * 32 * 32 + right * 32 + left])
+                                    .ok_or_else(|| {
+                                        "p3 raw fanout cross-byte pair overflow".to_string()
+                                    })?;
+                                *contribution =
+                                    contribution.checked_add(bidirectional).ok_or_else(|| {
+                                        "p3 raw fanout cross-byte total overflow".to_string()
+                                    })?;
+                            }
+                        }
+                        for right_mask in 1..P3_FANOUT_BYTE_VALUES {
+                            let right_bit = right_mask.trailing_zeros() as usize;
+                            let previous = right_mask & (right_mask - 1);
+                            let previous_value = u64::from(
+                                cross_byte
+                                    [pair_base + left_mask * P3_FANOUT_BYTE_VALUES + previous],
+                            );
+                            let value = previous_value
+                                .checked_add(contribution_by_right_bit[right_bit])
+                                .ok_or_else(|| {
+                                    "p3 raw fanout cross-byte total overflow".to_string()
+                                })?;
+                            cross_byte
+                                [pair_base + left_mask * P3_FANOUT_BYTE_VALUES + right_mask] =
+                                u32::try_from(value).map_err(|_| {
+                                    "p3 raw fanout cross-byte exceeds u32".to_string()
+                                })?;
+                        }
+                    }
+                }
+            }
+        }
         Ok(P3RawFanoutTable {
             prime: self.prime,
             counts,
+            within_byte,
+            cross_byte,
         })
     }
 }
@@ -309,19 +415,27 @@ impl P3RawFanoutTable {
             return Ok(0);
         }
         let free = usize::from(source.free_spinor);
+        let bytes = source.exterior_mask.to_le_bytes();
         let mut fanout = 0_u64;
-        for contracted in 0..32 {
-            if source.exterior_mask & (1_u32 << contracted) == 0 {
-                continue;
-            }
-            let degree_eleven_mask = source.exterior_mask ^ (1_u32 << contracted);
-            for template in 0..32 {
-                if degree_eleven_mask & (1_u32 << template) != 0 {
-                    continue;
-                }
+        for (byte, &mask) in bytes.iter().enumerate() {
+            fanout = fanout
+                .checked_add(u64::from(
+                    self.within_byte[(free * P3_FANOUT_BYTE_COUNT + byte) * P3_FANOUT_BYTE_VALUES
+                        + usize::from(mask)],
+                ))
+                .ok_or_else(|| "p3 raw expanded fanout overflow".to_string())?;
+        }
+        for left_byte in 0..P3_FANOUT_BYTE_COUNT {
+            for right_byte in left_byte + 1..P3_FANOUT_BYTE_COUNT {
+                let pair = p3_fanout_byte_pair_index(left_byte, right_byte);
+                let cross = self.cross_byte[(free * P3_FANOUT_BYTE_PAIRS + pair)
+                    * P3_FANOUT_BYTE_VALUES
+                    * P3_FANOUT_BYTE_VALUES
+                    + usize::from(bytes[left_byte]) * P3_FANOUT_BYTE_VALUES
+                    + usize::from(bytes[right_byte])];
                 fanout = fanout
-                    .checked_add(self.counts[free * 32 * 32 + contracted * 32 + template])
-                    .ok_or_else(|| "p3 raw expanded fanout overflow".to_string())?;
+                    .checked_sub(u64::from(cross))
+                    .ok_or_else(|| "p3 raw expanded fanout underflow".to_string())?;
             }
         }
         Ok(fanout)
@@ -7359,6 +7473,47 @@ mod tests {
         let plan = build_p3_modular_flat_plan(&modular).unwrap();
         assert!(plan.entry_count() > 0);
         assert_eq!(plan.semantic_sha256().len(), 64);
+        let fanout_table = plan.raw_fanout_table().unwrap();
+        assert_eq!(fanout_table.within_byte.len(), 32 * 4 * 256);
+        assert_eq!(fanout_table.cross_byte.len(), 32 * 6 * 256 * 256);
+        assert_eq!(
+            (0..4)
+                .flat_map(
+                    |left| (left + 1..4).map(move |right| p3_fanout_byte_pair_index(left, right))
+                )
+                .collect::<Vec<_>>(),
+            (0..6).collect::<Vec<_>>()
+        );
+        for (free_spinor, exterior_mask) in [
+            (0, 0x0000_0fff),
+            (7, 0x0707_0707),
+            (15, 0xff00_000f),
+            (23, 0xf000_00ff),
+            (31, 0x003f_003f),
+        ] {
+            let source = RecoupledSourceTerm {
+                momentum_pair: [0, 10],
+                free_spinor,
+                exterior_mask,
+                coefficient: 1,
+            };
+            assert_eq!(source.exterior_mask.count_ones(), 12);
+            let free = usize::from(source.free_spinor);
+            let mut direct_fanout = 0_u64;
+            for contracted in 0..32 {
+                if source.exterior_mask & (1_u32 << contracted) == 0 {
+                    continue;
+                }
+                let degree_eleven_mask = source.exterior_mask ^ (1_u32 << contracted);
+                for template in 0..32 {
+                    if degree_eleven_mask & (1_u32 << template) == 0 {
+                        direct_fanout +=
+                            fanout_table.counts[free * 32 * 32 + contracted * 32 + template];
+                    }
+                }
+            }
+            assert_eq!(fanout_table.fanout(&source).unwrap(), direct_fanout);
+        }
         let flat = accumulate_p3_column_cpu_flat(&plan, &column).unwrap();
         assert_eq!(flat.rows, result.rows);
         assert_eq!(flat.semantic_sha256, result.semantic_sha256);

@@ -922,6 +922,76 @@ fn p2_rows_sha256(prime: u32, global_ordinal: usize, rows: &[GaussianResidue]) -
     format!("{:x}", hash.finalize())
 }
 
+/// Bounded direct-mapped memo for raw fanout counts. Fanout is independent of
+/// the momentum pair, so a key contains only the free spinor and degree-12
+/// exterior mask. A collision merely replaces an optimization entry and can
+/// never change the returned exact value.
+struct P3RawFanoutCache {
+    keys: Vec<u64>,
+    values: Vec<u64>,
+    slot_mask: usize,
+    hits: u64,
+    misses: u64,
+}
+
+impl P3RawFanoutCache {
+    const EMPTY_KEY: u64 = u64::MAX;
+
+    fn new(max_entries: usize) -> Result<Self, String> {
+        let capacity = max_entries
+            .max(1)
+            .checked_next_power_of_two()
+            .ok_or_else(|| "p3 raw fanout cache capacity overflow".to_string())?;
+        Ok(Self {
+            keys: vec![Self::EMPTY_KEY; capacity],
+            values: vec![0; capacity],
+            slot_mask: capacity - 1,
+            hits: 0,
+            misses: 0,
+        })
+    }
+
+    fn slot(&self, key: u64) -> usize {
+        let mut hash = key;
+        hash ^= hash >> 30;
+        hash = hash.wrapping_mul(0xbf58_476d_1ce4_e5b9);
+        hash ^= hash >> 27;
+        hash = hash.wrapping_mul(0x94d0_49bb_1331_11eb);
+        hash ^= hash >> 31;
+        hash as usize & self.slot_mask
+    }
+
+    fn get_or_try_insert(
+        &mut self,
+        key: u64,
+        compute: impl FnOnce() -> Result<u64, String>,
+    ) -> Result<u64, String> {
+        if key == Self::EMPTY_KEY {
+            return Err("p3 raw fanout cache key uses the empty sentinel".to_string());
+        }
+        let slot = self.slot(key);
+        if self.keys[slot] == key {
+            self.hits = self
+                .hits
+                .checked_add(1)
+                .ok_or_else(|| "p3 raw fanout cache hit counter overflow".to_string())?;
+            return Ok(self.values[slot]);
+        }
+        let value = compute()?;
+        self.misses = self
+            .misses
+            .checked_add(1)
+            .ok_or_else(|| "p3 raw fanout cache miss counter overflow".to_string())?;
+        self.keys[slot] = key;
+        self.values[slot] = value;
+        Ok(value)
+    }
+
+    fn counters(&self) -> (u64, u64) {
+        (self.hits, self.misses)
+    }
+}
+
 /// Production execution follows the established full-inventory source path.
 /// Each exact raw batch is consumed by both the existing p2 executor and the
 /// p3 accumulator. Durable checkpoints are committed only after a whole PBW
@@ -1242,10 +1312,10 @@ pub(crate) fn run_production_job(
         return Err("ADYNKRA_P3_CANARY_MAX_WORDS must be positive".to_string());
     }
     let canary_start_word = checkpoint.next_word_ordinal;
+    let mut raw_fanout_cache = P3RawFanoutCache::new(execution.max_union_keys_per_batch)?;
     for word in checkpoint.next_word_ordinal..checkpoint.total_words {
         let first_batch = checkpoint.next_batch_ordinal;
-        let fanout_cache_limit = execution.max_union_keys_per_batch.max(1);
-        let mut raw_fanout_by_key = BTreeMap::<u64, u64>::new();
+        let (fanout_hits_before, fanout_misses_before) = raw_fanout_cache.counters();
         let mut word_source_hashers = checkpoint.source_hashers.clone();
         let mut word_raw_terms = checkpoint.raw_terms_per_column.clone();
         let mut word_raw_expanded = checkpoint.expanded_contributions_per_column.clone();
@@ -1271,18 +1341,11 @@ pub(crate) fn run_production_job(
                     // Fanout depends on free spinor and exterior mask, not on
                     // the momentum pair. Normalize pair bits for cache reuse.
                     let key = packed_key & !(0xff_u64 << 32);
-                    let fanout = if let Some(&fanout) = raw_fanout_by_key.get(&key) {
-                        fanout
-                    } else {
+                    let fanout = raw_fanout_cache.get_or_try_insert(key, || {
                         let mut normalized = *term;
                         normalized.coefficient = 1;
-                        let fanout = p3_raw_fanout.fanout(&normalized)?;
-                        if raw_fanout_by_key.len() >= fanout_cache_limit {
-                            raw_fanout_by_key.clear();
-                        }
-                        raw_fanout_by_key.insert(key, fanout);
-                        fanout
-                    };
+                        p3_raw_fanout.fanout(&normalized)
+                    })?;
                     word_raw_expanded[lane] = word_raw_expanded[lane]
                         .checked_add(fanout)
                         .ok_or_else(|| "p3 production raw expanded count overflow".to_string())?;
@@ -1358,6 +1421,7 @@ pub(crate) fn run_production_job(
         checkpoint.updated_unix_ms = unix_ms();
         atomic_json(&checkpoint_path(output, job), &checkpoint)?;
         remove_superseded_partials(output, &superseded_artifacts);
+        let (fanout_hits_after, fanout_misses_after) = raw_fanout_cache.counters();
         live.update_source(SourceVisitorProgress {
             word: Some(word as u64),
             raw_terms_emitted: checkpoint.raw_terms_per_column.iter().sum(),
@@ -1394,6 +1458,8 @@ pub(crate) fn run_production_job(
                 "raw_terms_per_column": checkpoint.raw_terms_per_column,
                 "expanded_contributions_per_column": checkpoint.expanded_contributions_per_column,
                 "reduced_expanded_contributions_per_column": checkpoint.reduced_expanded_contributions_per_column,
+                "raw_fanout_cache_hits": fanout_hits_after - fanout_hits_before,
+                "raw_fanout_cache_misses": fanout_misses_after - fanout_misses_before,
                 "checkpoint_generation": checkpoint.checkpoint_generation,
             }),
         )?;
@@ -1460,6 +1526,24 @@ mod tests {
             std::process::id(),
             unix_ms()
         ))
+    }
+
+    #[test]
+    fn p3_raw_fanout_cache_is_exact_across_hits_and_collisions() {
+        let mut cache = P3RawFanoutCache::new(1).unwrap();
+        assert_eq!(cache.get_or_try_insert(7, || Ok(11)).unwrap(), 11);
+        assert_eq!(
+            cache.get_or_try_insert(7, || panic!("cache miss")).unwrap(),
+            11
+        );
+        assert_eq!(cache.get_or_try_insert(9, || Ok(22)).unwrap(), 22);
+        assert_eq!(cache.get_or_try_insert(7, || Ok(33)).unwrap(), 33);
+        assert_eq!(cache.counters(), (1, 3));
+        assert!(
+            cache
+                .get_or_try_insert(P3RawFanoutCache::EMPTY_KEY, || Ok(0))
+                .is_err()
+        );
     }
 
     #[test]
