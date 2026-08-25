@@ -4686,6 +4686,51 @@ mod cuda_backend {
                 assert_eq!(cuda.plan_entry_count() as usize, plan.entry_count());
                 let configured_resident = cuda.resident_bytes();
                 let configured_high_water = cuda.buffer_high_water_bytes();
+                const P3_PAIR_OFFSET_BYTES: u64 =
+                    ((GAUGE_DEGREE_COUNT * 32 * 32 * 32 + 1) * std::mem::size_of::<u32>()) as u64;
+                assert_eq!(P3_PAIR_OFFSET_BYTES, 786_436);
+                let expected_p3_resident = (GAUGE_DEGREE_COUNT * 32 + 1)
+                    * std::mem::size_of::<u32>()
+                    + plan.entry_count() * std::mem::size_of::<CudaP3PlanEntry>()
+                    + 2 * P3_FUNCTIONAL_ROW_COUNT * 32 * std::mem::size_of::<u32>()
+                    + P3_PAIR_OFFSET_BYTES as usize;
+                assert_eq!(
+                    configured_resident - base_resident,
+                    expected_p3_resident as u64
+                );
+
+                let mut unordered_plan = plan.clone();
+                let mut swapped = false;
+                for schedule in 0..GAUGE_DEGREE_COUNT * 32 {
+                    let begin = unordered_plan.offsets[schedule] as usize;
+                    let end = unordered_plan.offsets[schedule + 1] as usize;
+                    for index in begin..end.saturating_sub(1) {
+                        let left = unordered_plan.entries[index].key;
+                        let right = unordered_plan.entries[index + 1].key;
+                        if (left.contracted_spinor, left.template_spinor)
+                            != (right.contracted_spinor, right.template_spinor)
+                        {
+                            unordered_plan.entries.swap(index, index + 1);
+                            swapped = true;
+                            break;
+                        }
+                    }
+                    if swapped {
+                        break;
+                    }
+                }
+                assert!(swapped, "p3 plan has no distinct adjacent spinor pairs");
+                let mutation_error = CudaModularP3::new_with_device_cap(
+                    &static_data,
+                    &unordered_plan,
+                    0,
+                    10 * 1024 * 1024 * 1024,
+                )
+                .err()
+                .expect("unordered p3 pair plan was accepted");
+                assert!(mutation_error.contains("unordered CUDA p3 contracted/template"));
+                assert_eq!(cuda.resident_bytes(), configured_resident);
+                assert_eq!(cuda.buffer_high_water_bytes(), configured_high_water);
                 assert!(cuda.reconfigure_for_test(&plan).is_err());
                 assert_eq!(cuda.resident_bytes(), configured_resident);
                 assert_eq!(cuda.buffer_high_water_bytes(), configured_high_water);

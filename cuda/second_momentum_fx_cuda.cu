@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 namespace {
 
@@ -22,6 +23,10 @@ constexpr size_t kDeviceHeadroomBytes = 64ULL * 1024 * 1024;
 constexpr uint32_t kRows =
     kGaugeDegrees * kMomentumPairs * kSectors * kSeeds * kBuckets;
 constexpr uint32_t kP3Rows = kRows * kContractionAxes;
+constexpr uint32_t kP3ScheduleCount = kGaugeDegrees * kSpinors;
+constexpr uint32_t kP3SpinorPairCount = kSpinors * kSpinors;
+constexpr uint32_t kP3PairOffsetCount =
+    kP3ScheduleCount * kP3SpinorPairCount + 1;
 constexpr int kRecouplingSemanticKeyBits = 45;
 __device__ __constant__ uint64_t kFunctionalSeeds[kSeeds] = {
     0x5d120f0213aa0001ULL,
@@ -205,6 +210,7 @@ struct Context {
   uint32_t max_plan_entries_per_degree_free = 0;
   uint32_t max_plan_entries_per_free = 0;
   uint32_t *p3_plan_offsets = nullptr;
+  uint32_t *p3_plan_pair_offsets = nullptr;
   P3PlanEntry *p3_plan_entries = nullptr;
   uint32_t p3_plan_entry_count = 0;
   uint32_t p3_active_columns = 0;
@@ -280,6 +286,7 @@ void destroy(Context *context) {
   cudaFree(context->plan_offsets);
   cudaFree(context->plan_entries);
   cudaFree(context->p3_plan_offsets);
+  cudaFree(context->p3_plan_pair_offsets);
   cudaFree(context->p3_plan_entries);
   cudaFree(context->pair_salts);
   cudaFree(context->sources);
@@ -469,6 +476,15 @@ __device__ __forceinline__ int contraction_sign(uint32_t mask,
   const uint32_t greater =
       spinor == 31 ? 0 : __popc(mask >> (spinor + 1));
   return (greater & 1U) == 0 ? 1 : -1;
+}
+
+__device__ __forceinline__ uint32_t nth_set_bit(uint32_t mask,
+                                                uint32_t ordinal) {
+  while (ordinal != 0) {
+    mask &= mask - 1U;
+    --ordinal;
+  }
+  return static_cast<uint32_t>(__ffs(mask) - 1);
 }
 
 __device__ __forceinline__ uint64_t functional_base(
@@ -697,16 +713,18 @@ __global__ void accumulate_p3_kernel(
   }
 }
 
-// One block owns one reduced semantic source key. All 128 threads traverse the
-// flat plan exactly once, then fan each surviving contribution across the
-// active output columns. This avoids repeating contraction, wedge, hash, and
-// row-address work for every column while retaining disjoint persistent rows.
-// Coefficients arrive already reduced modulo the active prime.
+// One block owns one reduced semantic source key. Contracted/template offsets
+// route its four warps directly through the 12 * 21 admissible spinor-pair
+// spans, skipping the other 772 of 1,024 pair spans before any plan entry is
+// loaded. A whole warp stripes each selected span so the 91-to-208-entry
+// canonical spans do not serialize on one thread. Each surviving contribution
+// is then fanned across the active output columns while retaining disjoint
+// persistent rows. Coefficients arrive already reduced modulo the active prime.
 __global__ void accumulate_p3_multicol_kernel(
     const uint64_t *__restrict__ keys,
     const uint32_t *__restrict__ key_major_coefficients,
     uint32_t unique_count, uint32_t active_columns,
-    const uint32_t *__restrict__ plan_offsets,
+    const uint32_t *__restrict__ plan_pair_offsets,
     const P3PlanEntry *__restrict__ plan_entries,
     const uint64_t *__restrict__ pair_salts, uint32_t prime,
     uint32_t *__restrict__ output_real,
@@ -722,6 +740,13 @@ __global__ void accumulate_p3_multicol_kernel(
   __shared__ uint32_t shared_valid;
   __shared__ uint32_t shared_coefficients[32];
   __shared__ unsigned long long warp_expanded[4];
+  constexpr uint32_t kContractedChoices = 12;
+  constexpr uint32_t kTemplateChoices = kSpinors - 11;
+  constexpr uint32_t kAdmissiblePairs =
+      kContractedChoices * kTemplateChoices;
+  __shared__ uint16_t shared_plan_pairs[kAdmissiblePairs];
+  __shared__ uint64_t shared_source_salts[kAdmissiblePairs];
+  __shared__ uint8_t shared_negative[kAdmissiblePairs];
   constexpr uint32_t kRowsPerDegreePair =
       kSectors * kContractionAxes * kSeeds * kBuckets;
   constexpr uint32_t kAggregatedColumns = 3;
@@ -764,6 +789,32 @@ __global__ void accumulate_p3_multicol_kernel(
       shared_coefficients[threadIdx.x] >= prime) {
     atomicExch(invalid, 2U);
   }
+  if (shared_valid != 0) {
+    for (uint32_t pair_slot = threadIdx.x; pair_slot < kAdmissiblePairs;
+         pair_slot += kThreads) {
+      const uint32_t contracted_ordinal = pair_slot / kTemplateChoices;
+      const uint32_t template_ordinal = pair_slot % kTemplateChoices;
+      const uint32_t contracted_spinor =
+          nth_set_bit(shared_mask, contracted_ordinal);
+      const uint32_t degree11_mask =
+          shared_mask ^ (1U << contracted_spinor);
+      const uint32_t template_spinor =
+          nth_set_bit(~degree11_mask, template_ordinal);
+      const uint32_t degree12_mask =
+          degree11_mask | (1U << template_spinor);
+      const uint32_t highest = 31U - __clz(degree12_mask);
+      const uint32_t functional_mask = degree12_mask ^ (1U << highest);
+      shared_plan_pairs[pair_slot] = static_cast<uint16_t>(
+          contracted_spinor * kSpinors + template_spinor);
+      shared_source_salts[pair_slot] =
+          rotate_left(static_cast<uint64_t>(functional_mask), 43) ^
+          pair_salts[shared_pair];
+      shared_negative[pair_slot] = static_cast<uint8_t>(
+          (contraction_sign(shared_mask, contracted_spinor) < 0) !=
+          (wedge_sign(degree11_mask, template_spinor) < 0));
+    }
+  }
+  __syncthreads();
   unsigned long long local_expanded = 0;
   if (shared_valid != 0) {
     for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
@@ -778,71 +829,68 @@ __global__ void accumulate_p3_multicol_kernel(
         __syncthreads();
       }
       const uint32_t schedule = degree * kSpinors + shared_free_spinor;
-      const uint32_t begin = plan_offsets[schedule];
-      const uint32_t end = plan_offsets[schedule + 1];
-      for (uint32_t index = begin + threadIdx.x; index < end;
-           index += kThreads) {
-        const P3PlanEntry entry = plan_entries[index];
-        const int first_sign =
-            contraction_sign(shared_mask, entry.contracted_spinor);
-        if (first_sign == 0) continue;
-        const uint32_t degree11_mask =
-            shared_mask ^ (1U << entry.contracted_spinor);
-        const int second_sign =
-            wedge_sign(degree11_mask, entry.template_spinor);
-        if (second_sign == 0) continue;
-        const uint32_t degree12_mask =
-            degree11_mask | (1U << entry.template_spinor);
-        const uint32_t highest = 31U - __clz(degree12_mask);
-        const uint32_t functional_mask = degree12_mask ^ (1U << highest);
-        const uint64_t base = splitmix64(
-            entry.functional_salt ^
-            rotate_left(static_cast<uint64_t>(functional_mask), 43) ^
-            pair_salts[shared_pair]);
+      const uint32_t lane = threadIdx.x & 31U;
+      const uint32_t warp = threadIdx.x >> 5;
+      constexpr uint32_t kWarps = kThreads / 32;
+      constexpr uint32_t kPairRounds =
+          (kAdmissiblePairs + kWarps - 1) / kWarps;
+      for (uint32_t pair_round = 0; pair_round < kPairRounds; ++pair_round) {
+        const uint32_t pair_slot = pair_round * kWarps + warp;
+        if (pair_slot >= kAdmissiblePairs) continue;
+        const uint32_t pair_index = shared_plan_pairs[pair_slot];
+        const uint32_t offset_index =
+            schedule * kP3SpinorPairCount + pair_index;
+        const uint32_t begin = plan_pair_offsets[offset_index];
+        const uint32_t end = plan_pair_offsets[offset_index + 1];
+        for (uint32_t index = begin + lane; index < end; index += 32) {
+          const P3PlanEntry entry = plan_entries[index];
+          const uint64_t base = splitmix64(
+              entry.functional_salt ^ shared_source_salts[pair_slot]);
 #pragma unroll
-        for (uint32_t seed = 0; seed < kSeeds; ++seed) {
-          const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
-          const uint32_t bucket =
-              static_cast<uint32_t>(hash) & (kBuckets - 1);
-          const uint32_t row = p3_row_ordinal(
-              degree, shared_pair, entry.sector, entry.contraction_axis, seed,
-              bucket);
-          const uint32_t local_row =
-              (((entry.sector * kContractionAxes + entry.contraction_axis) *
-                 kSeeds +
-                 seed) *
-                kBuckets) +
-              bucket;
-          for (uint32_t column = 0; column < active_columns; ++column) {
-            const uint32_t coefficient = shared_coefficients[column];
-            if (coefficient == 0 || coefficient >= prime) continue;
-            GaussianResidue contribution =
-                scale_gaussian(entry.coefficient, coefficient, prime);
-            if (((first_sign < 0) != (second_sign < 0)) !=
-                ((hash >> 63) != 0)) {
-              contribution = negate_gaussian(contribution, prime);
-            }
-            if (contribution.real == 0 && contribution.imaginary == 0) {
-              continue;
-            }
-            if (active_columns <= kAggregatedColumns) {
-              const uint32_t shared_output =
-                  column * kRowsPerDegreePair + local_row;
-              atomicAdd(&shared_real[shared_output],
-                        static_cast<unsigned long long>(contribution.real));
-              atomicAdd(
-                  &shared_imaginary[shared_output],
-                  static_cast<unsigned long long>(contribution.imaginary));
-            } else {
-              const uint64_t output =
-                  static_cast<uint64_t>(column) * kP3Rows + row;
-              atomic_add_mod(&output_real[output], contribution.real, prime);
-              atomic_add_mod(&output_imaginary[output], contribution.imaginary,
-                             prime);
+          for (uint32_t seed = 0; seed < kSeeds; ++seed) {
+            const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
+            const uint32_t bucket =
+                static_cast<uint32_t>(hash) & (kBuckets - 1);
+            const uint32_t row = p3_row_ordinal(
+                degree, shared_pair, entry.sector, entry.contraction_axis,
+                seed, bucket);
+            const uint32_t local_row =
+                (((entry.sector * kContractionAxes + entry.contraction_axis) *
+                   kSeeds +
+                   seed) *
+                  kBuckets) +
+                bucket;
+            for (uint32_t column = 0; column < active_columns; ++column) {
+              const uint32_t coefficient = shared_coefficients[column];
+              if (coefficient == 0 || coefficient >= prime) continue;
+              GaussianResidue contribution =
+                  scale_gaussian(entry.coefficient, coefficient, prime);
+              if ((shared_negative[pair_slot] != 0) !=
+                  ((hash >> 63) != 0)) {
+                contribution = negate_gaussian(contribution, prime);
+              }
+              if (contribution.real == 0 && contribution.imaginary == 0) {
+                continue;
+              }
+              if (active_columns <= kAggregatedColumns) {
+                const uint32_t shared_output =
+                    column * kRowsPerDegreePair + local_row;
+                atomicAdd(&shared_real[shared_output],
+                          static_cast<unsigned long long>(contribution.real));
+                atomicAdd(
+                    &shared_imaginary[shared_output],
+                    static_cast<unsigned long long>(contribution.imaginary));
+              } else {
+                const uint64_t output =
+                    static_cast<uint64_t>(column) * kP3Rows + row;
+                atomic_add_mod(&output_real[output], contribution.real, prime);
+                atomic_add_mod(&output_imaginary[output],
+                               contribution.imaginary, prime);
+              }
             }
           }
+          ++local_expanded;
         }
-        ++local_expanded;
       }
       if (active_columns <= kAggregatedColumns) {
         __syncthreads();
@@ -2377,6 +2425,7 @@ int adynkra_fx_cuda_configure_p3(
       plan_entry_count == 0 || plan_offsets[0] != 0 ||
       plan_offsets[kGaugeDegrees * kSpinors] != plan_entry_count ||
       context->pair_salts == nullptr || context->p3_plan_offsets != nullptr ||
+      context->p3_plan_pair_offsets != nullptr ||
       context->p3_plan_entries != nullptr || context->p3_output_real != nullptr ||
       context->p3_output_imaginary != nullptr) {
     set_error(error, error_capacity, "invalid CUDA p3 static schedule");
@@ -2410,6 +2459,39 @@ int adynkra_fx_cuda_configure_p3(
       }
     }
   }
+  std::vector<uint32_t> host_pair_offsets;
+  try {
+    host_pair_offsets.resize(kP3PairOffsetCount);
+  } catch (...) {
+    set_error(error, error_capacity,
+              "allocate CUDA p3 contracted/template host offsets");
+    return 1;
+  }
+  for (uint32_t schedule = 0; schedule < kP3ScheduleCount; ++schedule) {
+    uint32_t cursor = plan_offsets[schedule];
+    const uint32_t schedule_end = plan_offsets[schedule + 1];
+    for (uint32_t pair = 0; pair < kP3SpinorPairCount; ++pair) {
+      host_pair_offsets[schedule * kP3SpinorPairCount + pair] = cursor;
+      while (cursor < schedule_end) {
+        const P3PlanEntry &entry = plan_entries[cursor];
+        const uint32_t entry_pair =
+            entry.contracted_spinor * kSpinors + entry.template_spinor;
+        if (entry_pair < pair) {
+          set_error(error, error_capacity,
+                    "unordered CUDA p3 contracted/template plan entries");
+          return 1;
+        }
+        if (entry_pair != pair) break;
+        ++cursor;
+      }
+    }
+    if (cursor != schedule_end) {
+      set_error(error, error_capacity,
+                "incomplete CUDA p3 contracted/template plan offsets");
+      return 1;
+    }
+  }
+  host_pair_offsets[kP3PairOffsetCount - 1] = plan_entry_count;
   size_t entry_bytes = 0;
   if (!checked_multiply_size(plan_entry_count, sizeof(P3PlanEntry),
                              &entry_bytes)) {
@@ -2418,14 +2500,19 @@ int adynkra_fx_cuda_configure_p3(
   }
   const size_t offset_bytes =
       (kGaugeDegrees * kSpinors + 1ULL) * sizeof(uint32_t);
+  const size_t pair_offset_bytes =
+      static_cast<size_t>(kP3PairOffsetCount) * sizeof(uint32_t);
   const size_t output_bytes =
       2ULL * kP3Rows * kMaxColumns * sizeof(uint32_t);
-  if (offset_bytes > SIZE_MAX - entry_bytes ||
-      offset_bytes + entry_bytes > SIZE_MAX - output_bytes) {
+  if (offset_bytes > SIZE_MAX - pair_offset_bytes ||
+      offset_bytes + pair_offset_bytes > SIZE_MAX - entry_bytes ||
+      offset_bytes + pair_offset_bytes + entry_bytes >
+          SIZE_MAX - output_bytes) {
     set_error(error, error_capacity, "CUDA p3 allocation byte count overflow");
     return 1;
   }
-  const size_t additional_bytes = offset_bytes + entry_bytes + output_bytes;
+  const size_t additional_bytes =
+      offset_bytes + pair_offset_bytes + entry_bytes + output_bytes;
   if (additional_bytes > UINT64_MAX - context->allocated_bytes ||
       context->allocated_bytes + additional_bytes >
           context->recoupling_hard_cap_bytes) {
@@ -2447,17 +2534,22 @@ int adynkra_fx_cuda_configure_p3(
     return 1;
   }
   uint32_t *new_plan_offsets = nullptr;
+  uint32_t *new_plan_pair_offsets = nullptr;
   P3PlanEntry *new_plan_entries = nullptr;
   uint32_t *new_output_real = nullptr;
   uint32_t *new_output_imaginary = nullptr;
   const auto rollback = [&]() {
     cudaFree(new_plan_offsets);
+    cudaFree(new_plan_pair_offsets);
     cudaFree(new_plan_entries);
     cudaFree(new_output_real);
     cudaFree(new_output_imaginary);
   };
   if (!check_cuda(cudaMalloc(&new_plan_offsets, offset_bytes), error,
                   error_capacity, "allocate CUDA p3 offsets") ||
+      !check_cuda(cudaMalloc(&new_plan_pair_offsets, pair_offset_bytes), error,
+                  error_capacity,
+                  "allocate CUDA p3 contracted/template offsets") ||
       !check_cuda(cudaMalloc(&new_plan_entries, entry_bytes), error,
                   error_capacity, "allocate CUDA p3 entries") ||
       !check_cuda(cudaMalloc(&new_output_real,
@@ -2469,6 +2561,12 @@ int adynkra_fx_cuda_configure_p3(
       !check_cuda(cudaMemcpyAsync(new_plan_offsets, plan_offsets, offset_bytes,
                                   cudaMemcpyHostToDevice, context->stream),
                   error, error_capacity, "upload CUDA p3 offsets") ||
+      !check_cuda(cudaMemcpyAsync(
+                      new_plan_pair_offsets, host_pair_offsets.data(),
+                      pair_offset_bytes, cudaMemcpyHostToDevice,
+                      context->stream),
+                  error, error_capacity,
+                  "upload CUDA p3 contracted/template offsets") ||
       !check_cuda(cudaMemcpyAsync(new_plan_entries, plan_entries, entry_bytes,
                                   cudaMemcpyHostToDevice, context->stream),
                   error, error_capacity, "upload CUDA p3 entries") ||
@@ -2478,6 +2576,7 @@ int adynkra_fx_cuda_configure_p3(
     return 1;
   }
   context->p3_plan_offsets = new_plan_offsets;
+  context->p3_plan_pair_offsets = new_plan_pair_offsets;
   context->p3_plan_entries = new_plan_entries;
   context->p3_output_real = new_output_real;
   context->p3_output_imaginary = new_output_imaginary;
@@ -2597,6 +2696,7 @@ int adynkra_fx_cuda_accumulate_p3_multicol(
       active_columns == 0 || active_columns > 32 ||
       active_columns != context->p3_active_columns ||
       expanded_contributions == nullptr || kernel_milliseconds == nullptr ||
+      context->p3_plan_pair_offsets == nullptr ||
       context->p3_plan_entries == nullptr ||
       context->p3_output_real == nullptr ||
       context->p3_output_imaginary == nullptr) {
@@ -2645,7 +2745,7 @@ int adynkra_fx_cuda_accumulate_p3_multicol(
   accumulate_p3_multicol_kernel<<<unique_count, threads, 0, context->stream>>>(
       context->multicol_keys,
       reinterpret_cast<const uint32_t *>(context->multicol_values),
-      unique_count, active_columns, context->p3_plan_offsets,
+      unique_count, active_columns, context->p3_plan_pair_offsets,
       context->p3_plan_entries, context->pair_salts, context->prime,
       context->p3_output_real, context->p3_output_imaginary,
       context->multicol_expanded, context->multicol_overflow);
