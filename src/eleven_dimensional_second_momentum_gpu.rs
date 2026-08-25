@@ -23,9 +23,10 @@ use sha2::{Digest, Sha256};
 
 use crate::eleven_dimensional_k_fag_solver::ExactGaussian;
 use crate::eleven_dimensional_second_momentum_fx::{
-    DegreeTwoMomentumMonomial, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
+    DegreeTwoMomentumMonomial, P3D11ExactStaticData, SECOND_MOMENTUM_FX_BUCKETS_PER_SEED,
     SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS, SecondMomentumFxSector, SecondMomentumGaugeBranch,
-    SecondMomentumGaugeChannel,
+    SecondMomentumGaugeChannel, produce_p3_d11_contractions, project_p3_d11_to_physical_fx,
+    second_momentum_fx_functional_assignments,
 };
 
 pub(crate) const GPU_FX_SCHEMA: &str = "adynkra-11d-second-momentum-gpu-fx-v3-one-seed";
@@ -39,6 +40,75 @@ pub(crate) const FUNCTIONAL_ROW_COUNT: usize = GAUGE_DEGREE_COUNT
     * SECTOR_COUNT
     * GPU_FX_FUNCTIONAL_SEEDS.len()
     * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED;
+pub(crate) const GPU_P3_FX_SCHEMA: &str =
+    "adynkra-11d-second-momentum-gpu-p3-fx-v1-one-seed-axis-retained";
+pub(crate) const P3_CONTRACTION_AXIS_COUNT: usize = 11;
+pub(crate) const P3_X2_OUTPUT_COORDINATES: usize = 55 * 11;
+pub(crate) const P3_X5_OUTPUT_COORDINATES: usize = 462 * 11;
+pub(crate) const P3_FUNCTIONAL_ROW_COUNT: usize = GAUGE_DEGREE_COUNT
+    * MOMENTUM_PAIR_COUNT
+    * SECTOR_COUNT
+    * P3_CONTRACTION_AXIS_COUNT
+    * GPU_FX_FUNCTIONAL_SEEDS.len()
+    * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) struct P3FunctionalRowCoordinates {
+    pub gauge_degree: usize,
+    pub momentum_pair_ordinal: usize,
+    pub sector: usize,
+    pub contraction_axis: usize,
+    pub seed: usize,
+    pub bucket: usize,
+}
+
+pub(crate) fn p3_functional_row(coordinates: P3FunctionalRowCoordinates) -> Result<usize, String> {
+    if coordinates.gauge_degree >= GAUGE_DEGREE_COUNT
+        || coordinates.momentum_pair_ordinal >= MOMENTUM_PAIR_COUNT
+        || coordinates.sector >= SECTOR_COUNT
+        || coordinates.contraction_axis >= P3_CONTRACTION_AXIS_COUNT
+        || coordinates.seed >= GPU_FX_FUNCTIONAL_SEEDS.len()
+        || coordinates.bucket >= SECOND_MOMENTUM_FX_BUCKETS_PER_SEED
+    {
+        return Err("p3 functional row coordinate is out of bounds".to_string());
+    }
+    Ok(
+        (((((coordinates.gauge_degree * MOMENTUM_PAIR_COUNT
+            + coordinates.momentum_pair_ordinal)
+            * SECTOR_COUNT
+            + coordinates.sector)
+            * P3_CONTRACTION_AXIS_COUNT
+            + coordinates.contraction_axis)
+            * GPU_FX_FUNCTIONAL_SEEDS.len()
+            + coordinates.seed)
+            * SECOND_MOMENTUM_FX_BUCKETS_PER_SEED)
+            + coordinates.bucket,
+    )
+}
+
+pub(crate) fn decode_p3_functional_row(row: usize) -> Result<P3FunctionalRowCoordinates, String> {
+    if row >= P3_FUNCTIONAL_ROW_COUNT {
+        return Err("p3 functional row ordinal is out of bounds".to_string());
+    }
+    let bucket = row % SECOND_MOMENTUM_FX_BUCKETS_PER_SEED;
+    let quotient = row / SECOND_MOMENTUM_FX_BUCKETS_PER_SEED;
+    let seed = quotient % GPU_FX_FUNCTIONAL_SEEDS.len();
+    let quotient = quotient / GPU_FX_FUNCTIONAL_SEEDS.len();
+    let contraction_axis = quotient % P3_CONTRACTION_AXIS_COUNT;
+    let quotient = quotient / P3_CONTRACTION_AXIS_COUNT;
+    let sector = quotient % SECTOR_COUNT;
+    let quotient = quotient / SECTOR_COUNT;
+    let momentum_pair_ordinal = quotient % MOMENTUM_PAIR_COUNT;
+    let gauge_degree = quotient / MOMENTUM_PAIR_COUNT;
+    Ok(P3FunctionalRowCoordinates {
+        gauge_degree,
+        momentum_pair_ordinal,
+        sector,
+        contraction_axis,
+        seed,
+        bucket,
+    })
+}
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 #[repr(C)]
@@ -92,7 +162,8 @@ impl GaussianResidue {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct RecoupledSourceTerm {
     pub momentum_pair: [u8; 2],
     pub free_spinor: u8,
@@ -100,7 +171,8 @@ pub(crate) struct RecoupledSourceTerm {
     pub coefficient: i128,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct GpuFxColumnInput {
     pub global_ordinal: usize,
     pub source_label: String,
@@ -160,8 +232,135 @@ pub(crate) struct ModularFxStaticData {
     semantic_sha256: String,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+struct P3ModularPlanKey {
+    contracted_spinor: u8,
+    template_spinor: u8,
+    contraction_axis: u8,
+    sector: u8,
+    output_coordinate: u16,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct P3ModularPlanEntry {
+    key: P3ModularPlanKey,
+    coefficient: GaussianResidue,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct P3ModularFlatPlan {
+    prime: u32,
+    offsets: Vec<u32>,
+    entries: Vec<P3ModularPlanEntry>,
+    semantic_sha256: String,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct P3RawFanoutTable {
+    prime: u32,
+    counts: Vec<u64>,
+}
+
+impl P3ModularFlatPlan {
+    pub(crate) fn semantic_sha256(&self) -> &str {
+        &self.semantic_sha256
+    }
+
+    pub(crate) fn entry_count(&self) -> usize {
+        self.entries.len()
+    }
+
+    /// Number of nonzero flattened schedule visits made by one canonical raw
+    /// source term. This is deliberately evaluated before any union reduction,
+    /// so duplicate or cancelling raw terms retain their published visit count.
+    pub(crate) fn raw_expanded_fanout(&self, source: &RecoupledSourceTerm) -> Result<u64, String> {
+        self.raw_fanout_table()?.fanout(source)
+    }
+
+    pub(crate) fn raw_fanout_table(&self) -> Result<P3RawFanoutTable, String> {
+        validate_p3_modular_flat_plan(self)?;
+        let mut counts = vec![0_u64; 32 * 32 * 32];
+        for degree in 0..GAUGE_DEGREE_COUNT {
+            for free_spinor in 0..32 {
+                let schedule = degree * 32 + free_spinor;
+                for entry in &self.entries
+                    [self.offsets[schedule] as usize..self.offsets[schedule + 1] as usize]
+                {
+                    let index = free_spinor * 32 * 32
+                        + usize::from(entry.key.contracted_spinor) * 32
+                        + usize::from(entry.key.template_spinor);
+                    counts[index] = counts[index]
+                        .checked_add(1)
+                        .ok_or_else(|| "p3 raw fanout table overflow".to_string())?;
+                }
+            }
+        }
+        Ok(P3RawFanoutTable {
+            prime: self.prime,
+            counts,
+        })
+    }
+}
+
+impl P3RawFanoutTable {
+    pub(crate) fn fanout(&self, source: &RecoupledSourceTerm) -> Result<u64, String> {
+        validate_p3_source_term(source, self.prime)?;
+        if i128_mod(source.coefficient, self.prime) == 0 {
+            return Ok(0);
+        }
+        let free = usize::from(source.free_spinor);
+        let mut fanout = 0_u64;
+        for contracted in 0..32 {
+            if source.exterior_mask & (1_u32 << contracted) == 0 {
+                continue;
+            }
+            let degree_eleven_mask = source.exterior_mask ^ (1_u32 << contracted);
+            for template in 0..32 {
+                if degree_eleven_mask & (1_u32 << template) != 0 {
+                    continue;
+                }
+                fanout = fanout
+                    .checked_add(self.counts[free * 32 * 32 + contracted * 32 + template])
+                    .ok_or_else(|| "p3 raw expanded fanout overflow".to_string())?;
+            }
+        }
+        Ok(fanout)
+    }
+}
+
+pub(crate) fn p3_recoupling_key(source: &RecoupledSourceTerm) -> Result<u64, String> {
+    validate_p3_source_term(source, 2)?;
+    let metadata = u32::from(source.momentum_pair[0])
+        | (u32::from(source.momentum_pair[1]) << 4)
+        | (u32::from(source.free_spinor) << 8);
+    Ok((u64::from(metadata) << 32) | u64::from(source.exterior_mask))
+}
+
+fn validate_p3_source_term(source: &RecoupledSourceTerm, prime: u32) -> Result<(), String> {
+    if prime < 2
+        || source.momentum_pair[0] > source.momentum_pair[1]
+        || source.momentum_pair[1] >= 11
+        || source.free_spinor >= 32
+        || source.exterior_mask.count_ones() != 12
+        || source.coefficient == 0
+        || source.coefficient == i128::MIN
+    {
+        return Err("p3 source term is not canonical".to_string());
+    }
+    Ok(())
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct ModularFunctionalColumn {
+    pub prime: u32,
+    pub global_ordinal: usize,
+    pub rows: Vec<GaussianResidue>,
+    pub expanded_contributions: u64,
+    pub semantic_sha256: String,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct ModularP3FunctionalColumn {
     pub prime: u32,
     pub global_ordinal: usize,
     pub rows: Vec<GaussianResidue>,
@@ -543,6 +742,148 @@ fn static_semantic_sha256(
     format!("{:x}", hash.finalize())
 }
 
+pub(crate) fn build_p3_modular_flat_plan(
+    static_data: &ModularFxStaticData,
+) -> Result<P3ModularFlatPlan, String> {
+    let translation =
+        crate::eleven_dimensional_level16_couplings::translation_weight_basis_coefficients();
+    let mut offsets = Vec::with_capacity(GAUGE_DEGREE_COUNT * 32 + 1);
+    let mut entries = Vec::new();
+    offsets.push(0);
+    for degree in 0..GAUGE_DEGREE_COUNT {
+        for free_spinor in 0..32 {
+            let mut schedule =
+                std::collections::BTreeMap::<P3ModularPlanKey, GaussianResidue>::new();
+            for gauge in &static_data.gauge_by_degree_and_free_spinor[degree * 32 + free_spinor] {
+                for contracted_spinor in 0..32 {
+                    for contraction_axis in 0..P3_CONTRACTION_AXIS_COUNT {
+                        let (translation_real, translation_imaginary) = translation
+                            [contracted_spinor][usize::from(gauge.derivative_spinor)]
+                            [contraction_axis];
+                        if translation_real == 0 && translation_imaginary == 0 {
+                            continue;
+                        }
+                        let translated = gauge.coefficient.multiply(
+                            GaussianResidue {
+                                real: i128_mod(i128::from(translation_real), static_data.prime),
+                                imaginary: i128_mod(
+                                    i128::from(translation_imaginary),
+                                    static_data.prime,
+                                ),
+                            },
+                            static_data.prime,
+                        );
+                        for target in &static_data.target {
+                            let raw = usize::from(target.vector_weight) * 32
+                                + usize::from(target.spinor_weight);
+                            let begin = static_data.template_offsets[raw] as usize;
+                            let end = static_data.template_offsets[raw + 1] as usize;
+                            for template in &static_data.templates[begin..end] {
+                                let output_bound = if template.sector == 0 {
+                                    P3_X2_OUTPUT_COORDINATES
+                                } else {
+                                    P3_X5_OUTPUT_COORDINATES
+                                };
+                                if usize::from(template.output_coordinate) >= output_bound {
+                                    return Err(
+                                        "p3 F_X ambient output coordinate is out of bounds"
+                                            .to_string(),
+                                    );
+                                }
+                                let coefficient = translated
+                                    .scale(target.coefficient, static_data.prime)
+                                    .multiply(template.coefficient, static_data.prime);
+                                if coefficient.is_zero() {
+                                    continue;
+                                }
+                                let key = P3ModularPlanKey {
+                                    contracted_spinor: contracted_spinor as u8,
+                                    template_spinor: template.derivative_spinor,
+                                    contraction_axis: contraction_axis as u8,
+                                    sector: template.sector,
+                                    output_coordinate: template.output_coordinate,
+                                };
+                                let value =
+                                    schedule.entry(key).or_insert_with(GaussianResidue::zero);
+                                *value = value.add(coefficient, static_data.prime);
+                                if value.is_zero() {
+                                    schedule.remove(&key);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            entries.extend(
+                schedule
+                    .into_iter()
+                    .map(|(key, coefficient)| P3ModularPlanEntry { key, coefficient }),
+            );
+            offsets.push(
+                u32::try_from(entries.len())
+                    .map_err(|_| "p3 modular flat plan exceeds u32".to_string())?,
+            );
+        }
+    }
+    if entries.is_empty() || offsets.len() != GAUGE_DEGREE_COUNT * 32 + 1 {
+        return Err("p3 modular flat plan is empty or malformed".to_string());
+    }
+    let mut hash = Sha256::new();
+    hash.update(GPU_P3_FX_SCHEMA.as_bytes());
+    hash.update(b"\0flat-plan-v1\0");
+    hash.update(static_data.prime.to_le_bytes());
+    hash.update((P3_FUNCTIONAL_ROW_COUNT as u64).to_le_bytes());
+    for offset in &offsets {
+        hash.update(offset.to_le_bytes());
+    }
+    for entry in &entries {
+        hash.update([
+            entry.key.contracted_spinor,
+            entry.key.template_spinor,
+            entry.key.contraction_axis,
+            entry.key.sector,
+        ]);
+        hash.update(entry.key.output_coordinate.to_le_bytes());
+        hash.update(entry.coefficient.real.to_le_bytes());
+        hash.update(entry.coefficient.imaginary.to_le_bytes());
+    }
+    Ok(P3ModularFlatPlan {
+        prime: static_data.prime,
+        offsets,
+        entries,
+        semantic_sha256: format!("{:x}", hash.finalize()),
+    })
+}
+
+fn validate_p3_modular_flat_plan(plan: &P3ModularFlatPlan) -> Result<(), String> {
+    if plan.offsets.len() != GAUGE_DEGREE_COUNT * 32 + 1
+        || plan.offsets.first() != Some(&0)
+        || plan.offsets.last().copied() != Some(plan.entries.len() as u32)
+        || plan.offsets.windows(2).any(|pair| pair[0] > pair[1])
+        || plan.entries.is_empty()
+    {
+        return Err("p3 modular flat plan shape is invalid".to_string());
+    }
+    for entry in &plan.entries {
+        let output_bound = match entry.key.sector {
+            0 => P3_X2_OUTPUT_COORDINATES,
+            1 => P3_X5_OUTPUT_COORDINATES,
+            _ => return Err("p3 modular plan sector is invalid".to_string()),
+        };
+        if entry.key.contracted_spinor >= 32
+            || entry.key.template_spinor >= 32
+            || usize::from(entry.key.contraction_axis) >= P3_CONTRACTION_AXIS_COUNT
+            || usize::from(entry.key.output_coordinate) >= output_bound
+            || entry.coefficient.is_zero()
+            || entry.coefficient.real >= plan.prime
+            || entry.coefficient.imaginary >= plan.prime
+        {
+            return Err("p3 modular flat plan entry is invalid".to_string());
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn accumulate_column_cpu(
     static_data: &ModularFxStaticData,
     column: &GpuFxColumnInput,
@@ -649,6 +990,326 @@ pub(crate) fn accumulate_column_cpu(
         expanded_contributions,
         semantic_sha256,
     })
+}
+
+/// Proof-safe CPU reference for the complete contraction branch. This is the
+/// parity oracle for the CUDA p3 plan, not the intended full-run execution
+/// path.
+pub(crate) fn accumulate_p3_column_cpu(
+    exact_static_data: &P3D11ExactStaticData,
+    modular_static_data: &ModularFxStaticData,
+    column: &GpuFxColumnInput,
+) -> Result<ModularP3FunctionalColumn, String> {
+    if column.global_ordinal >= 77 || column.raising_residuals != [0; 5] {
+        return Err("p3 F_X input column is not certified".to_string());
+    }
+    let prime = modular_static_data.prime;
+    let mut rows = vec![GaussianResidue::zero(); P3_FUNCTIONAL_ROW_COUNT];
+    let mut expanded_contributions = 0_u64;
+    for degree in 0..GAUGE_DEGREE_COUNT {
+        let contractions = produce_p3_d11_contractions(
+            exact_static_data,
+            column.global_ordinal,
+            degree,
+            0,
+            &column.terms,
+        )?;
+        let projected = project_p3_d11_to_physical_fx(exact_static_data, &contractions)?;
+        for term in projected {
+            let pair = term.source_momentum.canonical_pair()?;
+            let pair = pair_ordinal(pair[0], pair[1]);
+            let contraction_axis = match term.gauge_branch {
+                SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis } => {
+                    usize::from(momentum_axis)
+                }
+                SecondMomentumGaugeBranch::P2D13Wedge => {
+                    return Err("p3 projection emitted a wedge branch".to_string());
+                }
+            };
+            let sector = match term.sector {
+                SecondMomentumFxSector::X2 => 0,
+                SecondMomentumFxSector::X5 => 1,
+            };
+            let value = gaussian_mod(&term.coefficient, prime)?;
+            for (seed, (bucket, sign)) in second_momentum_fx_functional_assignments(
+                term.gauge_channel,
+                term.gauge_branch,
+                term.source_momentum,
+                term.parameter_component,
+                term.target_coordinate,
+                term.spinor_derivative_mask,
+                term.sector,
+            )
+            .into_iter()
+            .take(GPU_FX_FUNCTIONAL_SEEDS.len())
+            .enumerate()
+            {
+                let row = p3_functional_row(P3FunctionalRowCoordinates {
+                    gauge_degree: degree,
+                    momentum_pair_ordinal: pair,
+                    sector,
+                    contraction_axis,
+                    seed,
+                    bucket,
+                })?;
+                let contribution = if sign > 0 { value } else { value.negate(prime) };
+                rows[row] = rows[row].add(contribution, prime);
+                expanded_contributions = expanded_contributions
+                    .checked_add(1)
+                    .ok_or_else(|| "p3 expanded contribution count overflow".to_string())?;
+            }
+        }
+    }
+    let semantic_sha256 = p3_column_semantic_sha256(prime, column.global_ordinal, &rows);
+    Ok(ModularP3FunctionalColumn {
+        prime,
+        global_ordinal: column.global_ordinal,
+        rows,
+        expanded_contributions,
+        semantic_sha256,
+    })
+}
+
+pub(crate) fn accumulate_p3_column_cpu_flat(
+    plan: &P3ModularFlatPlan,
+    column: &GpuFxColumnInput,
+) -> Result<ModularP3FunctionalColumn, String> {
+    validate_p3_modular_flat_plan(plan)?;
+    if column.global_ordinal >= 77 || column.raising_residuals != [0; 5] {
+        return Err("p3 flat F_X input column is not certified".to_string());
+    }
+    let prime = plan.prime;
+    let mut rows = vec![GaussianResidue::zero(); P3_FUNCTIONAL_ROW_COUNT];
+    let mut expanded_contributions = 0_u64;
+    for source in &column.terms {
+        let left = usize::from(source.momentum_pair[0]);
+        let right = usize::from(source.momentum_pair[1]);
+        if left > right
+            || right >= 11
+            || source.free_spinor >= 32
+            || source.exterior_mask.count_ones() != 12
+            || source.coefficient == 0
+        {
+            return Err("p3 flat source term is not canonical".to_string());
+        }
+        let pair_ordinal = pair_ordinal(left, right);
+        let source_momentum = DegreeTwoMomentumMonomial::from_pair(left, right)?;
+        let source_value = GaussianResidue {
+            real: i128_mod(source.coefficient, prime),
+            imaginary: 0,
+        };
+        for degree in 0..GAUGE_DEGREE_COUNT {
+            let schedule = degree * 32 + usize::from(source.free_spinor);
+            let begin = plan.offsets[schedule] as usize;
+            let end = plan.offsets[schedule + 1] as usize;
+            for entry in &plan.entries[begin..end] {
+                let contracted = usize::from(entry.key.contracted_spinor);
+                let Some(contraction_sign) =
+                    crate::eleven_dimensional_level16_couplings::right_contraction_sign(
+                        source.exterior_mask,
+                        contracted,
+                    )
+                else {
+                    continue;
+                };
+                let degree_eleven_mask = source.exterior_mask ^ (1_u32 << contracted);
+                let Some(wedge_sign) =
+                    right_wedge_sign(degree_eleven_mask, usize::from(entry.key.template_spinor))
+                else {
+                    continue;
+                };
+                let degree_twelve_mask = degree_eleven_mask | (1_u32 << entry.key.template_spinor);
+                if degree_twelve_mask.count_ones() != 12 {
+                    return Err("p3 flat projection lost derivative degree".to_string());
+                }
+                let highest = 31 - degree_twelve_mask.leading_zeros();
+                let functional_mask = degree_twelve_mask ^ (1_u32 << highest);
+                let mut value = source_value.multiply(entry.coefficient, prime);
+                if (contraction_sign < 0) != (wedge_sign < 0) {
+                    value = value.negate(prime);
+                }
+                if value.is_zero() {
+                    continue;
+                }
+                let sector = usize::from(entry.key.sector);
+                let gauge_channel = SecondMomentumGaugeChannel::new(degree)?;
+                let gauge_branch = SecondMomentumGaugeBranch::P3D11Contraction {
+                    momentum_axis: entry.key.contraction_axis,
+                };
+                let fx_sector = if sector == 0 {
+                    SecondMomentumFxSector::X2
+                } else {
+                    SecondMomentumFxSector::X5
+                };
+                for (seed, (bucket, sign)) in second_momentum_fx_functional_assignments(
+                    gauge_channel,
+                    gauge_branch,
+                    source_momentum,
+                    0,
+                    usize::from(entry.key.output_coordinate),
+                    functional_mask,
+                    fx_sector,
+                )
+                .into_iter()
+                .take(GPU_FX_FUNCTIONAL_SEEDS.len())
+                .enumerate()
+                {
+                    let row = p3_functional_row(P3FunctionalRowCoordinates {
+                        gauge_degree: degree,
+                        momentum_pair_ordinal: pair_ordinal,
+                        sector,
+                        contraction_axis: usize::from(entry.key.contraction_axis),
+                        seed,
+                        bucket,
+                    })?;
+                    let contribution = if sign > 0 { value } else { value.negate(prime) };
+                    rows[row] = rows[row].add(contribution, prime);
+                }
+                expanded_contributions = expanded_contributions
+                    .checked_add(1)
+                    .ok_or_else(|| "p3 flat expanded contribution count overflow".to_string())?;
+            }
+        }
+    }
+    let semantic_sha256 = p3_column_semantic_sha256(prime, column.global_ordinal, &rows);
+    Ok(ModularP3FunctionalColumn {
+        prime,
+        global_ordinal: column.global_ordinal,
+        rows,
+        expanded_contributions,
+        semantic_sha256,
+    })
+}
+
+pub(crate) fn p3_column_semantic_sha256(
+    prime: u32,
+    global_ordinal: usize,
+    rows: &[GaussianResidue],
+) -> String {
+    let mut hash = Sha256::new();
+    hash.update(GPU_P3_FX_SCHEMA.as_bytes());
+    hash.update(prime.to_le_bytes());
+    hash.update((global_ordinal as u64).to_le_bytes());
+    hash.update((P3_FUNCTIONAL_ROW_COUNT as u64).to_le_bytes());
+    for value in rows {
+        hash.update(value.real.to_le_bytes());
+        hash.update(value.imaginary.to_le_bytes());
+    }
+    format!("{:x}", hash.finalize())
+}
+
+fn p3_artifact_semantic_sha256(
+    flat_plan_sha256: &str,
+    column: &ModularP3FunctionalColumn,
+) -> String {
+    let mut hash = Sha256::new();
+    hash.update(GPU_P3_FX_SCHEMA.as_bytes());
+    hash.update(column.prime.to_le_bytes());
+    hash.update((column.global_ordinal as u64).to_le_bytes());
+    hash.update((P3_FUNCTIONAL_ROW_COUNT as u64).to_le_bytes());
+    hash.update(column.expanded_contributions.to_le_bytes());
+    hash.update(flat_plan_sha256.as_bytes());
+    for value in &column.rows {
+        hash.update(value.real.to_le_bytes());
+        hash.update(value.imaginary.to_le_bytes());
+    }
+    format!("{:x}", hash.finalize())
+}
+
+const GPU_P3_ARTIFACT_MAGIC: &[u8; 8] = b"ADFXP3V1";
+const GPU_P3_ARTIFACT_HEADER_BYTES: usize = 156;
+
+pub(crate) fn encode_p3_column_artifact(
+    flat_plan_sha256: &str,
+    column: &ModularP3FunctionalColumn,
+) -> Result<Vec<u8>, String> {
+    if column.global_ordinal >= 77
+        || column.rows.len() != P3_FUNCTIONAL_ROW_COUNT
+        || flat_plan_sha256.len() != 64
+        || !flat_plan_sha256
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit())
+        || column.semantic_sha256.len() != 64
+        || column.semantic_sha256
+            != p3_column_semantic_sha256(column.prime, column.global_ordinal, &column.rows)
+        || column
+            .rows
+            .iter()
+            .any(|value| value.real >= column.prime || value.imaginary >= column.prime)
+    {
+        return Err("p3 column artifact input is not canonical".to_string());
+    }
+    let mut bytes = Vec::with_capacity(GPU_P3_ARTIFACT_HEADER_BYTES + column.rows.len() * 8);
+    bytes.extend_from_slice(GPU_P3_ARTIFACT_MAGIC);
+    bytes.extend_from_slice(&column.prime.to_le_bytes());
+    bytes.extend_from_slice(&(column.global_ordinal as u32).to_le_bytes());
+    bytes.extend_from_slice(&(P3_FUNCTIONAL_ROW_COUNT as u32).to_le_bytes());
+    bytes.extend_from_slice(&column.expanded_contributions.to_le_bytes());
+    bytes.extend_from_slice(flat_plan_sha256.as_bytes());
+    bytes.extend_from_slice(p3_artifact_semantic_sha256(flat_plan_sha256, column).as_bytes());
+    debug_assert_eq!(bytes.len(), GPU_P3_ARTIFACT_HEADER_BYTES);
+    for value in &column.rows {
+        bytes.extend_from_slice(&value.real.to_le_bytes());
+        bytes.extend_from_slice(&value.imaginary.to_le_bytes());
+    }
+    Ok(bytes)
+}
+
+pub(crate) fn decode_p3_column_artifact(
+    bytes: &[u8],
+) -> Result<(String, ModularP3FunctionalColumn), String> {
+    let expected = GPU_P3_ARTIFACT_HEADER_BYTES
+        .checked_add(P3_FUNCTIONAL_ROW_COUNT * 8)
+        .ok_or_else(|| "p3 artifact size overflow".to_string())?;
+    if bytes.len() != expected || &bytes[..8] != GPU_P3_ARTIFACT_MAGIC {
+        return Err("p3 column artifact magic or byte length is invalid".to_string());
+    }
+    let read_u32 =
+        |offset: usize| u32::from_le_bytes(bytes[offset..offset + 4].try_into().unwrap());
+    let prime = read_u32(8);
+    validate_prime(prime)?;
+    let global_ordinal = read_u32(12) as usize;
+    let row_count = read_u32(16) as usize;
+    let expanded_contributions = u64::from_le_bytes(bytes[20..28].try_into().unwrap());
+    if global_ordinal >= 77 || row_count != P3_FUNCTIONAL_ROW_COUNT {
+        return Err("p3 column artifact header is invalid".to_string());
+    }
+    let flat_plan_sha256 = std::str::from_utf8(&bytes[28..92])
+        .map_err(|_| "p3 flat plan digest is not UTF-8".to_string())?
+        .to_string();
+    let stored_semantic = std::str::from_utf8(&bytes[92..156])
+        .map_err(|_| "p3 column semantic digest is not UTF-8".to_string())?
+        .to_string();
+    if !flat_plan_sha256
+        .bytes()
+        .all(|byte| byte.is_ascii_hexdigit())
+        || !stored_semantic.bytes().all(|byte| byte.is_ascii_hexdigit())
+    {
+        return Err("p3 artifact digest encoding is invalid".to_string());
+    }
+    let mut rows = Vec::with_capacity(P3_FUNCTIONAL_ROW_COUNT);
+    for chunk in bytes[GPU_P3_ARTIFACT_HEADER_BYTES..].chunks_exact(8) {
+        let value = GaussianResidue {
+            real: u32::from_le_bytes(chunk[..4].try_into().unwrap()),
+            imaginary: u32::from_le_bytes(chunk[4..].try_into().unwrap()),
+        };
+        if value.real >= prime || value.imaginary >= prime {
+            return Err("p3 artifact contains a noncanonical residue".to_string());
+        }
+        rows.push(value);
+    }
+    let semantic_sha256 = p3_column_semantic_sha256(prime, global_ordinal, &rows);
+    let column = ModularP3FunctionalColumn {
+        prime,
+        global_ordinal,
+        rows,
+        expanded_contributions,
+        semantic_sha256,
+    };
+    if p3_artifact_semantic_sha256(&flat_plan_sha256, &column) != stored_semantic {
+        return Err("p3 artifact semantic digest mismatch".to_string());
+    }
+    Ok((flat_plan_sha256, column))
 }
 
 fn column_semantic_sha256(
@@ -759,6 +1420,99 @@ pub(crate) fn rank_columns(
     })
 }
 
+pub(crate) fn rank_p3_columns(
+    columns: &[ModularP3FunctionalColumn],
+) -> Result<ModularRankCertificate, String> {
+    if columns.is_empty() {
+        return Err("cannot rank an empty modular p3 F_X column set".to_string());
+    }
+    let prime = columns[0].prime;
+    if !GPU_FX_PRIMES.contains(&prime) {
+        return Err("modular p3 F_X rank prime is not pinned".to_string());
+    }
+    let mut ordinals = Vec::with_capacity(columns.len());
+    for column in columns {
+        if column.prime != prime
+            || column.global_ordinal >= 77
+            || column.rows.len() != P3_FUNCTIONAL_ROW_COUNT
+            || column
+                .rows
+                .iter()
+                .any(|value| value.real >= prime || value.imaginary >= prime)
+            || column.semantic_sha256
+                != p3_column_semantic_sha256(prime, column.global_ordinal, &column.rows)
+        {
+            return Err("incompatible modular p3 F_X columns".to_string());
+        }
+        ordinals.push(column.global_ordinal);
+    }
+    if ordinals
+        .iter()
+        .copied()
+        .collect::<std::collections::BTreeSet<_>>()
+        .len()
+        != ordinals.len()
+    {
+        return Err("duplicate modular p3 F_X column ordinal".to_string());
+    }
+    let width = columns.len();
+    let mut basis = vec![None::<Vec<GaussianResidue>>; width];
+    let mut rank = 0;
+    let mut row = vec![GaussianResidue::zero(); width];
+    for row_index in 0..P3_FUNCTIONAL_ROW_COUNT {
+        for (value, column) in row.iter_mut().zip(columns) {
+            *value = column.rows[row_index];
+        }
+        loop {
+            let Some(pivot) = row.iter().position(|value| !value.is_zero()) else {
+                break;
+            };
+            if let Some(existing) = &basis[pivot] {
+                let factor = row[pivot];
+                for column in pivot..width {
+                    row[column] = row[column].add(
+                        factor.multiply(existing[column], prime).negate(prime),
+                        prime,
+                    );
+                }
+            } else {
+                let inverse = gaussian_inverse(row[pivot], prime);
+                for value in &mut row[pivot..] {
+                    *value = value.multiply(inverse, prime);
+                }
+                basis[pivot] = Some(row.clone());
+                rank += 1;
+                break;
+            }
+        }
+        if rank == width {
+            break;
+        }
+    }
+    let mut hash = Sha256::new();
+    hash.update(GPU_P3_FX_SCHEMA.as_bytes());
+    hash.update(prime.to_le_bytes());
+    for ordinal in &ordinals {
+        hash.update((*ordinal as u64).to_le_bytes());
+    }
+    for row_index in 0..P3_FUNCTIONAL_ROW_COUNT {
+        for column in columns {
+            hash.update(column.rows[row_index].real.to_le_bytes());
+            hash.update(column.rows[row_index].imaginary.to_le_bytes());
+        }
+    }
+    Ok(ModularRankCertificate {
+        schema_version: GPU_P3_FX_SCHEMA,
+        prime,
+        row_count: P3_FUNCTIONAL_ROW_COUNT,
+        column_ordinals: ordinals,
+        rank_over_gaussian_extension: rank,
+        nullity_upper_bound: width - rank,
+        full_column_rank: rank == width,
+        matrix_sha256: format!("{:x}", hash.finalize()),
+    })
+}
+
 fn gaussian_inverse(value: GaussianResidue, prime: u32) -> GaussianResidue {
     let norm = add_mod(
         multiply_mod(value.real, value.real, prime),
@@ -789,24 +1543,9 @@ mod cuda_backend {
     const RECOUPLING_METADATA_BITS: u32 = 13;
 
     fn pack_recoupling_key(term: &RecoupledSourceTerm) -> Result<u64, String> {
-        if term.momentum_pair[0] > term.momentum_pair[1]
-            || term.momentum_pair[1] >= 11
-            || term.free_spinor >= 32
-            || term.exterior_mask.count_ones() != 12
-        {
-            return Err("invalid CUDA recoupled source term".to_string());
-        }
-        // Low 32 bits are the degree-12 exterior mask. High metadata bits
-        // 0..3 are pair_left, 4..7 pair_right, and 8..12 free_spinor. All
-        // remaining bits are zero, making semantic keys canonical.
-        let metadata = u32::from(term.momentum_pair[0])
-            | (u32::from(term.momentum_pair[1]) << 4)
-            | (u32::from(term.free_spinor) << 8);
-        debug_assert_eq!(metadata >> RECOUPLING_METADATA_BITS, 0);
-        Ok((u64::from(metadata) << 32) | u64::from(term.exterior_mask))
+        p3_recoupling_key(term)
     }
 
-    #[cfg(test)]
     fn unpack_recoupling_key(key: u64) -> Result<([u8; 2], u8, u32), String> {
         let metadata = (key >> 32) as u32;
         let pair = [(metadata & 15) as u8, ((metadata >> 4) & 15) as u8];
@@ -855,6 +1594,26 @@ mod cuda_backend {
         output_coordinate: u32,
         coefficient: GaussianResidue,
         functional_salt: u64,
+    }
+
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    struct CudaP3PlanEntry {
+        contracted_spinor: u32,
+        template_spinor: u32,
+        contraction_axis: u32,
+        sector: u32,
+        output_coordinate: u32,
+        coefficient: GaussianResidue,
+        functional_salt: u64,
+    }
+
+    #[derive(Clone, Copy)]
+    #[repr(C)]
+    struct CudaSourceEntry {
+        exterior_mask: u32,
+        coefficient: u32,
+        metadata: u32,
     }
 
     #[derive(Clone, Copy, Debug, Default)]
@@ -988,6 +1747,62 @@ mod cuda_backend {
             error: *mut c_char,
             error_capacity: usize,
         ) -> *mut c_void;
+        fn adynkra_fx_cuda_configure_p3(
+            context: *mut c_void,
+            plan_offsets: *const u32,
+            plan_entries: *const CudaP3PlanEntry,
+            plan_entry_count: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_accumulate_p3(
+            context: *mut c_void,
+            sources: *const CudaSourceEntry,
+            source_count: u32,
+            output_real: *mut u32,
+            output_imaginary: *mut u32,
+            expanded_contributions: *mut u64,
+            kernel_milliseconds: *mut f32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_reset_p3_columns(
+            context: *mut c_void,
+            input_real: *const u32,
+            input_imaginary: *const u32,
+            active_columns: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_accumulate_p3_column(
+            context: *mut c_void,
+            column: u32,
+            sources: *const CudaSourceEntry,
+            source_count: u32,
+            expanded_contributions: *mut u64,
+            kernel_milliseconds: *mut f32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_accumulate_p3_multicol(
+            context: *mut c_void,
+            keys: *const u64,
+            key_major_coefficients: *const u32,
+            unique_count: u32,
+            active_columns: u32,
+            expanded_contributions: *mut u64,
+            kernel_milliseconds: *mut f32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_download_p3_columns(
+            context: *mut c_void,
+            active_columns: u32,
+            output_real: *mut u32,
+            output_imaginary: *mut u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
         fn adynkra_fx_cuda_accumulate_recoupled(
             context: *mut c_void,
             keys: *const u64,
@@ -1025,6 +1840,9 @@ mod cuda_backend {
             error_capacity: usize,
         ) -> i32;
         fn adynkra_fx_cuda_resident_bytes(context: *const c_void) -> u64;
+        fn adynkra_fx_cuda_buffer_high_water_bytes(context: *const c_void) -> u64;
+        fn adynkra_fx_cuda_hard_cap_bytes(context: *const c_void) -> u64;
+        fn adynkra_fx_cuda_p3_plan_entry_count(context: *const c_void) -> u32;
         fn adynkra_fx_cuda_reserve_recoupling(
             context: *mut c_void,
             source_count: u32,
@@ -1997,6 +2815,483 @@ mod cuda_backend {
                 },
                 self.timing,
                 source_terms_sha256,
+            ))
+        }
+    }
+
+    pub(crate) struct CudaModularP3 {
+        cuda: CudaModularFx,
+        flat_plan_sha256: String,
+        multicol_coefficients: Vec<u32>,
+    }
+
+    #[derive(Clone, Copy, Debug, Serialize)]
+    pub(crate) struct CudaP3Timing {
+        pub source_count: usize,
+        pub plan_entry_count: u32,
+        /// Number of nonzero flattened static-plan visits after contraction
+        /// and wedge admissibility, before row aggregation.
+        pub expanded_contributions: u64,
+        pub kernel_milliseconds: f32,
+        pub resident_bytes: u64,
+        pub buffer_high_water_bytes: u64,
+        pub device_hard_cap_bytes: u64,
+    }
+
+    #[derive(Clone, Debug, Serialize)]
+    pub(crate) struct CudaP3MultiLaneTiming {
+        pub source_counts: Vec<usize>,
+        pub plan_entry_count: u32,
+        pub expanded_contributions: Vec<u64>,
+        pub kernel_milliseconds: f32,
+        pub resident_bytes: u64,
+        pub buffer_high_water_bytes: u64,
+        pub device_hard_cap_bytes: u64,
+    }
+
+    fn cuda_p3_plan_entries(plan: &P3ModularFlatPlan) -> Vec<CudaP3PlanEntry> {
+        let mut entries = plan
+            .entries
+            .iter()
+            .map(|entry| CudaP3PlanEntry {
+                contracted_spinor: u32::from(entry.key.contracted_spinor),
+                template_spinor: u32::from(entry.key.template_spinor),
+                contraction_axis: u32::from(entry.key.contraction_axis),
+                sector: u32::from(entry.key.sector),
+                output_coordinate: u32::from(entry.key.output_coordinate),
+                coefficient: entry.coefficient,
+                functional_salt: 0,
+            })
+            .collect::<Vec<_>>();
+        for schedule in 0..GAUGE_DEGREE_COUNT * 32 {
+            let degree = schedule / 32;
+            for entry in
+                &mut entries[plan.offsets[schedule] as usize..plan.offsets[schedule + 1] as usize]
+            {
+                entry.functional_salt = (degree as u64).rotate_left(9)
+                    ^ u64::from(entry.output_coordinate).rotate_left(31)
+                    ^ 0x03d1_1000_0000_0002
+                    ^ u64::from(entry.contraction_axis).rotate_left(53)
+                    ^ if entry.sector == 0 {
+                        0x1100_0000_0000_0002
+                    } else {
+                        0x1000_2000_0000_0005
+                    };
+            }
+        }
+        entries
+    }
+
+    impl CudaModularP3 {
+        pub(crate) fn new_with_device_cap(
+            static_data: &ModularFxStaticData,
+            plan: &P3ModularFlatPlan,
+            device: i32,
+            device_hard_cap_bytes: u64,
+        ) -> Result<Self, String> {
+            if plan.prime != static_data.prime {
+                return Err("CUDA p3 plan prime mismatch".to_string());
+            }
+            validate_p3_modular_flat_plan(plan)?;
+            let mut cuda = CudaModularFx::new(static_data, device)?;
+            cuda.set_recoupling_hard_cap(device_hard_cap_bytes)?;
+            let entries = cuda_p3_plan_entries(plan);
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_configure_p3(
+                    cuda.context.as_ptr(),
+                    plan.offsets.as_ptr(),
+                    entries.as_ptr(),
+                    u32::try_from(entries.len())
+                        .map_err(|_| "CUDA p3 plan exceeds u32".to_string())?,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(Self {
+                cuda,
+                flat_plan_sha256: plan.semantic_sha256.clone(),
+                multicol_coefficients: Vec::new(),
+            })
+        }
+
+        pub(crate) fn flat_plan_sha256(&self) -> &str {
+            &self.flat_plan_sha256
+        }
+
+        pub(crate) fn resident_bytes(&self) -> u64 {
+            self.cuda.resident_bytes()
+        }
+
+        pub(crate) fn buffer_high_water_bytes(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_buffer_high_water_bytes(self.cuda.context.as_ptr()) }
+        }
+
+        pub(crate) fn device_hard_cap_bytes(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_hard_cap_bytes(self.cuda.context.as_ptr()) }
+        }
+
+        pub(crate) fn plan_entry_count(&self) -> u32 {
+            unsafe { adynkra_fx_cuda_p3_plan_entry_count(self.cuda.context.as_ptr()) }
+        }
+
+        pub(crate) fn set_device_hard_cap(&mut self, hard_cap_bytes: u64) -> Result<(), String> {
+            self.cuda.set_recoupling_hard_cap(hard_cap_bytes)
+        }
+
+        #[cfg(test)]
+        fn reconfigure_for_test(&mut self, plan: &P3ModularFlatPlan) -> Result<(), String> {
+            let entries = cuda_p3_plan_entries(plan);
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_configure_p3(
+                    self.cuda.context.as_ptr(),
+                    plan.offsets.as_ptr(),
+                    entries.as_ptr(),
+                    u32::try_from(entries.len())
+                        .map_err(|_| "CUDA p3 plan exceeds u32".to_string())?,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(error_string(&error))
+            }
+        }
+
+        pub(crate) fn accumulate(
+            &mut self,
+            column: &GpuFxColumnInput,
+        ) -> Result<(ModularP3FunctionalColumn, CudaP3Timing), String> {
+            if column.global_ordinal >= 77
+                || column.raising_residuals != [0; 5]
+                || column.terms.is_empty()
+            {
+                return Err("CUDA p3 input column is not certified".to_string());
+            }
+            let mut sources = Vec::with_capacity(column.terms.len());
+            for term in &column.terms {
+                if term.coefficient == 0 {
+                    return Err("CUDA p3 source coefficient is zero".to_string());
+                }
+                pack_recoupling_key(term)?;
+                sources.push(CudaSourceEntry {
+                    exterior_mask: term.exterior_mask,
+                    coefficient: i128_mod(term.coefficient, self.cuda.prime),
+                    metadata: u32::from(term.momentum_pair[0])
+                        | (u32::from(term.momentum_pair[1]) << 4)
+                        | (u32::from(term.free_spinor) << 8),
+                });
+            }
+            self.accumulate_sources(column.global_ordinal, sources)
+        }
+
+        pub(crate) fn accumulate_reduced_union_lane(
+            &mut self,
+            global_ordinal: usize,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+            lane: usize,
+        ) -> Result<(ModularP3FunctionalColumn, CudaP3Timing), String> {
+            if global_ordinal >= 77
+                || active_columns == 0
+                || lane >= active_columns
+                || key_major_values.len() != keys.len().saturating_mul(active_columns)
+                || keys.windows(2).any(|pair| pair[0] >= pair[1])
+            {
+                return Err("CUDA p3 reduced-union shape or identity is invalid".to_string());
+            }
+            let sources =
+                self.reduced_union_sources(keys, key_major_values, active_columns, lane)?;
+            if sources.is_empty() {
+                return Err("CUDA p3 reduced-union lane is empty".to_string());
+            }
+            self.accumulate_sources(global_ordinal, sources)
+        }
+
+        fn reduced_union_sources(
+            &self,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+            lane: usize,
+        ) -> Result<Vec<CudaSourceEntry>, String> {
+            let mut sources = Vec::with_capacity(keys.len());
+            for (key_index, &key) in keys.iter().enumerate() {
+                let coefficient = key_major_values[key_index * active_columns + lane];
+                if coefficient == 0 {
+                    continue;
+                }
+                let (momentum_pair, free_spinor, exterior_mask) = unpack_recoupling_key(key)?;
+                sources.push(CudaSourceEntry {
+                    exterior_mask,
+                    coefficient: i128_mod(coefficient, self.cuda.prime),
+                    metadata: u32::from(momentum_pair[0])
+                        | (u32::from(momentum_pair[1]) << 4)
+                        | (u32::from(free_spinor) << 8),
+                });
+            }
+            Ok(sources)
+        }
+
+        pub(crate) fn reset_persistent_columns(
+            &mut self,
+            columns: &[Vec<GaussianResidue>],
+        ) -> Result<(), String> {
+            if columns.is_empty()
+                || columns.len() > 32
+                || columns.iter().any(|rows| {
+                    rows.len() != P3_FUNCTIONAL_ROW_COUNT
+                        || rows.iter().any(|value| {
+                            value.real >= self.cuda.prime || value.imaginary >= self.cuda.prime
+                        })
+                })
+            {
+                return Err("CUDA p3 persistent column shape is invalid".to_string());
+            }
+            let mut real = Vec::with_capacity(columns.len() * P3_FUNCTIONAL_ROW_COUNT);
+            let mut imaginary = Vec::with_capacity(columns.len() * P3_FUNCTIONAL_ROW_COUNT);
+            for column in columns {
+                real.extend(column.iter().map(|value| value.real));
+                imaginary.extend(column.iter().map(|value| value.imaginary));
+            }
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_reset_p3_columns(
+                    self.cuda.context.as_ptr(),
+                    real.as_ptr(),
+                    imaginary.as_ptr(),
+                    columns.len() as u32,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(error_string(&error))
+            }
+        }
+
+        pub(crate) fn accumulate_reduced_union_lane_persistent(
+            &mut self,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+            lane: usize,
+        ) -> Result<CudaP3Timing, String> {
+            if active_columns == 0
+                || active_columns > 32
+                || lane >= active_columns
+                || key_major_values.len() != keys.len().saturating_mul(active_columns)
+                || keys.windows(2).any(|pair| pair[0] >= pair[1])
+            {
+                return Err("CUDA persistent p3 reduced-union identity is invalid".to_string());
+            }
+            let sources =
+                self.reduced_union_sources(keys, key_major_values, active_columns, lane)?;
+            if sources.is_empty() {
+                return Err("CUDA persistent p3 reduced-union lane is empty".to_string());
+            }
+            let source_count = u32::try_from(sources.len())
+                .map_err(|_| "CUDA p3 source count exceeds u32".to_string())?;
+            let mut expanded_contributions = 0;
+            let mut kernel_milliseconds = 0.0;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_accumulate_p3_column(
+                    self.cuda.context.as_ptr(),
+                    lane as u32,
+                    sources.as_ptr(),
+                    source_count,
+                    &mut expanded_contributions,
+                    &mut kernel_milliseconds,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(CudaP3Timing {
+                source_count: sources.len(),
+                plan_entry_count: self.plan_entry_count(),
+                expanded_contributions,
+                kernel_milliseconds,
+                resident_bytes: self.resident_bytes(),
+                buffer_high_water_bytes: self.buffer_high_water_bytes(),
+                device_hard_cap_bytes: self.device_hard_cap_bytes(),
+            })
+        }
+
+        pub(crate) fn accumulate_reduced_union_multilane_persistent(
+            &mut self,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+        ) -> Result<CudaP3MultiLaneTiming, String> {
+            if keys.is_empty()
+                || active_columns == 0
+                || active_columns > 32
+                || key_major_values.len() != keys.len().saturating_mul(active_columns)
+                || keys.windows(2).any(|pair| pair[0] >= pair[1])
+            {
+                return Err("CUDA persistent p3 multi-lane identity is invalid".to_string());
+            }
+            self.cuda.reserve_multicol(keys.len(), active_columns)?;
+            let value_count = keys
+                .len()
+                .checked_mul(active_columns)
+                .ok_or_else(|| "CUDA persistent p3 multi-lane value count overflow".to_string())?;
+            self.multicol_coefficients.clear();
+            self.multicol_coefficients
+                .try_reserve_exact(
+                    value_count.saturating_sub(self.multicol_coefficients.capacity()),
+                )
+                .map_err(|error| format!("reserve CUDA p3 multi-lane coefficients: {error}"))?;
+            let mut source_counts = vec![0_usize; active_columns];
+            for (key_index, &key) in keys.iter().enumerate() {
+                unpack_recoupling_key(key)?;
+                for lane in 0..active_columns {
+                    let coefficient = key_major_values[key_index * active_columns + lane];
+                    let residue = i128_mod(coefficient, self.cuda.prime);
+                    self.multicol_coefficients.push(residue);
+                    if coefficient != 0 {
+                        source_counts[lane] += 1;
+                    }
+                }
+            }
+            if source_counts.iter().all(|&count| count == 0) {
+                return Err("CUDA persistent p3 multi-lane input is zero".to_string());
+            }
+            let mut expanded_contributions = vec![0_u64; active_columns];
+            let mut kernel_milliseconds = 0.0;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_accumulate_p3_multicol(
+                    self.cuda.context.as_ptr(),
+                    keys.as_ptr(),
+                    self.multicol_coefficients.as_ptr(),
+                    u32::try_from(keys.len())
+                        .map_err(|_| "CUDA p3 multi-lane key count exceeds u32".to_string())?,
+                    active_columns as u32,
+                    expanded_contributions.as_mut_ptr(),
+                    &mut kernel_milliseconds,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(CudaP3MultiLaneTiming {
+                source_counts,
+                plan_entry_count: self.plan_entry_count(),
+                expanded_contributions,
+                kernel_milliseconds,
+                resident_bytes: self.resident_bytes(),
+                buffer_high_water_bytes: self.buffer_high_water_bytes(),
+                device_hard_cap_bytes: self.device_hard_cap_bytes(),
+            })
+        }
+
+        pub(crate) fn download_persistent_columns(
+            &mut self,
+            active_columns: usize,
+        ) -> Result<Vec<Vec<GaussianResidue>>, String> {
+            if active_columns == 0 || active_columns > 32 {
+                return Err("CUDA p3 persistent download width is invalid".to_string());
+            }
+            let values = active_columns
+                .checked_mul(P3_FUNCTIONAL_ROW_COUNT)
+                .ok_or_else(|| "CUDA p3 persistent download size overflow".to_string())?;
+            let mut real = vec![0; values];
+            let mut imaginary = vec![0; values];
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_download_p3_columns(
+                    self.cuda.context.as_ptr(),
+                    active_columns as u32,
+                    real.as_mut_ptr(),
+                    imaginary.as_mut_ptr(),
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(real
+                .chunks_exact(P3_FUNCTIONAL_ROW_COUNT)
+                .zip(imaginary.chunks_exact(P3_FUNCTIONAL_ROW_COUNT))
+                .map(|(real, imaginary)| {
+                    real.iter()
+                        .copied()
+                        .zip(imaginary.iter().copied())
+                        .map(|(real, imaginary)| GaussianResidue { real, imaginary })
+                        .collect()
+                })
+                .collect())
+        }
+
+        fn accumulate_sources(
+            &mut self,
+            global_ordinal: usize,
+            sources: Vec<CudaSourceEntry>,
+        ) -> Result<(ModularP3FunctionalColumn, CudaP3Timing), String> {
+            let mut real = vec![0; P3_FUNCTIONAL_ROW_COUNT];
+            let mut imaginary = vec![0; P3_FUNCTIONAL_ROW_COUNT];
+            let mut expanded_contributions = 0;
+            let mut kernel_milliseconds = 0.0;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let source_count = u32::try_from(sources.len())
+                .map_err(|_| "CUDA p3 source count exceeds u32".to_string())?;
+            let status = unsafe {
+                adynkra_fx_cuda_accumulate_p3(
+                    self.cuda.context.as_ptr(),
+                    sources.as_ptr(),
+                    source_count,
+                    real.as_mut_ptr(),
+                    imaginary.as_mut_ptr(),
+                    &mut expanded_contributions,
+                    &mut kernel_milliseconds,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            let rows = real
+                .into_iter()
+                .zip(imaginary)
+                .map(|(real, imaginary)| GaussianResidue { real, imaginary })
+                .collect::<Vec<_>>();
+            let semantic_sha256 = p3_column_semantic_sha256(self.cuda.prime, global_ordinal, &rows);
+            let timing = CudaP3Timing {
+                source_count: sources.len(),
+                plan_entry_count: self.plan_entry_count(),
+                expanded_contributions,
+                kernel_milliseconds,
+                resident_bytes: self.resident_bytes(),
+                buffer_high_water_bytes: self.buffer_high_water_bytes(),
+                device_hard_cap_bytes: self.device_hard_cap_bytes(),
+            };
+            Ok((
+                ModularP3FunctionalColumn {
+                    prime: self.cuda.prime,
+                    global_ordinal,
+                    rows,
+                    expanded_contributions,
+                    semantic_sha256,
+                },
+                timing,
             ))
         }
     }
@@ -3307,6 +4602,290 @@ mod cuda_backend {
     mod tests {
         use super::*;
 
+        #[test]
+        fn p3_cuda_matches_exact_and_flat_for_three_primes_with_transactional_caps() {
+            assert_eq!(std::mem::size_of::<GaussianResidue>(), 8);
+            assert_eq!(std::mem::align_of::<GaussianResidue>(), 4);
+            assert_eq!(std::mem::size_of::<CudaSourceEntry>(), 12);
+            assert_eq!(std::mem::align_of::<CudaSourceEntry>(), 4);
+            assert_eq!(std::mem::offset_of!(CudaSourceEntry, metadata), 8);
+            assert_eq!(std::mem::size_of::<CudaP3PlanEntry>(), 40);
+            assert_eq!(std::mem::align_of::<CudaP3PlanEntry>(), 8);
+            assert_eq!(std::mem::offset_of!(CudaP3PlanEntry, coefficient), 20);
+            assert_eq!(std::mem::offset_of!(CudaP3PlanEntry, functional_salt), 32);
+            let exact_static = P3D11ExactStaticData::build().unwrap();
+            let cancelling_terms = vec![
+                RecoupledSourceTerm {
+                    momentum_pair: [2, 7],
+                    free_spinor: 15,
+                    exterior_mask: 0x0000_0fff,
+                    coefficient: 7,
+                },
+                RecoupledSourceTerm {
+                    momentum_pair: [2, 7],
+                    free_spinor: 15,
+                    exterior_mask: 0x0000_0fff,
+                    coefficient: -7,
+                },
+            ];
+            let column = GpuFxColumnInput {
+                global_ordinal: 0,
+                source_label: "p3-cuda-three-prime-canary".to_string(),
+                source_copy: 1,
+                terms: cancelling_terms
+                    .iter()
+                    .cloned()
+                    .chain([
+                        RecoupledSourceTerm {
+                            momentum_pair: [1, 8],
+                            free_spinor: 14,
+                            exterior_mask: 0x0000_1ffe,
+                            coefficient: -3,
+                        },
+                        RecoupledSourceTerm {
+                            momentum_pair: [0, 10],
+                            free_spinor: 13,
+                            exterior_mask: 0x0000_0fff,
+                            coefficient: 5,
+                        },
+                    ])
+                    .collect(),
+                raising_residuals: [0; 5],
+            };
+            for prime in GPU_FX_PRIMES {
+                let static_data = ModularFxStaticData::build(prime).unwrap();
+                let plan = build_p3_modular_flat_plan(&static_data).unwrap();
+
+                let cancelling_column = GpuFxColumnInput {
+                    global_ordinal: column.global_ordinal,
+                    source_label: "p3-cancellation".to_string(),
+                    source_copy: 1,
+                    terms: cancelling_terms.clone(),
+                    raising_residuals: [0; 5],
+                };
+                let cancellation =
+                    accumulate_p3_column_cpu_flat(&plan, &cancelling_column).unwrap();
+                assert!(cancellation.rows.iter().all(|value| value.is_zero()));
+                assert!(cancellation.expanded_contributions > 0);
+
+                let base_resident = {
+                    let base = CudaModularFx::new(&static_data, 0).unwrap();
+                    base.resident_bytes()
+                };
+                assert!(
+                    CudaModularP3::new_with_device_cap(&static_data, &plan, 0, base_resident,)
+                        .is_err()
+                );
+                let mut cuda = CudaModularP3::new_with_device_cap(
+                    &static_data,
+                    &plan,
+                    0,
+                    10 * 1024 * 1024 * 1024,
+                )
+                .unwrap();
+                assert_eq!(cuda.plan_entry_count() as usize, plan.entry_count());
+                let configured_resident = cuda.resident_bytes();
+                let configured_high_water = cuda.buffer_high_water_bytes();
+                assert!(cuda.reconfigure_for_test(&plan).is_err());
+                assert_eq!(cuda.resident_bytes(), configured_resident);
+                assert_eq!(cuda.buffer_high_water_bytes(), configured_high_water);
+
+                cuda.set_device_hard_cap(configured_resident).unwrap();
+                assert!(cuda.accumulate(&column).is_err());
+                assert_eq!(cuda.resident_bytes(), configured_resident);
+                assert_eq!(cuda.buffer_high_water_bytes(), configured_high_water);
+
+                let source_bytes =
+                    u64::try_from(column.terms.len() * std::mem::size_of::<CudaSourceEntry>())
+                        .unwrap();
+                cuda.set_device_hard_cap(configured_resident + source_bytes)
+                    .unwrap();
+                let exact = accumulate_p3_column_cpu(&exact_static, &static_data, &column).unwrap();
+                let flat = accumulate_p3_column_cpu_flat(&plan, &column).unwrap();
+                let raw_fanout = column
+                    .terms
+                    .iter()
+                    .map(|term| plan.raw_expanded_fanout(term).unwrap())
+                    .sum::<u64>();
+                assert_eq!(raw_fanout, flat.expanded_contributions);
+                let (gpu, timing) = cuda.accumulate(&column).unwrap();
+                assert_eq!(gpu.rows, flat.rows, "CUDA/flat rows at prime {prime}");
+                assert_eq!(gpu.semantic_sha256, flat.semantic_sha256);
+                assert_eq!(
+                    gpu.expanded_contributions, flat.expanded_contributions,
+                    "expanded schedule visits at prime {prime}"
+                );
+                assert_eq!(flat.rows, exact.rows, "flat/exact rows at prime {prime}");
+                assert_eq!(flat.semantic_sha256, exact.semantic_sha256);
+                assert_eq!(timing.source_count, column.terms.len());
+                assert_eq!(timing.plan_entry_count as usize, plan.entry_count());
+                assert_eq!(timing.expanded_contributions, gpu.expanded_contributions);
+                assert_eq!(timing.resident_bytes, configured_resident + source_bytes);
+                assert_eq!(
+                    timing.device_hard_cap_bytes,
+                    configured_resident + source_bytes
+                );
+                assert!(timing.buffer_high_water_bytes >= timing.resident_bytes);
+                assert!(timing.kernel_milliseconds >= 0.0);
+                let populated_axes = gpu
+                    .rows
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, value)| !value.is_zero())
+                    .map(|(row, _)| decode_p3_functional_row(row).unwrap().contraction_axis)
+                    .collect::<std::collections::BTreeSet<_>>();
+                assert!(populated_axes.len() >= 2);
+
+                let mut reduced = BTreeMap::<u64, i128>::new();
+                for term in &column.terms {
+                    *reduced
+                        .entry(pack_recoupling_key(term).unwrap())
+                        .or_default() += term.coefficient;
+                }
+                reduced.retain(|_, coefficient| *coefficient != 0);
+                let keys = reduced.keys().copied().collect::<Vec<_>>();
+                let values = reduced.values().copied().collect::<Vec<_>>();
+                cuda.reset_persistent_columns(&vec![vec![
+                    GaussianResidue::zero();
+                    P3_FUNCTIONAL_ROW_COUNT
+                ]])
+                .unwrap();
+                let persistent_timing = cuda
+                    .accumulate_reduced_union_lane_persistent(&keys, &values, 1, 0)
+                    .unwrap();
+                let persistent = cuda.download_persistent_columns(1).unwrap();
+                assert_eq!(persistent[0], flat.rows);
+                assert!(persistent_timing.expanded_contributions < raw_fanout);
+
+                let mut lane_columns = vec![column.clone(); 3];
+                lane_columns[1].global_ordinal = 1;
+                lane_columns[1].terms = column.terms[2..].to_vec();
+                lane_columns[2].global_ordinal = 2;
+                lane_columns[2].terms = vec![column.terms[3]];
+                let expected_lanes = lane_columns
+                    .iter()
+                    .map(|column| accumulate_p3_column_cpu_flat(&plan, column).unwrap().rows)
+                    .collect::<Vec<_>>();
+                let mut union = BTreeMap::<u64, [i128; 3]>::new();
+                for (lane, column) in lane_columns.iter().enumerate() {
+                    for term in &column.terms {
+                        union.entry(pack_recoupling_key(term).unwrap()).or_default()[lane] +=
+                            term.coefficient;
+                    }
+                }
+                union.retain(|_, values| values.iter().any(|value| *value != 0));
+                let union_keys = union.keys().copied().collect::<Vec<_>>();
+                let union_values = union
+                    .values()
+                    .flat_map(|values| values.iter().copied())
+                    .collect::<Vec<_>>();
+                let zero_lanes = vec![vec![GaussianResidue::zero(); P3_FUNCTIONAL_ROW_COUNT]; 3];
+                cuda.reset_persistent_columns(&zero_lanes).unwrap();
+                let mut sequential_expanded = Vec::new();
+                let mut sequential_kernel_milliseconds = 0.0_f32;
+                for lane in 0..3 {
+                    let timing = cuda
+                        .accumulate_reduced_union_lane_persistent(
+                            &union_keys,
+                            &union_values,
+                            3,
+                            lane,
+                        )
+                        .unwrap();
+                    sequential_expanded.push(timing.expanded_contributions);
+                    sequential_kernel_milliseconds += timing.kernel_milliseconds;
+                }
+                assert_eq!(
+                    cuda.download_persistent_columns(3).unwrap(),
+                    expected_lanes,
+                    "persistent width-3 rows at prime {prime}"
+                );
+
+                // The earlier transactional-cap canary intentionally pins the
+                // context to its current resident bytes. Multi-lane fusion
+                // owns one additional bounded union workspace, so permit that
+                // first reservation before exercising exact parity.
+                cuda.set_device_hard_cap(u64::MAX).unwrap();
+                cuda.cuda.reserve_multicol(union_keys.len(), 3).unwrap();
+                let fused_resident_bytes = cuda.resident_bytes();
+                cuda.set_device_hard_cap(fused_resident_bytes).unwrap();
+                cuda.reset_persistent_columns(&zero_lanes).unwrap();
+                let fused_timing = cuda
+                    .accumulate_reduced_union_multilane_persistent(&union_keys, &union_values, 3)
+                    .unwrap();
+                assert_eq!(fused_timing.source_counts.len(), 3);
+                assert_eq!(fused_timing.expanded_contributions, sequential_expanded);
+                assert_eq!(fused_timing.resident_bytes, fused_resident_bytes);
+                assert_eq!(fused_timing.device_hard_cap_bytes, fused_resident_bytes);
+                eprintln!(
+                    "p3 width3 prime={prime} sequential_kernel_ms={sequential_kernel_milliseconds:.6} fused_kernel_ms={:.6}",
+                    fused_timing.kernel_milliseconds
+                );
+                assert_eq!(
+                    cuda.download_persistent_columns(3).unwrap(),
+                    expected_lanes,
+                    "fused persistent width-3 rows at prime {prime}"
+                );
+
+                let split = union_keys.len() / 2;
+                cuda.reset_persistent_columns(&zero_lanes).unwrap();
+                for (keys, values) in [
+                    (&union_keys[..split], &union_values[..split * 3]),
+                    (&union_keys[split..], &union_values[split * 3..]),
+                ] {
+                    for lane in 0..3 {
+                        if values.chunks_exact(3).any(|values| values[lane] != 0) {
+                            cuda.accumulate_reduced_union_lane_persistent(keys, values, 3, lane)
+                                .unwrap();
+                        }
+                    }
+                    let checkpoint_rows = cuda.download_persistent_columns(3).unwrap();
+                    cuda.reset_persistent_columns(&checkpoint_rows).unwrap();
+                }
+                assert_eq!(
+                    cuda.download_persistent_columns(3).unwrap(),
+                    expected_lanes,
+                    "persistent split-resume width-3 rows at prime {prime}"
+                );
+
+                let resident_after_first = cuda.resident_bytes();
+                let high_water_after_first = cuda.buffer_high_water_bytes();
+                let (_, repeated_timing) = cuda.accumulate(&column).unwrap();
+                assert_eq!(repeated_timing.resident_bytes, resident_after_first);
+                assert_eq!(
+                    repeated_timing.buffer_high_water_bytes,
+                    high_water_after_first
+                );
+
+                let mut grown = column.clone();
+                grown.terms.push(RecoupledSourceTerm {
+                    momentum_pair: [3, 9],
+                    free_spinor: 12,
+                    exterior_mask: 0x0000_3ffc,
+                    coefficient: 11,
+                });
+                cuda.set_device_hard_cap(resident_after_first).unwrap();
+                assert!(cuda.accumulate(&grown).is_err());
+                assert_eq!(cuda.resident_bytes(), resident_after_first);
+                assert_eq!(cuda.buffer_high_water_bytes(), high_water_after_first);
+                let grown_source_bytes =
+                    u64::try_from(grown.terms.len() * std::mem::size_of::<CudaSourceEntry>())
+                        .unwrap();
+                let growth_cap = resident_after_first + grown_source_bytes;
+                cuda.set_device_hard_cap(growth_cap).unwrap();
+                let (_, grown_timing) = cuda.accumulate(&grown).unwrap();
+                assert_eq!(
+                    grown_timing.resident_bytes,
+                    resident_after_first - source_bytes + grown_source_bytes
+                );
+                assert!(
+                    grown_timing.buffer_high_water_bytes
+                        >= resident_after_first + grown_source_bytes
+                );
+                assert_eq!(grown_timing.device_hard_cap_bytes, growth_cap);
+            }
+        }
+
         fn sample_column(term_count: usize) -> GpuFxColumnInput {
             let base_mask = (0..12).fold(0_u32, |mask, bit| mask | (1_u32 << bit));
             GpuFxColumnInput {
@@ -4586,7 +6165,8 @@ mod cuda_backend {
 
 #[cfg(feature = "cuda")]
 pub(crate) use cuda_backend::{
-    CudaModularFx, CudaMultiColumnBatch, CudaMultiColumnStats, lower_sparse_exact,
+    CudaModularFx, CudaModularP3, CudaMultiColumnBatch, CudaMultiColumnStats, CudaP3Timing,
+    lower_sparse_exact,
 };
 
 #[cfg(feature = "cuda")]
@@ -4808,6 +6388,48 @@ impl PersistentCudaGroupExecutor {
                 )
             },
             observe_raw_batch,
+            observe_batch,
+            complete_word,
+        )
+    }
+
+    pub(crate) fn run_word_synchronous_batched_with_union<O, U, B, W>(
+        &mut self,
+        config: crate::second_momentum_gpu_group::GroupWordOrchestrationConfig,
+        observe_raw_batch: O,
+        observe_union: U,
+        observe_batch: B,
+        complete_word: W,
+    ) -> Result<crate::second_momentum_gpu_group::GroupWordOrchestrationReport, String>
+    where
+        O: FnMut(usize, usize, &[RecoupledSourceTerm]) -> Result<(), String>,
+        U: FnMut(usize, &crate::second_momentum_gpu_group::ExactUnionBatch) -> Result<(), String>,
+        B: FnMut(&crate::second_momentum_gpu_group::GroupBatchObservation) -> Result<(), String>,
+        W: FnMut(
+            usize,
+            &[crate::second_momentum_gpu_group::LaneWordCompletion],
+        ) -> Result<(), String>,
+    {
+        let lanes = &self.lanes;
+        self.contraction.run_word_synchronous_batched_with_union(
+            config,
+            &|lane_index,
+              expected_local_ordinal,
+              expected_global_ordinal,
+              expected_source_copy,
+              word_ordinal,
+              emit_term| {
+                lanes.run_lane_word(
+                    lane_index,
+                    expected_local_ordinal,
+                    expected_global_ordinal,
+                    expected_source_copy,
+                    word_ordinal,
+                    emit_term,
+                )
+            },
+            observe_raw_batch,
+            observe_union,
             observe_batch,
             complete_word,
         )
@@ -5648,6 +7270,171 @@ mod tests {
             }
         }
         assert_eq!(observed, (0..66).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn p3_functional_layout_is_a_278784_row_bijection_with_axis_retained() {
+        assert_eq!(P3_FUNCTIONAL_ROW_COUNT, 278_784);
+        for row in 0..P3_FUNCTIONAL_ROW_COUNT {
+            let coordinates = decode_p3_functional_row(row).unwrap();
+            assert_eq!(p3_functional_row(coordinates).unwrap(), row);
+        }
+        assert!(decode_p3_functional_row(P3_FUNCTIONAL_ROW_COUNT).is_err());
+        assert!(
+            p3_functional_row(P3FunctionalRowCoordinates {
+                gauge_degree: 0,
+                momentum_pair_ordinal: 0,
+                sector: 0,
+                contraction_axis: 11,
+                seed: 0,
+                bucket: 0,
+            })
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn p3_cpu_reference_production_path_emits_valid_nonzero_rows() {
+        let prime = GPU_FX_PRIMES[0];
+        let exact = P3D11ExactStaticData::build().unwrap();
+        let modular = ModularFxStaticData::build(prime).unwrap();
+        let column = GpuFxColumnInput {
+            global_ordinal: 0,
+            source_label: "p3-tiny-canary".to_string(),
+            source_copy: 1,
+            terms: vec![RecoupledSourceTerm {
+                momentum_pair: [2, 7],
+                free_spinor: 15,
+                exterior_mask: 0x0000_0fff,
+                coefficient: 7,
+            }],
+            raising_residuals: [0; 5],
+        };
+        let result = accumulate_p3_column_cpu(&exact, &modular, &column).unwrap();
+        let plan = build_p3_modular_flat_plan(&modular).unwrap();
+        assert!(plan.entry_count() > 0);
+        assert_eq!(plan.semantic_sha256().len(), 64);
+        let flat = accumulate_p3_column_cpu_flat(&plan, &column).unwrap();
+        assert_eq!(flat.rows, result.rows);
+        assert_eq!(flat.semantic_sha256, result.semantic_sha256);
+        for (sector, invalid_coordinate) in
+            [(0, P3_X2_OUTPUT_COORDINATES), (1, P3_X5_OUTPUT_COORDINATES)]
+        {
+            let mut mutated = plan.clone();
+            let entry = mutated
+                .entries
+                .iter_mut()
+                .find(|entry| usize::from(entry.key.sector) == sector)
+                .unwrap();
+            entry.key.output_coordinate = invalid_coordinate as u16;
+            assert!(validate_p3_modular_flat_plan(&mutated).is_err());
+            assert!(accumulate_p3_column_cpu_flat(&mutated, &column).is_err());
+        }
+        assert_eq!(result.prime, prime);
+        assert_eq!(result.global_ordinal, 0);
+        assert_eq!(result.rows.len(), P3_FUNCTIONAL_ROW_COUNT);
+        assert!(result.expanded_contributions > 0);
+        assert_eq!(result.semantic_sha256.len(), 64);
+        let nonzero = result
+            .rows
+            .iter()
+            .enumerate()
+            .filter(|(_, value)| !value.is_zero())
+            .collect::<Vec<_>>();
+        assert!(!nonzero.is_empty());
+        assert!(nonzero.iter().all(|(row, _)| {
+            decode_p3_functional_row(*row)
+                .is_ok_and(|coordinates| coordinates.contraction_axis < 11)
+        }));
+    }
+
+    #[test]
+    fn p3_rank_certificate_covers_full_layout_and_rejects_bad_shape() {
+        let prime = GPU_FX_PRIMES[0];
+        let mut first = vec![GaussianResidue::zero(); P3_FUNCTIONAL_ROW_COUNT];
+        let mut second = first.clone();
+        first[0].real = 1;
+        second[P3_FUNCTIONAL_ROW_COUNT - 1].imaginary = 1;
+        let columns = [
+            ModularP3FunctionalColumn {
+                prime,
+                global_ordinal: 0,
+                semantic_sha256: p3_column_semantic_sha256(prime, 0, &first),
+                rows: first,
+                expanded_contributions: 1,
+            },
+            ModularP3FunctionalColumn {
+                prime,
+                global_ordinal: 1,
+                semantic_sha256: p3_column_semantic_sha256(prime, 1, &second),
+                rows: second,
+                expanded_contributions: 1,
+            },
+        ];
+        let certificate = rank_p3_columns(&columns).unwrap();
+        assert_eq!(certificate.schema_version, GPU_P3_FX_SCHEMA);
+        assert_eq!(certificate.row_count, P3_FUNCTIONAL_ROW_COUNT);
+        assert_eq!(certificate.rank_over_gaussian_extension, 2);
+        assert!(certificate.full_column_rank);
+        assert!(
+            rank_p3_columns(&[ModularP3FunctionalColumn {
+                prime,
+                global_ordinal: 0,
+                rows: vec![GaussianResidue::zero(); FUNCTIONAL_ROW_COUNT],
+                expanded_contributions: 0,
+                semantic_sha256: "c".repeat(64),
+            }])
+            .is_err()
+        );
+        let mut bad_ordinal = columns.clone();
+        bad_ordinal[0].global_ordinal = 77;
+        assert!(rank_p3_columns(&bad_ordinal).is_err());
+        let mut bad_prime = columns.clone();
+        bad_prime[0].prime = 19;
+        bad_prime[1].prime = 19;
+        assert!(rank_p3_columns(&bad_prime).is_err());
+        let mut bad_residue = columns.clone();
+        bad_residue[0].rows[0].real = prime;
+        assert!(rank_p3_columns(&bad_residue).is_err());
+        let mut bad_semantic = columns;
+        bad_semantic[0].semantic_sha256.replace_range(0..1, "z");
+        assert!(rank_p3_columns(&bad_semantic).is_err());
+    }
+
+    #[test]
+    fn p3_artifact_decoder_validates_shape_residues_and_semantic_digest() {
+        let prime = GPU_FX_PRIMES[0];
+        let mut rows = vec![GaussianResidue::zero(); P3_FUNCTIONAL_ROW_COUNT];
+        rows[17] = GaussianResidue {
+            real: 3,
+            imaginary: 5,
+        };
+        let column = ModularP3FunctionalColumn {
+            prime,
+            global_ordinal: 4,
+            semantic_sha256: p3_column_semantic_sha256(prime, 4, &rows),
+            rows,
+            expanded_contributions: 9,
+        };
+        let plan = "a".repeat(64);
+        let encoded = encode_p3_column_artifact(&plan, &column).unwrap();
+        let (decoded_plan, decoded) = decode_p3_column_artifact(&encoded).unwrap();
+        assert_eq!(decoded_plan, plan);
+        assert_eq!(decoded.rows, column.rows);
+        assert_eq!(decoded.semantic_sha256, column.semantic_sha256);
+        let mut mutated = encoded.clone();
+        mutated[GPU_P3_ARTIFACT_HEADER_BYTES + 17 * 8] ^= 1;
+        assert!(decode_p3_column_artifact(&mutated).is_err());
+        let mut mutated_count = encoded.clone();
+        mutated_count[20] ^= 1;
+        assert!(decode_p3_column_artifact(&mutated_count).is_err());
+        let mut mutated_plan = encoded.clone();
+        mutated_plan[28] = if mutated_plan[28] == b'a' { b'b' } else { b'a' };
+        assert!(decode_p3_column_artifact(&mutated_plan).is_err());
+        let mut bad_residue = encoded;
+        bad_residue[GPU_P3_ARTIFACT_HEADER_BYTES..GPU_P3_ARTIFACT_HEADER_BYTES + 4]
+            .copy_from_slice(&prime.to_le_bytes());
+        assert!(decode_p3_column_artifact(&bad_residue).is_err());
     }
 
     #[test]

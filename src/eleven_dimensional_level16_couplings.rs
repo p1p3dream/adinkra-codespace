@@ -1281,7 +1281,7 @@ pub(crate) fn right_wedge_normal_order(mask: u32, spinor_index: usize) -> Option
     right_wedge_sign(mask, spinor_index).map(|sign| (mask | (1_u32 << spinor_index), sign))
 }
 
-fn right_contraction_sign(mask: u32, spinor_index: usize) -> Option<i128> {
+pub(crate) fn right_contraction_sign(mask: u32, spinor_index: usize) -> Option<i128> {
     let bit = 1_u32 << spinor_index;
     if mask & bit == 0 {
         return None;
@@ -3360,7 +3360,7 @@ fn build_first_momentum_correction_residual(
     (finalize_momentum_hook_entries(entries), maximum)
 }
 
-fn translation_weight_basis_coefficients() -> Vec<Vec<[(i64, i64); 11]>> {
+pub(crate) fn translation_weight_basis_coefficients() -> Vec<Vec<[(i64, i64); 11]>> {
     let bilinears = crate::eleven_dimensional_clifford::translation_bilinears();
     let mut coefficients = vec![vec![[(0_i64, 0_i64); 11]; 32]; 32];
     for outer in 0..32 {

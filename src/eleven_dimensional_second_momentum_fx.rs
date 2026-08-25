@@ -68,6 +68,27 @@ impl DegreeTwoMomentumMonomial {
         self.exponents.iter().map(|value| usize::from(*value)).sum()
     }
 
+    pub(crate) fn canonical_pair(self) -> Result<[usize; 2], String> {
+        if self.total_degree() != 2 {
+            return Err("second-momentum monomial does not have degree two".to_string());
+        }
+        let mut axes = [0_usize; 2];
+        let mut next = 0;
+        for (axis, exponent) in self.exponents.into_iter().enumerate() {
+            for _ in 0..exponent {
+                if next >= axes.len() {
+                    return Err("second-momentum monomial exceeds degree two".to_string());
+                }
+                axes[next] = axis;
+                next += 1;
+            }
+        }
+        if next != axes.len() {
+            return Err("second-momentum monomial has incomplete degree".to_string());
+        }
+        Ok(axes)
+    }
+
     fn as_solver_monomial(self) -> MomentumMonomial {
         MomentumMonomial {
             exponents: self.exponents,
@@ -170,6 +191,429 @@ pub struct SecondMomentumFxColumnTerm {
     pub spinor_derivative_mask: u32,
     pub sector: SecondMomentumFxSector,
     pub coefficient: ExactGaussian,
+}
+
+/// Exact row identity produced by the contraction half of right normal
+/// ordering a gauge derivative through a degree-twelve source monomial.
+///
+/// The third momentum is intentionally stored as an axis rather than folded
+/// into the degree-two source monomial. This prevents distinct Clifford
+/// contractions that happen to yield the same commutative momentum monomial
+/// from being merged before the physical target projection has inspected
+/// them.
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub(crate) struct P3D11ContractionRow {
+    pub gauge_channel: SecondMomentumGaugeChannel,
+    pub parameter_component: usize,
+    pub source_momentum: DegreeTwoMomentumMonomial,
+    pub contraction_axis: u8,
+    pub spinor_derivative_mask: u32,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct P3D11ContractionTerm {
+    pub coefficient_column: usize,
+    pub row: P3D11ContractionRow,
+    pub coefficient: ExactGaussian,
+}
+
+/// Run-static exact Clifford data for the CPU `p^3 D^11` producer.
+///
+/// Building the 1,024 gauge-form matrices is expensive. Callers construct this
+/// once and reuse it across every physical column and parameter component.
+#[derive(Clone, Copy)]
+struct P3D11GaugeEntry {
+    derivative_spinor: u8,
+    real: i64,
+    imaginary: i64,
+}
+
+#[derive(Clone, Debug)]
+struct P3D11FxTemplate {
+    derivative_spinor: u8,
+    sector: SecondMomentumFxSector,
+    output_coordinate: usize,
+    coefficient: ExactGaussian,
+}
+
+pub(crate) struct P3D11ExactStaticData {
+    gauge_basis_by_degree: Vec<Vec<Vec<Vec<P3D11GaugeEntry>>>>,
+    translation_weights: Vec<Vec<[(i64, i64); 11]>>,
+    fx_templates: Vec<P3D11FxTemplate>,
+}
+
+impl P3D11ExactStaticData {
+    pub(crate) fn build() -> Result<Self, String> {
+        const EXPECTED_COMPONENTS: [usize; 6] = [1, 11, 55, 165, 330, 462];
+        let mut gauge_basis_by_degree = (0..6).map(|_| Vec::new()).collect::<Vec<_>>();
+        for (degree, _, matrix) in crate::eleven_dimensional_clifford::gauge_form_operator_basis() {
+            if degree >= gauge_basis_by_degree.len() {
+                return Err("p3 D11 gauge basis has an invalid form degree".to_string());
+            }
+            if matrix.len() != 32 || matrix.iter().any(|row| row.len() != 32) {
+                return Err("p3 D11 gauge matrix is not 32 by 32".to_string());
+            }
+            let mut component = (0..32).map(|_| Vec::new()).collect::<Vec<_>>();
+            for (free_spinor, row) in matrix.into_iter().enumerate() {
+                for (derivative_spinor, value) in row.into_iter().enumerate() {
+                    if *value.re.denom() != 1 || *value.im.denom() != 1 {
+                        return Err("p3 D11 gauge matrix is not integral".to_string());
+                    }
+                    let real = *value.re.numer();
+                    let imaginary = *value.im.numer();
+                    if real != 0 || imaginary != 0 {
+                        component[free_spinor].push(P3D11GaugeEntry {
+                            derivative_spinor: u8::try_from(derivative_spinor).unwrap(),
+                            real,
+                            imaginary,
+                        });
+                    }
+                }
+            }
+            gauge_basis_by_degree[degree].push(component);
+        }
+        for (degree, (basis, expected)) in gauge_basis_by_degree
+            .iter()
+            .zip(EXPECTED_COMPONENTS)
+            .enumerate()
+        {
+            if basis.len() != expected {
+                return Err(format!(
+                    "p3 D11 gauge degree {degree} has {} components, expected {expected}",
+                    basis.len()
+                ));
+            }
+        }
+        let translation_weights =
+            crate::eleven_dimensional_level16_couplings::translation_weight_basis_coefficients();
+        if translation_weights.len() != 32 || translation_weights.iter().any(|row| row.len() != 32)
+        {
+            return Err("p3 D11 translation table is not 32 by 32 by 11".to_string());
+        }
+        let highest_target =
+            crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states()
+                .into_iter()
+                .find(|state| state.pbw_word_simple_roots.is_empty())
+                .ok_or_else(|| "p3 D11 target dual has no highest state".to_string())?;
+        let mut projected = BTreeMap::<(u8, SecondMomentumFxSector, usize), ExactGaussian>::new();
+        for target in highest_target.raw_terms {
+            if target.denominator == 0 {
+                return Err("p3 D11 target dual has a zero denominator".to_string());
+            }
+            let target_coefficient = ExactGaussian {
+                real: Ratio::new(
+                    BigInt::from(target.numerator),
+                    BigInt::from(target.denominator),
+                ),
+                imaginary: Ratio::from_integer(BigInt::from(0)),
+            };
+            let mut templates = Vec::new();
+            crate::eleven_dimensional_physical_curvature::visit_exact_fx_derivative_templates(
+                target.vector_weight_index,
+                target.spinor_weight_index,
+                |entry| templates.push(entry),
+            )?;
+            for template in templates {
+                let sector = if template.x_two_sector {
+                    SecondMomentumFxSector::X2
+                } else {
+                    SecondMomentumFxSector::X5
+                };
+                let key = (
+                    u8::try_from(template.derivative_spinor_weight_index).map_err(|_| {
+                        "p3 D11 F_X derivative spinor exceeds dimension 32".to_string()
+                    })?,
+                    sector,
+                    template.output_coordinate,
+                );
+                let contribution =
+                    multiply_exact_gaussians(&target_coefficient, &template.coefficient);
+                let value = projected.entry(key).or_insert_with(ExactGaussian::zero);
+                value.real += contribution.real;
+                value.imaginary += contribution.imaginary;
+                if value.is_zero() {
+                    projected.remove(&key);
+                }
+            }
+        }
+        let fx_templates = projected
+            .into_iter()
+            .map(
+                |((derivative_spinor, sector, output_coordinate), coefficient)| P3D11FxTemplate {
+                    derivative_spinor,
+                    sector,
+                    output_coordinate,
+                    coefficient,
+                },
+            )
+            .collect::<Vec<_>>();
+        if fx_templates.is_empty() {
+            return Err("p3 D11 physical F_X templates vanished".to_string());
+        }
+        Ok(Self {
+            gauge_basis_by_degree,
+            translation_weights,
+            fx_templates,
+        })
+    }
+
+    fn gauge_component(
+        &self,
+        gauge_form_degree: usize,
+        parameter_component: usize,
+    ) -> Result<&[Vec<P3D11GaugeEntry>], String> {
+        let basis = self
+            .gauge_basis_by_degree
+            .get(gauge_form_degree)
+            .ok_or_else(|| "11D gauge form degree must lie in 0..=5".to_string())?;
+        basis.get(parameter_component).map(Vec::as_slice).ok_or_else(|| {
+            format!(
+                "p3 D11 parameter component {parameter_component} is outside gauge degree {gauge_form_degree} dimension {}",
+                basis.len()
+            )
+        })
+    }
+}
+
+fn multiply_exact_gaussians(left: &ExactGaussian, right: &ExactGaussian) -> ExactGaussian {
+    ExactGaussian {
+        real: left.real.clone() * right.real.clone()
+            - left.imaginary.clone() * right.imaginary.clone(),
+        imaginary: left.real.clone() * right.imaginary.clone()
+            + left.imaginary.clone() * right.real.clone(),
+    }
+}
+
+fn multiply_gaussian_integer_pairs(
+    left_real: i128,
+    left_imaginary: i128,
+    right_real: i128,
+    right_imaginary: i128,
+) -> Result<(i128, i128), String> {
+    let real = left_real
+        .checked_mul(right_real)
+        .and_then(|value| {
+            left_imaginary
+                .checked_mul(right_imaginary)
+                .and_then(|other| value.checked_sub(other))
+        })
+        .ok_or_else(|| "p3 D11 Gaussian real product exceeds i128".to_string())?;
+    let imaginary = left_real
+        .checked_mul(right_imaginary)
+        .and_then(|value| {
+            left_imaginary
+                .checked_mul(right_real)
+                .and_then(|other| value.checked_add(other))
+        })
+        .ok_or_else(|| "p3 D11 Gaussian imaginary product exceeds i128".to_string())?;
+    Ok((real, imaginary))
+}
+
+/// Produce the exact `p^3 D^11` half of
+/// `D_[12] (C Gamma^[q]) D Lambda` for one recoupled physical column and one
+/// gauge-form component.
+///
+/// This is deliberately a CPU reference producer. It reuses the certified
+/// right-contraction sign and Cartesian translation weights from the level-16
+/// engine. It does not perform the later target-vector-spinor or `F_X`
+/// projection, and it never merges rows across contraction axes.
+pub(crate) fn produce_p3_d11_contractions(
+    static_data: &P3D11ExactStaticData,
+    coefficient_column: usize,
+    gauge_form_degree: usize,
+    parameter_component: usize,
+    source_terms: &[crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm],
+) -> Result<Vec<P3D11ContractionTerm>, String> {
+    if coefficient_column >= SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS {
+        return Err("p3 D11 coefficient column must lie in 0..77".to_string());
+    }
+    let gauge_channel = SecondMomentumGaugeChannel::new(gauge_form_degree)?;
+    let gauge_component = static_data.gauge_component(gauge_form_degree, parameter_component)?;
+    let translation = &static_data.translation_weights;
+    let mut accumulated = BTreeMap::<P3D11ContractionRow, ExactGaussian>::new();
+
+    for source in source_terms {
+        let left = usize::from(source.momentum_pair[0]);
+        let right = usize::from(source.momentum_pair[1]);
+        if left >= 11 || right >= 11 || left > right {
+            return Err("p3 D11 source momentum pair is not canonical".to_string());
+        }
+        let free_spinor = usize::from(source.free_spinor);
+        if free_spinor >= 32 || source.exterior_mask.count_ones() != 12 || source.coefficient == 0 {
+            return Err("p3 D11 recoupled source term is not canonical".to_string());
+        }
+        let source_momentum = DegreeTwoMomentumMonomial::from_pair(left, right)?;
+        for gauge in &gauge_component[free_spinor] {
+            let derivative_spinor = usize::from(gauge.derivative_spinor);
+            let gauge_real = i128::from(gauge.real);
+            let gauge_imaginary = i128::from(gauge.imaginary);
+            let mut occupied = source.exterior_mask;
+            while occupied != 0 {
+                let contracted_spinor = occupied.trailing_zeros() as usize;
+                occupied &= occupied - 1;
+                let contraction_sign =
+                    crate::eleven_dimensional_level16_couplings::right_contraction_sign(
+                        source.exterior_mask,
+                        contracted_spinor,
+                    )
+                    .ok_or_else(|| "p3 D11 occupied contraction vanished".to_string())?;
+                let output_mask = source.exterior_mask ^ (1_u32 << contracted_spinor);
+                debug_assert_eq!(output_mask.count_ones(), 11);
+                let source_scale = source
+                    .coefficient
+                    .checked_mul(contraction_sign)
+                    .ok_or_else(|| "p3 D11 source coefficient exceeds i128".to_string())?;
+                for contraction_axis in 0..11 {
+                    let (translation_real, translation_imaginary) =
+                        translation[contracted_spinor][derivative_spinor][contraction_axis];
+                    if translation_real == 0 && translation_imaginary == 0 {
+                        continue;
+                    }
+                    let (real, imaginary) = multiply_gaussian_integer_pairs(
+                        gauge_real,
+                        gauge_imaginary,
+                        i128::from(translation_real),
+                        i128::from(translation_imaginary),
+                    )?;
+                    let real = source_scale
+                        .checked_mul(real)
+                        .ok_or_else(|| "p3 D11 real coefficient exceeds i128".to_string())?;
+                    let imaginary = source_scale
+                        .checked_mul(imaginary)
+                        .ok_or_else(|| "p3 D11 imaginary coefficient exceeds i128".to_string())?;
+                    let row = P3D11ContractionRow {
+                        gauge_channel,
+                        parameter_component,
+                        source_momentum,
+                        contraction_axis: u8::try_from(contraction_axis).unwrap(),
+                        spinor_derivative_mask: output_mask,
+                    };
+                    let value = accumulated
+                        .entry(row.clone())
+                        .or_insert_with(ExactGaussian::zero);
+                    value.real += Ratio::from_integer(BigInt::from(real));
+                    value.imaginary += Ratio::from_integer(BigInt::from(imaginary));
+                    if value.is_zero() {
+                        accumulated.remove(&row);
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(accumulated
+        .into_iter()
+        .map(|(row, coefficient)| P3D11ContractionTerm {
+            coefficient_column,
+            row,
+            coefficient,
+        })
+        .collect())
+}
+
+fn degree_twelve_to_degree_eleven_functional_mask(mask: u32) -> Result<u32, String> {
+    if mask.count_ones() != 12 {
+        return Err("p3 D11 target projection expected a degree-twelve mask".to_string());
+    }
+    let highest_spinor = 31 - mask.leading_zeros();
+    Ok(mask ^ (1_u32 << highest_spinor))
+}
+
+/// Apply the exact highest vector-spinor dual and the physical `F_X`
+/// derivative templates to raw contraction terms.
+///
+/// The derivative is right-wedged after the gauge contraction. The resulting
+/// degree-twelve mask is mapped to the declared bounded degree-eleven
+/// functional mask, while the contraction momentum axis remains explicit in
+/// `SecondMomentumGaugeBranch`.
+pub(crate) fn project_p3_d11_to_physical_fx(
+    static_data: &P3D11ExactStaticData,
+    contractions: &[P3D11ContractionTerm],
+) -> Result<Vec<SecondMomentumFxColumnTerm>, String> {
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+    struct Key {
+        coefficient_column: usize,
+        gauge_channel: SecondMomentumGaugeChannel,
+        parameter_component: usize,
+        source_momentum: DegreeTwoMomentumMonomial,
+        contraction_axis: u8,
+        target_coordinate: usize,
+        functional_mask: u32,
+        sector: SecondMomentumFxSector,
+    }
+
+    let mut accumulated = BTreeMap::<Key, ExactGaussian>::new();
+    for contraction in contractions {
+        if contraction.coefficient_column >= SECOND_MOMENTUM_FX_COEFFICIENT_COLUMNS
+            || contraction.row.parameter_component
+                >= static_data.gauge_basis_by_degree[contraction.row.gauge_channel.form_degree()]
+                    .len()
+            || contraction.row.source_momentum.total_degree() != 2
+            || usize::from(contraction.row.contraction_axis) >= 11
+            || contraction.row.spinor_derivative_mask.count_ones() != 11
+            || contraction.coefficient.is_zero()
+        {
+            return Err("p3 D11 contraction term is not canonical".to_string());
+        }
+        for template in &static_data.fx_templates {
+            let Some((degree_twelve_mask, sign)) =
+                crate::eleven_dimensional_level16_couplings::right_wedge_normal_order(
+                    contraction.row.spinor_derivative_mask,
+                    usize::from(template.derivative_spinor),
+                )
+            else {
+                continue;
+            };
+            let functional_mask =
+                degree_twelve_to_degree_eleven_functional_mask(degree_twelve_mask)?;
+            let mut value =
+                multiply_exact_gaussians(&contraction.coefficient, &template.coefficient);
+            if sign < 0 {
+                value.real = -value.real;
+                value.imaginary = -value.imaginary;
+            }
+            if value.is_zero() {
+                continue;
+            }
+            let key = Key {
+                coefficient_column: contraction.coefficient_column,
+                gauge_channel: contraction.row.gauge_channel,
+                parameter_component: contraction.row.parameter_component,
+                source_momentum: contraction.row.source_momentum,
+                contraction_axis: contraction.row.contraction_axis,
+                target_coordinate: template.output_coordinate,
+                functional_mask,
+                sector: template.sector,
+            };
+            let entry = accumulated.entry(key).or_insert_with(ExactGaussian::zero);
+            entry.real += value.real;
+            entry.imaginary += value.imaginary;
+            if entry.is_zero() {
+                accumulated.remove(&key);
+            }
+        }
+    }
+
+    accumulated
+        .into_iter()
+        .map(|(key, coefficient)| {
+            let term = SecondMomentumFxColumnTerm {
+                coefficient_column: key.coefficient_column,
+                gauge_channel: key.gauge_channel,
+                gauge_branch: SecondMomentumGaugeBranch::P3D11Contraction {
+                    momentum_axis: key.contraction_axis,
+                },
+                source_momentum: key.source_momentum,
+                parameter_component: key.parameter_component,
+                target_coordinate: key.target_coordinate,
+                spinor_derivative_mask: key.functional_mask,
+                sector: key.sector,
+                coefficient,
+            };
+            term.validate()?;
+            Ok(term)
+        })
+        .collect()
 }
 
 impl SecondMomentumFxColumnTerm {
@@ -1756,6 +2200,455 @@ pub fn read_second_momentum_fx_checkpoint(path: &Path) -> io::Result<SecondMomen
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::OnceLock;
+
+    fn p3_static_data() -> &'static P3D11ExactStaticData {
+        static DATA: OnceLock<P3D11ExactStaticData> = OnceLock::new();
+        DATA.get_or_init(|| P3D11ExactStaticData::build().unwrap())
+    }
+
+    #[test]
+    fn p3_d11_producer_has_golden_translation_normalization_and_degree() {
+        let static_data = p3_static_data();
+        let contracted = 0;
+        let free_spinor = 15;
+        let axis = 0;
+        let source_mask = 0x0000_0fff;
+        assert_eq!(static_data.translation_weights[0][15][0], (0, -2));
+        assert_eq!(
+            crate::eleven_dimensional_level16_couplings::right_contraction_sign(
+                source_mask,
+                contracted,
+            ),
+            Some(-1)
+        );
+        let source = crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm {
+            momentum_pair: [2, 7],
+            free_spinor: u8::try_from(free_spinor).unwrap(),
+            exterior_mask: source_mask,
+            coefficient: 7,
+        };
+        let output = produce_p3_d11_contractions(static_data, 4, 0, 0, &[source]).unwrap();
+        assert!(!output.is_empty());
+        assert!(output.iter().all(|term| {
+            term.coefficient_column == 4
+                && term.row.gauge_channel.form_degree() == 0
+                && term.row.parameter_component == 0
+                && term.row.source_momentum.total_degree() == 2
+                && term.row.spinor_derivative_mask.count_ones() == 11
+                && SecondMomentumGaugeBranch::P3D11Contraction {
+                    momentum_axis: term.row.contraction_axis,
+                }
+                .output_momentum(term.row.source_momentum)
+                .unwrap()
+                .total_degree()
+                    == 3
+        }));
+        let row = P3D11ContractionRow {
+            gauge_channel: SecondMomentumGaugeChannel::new(0).unwrap(),
+            parameter_component: 0,
+            source_momentum: DegreeTwoMomentumMonomial::from_pair(2, 7).unwrap(),
+            contraction_axis: u8::try_from(axis).unwrap(),
+            spinor_derivative_mask: source_mask ^ (1_u32 << contracted),
+        };
+        let actual = &output
+            .iter()
+            .find(|term| term.row == row)
+            .unwrap()
+            .coefficient;
+        assert_eq!(
+            actual,
+            &ExactGaussian {
+                real: Ratio::from_integer(BigInt::from(0)),
+                imaginary: Ratio::from_integer(BigInt::from(14)),
+            }
+        );
+    }
+
+    #[test]
+    fn p3_d11_producer_keeps_contraction_axis_in_the_row_and_rejects_bad_input() {
+        let static_data = p3_static_data();
+        let source_mask = 0x0000_0fff;
+        let base = crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm {
+            momentum_pair: [1, 3],
+            free_spinor: 15,
+            exterior_mask: source_mask,
+            coefficient: 1,
+        };
+        let mut second = base;
+        second.momentum_pair = [1, 4];
+        let output = produce_p3_d11_contractions(static_data, 0, 0, 0, &[base, second]).unwrap();
+        assert!(output.iter().any(|term| {
+            term.row.source_momentum == DegreeTwoMomentumMonomial::from_pair(1, 3).unwrap()
+                && term.row.contraction_axis == 0
+                && term.row.spinor_derivative_mask == 0x0000_0ffe
+        }));
+        assert!(output.iter().any(|term| {
+            term.row.source_momentum == DegreeTwoMomentumMonomial::from_pair(1, 4).unwrap()
+                && term.row.contraction_axis == 0
+                && term.row.spinor_derivative_mask == 0x0000_0ffe
+        }));
+        assert!(produce_p3_d11_contractions(static_data, 77, 0, 0, &[base]).is_err());
+        assert!(produce_p3_d11_contractions(static_data, 0, 6, 0, &[base]).is_err());
+        assert!(produce_p3_d11_contractions(static_data, 0, 0, 1, &[base]).is_err());
+        let mut bad_mask = base;
+        bad_mask.exterior_mask &= bad_mask.exterior_mask - 1;
+        assert!(produce_p3_d11_contractions(static_data, 0, 0, 0, &[bad_mask]).is_err());
+        let mut overflowing = base;
+        overflowing.coefficient = i128::MIN;
+        assert!(produce_p3_d11_contractions(static_data, 0, 0, 0, &[overflowing]).is_err());
+        assert!(multiply_gaussian_integer_pairs(i128::MAX, 0, 2, 0).is_err());
+    }
+
+    #[test]
+    fn p3_d11_nontrivial_gauge_matches_direct_matrix_orientation_and_complex_signs() {
+        let static_data = p3_static_data();
+        let source = crate::eleven_dimensional_second_momentum_gpu::RecoupledSourceTerm {
+            momentum_pair: [3, 8],
+            free_spinor: 15,
+            exterior_mask: 0x0000_0fff,
+            coefficient: 5,
+        };
+        let actual = produce_p3_d11_contractions(static_data, 6, 1, 0, &[source]).unwrap();
+        let actual = actual
+            .into_iter()
+            .map(|term| (term.row, term.coefficient))
+            .collect::<BTreeMap<_, _>>();
+
+        let (_, _, gauge) = crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+            .into_iter()
+            .find(|(degree, _, _)| *degree == 1)
+            .unwrap();
+        let mut expected = BTreeMap::<P3D11ContractionRow, ExactGaussian>::new();
+        for derivative_spinor in 0..32 {
+            let gauge_value = &gauge[usize::from(source.free_spinor)][derivative_spinor];
+            if *gauge_value.re.numer() == 0 && *gauge_value.im.numer() == 0 {
+                continue;
+            }
+            let mut occupied = source.exterior_mask;
+            while occupied != 0 {
+                let contracted_spinor = occupied.trailing_zeros() as usize;
+                occupied &= occupied - 1;
+                let sign = crate::eleven_dimensional_level16_couplings::right_contraction_sign(
+                    source.exterior_mask,
+                    contracted_spinor,
+                )
+                .unwrap();
+                for contraction_axis in 0..11 {
+                    let (translation_real, translation_imaginary) = static_data.translation_weights
+                        [contracted_spinor][derivative_spinor][contraction_axis];
+                    if translation_real == 0 && translation_imaginary == 0 {
+                        continue;
+                    }
+                    let (real, imaginary) = multiply_gaussian_integer_pairs(
+                        i128::from(*gauge_value.re.numer()),
+                        i128::from(*gauge_value.im.numer()),
+                        i128::from(translation_real),
+                        i128::from(translation_imaginary),
+                    )
+                    .unwrap();
+                    let scale = source.coefficient * sign;
+                    let row = P3D11ContractionRow {
+                        gauge_channel: SecondMomentumGaugeChannel::new(1).unwrap(),
+                        parameter_component: 0,
+                        source_momentum: DegreeTwoMomentumMonomial::from_pair(3, 8).unwrap(),
+                        contraction_axis: contraction_axis as u8,
+                        spinor_derivative_mask: source.exterior_mask ^ (1_u32 << contracted_spinor),
+                    };
+                    let value = expected
+                        .entry(row.clone())
+                        .or_insert_with(ExactGaussian::zero);
+                    value.real += Ratio::from_integer(BigInt::from(scale * real));
+                    value.imaginary += Ratio::from_integer(BigInt::from(scale * imaginary));
+                    if value.is_zero() {
+                        expected.remove(&row);
+                    }
+                }
+            }
+        }
+        assert!(!expected.is_empty());
+        assert_eq!(actual, expected);
+    }
+
+    fn sample_p3_contraction(momentum_axis: u8) -> P3D11ContractionTerm {
+        P3D11ContractionTerm {
+            coefficient_column: 9,
+            row: P3D11ContractionRow {
+                gauge_channel: SecondMomentumGaugeChannel::new(0).unwrap(),
+                parameter_component: 0,
+                source_momentum: DegreeTwoMomentumMonomial::from_pair(2, 7).unwrap(),
+                contraction_axis: momentum_axis,
+                spinor_derivative_mask: 0x0000_0ffe,
+            },
+            coefficient: ExactGaussian {
+                real: Ratio::from_integer(BigInt::from(3)),
+                imaginary: Ratio::from_integer(BigInt::from(2)),
+            },
+        }
+    }
+
+    #[test]
+    fn p3_d11_physical_fx_projection_matches_direct_exact_reference() {
+        let contraction = sample_p3_contraction(4);
+        let actual =
+            project_p3_d11_to_physical_fx(p3_static_data(), &[contraction.clone()]).unwrap();
+        assert!(!actual.is_empty());
+        let mut actual_by_key = BTreeMap::new();
+        for term in actual {
+            assert_eq!(term.coefficient_column, contraction.coefficient_column);
+            assert_eq!(term.gauge_channel, contraction.row.gauge_channel);
+            assert_eq!(
+                term.parameter_component,
+                contraction.row.parameter_component
+            );
+            assert_eq!(term.source_momentum, contraction.row.source_momentum);
+            assert_eq!(term.spinor_derivative_mask.count_ones(), 11);
+            assert_eq!(
+                term.gauge_branch,
+                SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 4 }
+            );
+            assert!(
+                actual_by_key
+                    .insert(
+                        (
+                            term.target_coordinate,
+                            term.spinor_derivative_mask,
+                            term.sector
+                        ),
+                        term.coefficient,
+                    )
+                    .is_none()
+            );
+        }
+
+        let highest_target =
+            crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states()
+                .into_iter()
+                .find(|state| state.pbw_word_simple_roots.is_empty())
+                .unwrap();
+        let mut expected = BTreeMap::<(usize, u32, SecondMomentumFxSector), ExactGaussian>::new();
+        for target in highest_target.raw_terms {
+            let target_coefficient = ExactGaussian {
+                real: Ratio::new(
+                    BigInt::from(target.numerator),
+                    BigInt::from(target.denominator),
+                ),
+                imaginary: Ratio::from_integer(BigInt::from(0)),
+            };
+            let mut templates = Vec::new();
+            crate::eleven_dimensional_physical_curvature::visit_exact_fx_derivative_templates(
+                target.vector_weight_index,
+                target.spinor_weight_index,
+                |entry| templates.push(entry),
+            )
+            .unwrap();
+            for template in templates {
+                let Some((degree_twelve_mask, sign)) =
+                    crate::eleven_dimensional_level16_couplings::right_wedge_normal_order(
+                        contraction.row.spinor_derivative_mask,
+                        template.derivative_spinor_weight_index,
+                    )
+                else {
+                    continue;
+                };
+                let functional_mask =
+                    degree_twelve_to_degree_eleven_functional_mask(degree_twelve_mask).unwrap();
+                let sector = if template.x_two_sector {
+                    SecondMomentumFxSector::X2
+                } else {
+                    SecondMomentumFxSector::X5
+                };
+                let target_template =
+                    multiply_exact_gaussians(&target_coefficient, &template.coefficient);
+                let mut value =
+                    multiply_exact_gaussians(&contraction.coefficient, &target_template);
+                if sign < 0 {
+                    value.real = -value.real;
+                    value.imaginary = -value.imaginary;
+                }
+                let key = (template.output_coordinate, functional_mask, sector);
+                let entry = expected.entry(key).or_insert_with(ExactGaussian::zero);
+                entry.real += value.real;
+                entry.imaginary += value.imaginary;
+                if entry.is_zero() {
+                    expected.remove(&key);
+                }
+            }
+        }
+        assert_eq!(actual_by_key, expected);
+        assert!(
+            actual_by_key
+                .keys()
+                .any(|(_, _, sector)| *sector == SecondMomentumFxSector::X2)
+        );
+        assert!(
+            actual_by_key
+                .keys()
+                .any(|(_, _, sector)| *sector == SecondMomentumFxSector::X5)
+        );
+    }
+
+    #[test]
+    fn p3_d11_physical_fx_projection_detects_axis_sign_and_degree_mutations() {
+        let static_data = p3_static_data();
+        let baseline = sample_p3_contraction(4);
+        let baseline_output =
+            project_p3_d11_to_physical_fx(static_data, &[baseline.clone()]).unwrap();
+
+        let axis_mutation = sample_p3_contraction(5);
+        let axis_output = project_p3_d11_to_physical_fx(static_data, &[axis_mutation]).unwrap();
+        let without_branch = |terms: &[SecondMomentumFxColumnTerm]| {
+            terms
+                .iter()
+                .map(|term| {
+                    (
+                        term.target_coordinate,
+                        term.spinor_derivative_mask,
+                        term.sector,
+                        term.coefficient.clone(),
+                    )
+                })
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            without_branch(&baseline_output),
+            without_branch(&axis_output)
+        );
+        assert!(baseline_output.iter().all(|term| {
+            term.gauge_branch == SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 4 }
+        }));
+        assert!(axis_output.iter().all(|term| {
+            term.gauge_branch == SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 5 }
+        }));
+        let first = &baseline_output[0];
+        assert_ne!(
+            second_momentum_fx_functional_assignments(
+                first.gauge_channel,
+                SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 4 },
+                first.source_momentum,
+                first.parameter_component,
+                first.target_coordinate,
+                first.spinor_derivative_mask,
+                first.sector,
+            ),
+            second_momentum_fx_functional_assignments(
+                first.gauge_channel,
+                SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 5 },
+                first.source_momentum,
+                first.parameter_component,
+                first.target_coordinate,
+                first.spinor_derivative_mask,
+                first.sector,
+            )
+        );
+
+        let mut sign_mutation = baseline.clone();
+        sign_mutation.coefficient.real = -sign_mutation.coefficient.real;
+        sign_mutation.coefficient.imaginary = -sign_mutation.coefficient.imaginary;
+        let sign_output = project_p3_d11_to_physical_fx(static_data, &[sign_mutation]).unwrap();
+        assert_eq!(baseline_output.len(), sign_output.len());
+        for (positive, negative) in baseline_output.iter().zip(&sign_output) {
+            assert_eq!(
+                positive.coefficient.real,
+                -negative.coefficient.real.clone()
+            );
+            assert_eq!(
+                positive.coefficient.imaginary,
+                -negative.coefficient.imaginary.clone()
+            );
+        }
+
+        let mut degree_mutation = baseline;
+        degree_mutation.row.spinor_derivative_mask &=
+            degree_mutation.row.spinor_derivative_mask - 1;
+        assert!(project_p3_d11_to_physical_fx(static_data, &[degree_mutation]).is_err());
+    }
+
+    #[test]
+    fn p3_d11_projection_axis_is_part_of_combined_accumulator_key() {
+        let positive = sample_p3_contraction(4);
+        let mut negative_other_axis = sample_p3_contraction(5);
+        negative_other_axis.coefficient.real = -negative_other_axis.coefficient.real;
+        negative_other_axis.coefficient.imaginary = -negative_other_axis.coefficient.imaginary;
+        let positive_count = project_p3_d11_to_physical_fx(p3_static_data(), &[positive.clone()])
+            .unwrap()
+            .len();
+        let negative_count =
+            project_p3_d11_to_physical_fx(p3_static_data(), &[negative_other_axis.clone()])
+                .unwrap()
+                .len();
+        let combined =
+            project_p3_d11_to_physical_fx(p3_static_data(), &[positive, negative_other_axis])
+                .unwrap();
+        assert_eq!(combined.len(), positive_count + negative_count);
+        assert!(combined.iter().any(|term| {
+            term.gauge_branch == SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 4 }
+        }));
+        assert!(combined.iter().any(|term| {
+            term.gauge_branch == SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 5 }
+        }));
+    }
+
+    #[test]
+    fn p3_d11_functional_identity_covers_every_physical_row_field() {
+        fn assignments(
+            term: &SecondMomentumFxColumnTerm,
+        ) -> [(usize, i8); SECOND_MOMENTUM_FX_FUNCTIONAL_SEEDS.len()] {
+            second_momentum_fx_functional_assignments(
+                term.gauge_channel,
+                term.gauge_branch,
+                term.source_momentum,
+                term.parameter_component,
+                term.target_coordinate,
+                term.spinor_derivative_mask,
+                term.sector,
+            )
+        }
+
+        let baseline = project_p3_d11_to_physical_fx(p3_static_data(), &[sample_p3_contraction(4)])
+            .unwrap()
+            .into_iter()
+            .next()
+            .unwrap();
+        let expected = assignments(&baseline);
+        let mut mutations = Vec::new();
+        let mut value = baseline.clone();
+        value.gauge_channel = SecondMomentumGaugeChannel::new(1).unwrap();
+        mutations.push(value);
+        let mut value = baseline.clone();
+        value.gauge_branch = SecondMomentumGaugeBranch::P3D11Contraction { momentum_axis: 5 };
+        mutations.push(value);
+        let mut value = baseline.clone();
+        value.source_momentum = DegreeTwoMomentumMonomial::from_pair(2, 8).unwrap();
+        mutations.push(value);
+        let mut value = baseline.clone();
+        value.parameter_component += 1;
+        mutations.push(value);
+        let mut value = baseline.clone();
+        value.target_coordinate += 1;
+        mutations.push(value);
+        let mut value = baseline.clone();
+        let removed = value.spinor_derivative_mask.trailing_zeros();
+        let replacement = (0..32)
+            .find(|spinor| value.spinor_derivative_mask & (1_u32 << spinor) == 0)
+            .unwrap();
+        value.spinor_derivative_mask ^= 1_u32 << removed;
+        value.spinor_derivative_mask |= 1_u32 << replacement;
+        mutations.push(value);
+        let mut value = baseline.clone();
+        value.sector = match value.sector {
+            SecondMomentumFxSector::X2 => SecondMomentumFxSector::X5,
+            SecondMomentumFxSector::X5 => SecondMomentumFxSector::X2,
+        };
+        mutations.push(value);
+        for mutation in mutations {
+            assert_ne!(assignments(&mutation), expected);
+        }
+
+        let mut column_only = baseline;
+        column_only.coefficient_column += 1;
+        assert_eq!(assignments(&column_only), expected);
+    }
 
     #[derive(Clone)]
     struct SyntheticSource {

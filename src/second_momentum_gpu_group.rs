@@ -1563,6 +1563,51 @@ impl CudaGroupBatchExecutor {
         )
     }
 
+    /// Production extension point for linear functionals that consume the
+    /// exact reduced union beside the established p2 contraction. Raw stream
+    /// observation remains separate so transcript hashes keep original order.
+    #[cfg(feature = "cuda")]
+    pub(crate) fn run_word_synchronous_batched_with_union<R, O, U, B, W>(
+        &mut self,
+        config: GroupWordOrchestrationConfig,
+        run_lane_word: &R,
+        observe_raw_batch: O,
+        mut observe_union: U,
+        mut observe_batch: B,
+        complete_word: W,
+    ) -> Result<GroupWordOrchestrationReport, String>
+    where
+        R: Sync
+            + Fn(
+                usize,
+                usize,
+                usize,
+                usize,
+                usize,
+                &mut dyn FnMut(RecoupledSourceTerm) -> Result<(), String>,
+            ) -> Result<LaneWordCompletion, String>,
+        O: FnMut(usize, usize, &[RecoupledSourceTerm]) -> Result<(), String>,
+        U: FnMut(usize, &ExactUnionBatch) -> Result<(), String>,
+        B: FnMut(&GroupBatchObservation) -> Result<(), String>,
+        W: FnMut(usize, &[LaneWordCompletion]) -> Result<(), String>,
+    {
+        let plan = self.plan.clone();
+        let batch_group_id = self.batch_group_id.clone();
+        orchestrate_group_words_with_batch_observer(
+            &plan,
+            &batch_group_id,
+            config,
+            run_lane_word,
+            observe_raw_batch,
+            |word_ordinal, raw_counts, batch| {
+                observe_union(word_ordinal, &batch)?;
+                let observation = self.accumulate_batch(&batch, word_ordinal, None, raw_counts)?;
+                observe_batch(&observation)
+            },
+            complete_word,
+        )
+    }
+
     pub(crate) fn final_columns(&self) -> &[Vec<GaussianResidue>] {
         self.rows.columns()
     }

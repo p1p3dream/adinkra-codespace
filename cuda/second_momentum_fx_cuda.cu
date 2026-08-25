@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <cub/cub.cuh>
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -13,9 +14,14 @@ constexpr uint32_t kMomentumPairs = 66;
 constexpr uint32_t kSectors = 2;
 constexpr uint32_t kSeeds = 1;
 constexpr uint32_t kBuckets = 32;
+constexpr uint32_t kContractionAxes = 11;
+constexpr uint32_t kMaxColumns = 32;
+constexpr uint32_t kX2OutputCoordinates = 55 * 11;
+constexpr uint32_t kX5OutputCoordinates = 462 * 11;
 constexpr size_t kDeviceHeadroomBytes = 64ULL * 1024 * 1024;
 constexpr uint32_t kRows =
     kGaugeDegrees * kMomentumPairs * kSectors * kSeeds * kBuckets;
+constexpr uint32_t kP3Rows = kRows * kContractionAxes;
 constexpr int kRecouplingSemanticKeyBits = 45;
 __device__ __constant__ uint64_t kFunctionalSeeds[kSeeds] = {
     0x5d120f0213aa0001ULL,
@@ -55,11 +61,31 @@ struct PlanEntry {
   uint64_t functional_salt;
 };
 
+struct P3PlanEntry {
+  uint32_t contracted_spinor;
+  uint32_t template_spinor;
+  uint32_t contraction_axis;
+  uint32_t sector;
+  uint32_t output_coordinate;
+  GaussianResidue coefficient;
+  uint64_t functional_salt;
+};
+
 struct SourceEntry {
   uint32_t exterior_mask;
   uint32_t coefficient;
   uint32_t metadata;
 };
+
+static_assert(sizeof(GaussianResidue) == 8);
+static_assert(alignof(GaussianResidue) == 4);
+static_assert(sizeof(SourceEntry) == 12);
+static_assert(alignof(SourceEntry) == 4);
+static_assert(offsetof(SourceEntry, metadata) == 8);
+static_assert(sizeof(P3PlanEntry) == 40);
+static_assert(alignof(P3PlanEntry) == 8);
+static_assert(offsetof(P3PlanEntry, coefficient) == 20);
+static_assert(offsetof(P3PlanEntry, functional_salt) == 32);
 
 struct SparseEntry {
   uint64_t key;
@@ -178,6 +204,12 @@ struct Context {
   uint32_t plan_entry_count = 0;
   uint32_t max_plan_entries_per_degree_free = 0;
   uint32_t max_plan_entries_per_free = 0;
+  uint32_t *p3_plan_offsets = nullptr;
+  P3PlanEntry *p3_plan_entries = nullptr;
+  uint32_t p3_plan_entry_count = 0;
+  uint32_t p3_active_columns = 0;
+  uint32_t *p3_output_real = nullptr;
+  uint32_t *p3_output_imaginary = nullptr;
   bool legacy_contraction = false;
   SourceEntry *sources = nullptr;
   uint32_t *output_real = nullptr;
@@ -247,12 +279,16 @@ void destroy(Context *context) {
   cudaFree(context->templates);
   cudaFree(context->plan_offsets);
   cudaFree(context->plan_entries);
+  cudaFree(context->p3_plan_offsets);
+  cudaFree(context->p3_plan_entries);
   cudaFree(context->pair_salts);
   cudaFree(context->sources);
   cudaFree(context->output_real);
   cudaFree(context->output_imaginary);
   cudaFree(context->output_real_wide);
   cudaFree(context->output_imaginary_wide);
+  cudaFree(context->p3_output_real);
+  cudaFree(context->p3_output_imaginary);
   cudaFree(context->expanded);
   cudaFree(context->recoupling_keys[0]);
   cudaFree(context->recoupling_keys[1]);
@@ -424,6 +460,17 @@ __device__ __forceinline__ int wedge_sign(uint32_t mask, uint32_t spinor) {
   return (greater & 1U) == 0 ? 1 : -1;
 }
 
+__device__ __forceinline__ int contraction_sign(uint32_t mask,
+                                                uint32_t spinor) {
+  const uint32_t bit = 1U << spinor;
+  if ((mask & bit) == 0) {
+    return 0;
+  }
+  const uint32_t greater =
+      spinor == 31 ? 0 : __popc(mask >> (spinor + 1));
+  return (greater & 1U) == 0 ? 1 : -1;
+}
+
 __device__ __forceinline__ uint64_t functional_base(
     uint32_t degree, uint32_t pair_left, uint32_t pair_right,
     uint32_t output_coordinate, uint32_t mask, uint32_t sector) {
@@ -448,6 +495,16 @@ __device__ __forceinline__ uint32_t row_ordinal(
             seed) *
            kBuckets) +
           bucket;
+}
+
+__device__ __forceinline__ uint32_t p3_row_ordinal(
+    uint32_t degree, uint32_t pair, uint32_t sector, uint32_t axis,
+    uint32_t seed, uint32_t bucket) {
+  return ((((((degree * kMomentumPairs + pair) * kSectors + sector) *
+              kContractionAxes + axis) *
+             kSeeds + seed) *
+            kBuckets) +
+          bucket);
 }
 
 __device__ __forceinline__ uint64_t planned_functional_base(
@@ -571,6 +628,214 @@ __global__ void accumulate_kernel(
     accumulate_source(sources[source_index], gauge_offsets, gauges, targets,
                       target_count, template_offsets, templates, prime,
                       output_real, output_imaginary, expanded);
+  }
+}
+
+__global__ void accumulate_p3_kernel(
+    const SourceEntry *__restrict__ sources, uint32_t source_count,
+    const uint32_t *__restrict__ plan_offsets,
+    const P3PlanEntry *__restrict__ plan_entries,
+    const uint64_t *__restrict__ pair_salts, uint32_t prime,
+    uint32_t *__restrict__ output_real,
+    uint32_t *__restrict__ output_imaginary,
+    unsigned long long *__restrict__ expanded) {
+  const uint32_t source_index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (source_index >= source_count) {
+    return;
+  }
+  const SourceEntry source = sources[source_index];
+  const uint32_t pair_left = source.metadata & 15U;
+  const uint32_t pair_right = (source.metadata >> 4) & 15U;
+  const uint32_t free_spinor = (source.metadata >> 8) & 31U;
+  const uint32_t pair = pair_ordinal(pair_left, pair_right);
+  const GaussianResidue source_value{source.coefficient, 0};
+  for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
+    const uint32_t schedule = degree * kSpinors + free_spinor;
+    for (uint32_t index = plan_offsets[schedule];
+         index < plan_offsets[schedule + 1]; ++index) {
+      const P3PlanEntry entry = plan_entries[index];
+      const int first_sign =
+          contraction_sign(source.exterior_mask, entry.contracted_spinor);
+      if (first_sign == 0) {
+        continue;
+      }
+      const uint32_t degree11_mask =
+          source.exterior_mask ^ (1U << entry.contracted_spinor);
+      const int second_sign = wedge_sign(degree11_mask, entry.template_spinor);
+      if (second_sign == 0) {
+        continue;
+      }
+      const uint32_t degree12_mask =
+          degree11_mask | (1U << entry.template_spinor);
+      const uint32_t highest = 31U - __clz(degree12_mask);
+      const uint32_t functional_mask = degree12_mask ^ (1U << highest);
+      GaussianResidue value =
+          multiply_gaussian(source_value, entry.coefficient, prime);
+      if ((first_sign < 0) != (second_sign < 0)) {
+        value = negate_gaussian(value, prime);
+      }
+      if (value.real == 0 && value.imaginary == 0) {
+        continue;
+      }
+      const uint64_t base = splitmix64(
+          entry.functional_salt ^
+          rotate_left(static_cast<uint64_t>(functional_mask), 43) ^
+          pair_salts[pair]);
+#pragma unroll
+      for (uint32_t seed = 0; seed < kSeeds; ++seed) {
+        const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
+        const uint32_t bucket = static_cast<uint32_t>(hash) & (kBuckets - 1);
+        const GaussianResidue contribution =
+            (hash >> 63) == 0 ? value : negate_gaussian(value, prime);
+        const uint32_t row = p3_row_ordinal(
+            degree, pair, entry.sector, entry.contraction_axis, seed, bucket);
+        atomic_add_mod(&output_real[row], contribution.real, prime);
+        atomic_add_mod(&output_imaginary[row], contribution.imaginary, prime);
+      }
+      atomicAdd(expanded, 1ULL);
+    }
+  }
+}
+
+// One block owns one reduced semantic source key. Threads are split into a
+// power-of-two column lane and a plan lane, so all active columns traverse the
+// same flat-plan entries in one SIMT launch while retaining disjoint persistent
+// output columns. Coefficients arrive already reduced modulo the active prime.
+__global__ void accumulate_p3_multicol_kernel(
+    const uint64_t *__restrict__ keys,
+    const uint32_t *__restrict__ key_major_coefficients,
+    uint32_t unique_count, uint32_t active_columns,
+    const uint32_t *__restrict__ plan_offsets,
+    const P3PlanEntry *__restrict__ plan_entries,
+    const uint64_t *__restrict__ pair_salts, uint32_t prime,
+    uint32_t *__restrict__ output_real,
+    uint32_t *__restrict__ output_imaginary,
+    unsigned long long *__restrict__ expanded,
+    uint32_t *__restrict__ invalid) {
+  constexpr uint32_t kThreads = 128;
+  const uint32_t source_index = blockIdx.x;
+  if (source_index >= unique_count) return;
+  const uint32_t lane_width =
+      active_columns <= 1    ? 1
+      : active_columns <= 2  ? 2
+      : active_columns <= 4  ? 4
+      : active_columns <= 8  ? 8
+      : active_columns <= 16 ? 16
+                             : 32;
+  const uint32_t lane = threadIdx.x & (lane_width - 1U);
+  const uint32_t plan_lane = threadIdx.x / lane_width;
+  const uint32_t plan_lanes = kThreads / lane_width;
+  __shared__ uint32_t shared_mask;
+  __shared__ uint32_t shared_free_spinor;
+  __shared__ uint32_t shared_pair;
+  __shared__ uint32_t shared_valid;
+  __shared__ uint32_t shared_coefficients[32];
+  __shared__ unsigned long long warp_expanded[4][32];
+
+  if (threadIdx.x == 0) {
+    shared_valid = 0;
+    const uint64_t key = keys[source_index];
+    const uint32_t metadata = static_cast<uint32_t>(key >> 32);
+    const uint32_t pair_left = metadata & 15U;
+    const uint32_t pair_right = (metadata >> 4) & 15U;
+    const uint32_t free_spinor = (metadata >> 8) & 31U;
+    const uint32_t mask = static_cast<uint32_t>(key);
+    if ((metadata >> 13) != 0 || pair_left > pair_right || pair_right >= 11 ||
+        free_spinor >= 32 || __popc(mask) != 12) {
+      atomicExch(invalid, 1U);
+    } else {
+      shared_mask = mask;
+      shared_free_spinor = free_spinor;
+      shared_pair = pair_ordinal(pair_left, pair_right);
+      shared_valid = 1;
+    }
+  }
+  if (threadIdx.x < 32) {
+    const uint32_t column = threadIdx.x;
+    shared_coefficients[column] = column < active_columns
+        ? key_major_coefficients[
+              static_cast<uint64_t>(source_index) * active_columns + column]
+        : 0;
+  }
+  __syncthreads();
+
+  const uint32_t coefficient =
+      lane < active_columns ? shared_coefficients[lane] : 0;
+  const bool lane_active =
+      shared_valid != 0 && coefficient != 0 && coefficient < prime;
+  if (lane < active_columns && coefficient >= prime) {
+    atomicExch(invalid, 2U);
+  }
+  unsigned long long local_expanded = 0;
+  if (lane_active) {
+    for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
+      const uint32_t schedule = degree * kSpinors + shared_free_spinor;
+      const uint32_t begin = plan_offsets[schedule];
+      const uint32_t end = plan_offsets[schedule + 1];
+      for (uint32_t index = begin + plan_lane; index < end;
+           index += plan_lanes) {
+        const P3PlanEntry entry = plan_entries[index];
+        const int first_sign =
+            contraction_sign(shared_mask, entry.contracted_spinor);
+        if (first_sign == 0) continue;
+        const uint32_t degree11_mask =
+            shared_mask ^ (1U << entry.contracted_spinor);
+        const int second_sign =
+            wedge_sign(degree11_mask, entry.template_spinor);
+        if (second_sign == 0) continue;
+        const uint32_t degree12_mask =
+            degree11_mask | (1U << entry.template_spinor);
+        const uint32_t highest = 31U - __clz(degree12_mask);
+        const uint32_t functional_mask = degree12_mask ^ (1U << highest);
+        GaussianResidue value =
+            scale_gaussian(entry.coefficient, coefficient, prime);
+        if ((first_sign < 0) != (second_sign < 0)) {
+          value = negate_gaussian(value, prime);
+        }
+        if (value.real == 0 && value.imaginary == 0) continue;
+        const uint64_t base = splitmix64(
+            entry.functional_salt ^
+            rotate_left(static_cast<uint64_t>(functional_mask), 43) ^
+            pair_salts[shared_pair]);
+#pragma unroll
+        for (uint32_t seed = 0; seed < kSeeds; ++seed) {
+          const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
+          const uint32_t bucket =
+              static_cast<uint32_t>(hash) & (kBuckets - 1);
+          const GaussianResidue contribution =
+              (hash >> 63) == 0 ? value : negate_gaussian(value, prime);
+          const uint32_t row = p3_row_ordinal(
+              degree, shared_pair, entry.sector, entry.contraction_axis, seed,
+              bucket);
+          const uint64_t output =
+              static_cast<uint64_t>(lane) * kP3Rows + row;
+          atomic_add_mod(&output_real[output], contribution.real, prime);
+          atomic_add_mod(&output_imaginary[output], contribution.imaginary,
+                         prime);
+        }
+        ++local_expanded;
+      }
+    }
+  }
+  for (uint32_t delta = 16; delta >= lane_width; delta >>= 1) {
+    local_expanded += __shfl_down_sync(0xffffffffU, local_expanded, delta);
+    if (delta == lane_width) break;
+  }
+  const uint32_t thread_in_warp = threadIdx.x & 31U;
+  const uint32_t warp = threadIdx.x >> 5;
+  if (thread_in_warp < lane_width) {
+    warp_expanded[warp][thread_in_warp] = local_expanded;
+  }
+  __syncthreads();
+  if (threadIdx.x < active_columns) {
+    unsigned long long block_expanded = 0;
+#pragma unroll
+    for (uint32_t warp_index = 0; warp_index < 4; ++warp_index) {
+      block_expanded += warp_expanded[warp_index][threadIdx.x];
+    }
+    if (block_expanded != 0) {
+      atomicAdd(&expanded[threadIdx.x], block_expanded);
+    }
   }
 }
 
@@ -1244,6 +1509,15 @@ uint64_t canonical_functional_salt(uint32_t degree,
          (sector == 0 ? 0x1100000000000002ULL : 0x1000200000000005ULL);
 }
 
+uint64_t canonical_p3_functional_salt(uint32_t degree,
+                                      uint32_t output_coordinate,
+                                      uint32_t sector, uint32_t axis) {
+  return rotate_left_host(degree, 9) ^
+         rotate_left_host(output_coordinate, 31) ^
+         0x03d1100000000002ULL ^ rotate_left_host(axis, 53) ^
+         (sector == 0 ? 0x1100000000000002ULL : 0x1000200000000005ULL);
+}
+
 uint64_t canonical_pair_salt(uint32_t left, uint32_t right) {
   uint64_t salt = 0;
   for (uint32_t axis = 0; axis < 11; ++axis) {
@@ -1253,6 +1527,60 @@ uint64_t canonical_pair_salt(uint32_t left, uint32_t right) {
             rotate_left_host(0x9e3779b97f4a7c15ULL, axis);
   }
   return salt;
+}
+
+bool ensure_source_capacity(Context *context, uint32_t source_count,
+                            char *error, size_t error_capacity) {
+  if (source_count <= context->source_capacity) {
+    return true;
+  }
+  size_t new_bytes = 0;
+  size_t old_bytes = 0;
+  if (!checked_multiply_size(source_count, sizeof(SourceEntry), &new_bytes) ||
+      !checked_multiply_size(context->source_capacity, sizeof(SourceEntry),
+                             &old_bytes) ||
+      old_bytes > context->allocated_bytes ||
+      new_bytes > UINT64_MAX - context->allocated_bytes) {
+    set_error(error, error_capacity, "CUDA source buffer byte count overflow");
+    return false;
+  }
+  const uint64_t transient_peak = context->allocated_bytes + new_bytes;
+  const uint64_t new_resident =
+      context->allocated_bytes - old_bytes + new_bytes;
+  if (transient_peak > context->recoupling_hard_cap_bytes ||
+      new_resident > context->recoupling_hard_cap_bytes) {
+    set_error(error, error_capacity,
+              "CUDA source buffer exceeds configured device cap");
+    return false;
+  }
+  size_t free_bytes = 0;
+  size_t total_bytes = 0;
+  if (!check_cuda(cudaMemGetInfo(&free_bytes, &total_bytes), error,
+                  error_capacity, "query CUDA source buffer memory") ||
+      new_bytes > free_bytes || free_bytes - new_bytes < kDeviceHeadroomBytes) {
+    if (new_bytes > free_bytes || free_bytes - new_bytes < kDeviceHeadroomBytes) {
+      set_error(error, error_capacity,
+                "insufficient CUDA memory for source buffer");
+    }
+    return false;
+  }
+  SourceEntry *replacement = nullptr;
+  if (!check_cuda(cudaMalloc(&replacement, new_bytes), error, error_capacity,
+                  "allocate CUDA source buffer")) {
+    return false;
+  }
+  SourceEntry *old = context->sources;
+  if (!check_cuda(cudaFree(old), error, error_capacity,
+                  "release previous CUDA source buffer")) {
+    cudaFree(replacement);
+    return false;
+  }
+  context->sources = replacement;
+  context->source_capacity = source_count;
+  context->allocated_bytes = new_resident;
+  context->buffer_high_water_bytes =
+      max(context->buffer_high_water_bytes, transient_peak);
+  return true;
 }
 
 bool ensure_recoupling_workspace(Context *context, uint32_t count,
@@ -1985,6 +2313,414 @@ void *adynkra_fx_cuda_create_v2(
   return context;
 }
 
+int adynkra_fx_cuda_configure_p3(
+    void *opaque, const uint32_t *plan_offsets,
+    const P3PlanEntry *plan_entries, uint32_t plan_entry_count,
+    char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || plan_offsets == nullptr || plan_entries == nullptr ||
+      plan_entry_count == 0 || plan_offsets[0] != 0 ||
+      plan_offsets[kGaugeDegrees * kSpinors] != plan_entry_count ||
+      context->pair_salts == nullptr || context->p3_plan_offsets != nullptr ||
+      context->p3_plan_entries != nullptr || context->p3_output_real != nullptr ||
+      context->p3_output_imaginary != nullptr) {
+    set_error(error, error_capacity, "invalid CUDA p3 static schedule");
+    return 1;
+  }
+  for (uint32_t schedule = 0; schedule < kGaugeDegrees * kSpinors;
+       ++schedule) {
+    if (plan_offsets[schedule] > plan_offsets[schedule + 1]) {
+      set_error(error, error_capacity, "non-monotone CUDA p3 plan offsets");
+      return 1;
+    }
+    const uint32_t degree = schedule / kSpinors;
+    for (uint32_t index = plan_offsets[schedule];
+         index < plan_offsets[schedule + 1]; ++index) {
+      const P3PlanEntry &entry = plan_entries[index];
+      if (entry.contracted_spinor >= kSpinors ||
+          entry.template_spinor >= kSpinors ||
+          entry.contraction_axis >= kContractionAxes ||
+          entry.sector >= kSectors ||
+          entry.output_coordinate >=
+              (entry.sector == 0 ? kX2OutputCoordinates
+                                 : kX5OutputCoordinates) ||
+          entry.coefficient.real >= context->prime ||
+          entry.coefficient.imaginary >= context->prime ||
+          (entry.coefficient.real == 0 && entry.coefficient.imaginary == 0) ||
+          entry.functional_salt != canonical_p3_functional_salt(
+              degree, entry.output_coordinate, entry.sector,
+              entry.contraction_axis)) {
+        set_error(error, error_capacity, "invalid CUDA p3 plan entry");
+        return 1;
+      }
+    }
+  }
+  size_t entry_bytes = 0;
+  if (!checked_multiply_size(plan_entry_count, sizeof(P3PlanEntry),
+                             &entry_bytes)) {
+    set_error(error, error_capacity, "CUDA p3 plan byte count overflow");
+    return 1;
+  }
+  const size_t offset_bytes =
+      (kGaugeDegrees * kSpinors + 1ULL) * sizeof(uint32_t);
+  const size_t output_bytes =
+      2ULL * kP3Rows * kMaxColumns * sizeof(uint32_t);
+  if (offset_bytes > SIZE_MAX - entry_bytes ||
+      offset_bytes + entry_bytes > SIZE_MAX - output_bytes) {
+    set_error(error, error_capacity, "CUDA p3 allocation byte count overflow");
+    return 1;
+  }
+  const size_t additional_bytes = offset_bytes + entry_bytes + output_bytes;
+  if (additional_bytes > UINT64_MAX - context->allocated_bytes ||
+      context->allocated_bytes + additional_bytes >
+          context->recoupling_hard_cap_bytes) {
+    set_error(error, error_capacity,
+              "CUDA p3 static plan exceeds configured device cap");
+    return 1;
+  }
+  size_t free_bytes = 0;
+  size_t total_bytes = 0;
+  if (!check_cuda(cudaMemGetInfo(&free_bytes, &total_bytes), error,
+                  error_capacity, "query CUDA p3 device memory") ||
+      additional_bytes > free_bytes ||
+      free_bytes - additional_bytes < kDeviceHeadroomBytes) {
+    if (additional_bytes > free_bytes ||
+        free_bytes - additional_bytes < kDeviceHeadroomBytes) {
+      set_error(error, error_capacity,
+                "insufficient CUDA memory for p3 static plan");
+    }
+    return 1;
+  }
+  uint32_t *new_plan_offsets = nullptr;
+  P3PlanEntry *new_plan_entries = nullptr;
+  uint32_t *new_output_real = nullptr;
+  uint32_t *new_output_imaginary = nullptr;
+  const auto rollback = [&]() {
+    cudaFree(new_plan_offsets);
+    cudaFree(new_plan_entries);
+    cudaFree(new_output_real);
+    cudaFree(new_output_imaginary);
+  };
+  if (!check_cuda(cudaMalloc(&new_plan_offsets, offset_bytes), error,
+                  error_capacity, "allocate CUDA p3 offsets") ||
+      !check_cuda(cudaMalloc(&new_plan_entries, entry_bytes), error,
+                  error_capacity, "allocate CUDA p3 entries") ||
+      !check_cuda(cudaMalloc(&new_output_real,
+                             kP3Rows * kMaxColumns * sizeof(uint32_t)),
+                  error, error_capacity, "allocate CUDA p3 real output") ||
+      !check_cuda(cudaMalloc(&new_output_imaginary,
+                             kP3Rows * kMaxColumns * sizeof(uint32_t)),
+                  error, error_capacity, "allocate CUDA p3 imaginary output") ||
+      !check_cuda(cudaMemcpyAsync(new_plan_offsets, plan_offsets, offset_bytes,
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity, "upload CUDA p3 offsets") ||
+      !check_cuda(cudaMemcpyAsync(new_plan_entries, plan_entries, entry_bytes,
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity, "upload CUDA p3 entries") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish CUDA p3 static upload")) {
+    rollback();
+    return 1;
+  }
+  context->p3_plan_offsets = new_plan_offsets;
+  context->p3_plan_entries = new_plan_entries;
+  context->p3_output_real = new_output_real;
+  context->p3_output_imaginary = new_output_imaginary;
+  context->p3_plan_entry_count = plan_entry_count;
+  context->p3_active_columns = 1;
+  context->allocated_bytes += additional_bytes;
+  context->buffer_high_water_bytes =
+      max(context->buffer_high_water_bytes, context->allocated_bytes);
+  return 0;
+}
+
+int adynkra_fx_cuda_reset_p3_columns(
+    void *opaque, const uint32_t *input_real, const uint32_t *input_imaginary,
+    uint32_t active_columns, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || context->p3_output_real == nullptr ||
+      context->p3_output_imaginary == nullptr || active_columns == 0 ||
+      active_columns > kMaxColumns ||
+      ((input_real == nullptr) != (input_imaginary == nullptr))) {
+    set_error(error, error_capacity, "invalid CUDA p3 column reset input");
+    return 1;
+  }
+  const size_t bytes = static_cast<size_t>(active_columns) * kP3Rows *
+                       sizeof(uint32_t);
+  const bool restore = input_real != nullptr;
+  if (!(restore
+            ? check_cuda(cudaMemcpyAsync(context->p3_output_real, input_real,
+                                         bytes, cudaMemcpyHostToDevice,
+                                         context->stream),
+                         error, error_capacity,
+                         "restore CUDA p3 real columns") &&
+                  check_cuda(cudaMemcpyAsync(context->p3_output_imaginary,
+                                             input_imaginary, bytes,
+                                             cudaMemcpyHostToDevice,
+                                             context->stream),
+                             error, error_capacity,
+                             "restore CUDA p3 imaginary columns")
+            : check_cuda(cudaMemsetAsync(context->p3_output_real, 0, bytes,
+                                         context->stream),
+                         error, error_capacity, "clear CUDA p3 real columns") &&
+                  check_cuda(cudaMemsetAsync(context->p3_output_imaginary, 0,
+                                             bytes, context->stream),
+                             error, error_capacity,
+                             "clear CUDA p3 imaginary columns")) ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish CUDA p3 column reset")) {
+    return 1;
+  }
+  context->p3_active_columns = active_columns;
+  return 0;
+}
+
+int adynkra_fx_cuda_accumulate_p3_column(
+    void *opaque, uint32_t column, const SourceEntry *sources,
+    uint32_t source_count, uint64_t *expanded_contributions,
+    float *kernel_milliseconds, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || sources == nullptr || source_count == 0 ||
+      column >= context->p3_active_columns || expanded_contributions == nullptr ||
+      kernel_milliseconds == nullptr || context->p3_plan_entries == nullptr) {
+    set_error(error, error_capacity,
+              "invalid CUDA persistent p3 accumulation input");
+    return 1;
+  }
+  if (!ensure_source_capacity(context, source_count, error, error_capacity)) {
+    return 1;
+  }
+  if (!check_cuda(cudaMemcpyAsync(context->sources, sources,
+                                  source_count * sizeof(SourceEntry),
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA persistent p3 sources") ||
+      !check_cuda(cudaMemsetAsync(context->expanded, 0,
+                                  sizeof(unsigned long long), context->stream),
+                  error, error_capacity,
+                  "clear CUDA persistent p3 contribution count") ||
+      !check_cuda(cudaEventRecord(context->started, context->stream), error,
+                  error_capacity, "record CUDA persistent p3 start")) {
+    return 1;
+  }
+  constexpr uint32_t threads = 128;
+  const uint32_t blocks = (source_count + threads - 1) / threads;
+  accumulate_p3_kernel<<<blocks, threads, 0, context->stream>>>(
+      context->sources, source_count, context->p3_plan_offsets,
+      context->p3_plan_entries, context->pair_salts, context->prime,
+      context->p3_output_real + static_cast<size_t>(column) * kP3Rows,
+      context->p3_output_imaginary + static_cast<size_t>(column) * kP3Rows,
+      context->expanded);
+  if (!check_cuda(cudaGetLastError(), error, error_capacity,
+                  "launch CUDA persistent p3 kernel") ||
+      !check_cuda(cudaEventRecord(context->finished, context->stream), error,
+                  error_capacity, "record CUDA persistent p3 finish") ||
+      !check_cuda(cudaMemcpyAsync(expanded_contributions, context->expanded,
+                                  sizeof(unsigned long long),
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download CUDA persistent p3 count") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish CUDA persistent p3 accumulation") ||
+      !check_cuda(cudaEventElapsedTime(kernel_milliseconds, context->started,
+                                       context->finished),
+                  error, error_capacity,
+                  "measure CUDA persistent p3 kernel")) {
+    return 1;
+  }
+  return 0;
+}
+
+int adynkra_fx_cuda_accumulate_p3_multicol(
+    void *opaque, const uint64_t *keys,
+    const uint32_t *key_major_coefficients, uint32_t unique_count,
+    uint32_t active_columns, uint64_t *expanded_contributions,
+    float *kernel_milliseconds, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || keys == nullptr ||
+      key_major_coefficients == nullptr || unique_count == 0 ||
+      active_columns == 0 || active_columns > 32 ||
+      active_columns != context->p3_active_columns ||
+      expanded_contributions == nullptr || kernel_milliseconds == nullptr ||
+      context->p3_plan_entries == nullptr ||
+      context->p3_output_real == nullptr ||
+      context->p3_output_imaginary == nullptr) {
+    set_error(error, error_capacity,
+              "invalid CUDA persistent p3 multi-column input");
+    return 1;
+  }
+  if (!ensure_multicol_workspace(context, unique_count, active_columns, error,
+                                 error_capacity)) {
+    return 1;
+  }
+  size_t value_count = 0;
+  size_t value_bytes = 0;
+  if (!checked_multiply_size(unique_count, active_columns, &value_count) ||
+      !checked_multiply_size(value_count, sizeof(uint32_t), &value_bytes)) {
+    set_error(error, error_capacity,
+              "CUDA persistent p3 multi-column input size overflow");
+    return 1;
+  }
+  if (!check_cuda(cudaMemcpyAsync(context->multicol_keys, keys,
+                                  unique_count * sizeof(uint64_t),
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA persistent p3 multi-column keys") ||
+      !check_cuda(cudaMemcpyAsync(
+                      reinterpret_cast<uint32_t *>(context->multicol_values),
+                      key_major_coefficients, value_bytes,
+                      cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA persistent p3 multi-column coefficients") ||
+      !check_cuda(cudaMemsetAsync(context->multicol_expanded, 0,
+                                  active_columns * sizeof(unsigned long long),
+                                  context->stream),
+                  error, error_capacity,
+                  "clear CUDA persistent p3 multi-column counts") ||
+      !check_cuda(cudaMemsetAsync(context->multicol_overflow, 0,
+                                  sizeof(uint32_t), context->stream),
+                  error, error_capacity,
+                  "clear CUDA persistent p3 multi-column validity") ||
+      !check_cuda(cudaEventRecord(context->started, context->stream), error,
+                  error_capacity,
+                  "record CUDA persistent p3 multi-column start")) {
+    return 1;
+  }
+  constexpr uint32_t threads = 128;
+  accumulate_p3_multicol_kernel<<<unique_count, threads, 0, context->stream>>>(
+      context->multicol_keys,
+      reinterpret_cast<const uint32_t *>(context->multicol_values),
+      unique_count, active_columns, context->p3_plan_offsets,
+      context->p3_plan_entries, context->pair_salts, context->prime,
+      context->p3_output_real, context->p3_output_imaginary,
+      context->multicol_expanded, context->multicol_overflow);
+  uint32_t invalid = 0;
+  if (!check_cuda(cudaGetLastError(), error, error_capacity,
+                  "launch CUDA persistent p3 multi-column kernel") ||
+      !check_cuda(cudaEventRecord(context->finished, context->stream), error,
+                  error_capacity,
+                  "record CUDA persistent p3 multi-column finish") ||
+      !check_cuda(cudaMemcpyAsync(
+                      expanded_contributions, context->multicol_expanded,
+                      active_columns * sizeof(unsigned long long),
+                      cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download CUDA persistent p3 multi-column counts") ||
+      !check_cuda(cudaMemcpyAsync(&invalid, context->multicol_overflow,
+                                  sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  error, error_capacity,
+                  "download CUDA persistent p3 multi-column validity") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish CUDA persistent p3 multi-column accumulation") ||
+      !check_cuda(cudaEventElapsedTime(kernel_milliseconds, context->started,
+                                       context->finished),
+                  error, error_capacity,
+                  "measure CUDA persistent p3 multi-column kernel")) {
+    return 1;
+  }
+  if (invalid != 0) {
+    set_error(error, error_capacity,
+              "invalid key or coefficient in CUDA persistent p3 multi-column kernel");
+    return 1;
+  }
+  return 0;
+}
+
+int adynkra_fx_cuda_download_p3_columns(
+    void *opaque, uint32_t active_columns, uint32_t *output_real,
+    uint32_t *output_imaginary, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || active_columns == 0 ||
+      active_columns != context->p3_active_columns || output_real == nullptr ||
+      output_imaginary == nullptr || context->p3_output_real == nullptr ||
+      context->p3_output_imaginary == nullptr) {
+    set_error(error, error_capacity, "invalid CUDA p3 column download input");
+    return 1;
+  }
+  const size_t bytes = static_cast<size_t>(active_columns) * kP3Rows *
+                       sizeof(uint32_t);
+  if (!check_cuda(cudaMemcpyAsync(output_real, context->p3_output_real, bytes,
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity, "download CUDA p3 real columns") ||
+      !check_cuda(cudaMemcpyAsync(output_imaginary,
+                                  context->p3_output_imaginary, bytes,
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download CUDA p3 imaginary columns") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish CUDA p3 column download")) {
+    return 1;
+  }
+  return 0;
+}
+
+int adynkra_fx_cuda_accumulate_p3(
+    void *opaque, const SourceEntry *sources, uint32_t source_count,
+    uint32_t *output_real, uint32_t *output_imaginary,
+    uint64_t *expanded_contributions, float *kernel_milliseconds,
+    char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || sources == nullptr || source_count == 0 ||
+      output_real == nullptr || output_imaginary == nullptr ||
+      expanded_contributions == nullptr || kernel_milliseconds == nullptr ||
+      context->p3_plan_entries == nullptr) {
+    set_error(error, error_capacity, "invalid CUDA p3 accumulation input");
+    return 1;
+  }
+  if (!ensure_source_capacity(context, source_count, error, error_capacity)) {
+    return 1;
+  }
+  if (!check_cuda(cudaMemcpyAsync(context->sources, sources,
+                                  source_count * sizeof(SourceEntry),
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity, "upload CUDA p3 sources") ||
+      !check_cuda(cudaMemsetAsync(context->p3_output_real, 0,
+                                  kP3Rows * sizeof(uint32_t), context->stream),
+                  error, error_capacity, "clear CUDA p3 real output") ||
+      !check_cuda(cudaMemsetAsync(context->p3_output_imaginary, 0,
+                                  kP3Rows * sizeof(uint32_t), context->stream),
+                  error, error_capacity, "clear CUDA p3 imaginary output") ||
+      !check_cuda(cudaMemsetAsync(context->expanded, 0,
+                                  sizeof(unsigned long long), context->stream),
+                  error, error_capacity, "clear CUDA p3 contribution count") ||
+      !check_cuda(cudaEventRecord(context->started, context->stream), error,
+                  error_capacity, "record CUDA p3 start")) {
+    return 1;
+  }
+  constexpr uint32_t threads = 128;
+  const uint32_t blocks = (source_count + threads - 1) / threads;
+  accumulate_p3_kernel<<<blocks, threads, 0, context->stream>>>(
+      context->sources, source_count, context->p3_plan_offsets,
+      context->p3_plan_entries, context->pair_salts, context->prime,
+      context->p3_output_real, context->p3_output_imaginary,
+      context->expanded);
+  if (!check_cuda(cudaGetLastError(), error, error_capacity,
+                  "launch CUDA p3 kernel") ||
+      !check_cuda(cudaEventRecord(context->finished, context->stream), error,
+                  error_capacity, "record CUDA p3 finish") ||
+      !check_cuda(cudaMemcpyAsync(output_real, context->p3_output_real,
+                                  kP3Rows * sizeof(uint32_t),
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity, "download CUDA p3 real output") ||
+      !check_cuda(cudaMemcpyAsync(output_imaginary, context->p3_output_imaginary,
+                                  kP3Rows * sizeof(uint32_t),
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity, "download CUDA p3 imaginary output") ||
+      !check_cuda(cudaMemcpyAsync(expanded_contributions, context->expanded,
+                                  sizeof(unsigned long long),
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity, "download CUDA p3 count") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
+                  "finish CUDA p3 accumulation") ||
+      !check_cuda(cudaEventElapsedTime(kernel_milliseconds, context->started,
+                                       context->finished),
+                  error, error_capacity, "measure CUDA p3 kernel")) {
+    return 1;
+  }
+  return 0;
+}
+
 int adynkra_fx_cuda_set_legacy_contraction(void *opaque, int enabled,
                                            char *error,
                                            size_t error_capacity) {
@@ -2010,16 +2746,8 @@ int adynkra_fx_cuda_accumulate(
     set_error(error, error_capacity, "invalid CUDA F_X accumulation input");
     return 1;
   }
-  if (source_count > context->source_capacity) {
-    cudaFree(context->sources);
-    context->sources = nullptr;
-    if (!check_cuda(cudaMalloc(&context->sources,
-                               source_count * sizeof(SourceEntry)),
-                    error, error_capacity, "allocate source terms")) {
-      context->source_capacity = 0;
-      return 1;
-    }
-    context->source_capacity = source_count;
+  if (!ensure_source_capacity(context, source_count, error, error_capacity)) {
+    return 1;
   }
   if (!check_cuda(cudaMemcpyAsync(context->sources, sources,
                                   source_count * sizeof(SourceEntry),
@@ -2378,6 +3106,21 @@ int adynkra_fx_cuda_set_recoupling_hard_cap(void *opaque,
 uint64_t adynkra_fx_cuda_resident_bytes(const void *opaque) {
   const Context *context = static_cast<const Context *>(opaque);
   return context == nullptr ? 0 : context->allocated_bytes;
+}
+
+uint64_t adynkra_fx_cuda_buffer_high_water_bytes(const void *opaque) {
+  const Context *context = static_cast<const Context *>(opaque);
+  return context == nullptr ? 0 : context->buffer_high_water_bytes;
+}
+
+uint64_t adynkra_fx_cuda_hard_cap_bytes(const void *opaque) {
+  const Context *context = static_cast<const Context *>(opaque);
+  return context == nullptr ? 0 : context->recoupling_hard_cap_bytes;
+}
+
+uint32_t adynkra_fx_cuda_p3_plan_entry_count(const void *opaque) {
+  const Context *context = static_cast<const Context *>(opaque);
+  return context == nullptr ? 0 : context->p3_plan_entry_count;
 }
 
 int adynkra_fx_cuda_reserve_recoupling(void *opaque, uint32_t source_count,
