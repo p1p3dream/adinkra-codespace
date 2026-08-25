@@ -24,6 +24,8 @@ pub(crate) const P3_PRODUCTION_CHECKPOINT_SCHEMA: &str =
     "adynkra-11d-second-momentum-p3-production-checkpoint-v2";
 pub(crate) const P3_PRODUCTION_RUN_SCHEMA: &str =
     "adynkra-11d-second-momentum-p3-production-run-v2";
+pub(crate) const P3_THREE_PRIME_BUNDLE_SCHEMA: &str =
+    "adynkra-11d-second-momentum-p3-three-prime-bundle-v1";
 
 fn unix_ms() -> u128 {
     SystemTime::now()
@@ -273,6 +275,19 @@ pub(crate) fn parse_job_list(value: &str) -> Result<Vec<P3ProductionJobKey>, Str
     Ok(jobs)
 }
 
+pub(crate) fn parse_group_list(value: &str) -> Result<Vec<usize>, String> {
+    let selector = format!("{value}@0");
+    let jobs = parse_job_list(&selector)?;
+    let groups = jobs
+        .into_iter()
+        .map(|job| job.group_index)
+        .collect::<Vec<_>>();
+    if groups.is_empty() || groups.windows(2).any(|pair| pair[0] >= pair[1]) {
+        return Err("p3 fused group list is empty or noncanonical".to_string());
+    }
+    Ok(groups)
+}
+
 fn atomic_bytes(path: &Path, bytes: &[u8]) -> Result<(), String> {
     let parent = path.parent().unwrap_or_else(|| Path::new("."));
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
@@ -414,6 +429,755 @@ pub(crate) struct P3ProductionReport {
     pub artifacts: Vec<P3PublishedArtifact>,
     pub completed_unix_ms: u128,
     pub passed: bool,
+}
+
+/// One authoritative durable word boundary for a fused three-prime run.  The
+/// embedded prime checkpoints intentionally retain the existing publication
+/// schema, while this outer record binds them to one shared source traversal
+/// and one atomic generation.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct P3ThreePrimeBundleCheckpoint {
+    pub schema_version: String,
+    pub bundle_id: String,
+    pub manifest_sha256: String,
+    pub group_index: usize,
+    pub checkpoint_generation: u64,
+    pub next_word_ordinal: usize,
+    pub next_batch_ordinal: u64,
+    pub state: String,
+    pub primes: Vec<P3ProductionCheckpoint>,
+    pub updated_unix_ms: u128,
+    pub bundle_sha256: String,
+}
+
+fn three_prime_bundle_id(group_index: usize) -> String {
+    format!("p3-g{group_index}-mp012")
+}
+
+fn three_prime_bundle_path(output: &Path, group_index: usize) -> PathBuf {
+    output
+        .join("jobs")
+        .join(three_prime_bundle_id(group_index))
+        .join("checkpoint.json")
+}
+
+fn three_prime_bundle_digest(checkpoint: &P3ThreePrimeBundleCheckpoint) -> Result<String, String> {
+    let mut copy = checkpoint.clone();
+    copy.bundle_sha256.clear();
+    Ok(format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&copy).map_err(|error| error.to_string())?)
+    ))
+}
+
+fn validate_three_prime_bundle(checkpoint: &P3ThreePrimeBundleCheckpoint) -> Result<(), String> {
+    let manifest = build_manifest()?;
+    let expected_jobs = (0..GPU_FX_PRIMES.len())
+        .map(|prime_index| P3ProductionJobKey::new(checkpoint.group_index, prime_index))
+        .collect::<Result<Vec<_>, _>>()?;
+    if checkpoint.schema_version != P3_THREE_PRIME_BUNDLE_SCHEMA
+        || checkpoint.bundle_id != three_prime_bundle_id(checkpoint.group_index)
+        || checkpoint.manifest_sha256 != manifest.manifest_sha256
+        || checkpoint.primes.len() != GPU_FX_PRIMES.len()
+        || checkpoint.bundle_sha256 != three_prime_bundle_digest(checkpoint)?
+        || !matches!(checkpoint.state.as_str(), "running" | "artifact_published")
+    {
+        return Err("p3 three-prime bundle identity is invalid".to_string());
+    }
+    let first = checkpoint
+        .primes
+        .first()
+        .ok_or_else(|| "p3 three-prime bundle is empty".to_string())?;
+    for (prime_index, (prime, expected_job)) in
+        checkpoint.primes.iter().zip(&expected_jobs).enumerate()
+    {
+        let ordinals = expected_job.global_ordinals()?;
+        let width = ordinals.len();
+        let expected_artifact_count =
+            if checkpoint.state == "running" && checkpoint.next_word_ordinal == 0 {
+                0
+            } else {
+                width
+            };
+        if prime.schema_version != P3_PRODUCTION_CHECKPOINT_SCHEMA
+            || prime.job != *expected_job
+            || prime.prime != GPU_FX_PRIMES[prime_index]
+            || prime.manifest_sha256 != checkpoint.manifest_sha256
+            || prime.checkpoint_generation != checkpoint.checkpoint_generation
+            || prime.next_word_ordinal != checkpoint.next_word_ordinal
+            || prime.next_batch_ordinal != checkpoint.next_batch_ordinal
+            || prime.state != checkpoint.state
+            || prime.total_words != first.total_words
+            || prime.source_group_sha256 != first.source_group_sha256
+            || prime.pbw_plan_sha256 != first.pbw_plan_sha256
+            || prime.source_label != first.source_label
+            || prime.source_copies != first.source_copies
+            || prime.raw_terms_per_column != first.raw_terms_per_column
+            || prime.source_hashers != first.source_hashers
+            || prime.p2_batches_folded != checkpoint.next_batch_ordinal
+            || prime.p3_batches_completed != first.p3_batches_completed
+            || prime.kernel_milliseconds != first.kernel_milliseconds
+            || prime.device_hard_cap_bytes != first.device_hard_cap_bytes
+            || [
+                &prime.group_plan_sha256,
+                &prime.source_group_sha256,
+                &prime.pbw_plan_sha256,
+            ]
+            .iter()
+            .any(|digest| {
+                digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+            })
+            || prime.raw_terms_per_column.len() != width
+            || prime.expanded_contributions_per_column.len() != width
+            || prime.reduced_expanded_contributions_per_column.len() != width
+            || prime.source_hashers.len() != width
+            || prime.p2_rows.len() != width
+            || prime.p2_rows.iter().any(|rows| {
+                rows.len() != crate::eleven_dimensional_second_momentum_gpu::FUNCTIONAL_ROW_COUNT
+                    || rows
+                        .iter()
+                        .any(|value| value.real >= prime.prime || value.imaginary >= prime.prime)
+            })
+            || prime.flat_plan_sha256.len() != 64
+            || !prime
+                .flat_plan_sha256
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit())
+            || prime.artifacts.len() != expected_artifact_count
+            || prime
+                .artifacts
+                .iter()
+                .map(|artifact| artifact.global_ordinal)
+                .collect::<Vec<_>>()
+                != if expected_artifact_count == 0 {
+                    Vec::new()
+                } else {
+                    ordinals.clone()
+                }
+            || prime.artifacts.iter().enumerate().any(|(lane, artifact)| {
+                let expected_path = if checkpoint.state == "artifact_published" {
+                    PathBuf::from("columns").join(format!(
+                        "p3-c{}-p{prime_index}.adfxp3",
+                        artifact.global_ordinal
+                    ))
+                } else {
+                    PathBuf::from("jobs")
+                        .join(expected_job.id())
+                        .join("partial")
+                        .join(format!(
+                            "generation-{:08}-c{}.adfxp3",
+                            checkpoint.checkpoint_generation, artifact.global_ordinal
+                        ))
+                };
+                PathBuf::from(&artifact.relative_path) != expected_path
+                    || artifact.expanded_contributions
+                        != prime.expanded_contributions_per_column[lane]
+                    || artifact.artifact_sha256.len() != 64
+                    || artifact.column_semantic_sha256.len() != 64
+                    || !artifact
+                        .artifact_sha256
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit())
+                    || !artifact
+                        .column_semantic_sha256
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit())
+            })
+        {
+            return Err("p3 three-prime embedded checkpoint is invalid".to_string());
+        }
+    }
+    if checkpoint.next_word_ordinal > first.total_words
+        || (checkpoint.state == "running"
+            && checkpoint.checkpoint_generation != checkpoint.next_word_ordinal as u64)
+        || (checkpoint.state == "artifact_published"
+            && (checkpoint.next_word_ordinal != first.total_words
+                || checkpoint.checkpoint_generation != first.total_words as u64 + 1))
+    {
+        return Err("p3 three-prime bundle word generation is invalid".to_string());
+    }
+    Ok(())
+}
+
+#[derive(Clone, Debug)]
+struct P3ThreePrimeRebuiltIdentity {
+    group_plan_sha256: Vec<String>,
+    source_group_sha256: String,
+    pbw_plan_sha256: String,
+    source_label: String,
+    source_copies: Vec<usize>,
+    flat_plan_sha256: Vec<String>,
+    total_words: usize,
+}
+
+fn validate_three_prime_bundle_against_rebuilt(
+    checkpoint: &P3ThreePrimeBundleCheckpoint,
+    rebuilt: &P3ThreePrimeRebuiltIdentity,
+) -> Result<(), String> {
+    if rebuilt.group_plan_sha256.len() != GPU_FX_PRIMES.len()
+        || rebuilt.flat_plan_sha256.len() != GPU_FX_PRIMES.len()
+        || checkpoint.primes.len() != GPU_FX_PRIMES.len()
+        || checkpoint
+            .primes
+            .iter()
+            .enumerate()
+            .any(|(prime_index, state)| {
+                state.group_plan_sha256 != rebuilt.group_plan_sha256[prime_index]
+                    || state.source_group_sha256 != rebuilt.source_group_sha256
+                    || state.pbw_plan_sha256 != rebuilt.pbw_plan_sha256
+                    || state.source_label != rebuilt.source_label
+                    || state.source_copies != rebuilt.source_copies
+                    || state.flat_plan_sha256 != rebuilt.flat_plan_sha256[prime_index]
+                    || state.total_words != rebuilt.total_words
+            })
+    {
+        return Err("p3 three-prime checkpoint differs from rebuilt plans".to_string());
+    }
+    Ok(())
+}
+
+fn write_three_prime_bundle(
+    path: &Path,
+    checkpoint: &mut P3ThreePrimeBundleCheckpoint,
+) -> Result<(), String> {
+    checkpoint.bundle_sha256.clear();
+    checkpoint.bundle_sha256 = three_prime_bundle_digest(checkpoint)?;
+    validate_three_prime_bundle(checkpoint)?;
+    atomic_json(path, checkpoint)
+}
+
+fn read_three_prime_bundle(path: &Path) -> Result<P3ThreePrimeBundleCheckpoint, String> {
+    let checkpoint: P3ThreePrimeBundleCheckpoint =
+        serde_json::from_reader(File::open(path).map_err(|error| error.to_string())?)
+            .map_err(|error| error.to_string())?;
+    validate_three_prime_bundle(&checkpoint)?;
+    Ok(checkpoint)
+}
+
+#[cfg(feature = "cuda")]
+pub(crate) fn run_three_prime_bundle(
+    group_index: usize,
+    map_directory: &Path,
+    output: &Path,
+    device: i32,
+    total_device_hard_cap_bytes: u64,
+    live: &crate::second_momentum_gpu_progress::LiveProgress,
+) -> Result<Vec<P3ProductionReport>, String> {
+    use crate::eleven_dimensional_second_momentum_gpu::{
+        CudaModularFx, CudaModularP3ThreePrime, ModularFxStaticData,
+        PersistentCudaMultiPrimeGroupExecutor, build_p3_modular_flat_plan,
+    };
+    use crate::second_momentum_gpu_group::{
+        GroupRuntimeIdentity, GroupWordOrchestrationConfig, prepare_cuda_column_group,
+        prepare_full_cuda_column_group, source_group_identity_sha256,
+    };
+    use crate::second_momentum_gpu_jobs::GroupExecutionConfig;
+    use crate::second_momentum_gpu_progress::{
+        GpuBatchProgress, GroupLiveProgress, SourceVisitorProgress,
+    };
+
+    if device < 0 || total_device_hard_cap_bytes < 1024 * 1024 * 1024 {
+        return Err("p3 three-prime device or hard cap is invalid".to_string());
+    }
+    let jobs = (0..GPU_FX_PRIMES.len())
+        .map(|prime_index| P3ProductionJobKey::new(group_index, prime_index))
+        .collect::<Result<Vec<_>, _>>()?;
+    let manifest = build_manifest()?;
+    write_or_validate_manifest(output)?;
+    for job in &jobs {
+        if validate_completed_job(output, job)? {
+            return Err(format!("{} is already complete", job.id()));
+        }
+        if checkpoint_path(output, job).exists() {
+            return Err(format!(
+                "refusing single-prime checkpoint {} in a fused bundle",
+                checkpoint_path(output, job).display()
+            ));
+        }
+    }
+    let _locks = jobs
+        .iter()
+        .map(|job| acquire_lock(output, job))
+        .collect::<Result<Vec<_>, _>>()?;
+    let ordinals = jobs[0].global_ordinals()?;
+    let mut static_data = Vec::with_capacity(GPU_FX_PRIMES.len());
+    let mut p3_plans = Vec::with_capacity(GPU_FX_PRIMES.len());
+    let mut plans = Vec::with_capacity(GPU_FX_PRIMES.len());
+    let mut group_plan_sha256 = Vec::with_capacity(GPU_FX_PRIMES.len());
+    for (prime_index, prime) in GPU_FX_PRIMES.iter().copied().enumerate() {
+        let data = ModularFxStaticData::build(prime)?;
+        let p3_plan = build_p3_modular_flat_plan(&data)?;
+        let p2_probe = CudaModularFx::new(&data, device)?;
+        let runtime = GroupRuntimeIdentity {
+            prime,
+            static_semantic_sha256: data.semantic_sha256().to_string(),
+            flat_plan_sha256: p2_probe.flat_plan_sha256().to_string(),
+        };
+        drop(p2_probe);
+        let plan = if ordinals.iter().all(|ordinal| *ordinal <= 52) {
+            prepare_full_cuda_column_group(&ordinals, map_directory, runtime)?
+        } else if ordinals.iter().all(|ordinal| (53..=61).contains(ordinal)) {
+            prepare_cuda_column_group(
+                GpuFxTranche::Two0001,
+                &ordinals
+                    .iter()
+                    .map(|ordinal| ordinal - 53)
+                    .collect::<Vec<_>>(),
+                runtime,
+            )?
+        } else if ordinals.iter().all(|ordinal| (62..=76).contains(ordinal)) {
+            prepare_cuda_column_group(
+                GpuFxTranche::Three0001,
+                &ordinals
+                    .iter()
+                    .map(|ordinal| ordinal - 62)
+                    .collect::<Vec<_>>(),
+                runtime,
+            )?
+        } else {
+            return Err("p3 three-prime group crosses a certified tranche boundary".to_string());
+        };
+        if plan.ordered_global_ordinals != ordinals || jobs[prime_index].prime() != prime {
+            return Err("p3 three-prime preflight changed canonical order".to_string());
+        }
+        group_plan_sha256.push(format!(
+            "{:x}",
+            Sha256::digest(serde_json::to_vec(&plan).map_err(|error| error.to_string())?)
+        ));
+        static_data.push(data);
+        p3_plans.push(p3_plan);
+        plans.push(plan);
+    }
+    let source_group_sha256 = source_group_identity_sha256(&plans[0]);
+    if plans.iter().skip(1).any(|plan| {
+        source_group_identity_sha256(plan) != source_group_sha256
+            || plan.pbw_plan_sha256 != plans[0].pbw_plan_sha256
+            || plan.source_dynkin_label != plans[0].source_dynkin_label
+            || plan.ordered_source_copies != plans[0].ordered_source_copies
+            || plan.active_columns != plans[0].active_columns
+            || plan.pbw_word_count != plans[0].pbw_word_count
+    }) {
+        return Err("p3 three-prime source plans are not structurally identical".to_string());
+    }
+    let width = plans[0].active_columns;
+    let mut execution = GroupExecutionConfig::from_environment()?;
+    let p3_cap = std::env::var("ADYNKRA_P3_CONTRACTION_CAP_BYTES")
+        .ok()
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .map_err(|_| "ADYNKRA_P3_CONTRACTION_CAP_BYTES must be unsigned".to_string())?
+        .unwrap_or(2 * 1024 * 1024 * 1024);
+    if p3_cap >= total_device_hard_cap_bytes {
+        return Err("p3 three-prime cap leaves no traversal budget".to_string());
+    }
+    execution.aggregate_device_cap_bytes = execution
+        .aggregate_device_cap_bytes
+        .min(total_device_hard_cap_bytes - p3_cap);
+    let path = three_prime_bundle_path(output, group_index);
+    let rebuilt = P3ThreePrimeRebuiltIdentity {
+        group_plan_sha256: group_plan_sha256.clone(),
+        source_group_sha256: source_group_sha256.clone(),
+        pbw_plan_sha256: plans[0].pbw_plan_sha256.clone(),
+        source_label: plans[0].source_dynkin_label.clone(),
+        source_copies: plans[0].ordered_source_copies.clone(),
+        flat_plan_sha256: p3_plans
+            .iter()
+            .map(|plan| plan.semantic_sha256().to_string())
+            .collect(),
+        total_words: plans[0].pbw_word_count,
+    };
+    let mut bundle = if path.exists() {
+        let observed = read_three_prime_bundle(&path)?;
+        validate_three_prime_bundle_against_rebuilt(&observed, &rebuilt)?;
+        if observed.state == "artifact_published" {
+            let reports = observed
+                .primes
+                .iter()
+                .map(report_from_checkpoint)
+                .collect::<Result<Vec<_>, _>>()?;
+            for (job, report) in jobs.iter().zip(&reports) {
+                for artifact in &report.artifacts {
+                    validate_artifact(output, job, artifact, &report.flat_plan_sha256)?;
+                }
+                atomic_json(&report_path(output, job), report)?;
+                if !validate_completed_job(output, job)? {
+                    return Err("p3 three-prime completed adoption failed".to_string());
+                }
+            }
+            return Ok(reports);
+        }
+        observed
+    } else {
+        let source_hashers = seed_source_hashers(&plans[0])?;
+        let states = (0..GPU_FX_PRIMES.len())
+            .map(|prime_index| P3ProductionCheckpoint {
+                schema_version: P3_PRODUCTION_CHECKPOINT_SCHEMA.to_string(),
+                manifest_sha256: manifest.manifest_sha256.clone(),
+                job: jobs[prime_index].clone(),
+                prime: GPU_FX_PRIMES[prime_index],
+                group_plan_sha256: group_plan_sha256[prime_index].clone(),
+                source_group_sha256: source_group_sha256.clone(),
+                pbw_plan_sha256: plans[0].pbw_plan_sha256.clone(),
+                source_label: plans[0].source_dynkin_label.clone(),
+                source_copies: plans[0].ordered_source_copies.clone(),
+                flat_plan_sha256: p3_plans[prime_index].semantic_sha256().to_string(),
+                next_word_ordinal: 0,
+                total_words: plans[0].pbw_word_count,
+                next_batch_ordinal: 0,
+                p3_batches_completed: 0,
+                raw_terms_per_column: vec![0; width],
+                expanded_contributions_per_column: vec![0; width],
+                reduced_expanded_contributions_per_column: vec![0; width],
+                source_hashers: source_hashers.clone(),
+                p2_rows: vec![
+                    vec![
+                        GaussianResidue::zero();
+                        crate::eleven_dimensional_second_momentum_gpu::FUNCTIONAL_ROW_COUNT
+                    ];
+                    width
+                ],
+                p2_batches_folded: 0,
+                kernel_milliseconds: 0.0,
+                device_resident_bytes: 0,
+                device_high_water_bytes: 0,
+                device_hard_cap_bytes: total_device_hard_cap_bytes,
+                checkpoint_generation: 0,
+                state: "running".to_string(),
+                artifacts: Vec::new(),
+                updated_unix_ms: unix_ms(),
+            })
+            .collect::<Vec<_>>();
+        P3ThreePrimeBundleCheckpoint {
+            schema_version: P3_THREE_PRIME_BUNDLE_SCHEMA.to_string(),
+            bundle_id: three_prime_bundle_id(group_index),
+            manifest_sha256: manifest.manifest_sha256.clone(),
+            group_index,
+            checkpoint_generation: 0,
+            next_word_ordinal: 0,
+            next_batch_ordinal: 0,
+            state: "running".to_string(),
+            primes: states,
+            updated_unix_ms: unix_ms(),
+            bundle_sha256: String::new(),
+        }
+    };
+    let initial_p3_rows = bundle
+        .primes
+        .iter()
+        .map(|state| restore_p3_rows(output, &state.job, state))
+        .collect::<Result<Vec<_>, _>>()?;
+    let map = ordinals
+        .iter()
+        .all(|ordinal| *ordinal <= 52)
+        .then_some(map_directory);
+    let mut p2 = PersistentCudaMultiPrimeGroupExecutor::new(
+        plans.clone(),
+        &static_data,
+        device,
+        execution.max_union_keys_per_batch,
+        execution.aggregate_device_cap_bytes,
+        execution.contraction_device_cap_bytes,
+        execution.per_lane_host_staging_cap_bytes,
+        execution.download_chunk_terms,
+        map,
+    )?;
+    p2.restore_columns(
+        bundle
+            .primes
+            .iter()
+            .map(|state| state.p2_rows.clone())
+            .collect(),
+        bundle.next_batch_ordinal,
+    )?;
+    let static_data_array: &[ModularFxStaticData; 3] = static_data
+        .as_slice()
+        .try_into()
+        .map_err(|_| "p3 static-data count is not three".to_string())?;
+    let p3_plan_array: &[crate::eleven_dimensional_second_momentum_gpu::P3ModularFlatPlan; 3] =
+        p3_plans
+            .as_slice()
+            .try_into()
+            .map_err(|_| "p3 plan count is not three".to_string())?;
+    let mut p3 = CudaModularP3ThreePrime::new_with_device_cap(
+        static_data_array,
+        p3_plan_array,
+        device,
+        p3_cap,
+    )?;
+    p3.reset_persistent_columns(&initial_p3_rows)?;
+    if !path.exists() {
+        write_three_prime_bundle(&path, &mut bundle)?;
+    }
+    let events = path
+        .parent()
+        .ok_or_else(|| "p3 bundle path has no parent".to_string())?
+        .join("events.jsonl");
+    append_event(
+        &events,
+        &serde_json::json!({
+            "schema_version": P3_THREE_PRIME_BUNDLE_SCHEMA,
+            "event": "bundle_start",
+            "timestamp_unix_ms": unix_ms(),
+            "bundle_id": bundle.bundle_id,
+            "resume_word_ordinal": bundle.next_word_ordinal,
+            "total_words": plans[0].pbw_word_count,
+            "p3_cap_bytes": p3_cap,
+            "p2_budget": p2.device_budget(),
+        }),
+    )?;
+    let canary_max_words = std::env::var("ADYNKRA_P3_CANARY_MAX_WORDS")
+        .ok()
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .map_err(|_| "ADYNKRA_P3_CANARY_MAX_WORDS must be positive".to_string())?;
+    if canary_max_words == Some(0) {
+        return Err("ADYNKRA_P3_CANARY_MAX_WORDS must be positive".to_string());
+    }
+    let start_word = bundle.next_word_ordinal;
+    let p3_raw_fanout = p3_plans[0].raw_fanout_table()?;
+    let mut fanout_cache = P3RawFanoutCache::new(execution.max_union_keys_per_batch)?;
+    let mut p2_resident_bytes_by_prime = p2
+        .device_budget()
+        .contraction_resident_bytes_by_prime
+        .clone();
+    let mut p2_high_water_bytes_by_prime = p2_resident_bytes_by_prime.clone();
+    for word in bundle.next_word_ordinal..plans[0].pbw_word_count {
+        let first_batch = bundle.next_batch_ordinal;
+        let mut source_hashers = bundle.primes[0].source_hashers.clone();
+        let mut raw_terms = bundle.primes[0].raw_terms_per_column.clone();
+        let mut raw_expanded = bundle
+            .primes
+            .iter()
+            .map(|state| state.expanded_contributions_per_column.clone())
+            .collect::<Vec<_>>();
+        let orchestration = p2.run_word_synchronous_batched_with_union(
+            GroupWordOrchestrationConfig {
+                start_word_ordinal: word,
+                end_word_ordinal_exclusive: word + 1,
+                first_global_batch_ordinal: first_batch,
+                raw_batch_term_cap_per_lane: execution.raw_batch_terms_per_lane,
+                max_union_keys_per_batch: execution.max_union_keys_per_batch,
+                aggregate_host_payload_cap_bytes: execution.aggregate_host_payload_cap_bytes,
+            },
+            |lane, _, terms| {
+                update_source_hash(&mut source_hashers[lane], word, terms)?;
+                raw_terms[lane] = raw_terms[lane]
+                    .checked_add(terms.len() as u64)
+                    .ok_or_else(|| "p3 bundle raw count overflow".to_string())?;
+                for term in terms {
+                    let packed_key = p3_recoupling_key(term)?;
+                    let key = packed_key & !(0xff_u64 << 32);
+                    let fanout = fanout_cache.get_or_try_insert(key, || {
+                        let mut normalized = *term;
+                        normalized.coefficient = 1;
+                        p3_raw_fanout.fanout(&normalized)
+                    })?;
+                    for prime_index in 0..GPU_FX_PRIMES.len() {
+                        if term
+                            .coefficient
+                            .rem_euclid(i128::from(GPU_FX_PRIMES[prime_index]))
+                            != 0
+                        {
+                            raw_expanded[prime_index][lane] = raw_expanded[prime_index][lane]
+                                .checked_add(fanout)
+                                .ok_or_else(|| "p3 bundle expanded count overflow".to_string())?;
+                        }
+                    }
+                }
+                Ok(())
+            },
+            |_, union| {
+                let timing = p3.accumulate_reduced_union_multilane_persistent(
+                    &union.keys,
+                    &union.key_major_values,
+                    width,
+                )?;
+                for prime_index in 0..GPU_FX_PRIMES.len() {
+                    let state = &mut bundle.primes[prime_index];
+                    for lane in 0..width {
+                        state.reduced_expanded_contributions_per_column[lane] = state
+                            .reduced_expanded_contributions_per_column[lane]
+                            .checked_add(timing.expanded_contributions[prime_index][lane])
+                            .ok_or_else(|| "p3 bundle reduced count overflow".to_string())?;
+                    }
+                    state.p3_batches_completed = state
+                        .p3_batches_completed
+                        .checked_add(1)
+                        .ok_or_else(|| "p3 bundle batch count overflow".to_string())?;
+                    state.kernel_milliseconds += f64::from(timing.kernel_milliseconds);
+                    state.device_resident_bytes = timing.resident_bytes;
+                    state.device_high_water_bytes = state
+                        .device_high_water_bytes
+                        .max(timing.buffer_high_water_bytes);
+                }
+                live.record_gpu_batch(GpuBatchProgress {
+                    batches_completed: bundle.primes[0].p3_batches_completed,
+                    last_batch_ms: f64::from(timing.kernel_milliseconds),
+                    total_batch_ms: bundle.primes[0].kernel_milliseconds,
+                    last_contract_ms: f64::from(timing.kernel_milliseconds),
+                    total_contract_ms: bundle.primes[0].kernel_milliseconds,
+                    ..GpuBatchProgress::default()
+                });
+                Ok(())
+            },
+            |prime_slot, _, observation| {
+                let cuda = observation
+                    .cuda
+                    .as_ref()
+                    .ok_or_else(|| "p3 bundle p2 observation omitted CUDA telemetry".to_string())?;
+                p2_resident_bytes_by_prime[prime_slot] = cuda.device_resident_bytes;
+                p2_high_water_bytes_by_prime[prime_slot] =
+                    p2_high_water_bytes_by_prime[prime_slot].max(cuda.device_high_water_bytes);
+                Ok(())
+            },
+            |completed_word, completions| {
+                if completed_word != word || completions.len() != width {
+                    return Err("p3 bundle word completion identity changed".to_string());
+                }
+                Ok(())
+            },
+        )?;
+        let p3_rows = p3.download_persistent_columns(width)?;
+        let generation = (word + 1) as u64;
+        let mut superseded = Vec::new();
+        for prime_index in 0..GPU_FX_PRIMES.len() {
+            let state = &mut bundle.primes[prime_index];
+            state.source_hashers = source_hashers.clone();
+            state.raw_terms_per_column = raw_terms.clone();
+            state.expanded_contributions_per_column = raw_expanded[prime_index].clone();
+            state.next_word_ordinal = orchestration.next_word_ordinal;
+            state.next_batch_ordinal = orchestration.next_global_batch_ordinal;
+            state.p2_rows = p2.final_columns(prime_index)?.to_vec();
+            state.p2_batches_folded = orchestration.next_global_batch_ordinal;
+            state.checkpoint_generation = generation;
+            state.updated_unix_ms = unix_ms();
+            superseded.extend(std::mem::take(&mut state.artifacts));
+            state.artifacts = write_generation_artifacts(
+                output,
+                &state.job,
+                &state.flat_plan_sha256,
+                &p3_rows[prime_index],
+                &state.expanded_contributions_per_column,
+                generation,
+                false,
+            )?;
+        }
+        bundle.next_word_ordinal = orchestration.next_word_ordinal;
+        bundle.next_batch_ordinal = orchestration.next_global_batch_ordinal;
+        bundle.checkpoint_generation = generation;
+        bundle.updated_unix_ms = unix_ms();
+        write_three_prime_bundle(&path, &mut bundle)?;
+        remove_superseded_partials(output, &superseded);
+        live.update_source(SourceVisitorProgress {
+            word: Some(word as u64),
+            raw_terms_emitted: raw_terms.iter().sum(),
+            batches_flushed: bundle.next_batch_ordinal,
+            hard_memory_cap_bytes: execution.aggregate_host_payload_cap_bytes,
+            eta_sample_count: bundle.next_batch_ordinal,
+            ..SourceVisitorProgress::default()
+        });
+        let aggregate_device_resident_bytes = p2_resident_bytes_by_prime
+            .iter()
+            .try_fold(bundle.primes[0].device_resident_bytes, |total, value| {
+                total.checked_add(*value)
+            })
+            .ok_or_else(|| "p3 bundle aggregate resident-byte overflow".to_string())?;
+        let aggregate_device_high_water_bytes = p2_high_water_bytes_by_prime
+            .iter()
+            .try_fold(bundle.primes[0].device_high_water_bytes, |total, value| {
+                total.checked_add(*value)
+            })
+            .ok_or_else(|| "p3 bundle aggregate high-water overflow".to_string())?;
+        live.update_group(GroupLiveProgress {
+            group_id: Some(bundle.bundle_id.clone()),
+            words_completed: bundle.next_word_ordinal,
+            words_total: plans[0].pbw_word_count,
+            global_batch_ordinal: bundle.next_batch_ordinal,
+            raw_terms_per_column: raw_terms,
+            aggregate_host_cap_bytes: execution.aggregate_host_payload_cap_bytes,
+            device_resident_bytes: aggregate_device_resident_bytes,
+            device_high_water_bytes: aggregate_device_high_water_bytes,
+            aggregate_device_cap_bytes: total_device_hard_cap_bytes,
+            checkpoint_generation: generation,
+            checkpoint_sha256: Some(bundle.bundle_sha256.clone()),
+            checkpoint_written_unix_ms: Some(bundle.updated_unix_ms),
+            ..GroupLiveProgress::default()
+        });
+        append_event(
+            &events,
+            &serde_json::json!({
+                "schema_version": P3_THREE_PRIME_BUNDLE_SCHEMA,
+                "event": "bundle_word_checkpoint",
+                "timestamp_unix_ms": bundle.updated_unix_ms,
+                "bundle_id": bundle.bundle_id,
+                "next_word_ordinal": bundle.next_word_ordinal,
+                "next_batch_ordinal": bundle.next_batch_ordinal,
+                "checkpoint_generation": bundle.checkpoint_generation,
+                "bundle_sha256": bundle.bundle_sha256,
+                "p2_resident_bytes_by_prime": p2_resident_bytes_by_prime,
+                "p2_high_water_bytes_by_prime": p2_high_water_bytes_by_prime,
+                "p3_resident_bytes": bundle.primes[0].device_resident_bytes,
+                "p3_high_water_bytes": bundle.primes[0].device_high_water_bytes,
+                "aggregate_device_resident_bytes": aggregate_device_resident_bytes,
+                "aggregate_device_high_water_bytes": aggregate_device_high_water_bytes,
+                "aggregate_device_cap_bytes": total_device_hard_cap_bytes,
+            }),
+        )?;
+        if canary_max_words.is_some_and(|limit| {
+            bundle.next_word_ordinal < plans[0].pbw_word_count
+                && bundle.next_word_ordinal - start_word >= limit
+        }) {
+            return Err("intentional p3 three-prime stop after durable checkpoint".to_string());
+        }
+    }
+    let p3_rows = p3.download_persistent_columns(width)?;
+    let final_generation = bundle.checkpoint_generation + 1;
+    let mut superseded = Vec::new();
+    for prime_index in 0..GPU_FX_PRIMES.len() {
+        let state = &mut bundle.primes[prime_index];
+        superseded.extend(std::mem::take(&mut state.artifacts));
+        state.artifacts = write_generation_artifacts(
+            output,
+            &state.job,
+            &state.flat_plan_sha256,
+            &p3_rows[prime_index],
+            &state.expanded_contributions_per_column,
+            final_generation,
+            true,
+        )?;
+        state.state = "artifact_published".to_string();
+        state.checkpoint_generation = final_generation;
+        state.updated_unix_ms = unix_ms();
+    }
+    bundle.state = "artifact_published".to_string();
+    bundle.checkpoint_generation = final_generation;
+    bundle.updated_unix_ms = unix_ms();
+    write_three_prime_bundle(&path, &mut bundle)?;
+    let reports = bundle
+        .primes
+        .iter()
+        .map(report_from_checkpoint)
+        .collect::<Result<Vec<_>, _>>()?;
+    for (job, report) in jobs.iter().zip(&reports) {
+        atomic_json(&report_path(output, job), report)?;
+        if !validate_completed_job(output, job)? {
+            return Err("p3 three-prime final publication failed".to_string());
+        }
+    }
+    remove_superseded_partials(output, &superseded);
+    append_event(
+        &events,
+        &serde_json::json!({
+            "schema_version": P3_THREE_PRIME_BUNDLE_SCHEMA,
+            "event": "bundle_complete",
+            "timestamp_unix_ms": unix_ms(),
+            "bundle_id": bundle.bundle_id,
+            "bundle_sha256": bundle.bundle_sha256,
+            "reports": reports,
+        }),
+    )?;
+    Ok(reports)
 }
 
 pub(crate) fn checkpoint_path(output: &Path, job: &P3ProductionJobKey) -> PathBuf {
@@ -1588,6 +2352,179 @@ mod tests {
         assert!(!union_lane_has_terms(&union, 3, 2).unwrap());
         assert!(union_lane_has_terms(&union, 2, 0).is_err());
         assert!(union_lane_has_terms(&union, 3, 3).is_err());
+    }
+
+    fn test_three_prime_bundle(
+        next_word: usize,
+        total_words: usize,
+    ) -> P3ThreePrimeBundleCheckpoint {
+        let manifest = build_manifest().unwrap();
+        let group_index = 0;
+        let jobs = (0..GPU_FX_PRIMES.len())
+            .map(|prime_index| P3ProductionJobKey::new(group_index, prime_index).unwrap())
+            .collect::<Vec<_>>();
+        let ordinals = jobs[0].global_ordinals().unwrap();
+        let width = ordinals.len();
+        let hashers = (0..width)
+            .map(|_| CheckpointableSha256::new())
+            .collect::<Vec<_>>();
+        let generation = next_word as u64;
+        let primes = jobs
+            .iter()
+            .enumerate()
+            .map(|(prime_index, job)| {
+                let artifacts = if next_word == 0 {
+                    Vec::new()
+                } else {
+                    ordinals
+                        .iter()
+                        .map(|ordinal| P3PublishedArtifact {
+                            global_ordinal: *ordinal,
+                            relative_path: format!(
+                                "jobs/{}/partial/generation-{generation:08}-c{ordinal}.adfxp3",
+                                job.id()
+                            ),
+                            artifact_sha256: "a".repeat(64),
+                            column_semantic_sha256: "b".repeat(64),
+                            expanded_contributions: 13,
+                        })
+                        .collect()
+                };
+                P3ProductionCheckpoint {
+                    schema_version: P3_PRODUCTION_CHECKPOINT_SCHEMA.to_string(),
+                    manifest_sha256: manifest.manifest_sha256.clone(),
+                    job: job.clone(),
+                    prime: GPU_FX_PRIMES[prime_index],
+                    group_plan_sha256: format!("{:064x}", prime_index + 1),
+                    source_group_sha256: "c".repeat(64),
+                    pbw_plan_sha256: "d".repeat(64),
+                    source_label: "(10001)".to_string(),
+                    source_copies: vec![1; width],
+                    flat_plan_sha256: format!("{:064x}", prime_index + 10),
+                    next_word_ordinal: next_word,
+                    total_words,
+                    next_batch_ordinal: generation * 2,
+                    p3_batches_completed: generation * 2,
+                    raw_terms_per_column: vec![11; width],
+                    expanded_contributions_per_column: vec![13; width],
+                    reduced_expanded_contributions_per_column: vec![7; width],
+                    source_hashers: hashers.clone(),
+                    p2_rows: vec![
+                        vec![
+                            GaussianResidue::zero();
+                            crate::eleven_dimensional_second_momentum_gpu::FUNCTIONAL_ROW_COUNT
+                        ];
+                        width
+                    ],
+                    p2_batches_folded: generation * 2,
+                    kernel_milliseconds: generation as f64,
+                    device_resident_bytes: 100,
+                    device_high_water_bytes: 200,
+                    device_hard_cap_bytes: 1024,
+                    checkpoint_generation: generation,
+                    state: "running".to_string(),
+                    artifacts,
+                    updated_unix_ms: 1,
+                }
+            })
+            .collect();
+        let mut bundle = P3ThreePrimeBundleCheckpoint {
+            schema_version: P3_THREE_PRIME_BUNDLE_SCHEMA.to_string(),
+            bundle_id: three_prime_bundle_id(group_index),
+            manifest_sha256: manifest.manifest_sha256,
+            group_index,
+            checkpoint_generation: generation,
+            next_word_ordinal: next_word,
+            next_batch_ordinal: generation * 2,
+            state: "running".to_string(),
+            primes,
+            updated_unix_ms: 1,
+            bundle_sha256: String::new(),
+        };
+        bundle.bundle_sha256 = three_prime_bundle_digest(&bundle).unwrap();
+        bundle
+    }
+
+    #[test]
+    fn p3_three_prime_bundle_binds_generation_counts_paths_and_prime_order() {
+        let output = temporary_directory("p3-three-prime-bundle");
+        let path = three_prime_bundle_path(&output, 0);
+        let mut bundle = test_three_prime_bundle(1, 2);
+        write_three_prime_bundle(&path, &mut bundle).unwrap();
+        assert_eq!(
+            read_three_prime_bundle(&path).unwrap().bundle_sha256,
+            bundle.bundle_sha256
+        );
+
+        let mut reordered = bundle.clone();
+        reordered.primes.swap(0, 1);
+        reordered.bundle_sha256 = three_prime_bundle_digest(&reordered).unwrap();
+        assert!(validate_three_prime_bundle(&reordered).is_err());
+
+        let mut wrong_counter = bundle.clone();
+        wrong_counter.primes[1].p3_batches_completed += 1;
+        wrong_counter.bundle_sha256 = three_prime_bundle_digest(&wrong_counter).unwrap();
+        assert!(validate_three_prime_bundle(&wrong_counter).is_err());
+
+        let mut wrong_path = bundle.clone();
+        wrong_path.primes[2].artifacts[0].relative_path = "columns/stale.adfxp3".to_string();
+        wrong_path.bundle_sha256 = three_prime_bundle_digest(&wrong_path).unwrap();
+        assert!(validate_three_prime_bundle(&wrong_path).is_err());
+
+        let mut wrong_generation = bundle.clone();
+        wrong_generation.checkpoint_generation += 1;
+        wrong_generation.bundle_sha256 = three_prime_bundle_digest(&wrong_generation).unwrap();
+        assert!(validate_three_prime_bundle(&wrong_generation).is_err());
+
+        let mut empty = test_three_prime_bundle(0, 2);
+        empty.primes[0]
+            .artifacts
+            .push(bundle.primes[0].artifacts[0].clone());
+        empty.bundle_sha256 = three_prime_bundle_digest(&empty).unwrap();
+        assert!(validate_three_prime_bundle(&empty).is_err());
+
+        let rebuilt = P3ThreePrimeRebuiltIdentity {
+            group_plan_sha256: bundle
+                .primes
+                .iter()
+                .map(|state| state.group_plan_sha256.clone())
+                .collect(),
+            source_group_sha256: bundle.primes[0].source_group_sha256.clone(),
+            pbw_plan_sha256: bundle.primes[0].pbw_plan_sha256.clone(),
+            source_label: bundle.primes[0].source_label.clone(),
+            source_copies: bundle.primes[0].source_copies.clone(),
+            flat_plan_sha256: bundle
+                .primes
+                .iter()
+                .map(|state| state.flat_plan_sha256.clone())
+                .collect(),
+            total_words: bundle.primes[0].total_words,
+        };
+        validate_three_prime_bundle_against_rebuilt(&bundle, &rebuilt).unwrap();
+        let mut stale_plan = bundle.clone();
+        stale_plan.primes[1].flat_plan_sha256 = "e".repeat(64);
+        stale_plan.bundle_sha256 = three_prime_bundle_digest(&stale_plan).unwrap();
+        validate_three_prime_bundle(&stale_plan).unwrap();
+        assert!(validate_three_prime_bundle_against_rebuilt(&stale_plan, &rebuilt).is_err());
+
+        // A crash after writing an unreferenced next-generation artifact but
+        // before replacing the authoritative bundle cannot advance adoption.
+        let stray = output
+            .join("jobs")
+            .join(bundle.primes[0].job.id())
+            .join("partial")
+            .join("generation-00000002-c999.adfxp3");
+        atomic_bytes(&stray, b"uncommitted next bundle generation").unwrap();
+        let adopted = read_three_prime_bundle(&path).unwrap();
+        assert_eq!(adopted.checkpoint_generation, 1);
+        assert!(
+            adopted
+                .primes
+                .iter()
+                .flat_map(|state| &state.artifacts)
+                .all(|artifact| artifact.relative_path.contains("generation-00000001-"))
+        );
+        fs::remove_dir_all(output).unwrap();
     }
 
     #[test]

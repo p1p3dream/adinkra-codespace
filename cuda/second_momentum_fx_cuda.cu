@@ -76,6 +76,30 @@ struct P3PlanEntry {
   uint64_t functional_salt;
 };
 
+struct P3ThreePrimePlanEntry {
+  uint32_t contracted_spinor;
+  uint32_t template_spinor;
+  uint32_t contraction_axis;
+  uint32_t sector;
+  uint32_t output_coordinate;
+  int16_t scaled_real;
+  int16_t scaled_imaginary;
+  uint64_t functional_salt;
+};
+
+// Host ABI entries retain the complete authenticated schedule identity.  The
+// kernel needs only the already-validated row selector, exact coefficient,
+// and functional salt, so keep a compact device-only projection to halve the
+// hot plan stream from 32 to 16 bytes per visit.
+struct P3ThreePrimeDeviceEntry {
+  uint64_t functional_salt;
+  int16_t scaled_real;
+  int16_t scaled_imaginary;
+  uint8_t contraction_axis;
+  uint8_t sector;
+  uint16_t reserved;
+};
+
 struct SourceEntry {
   uint32_t exterior_mask;
   uint32_t coefficient;
@@ -91,6 +115,14 @@ static_assert(sizeof(P3PlanEntry) == 40);
 static_assert(alignof(P3PlanEntry) == 8);
 static_assert(offsetof(P3PlanEntry, coefficient) == 20);
 static_assert(offsetof(P3PlanEntry, functional_salt) == 32);
+static_assert(sizeof(P3ThreePrimePlanEntry) == 32);
+static_assert(alignof(P3ThreePrimePlanEntry) == 8);
+static_assert(offsetof(P3ThreePrimePlanEntry, scaled_real) == 20);
+static_assert(offsetof(P3ThreePrimePlanEntry, functional_salt) == 24);
+static_assert(sizeof(P3ThreePrimeDeviceEntry) == 16);
+static_assert(alignof(P3ThreePrimeDeviceEntry) == 8);
+static_assert(offsetof(P3ThreePrimeDeviceEntry, scaled_real) == 8);
+static_assert(offsetof(P3ThreePrimeDeviceEntry, contraction_axis) == 12);
 
 struct SparseEntry {
   uint64_t key;
@@ -212,10 +244,18 @@ struct Context {
   uint32_t *p3_plan_offsets = nullptr;
   uint32_t *p3_plan_pair_offsets = nullptr;
   P3PlanEntry *p3_plan_entries = nullptr;
+  P3ThreePrimeDeviceEntry *p3_three_prime_plan_entries = nullptr;
   uint32_t p3_plan_entry_count = 0;
   uint32_t p3_active_columns = 0;
   uint32_t *p3_output_real = nullptr;
   uint32_t *p3_output_imaginary = nullptr;
+  uint32_t p3_three_prime_values[3]{};
+  uint32_t p3_three_prime_inverse_scale[3]{};
+  uint32_t p3_three_prime_active_columns = 0;
+  uint32_t *p3_three_prime_output_real = nullptr;
+  uint32_t *p3_three_prime_output_imaginary = nullptr;
+  unsigned long long *p3_three_prime_expanded = nullptr;
+  uint32_t *p3_three_prime_invalid = nullptr;
   bool legacy_contraction = false;
   SourceEntry *sources = nullptr;
   uint32_t *output_real = nullptr;
@@ -288,6 +328,7 @@ void destroy(Context *context) {
   cudaFree(context->p3_plan_offsets);
   cudaFree(context->p3_plan_pair_offsets);
   cudaFree(context->p3_plan_entries);
+  cudaFree(context->p3_three_prime_plan_entries);
   cudaFree(context->pair_salts);
   cudaFree(context->sources);
   cudaFree(context->output_real);
@@ -296,6 +337,10 @@ void destroy(Context *context) {
   cudaFree(context->output_imaginary_wide);
   cudaFree(context->p3_output_real);
   cudaFree(context->p3_output_imaginary);
+  cudaFree(context->p3_three_prime_output_real);
+  cudaFree(context->p3_three_prime_output_imaginary);
+  cudaFree(context->p3_three_prime_expanded);
+  cudaFree(context->p3_three_prime_invalid);
   cudaFree(context->expanded);
   cudaFree(context->recoupling_keys[0]);
   cudaFree(context->recoupling_keys[1]);
@@ -371,6 +416,16 @@ __device__ __forceinline__ uint32_t multiply_mod(uint32_t left,
                                                   uint32_t right,
                                                   uint32_t prime) {
   return reduce_u64_mod(static_cast<uint64_t>(left) * right, prime);
+}
+
+__device__ __forceinline__ uint32_t twos_complement_i64_mod(
+    unsigned long long bits, uint32_t prime) {
+  if ((bits >> 63) == 0) {
+    return static_cast<uint32_t>(bits % prime);
+  }
+  const unsigned long long magnitude = (~bits) + 1ULL;
+  const uint32_t residue = static_cast<uint32_t>(magnitude % prime);
+  return residue == 0 ? 0 : prime - residue;
 }
 
 __device__ __forceinline__ GaussianResidue multiply_gaussian(
@@ -916,6 +971,225 @@ __global__ void accumulate_p3_multicol_kernel(
         const uint32_t coefficient = shared_coefficients[column];
         if (coefficient != 0 && coefficient < prime) {
           atomicAdd(&expanded[column], block_expanded);
+        }
+      }
+    }
+  }
+}
+
+// One block traverses each structural plan entry once in the common exact
+// 1/13440 lift. The exact response is reduced independently into the three
+// pinned fields only during the column flush. Rows and contribution counts
+// remain disjoint by prime while all plan traversal and shared atomics are
+// reused.
+__global__ void accumulate_p3_three_prime_multicol_kernel(
+    const uint64_t *__restrict__ keys,
+    const uint32_t *__restrict__ key_prime_column_coefficients,
+    uint32_t unique_count, uint32_t active_columns,
+    const uint32_t *__restrict__ plan_pair_offsets,
+    const P3ThreePrimeDeviceEntry *__restrict__ plan_entries,
+    const uint64_t *__restrict__ pair_salts, uint32_t prime0,
+    uint32_t prime1, uint32_t prime2, uint32_t inverse_scale0,
+    uint32_t inverse_scale1, uint32_t inverse_scale2,
+    uint32_t *__restrict__ output_real,
+    uint32_t *__restrict__ output_imaginary,
+    unsigned long long *__restrict__ expanded,
+    uint32_t *__restrict__ invalid) {
+  constexpr uint32_t kThreads = 128;
+  constexpr uint32_t kPrimeCount = 3;
+  const uint32_t primes[kPrimeCount] = {prime0, prime1, prime2};
+  const uint32_t inverse_scales[kPrimeCount] = {
+      inverse_scale0, inverse_scale1, inverse_scale2};
+  const uint32_t source_index = blockIdx.x;
+  if (source_index >= unique_count) return;
+  __shared__ uint32_t shared_mask;
+  __shared__ uint32_t shared_free_spinor;
+  __shared__ uint32_t shared_pair;
+  __shared__ uint32_t shared_valid;
+  __shared__ uint32_t shared_coefficients[kPrimeCount][32];
+  __shared__ unsigned long long warp_expanded[4];
+  constexpr uint32_t kContractedChoices = 12;
+  constexpr uint32_t kTemplateChoices = kSpinors - 11;
+  constexpr uint32_t kAdmissiblePairs =
+      kContractedChoices * kTemplateChoices;
+  __shared__ uint16_t shared_plan_pairs[kAdmissiblePairs];
+  __shared__ uint64_t shared_source_salts[kAdmissiblePairs];
+  __shared__ uint8_t shared_negative[kAdmissiblePairs];
+  constexpr uint32_t kRowsPerDegreePair =
+      kSectors * kContractionAxes * kSeeds * kBuckets;
+  __shared__ unsigned long long shared_real[kRowsPerDegreePair];
+  __shared__ unsigned long long shared_imaginary[kRowsPerDegreePair];
+
+  if (threadIdx.x == 0) {
+    shared_valid = 0;
+    const uint64_t key = keys[source_index];
+    const uint32_t metadata = static_cast<uint32_t>(key >> 32);
+    const uint32_t pair_left = metadata & 15U;
+    const uint32_t pair_right = (metadata >> 4) & 15U;
+    const uint32_t free_spinor = (metadata >> 8) & 31U;
+    const uint32_t mask = static_cast<uint32_t>(key);
+    if ((metadata >> 13) != 0 || pair_left > pair_right || pair_right >= 11 ||
+        free_spinor >= 32 || __popc(mask) != 12) {
+      atomicExch(invalid, 1U);
+    } else {
+      shared_mask = mask;
+      shared_free_spinor = free_spinor;
+      shared_pair = pair_ordinal(pair_left, pair_right);
+      shared_valid = 1;
+    }
+  }
+  for (uint32_t index = threadIdx.x;
+       index < kPrimeCount * active_columns; index += kThreads) {
+    const uint32_t prime_slot = index / active_columns;
+    const uint32_t column = index % active_columns;
+    const uint32_t coefficient = key_prime_column_coefficients[
+        (static_cast<uint64_t>(source_index) * kPrimeCount + prime_slot) *
+            active_columns +
+        column];
+    shared_coefficients[prime_slot][column] = coefficient;
+    if (coefficient >= primes[prime_slot]) atomicExch(invalid, 2U);
+  }
+  __syncthreads();
+
+  if (shared_valid != 0) {
+    for (uint32_t pair_slot = threadIdx.x; pair_slot < kAdmissiblePairs;
+         pair_slot += kThreads) {
+      const uint32_t contracted_ordinal = pair_slot / kTemplateChoices;
+      const uint32_t template_ordinal = pair_slot % kTemplateChoices;
+      const uint32_t contracted_spinor =
+          nth_set_bit(shared_mask, contracted_ordinal);
+      const uint32_t degree11_mask =
+          shared_mask ^ (1U << contracted_spinor);
+      const uint32_t template_spinor =
+          nth_set_bit(~degree11_mask, template_ordinal);
+      const uint32_t degree12_mask =
+          degree11_mask | (1U << template_spinor);
+      const uint32_t highest = 31U - __clz(degree12_mask);
+      const uint32_t functional_mask = degree12_mask ^ (1U << highest);
+      shared_plan_pairs[pair_slot] = static_cast<uint16_t>(
+          contracted_spinor * kSpinors + template_spinor);
+      shared_source_salts[pair_slot] =
+          rotate_left(static_cast<uint64_t>(functional_mask), 43) ^
+          pair_salts[shared_pair];
+      shared_negative[pair_slot] = static_cast<uint8_t>(
+          (contraction_sign(shared_mask, contracted_spinor) < 0) !=
+          (wedge_sign(degree11_mask, template_spinor) < 0));
+    }
+  }
+  __syncthreads();
+
+  unsigned long long local_expanded = 0;
+  if (shared_valid != 0) {
+    for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
+      for (uint32_t index = threadIdx.x; index < kRowsPerDegreePair;
+           index += kThreads) {
+        shared_real[index] = 0;
+        shared_imaginary[index] = 0;
+      }
+      __syncthreads();
+      const uint32_t schedule = degree * kSpinors + shared_free_spinor;
+      const uint32_t lane = threadIdx.x & 31U;
+      const uint32_t warp = threadIdx.x >> 5;
+      constexpr uint32_t kWarps = kThreads / 32;
+      constexpr uint32_t kPairRounds =
+          (kAdmissiblePairs + kWarps - 1) / kWarps;
+      for (uint32_t pair_round = 0; pair_round < kPairRounds; ++pair_round) {
+        const uint32_t pair_slot = pair_round * kWarps + warp;
+        if (pair_slot >= kAdmissiblePairs) continue;
+        const uint32_t pair_index = shared_plan_pairs[pair_slot];
+        const uint32_t offset_index =
+            schedule * kP3SpinorPairCount + pair_index;
+        const uint32_t begin = plan_pair_offsets[offset_index];
+        const uint32_t end = plan_pair_offsets[offset_index + 1];
+        for (uint32_t index = begin + lane; index < end; index += 32) {
+          const P3ThreePrimeDeviceEntry entry = plan_entries[index];
+          const uint64_t base = splitmix64(
+              entry.functional_salt ^ shared_source_salts[pair_slot]);
+#pragma unroll
+          for (uint32_t seed = 0; seed < kSeeds; ++seed) {
+            const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
+            const uint32_t bucket =
+                static_cast<uint32_t>(hash) & (kBuckets - 1);
+            const uint32_t local_row =
+                (((entry.sector * kContractionAxes + entry.contraction_axis) *
+                   kSeeds +
+                   seed) *
+                  kBuckets) +
+                bucket;
+            long long contribution_real = entry.scaled_real;
+            long long contribution_imaginary = entry.scaled_imaginary;
+            if ((shared_negative[pair_slot] != 0) !=
+                ((hash >> 63) != 0)) {
+              contribution_real = -contribution_real;
+              contribution_imaginary = -contribution_imaginary;
+            }
+            if (contribution_real != 0) {
+              atomicAdd(&shared_real[local_row],
+                        static_cast<unsigned long long>(contribution_real));
+            }
+            if (contribution_imaginary != 0) {
+              atomicAdd(&shared_imaginary[local_row],
+                        static_cast<unsigned long long>(
+                            contribution_imaginary));
+            }
+          }
+          ++local_expanded;
+        }
+      }
+      __syncthreads();
+      const uint32_t output_count =
+          kPrimeCount * active_columns * kRowsPerDegreePair;
+      for (uint32_t index = threadIdx.x; index < output_count;
+           index += kThreads) {
+        const uint32_t prime_column = index / kRowsPerDegreePair;
+        const uint32_t prime_slot = prime_column / active_columns;
+        const uint32_t column = prime_column % active_columns;
+        const uint32_t local_row = index % kRowsPerDegreePair;
+        const uint32_t coefficient =
+            shared_coefficients[prime_slot][column];
+        if (coefficient == 0) continue;
+        const uint32_t prime = primes[prime_slot];
+        const GaussianResidue scaled_response{
+            twos_complement_i64_mod(shared_real[local_row], prime),
+            twos_complement_i64_mod(shared_imaginary[local_row], prime)};
+        const GaussianResidue response =
+            scale_gaussian(scaled_response, inverse_scales[prime_slot], prime);
+        const GaussianResidue contribution =
+            scale_gaussian(response, coefficient, prime);
+        if (contribution.real == 0 && contribution.imaginary == 0) continue;
+        const uint32_t row =
+            (degree * kMomentumPairs + shared_pair) * kRowsPerDegreePair +
+            local_row;
+        const uint64_t output =
+            static_cast<uint64_t>(prime_column) * kP3Rows + row;
+        atomic_add_mod(&output_real[output], contribution.real, prime);
+        atomic_add_mod(&output_imaginary[output], contribution.imaginary,
+                       prime);
+      }
+      __syncthreads();
+    }
+  }
+  for (uint32_t delta = 16; delta != 0; delta >>= 1) {
+    local_expanded += __shfl_down_sync(0xffffffffU, local_expanded, delta);
+  }
+  const uint32_t thread_in_warp = threadIdx.x & 31U;
+  const uint32_t warp = threadIdx.x >> 5;
+  if (thread_in_warp == 0) warp_expanded[warp] = local_expanded;
+  __syncthreads();
+  if (threadIdx.x == 0) {
+    unsigned long long block_expanded = 0;
+#pragma unroll
+    for (uint32_t warp_index = 0; warp_index < 4; ++warp_index) {
+      block_expanded += warp_expanded[warp_index];
+    }
+    if (block_expanded != 0 && shared_valid != 0) {
+#pragma unroll
+      for (uint32_t prime_slot = 0; prime_slot < kPrimeCount; ++prime_slot) {
+        for (uint32_t column = 0; column < active_columns; ++column) {
+          if (shared_coefficients[prime_slot][column] != 0) {
+            atomicAdd(&expanded[prime_slot * active_columns + column],
+                      block_expanded);
+          }
         }
       }
     }
@@ -2406,8 +2680,12 @@ int adynkra_fx_cuda_configure_p3(
       plan_offsets[kGaugeDegrees * kSpinors] != plan_entry_count ||
       context->pair_salts == nullptr || context->p3_plan_offsets != nullptr ||
       context->p3_plan_pair_offsets != nullptr ||
-      context->p3_plan_entries != nullptr || context->p3_output_real != nullptr ||
-      context->p3_output_imaginary != nullptr) {
+      context->p3_plan_entries != nullptr ||
+      context->p3_three_prime_plan_entries != nullptr ||
+      context->p3_output_real != nullptr ||
+      context->p3_output_imaginary != nullptr ||
+      context->p3_three_prime_output_real != nullptr ||
+      context->p3_three_prime_output_imaginary != nullptr) {
     set_error(error, error_capacity, "invalid CUDA p3 static schedule");
     return 1;
   }
@@ -2568,6 +2846,251 @@ int adynkra_fx_cuda_configure_p3(
   return 0;
 }
 
+int adynkra_fx_cuda_configure_p3_three_prime(
+    void *opaque, const uint32_t *primes, const uint32_t *inverse_scales,
+    const uint32_t *plan_offsets,
+    const P3ThreePrimePlanEntry *plan_entries, uint32_t plan_entry_count,
+    char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  constexpr uint32_t pinned_primes[3] = {1073741783U, 1073741723U,
+                                         1073741719U};
+  constexpr uint64_t exact_scale = 13440;
+  if (context == nullptr || primes == nullptr || inverse_scales == nullptr ||
+      plan_offsets == nullptr || plan_entries == nullptr ||
+      plan_entry_count == 0 ||
+      plan_offsets[0] != 0 ||
+      plan_offsets[kGaugeDegrees * kSpinors] != plan_entry_count ||
+      context->pair_salts == nullptr || context->p3_plan_offsets != nullptr ||
+      context->p3_plan_pair_offsets != nullptr ||
+      context->p3_plan_entries != nullptr ||
+      context->p3_three_prime_plan_entries != nullptr ||
+      context->p3_output_real != nullptr ||
+      context->p3_output_imaginary != nullptr ||
+      context->p3_three_prime_output_real != nullptr ||
+      context->p3_three_prime_output_imaginary != nullptr ||
+      context->p3_three_prime_expanded != nullptr ||
+      context->p3_three_prime_invalid != nullptr ||
+      std::memcmp(primes, pinned_primes, sizeof(pinned_primes)) != 0) {
+    set_error(error, error_capacity,
+              "invalid CUDA p3 three-prime static schedule");
+    return 1;
+  }
+  for (uint32_t prime_slot = 0; prime_slot < 3; ++prime_slot) {
+    if (inverse_scales[prime_slot] >= primes[prime_slot] ||
+        (exact_scale * inverse_scales[prime_slot]) % primes[prime_slot] != 1) {
+      set_error(error, error_capacity,
+                "invalid CUDA p3 three-prime exact scale inverse");
+      return 1;
+    }
+  }
+  for (uint32_t schedule = 0; schedule < kP3ScheduleCount; ++schedule) {
+    if (plan_offsets[schedule] > plan_offsets[schedule + 1]) {
+      set_error(error, error_capacity,
+                "non-monotone CUDA p3 three-prime plan offsets");
+      return 1;
+    }
+    const uint32_t degree = schedule / kSpinors;
+    for (uint32_t index = plan_offsets[schedule];
+         index < plan_offsets[schedule + 1]; ++index) {
+      const P3ThreePrimePlanEntry &entry = plan_entries[index];
+      if (entry.contracted_spinor >= kSpinors ||
+          entry.template_spinor >= kSpinors ||
+          entry.contraction_axis >= kContractionAxes ||
+          entry.sector >= kSectors ||
+          entry.output_coordinate >=
+              (entry.sector == 0 ? kX2OutputCoordinates
+                                 : kX5OutputCoordinates) ||
+          entry.functional_salt != canonical_p3_functional_salt(
+              degree, entry.output_coordinate, entry.sector,
+              entry.contraction_axis)) {
+        set_error(error, error_capacity,
+                  "invalid CUDA p3 three-prime plan entry");
+        return 1;
+      }
+      if (entry.scaled_real == 0 && entry.scaled_imaginary == 0) {
+        set_error(error, error_capacity,
+                  "invalid CUDA p3 three-prime exact coefficient");
+        return 1;
+      }
+    }
+  }
+  std::vector<uint32_t> host_pair_offsets;
+  try {
+    host_pair_offsets.resize(kP3PairOffsetCount);
+  } catch (...) {
+    set_error(error, error_capacity,
+              "allocate CUDA p3 three-prime host offsets");
+    return 1;
+  }
+  for (uint32_t schedule = 0; schedule < kP3ScheduleCount; ++schedule) {
+    uint32_t cursor = plan_offsets[schedule];
+    const uint32_t schedule_end = plan_offsets[schedule + 1];
+    for (uint32_t pair = 0; pair < kP3SpinorPairCount; ++pair) {
+      host_pair_offsets[schedule * kP3SpinorPairCount + pair] = cursor;
+      while (cursor < schedule_end) {
+        const P3ThreePrimePlanEntry &entry = plan_entries[cursor];
+        const uint32_t entry_pair =
+            entry.contracted_spinor * kSpinors + entry.template_spinor;
+        if (entry_pair < pair) {
+          set_error(error, error_capacity,
+                    "unordered CUDA p3 three-prime plan entries");
+          return 1;
+        }
+        if (entry_pair != pair) break;
+        ++cursor;
+      }
+    }
+    if (cursor != schedule_end) {
+      set_error(error, error_capacity,
+                "incomplete CUDA p3 three-prime pair offsets");
+      return 1;
+    }
+  }
+  host_pair_offsets[kP3PairOffsetCount - 1] = plan_entry_count;
+  std::vector<P3ThreePrimeDeviceEntry> host_device_entries;
+  try {
+    host_device_entries.reserve(plan_entry_count);
+    for (uint32_t index = 0; index < plan_entry_count; ++index) {
+      const P3ThreePrimePlanEntry &entry = plan_entries[index];
+      host_device_entries.push_back(P3ThreePrimeDeviceEntry{
+          entry.functional_salt,
+          entry.scaled_real,
+          entry.scaled_imaginary,
+          static_cast<uint8_t>(entry.contraction_axis),
+          static_cast<uint8_t>(entry.sector),
+          0});
+    }
+  } catch (...) {
+    set_error(error, error_capacity,
+              "allocate CUDA p3 three-prime compact host plan");
+    return 1;
+  }
+  size_t entry_bytes = 0;
+  if (!checked_multiply_size(plan_entry_count,
+                             sizeof(P3ThreePrimeDeviceEntry), &entry_bytes)) {
+    set_error(error, error_capacity,
+              "CUDA p3 three-prime plan byte count overflow");
+    return 1;
+  }
+  const size_t offset_bytes =
+      static_cast<size_t>(kP3ScheduleCount + 1) * sizeof(uint32_t);
+  const size_t pair_offset_bytes =
+      static_cast<size_t>(kP3PairOffsetCount) * sizeof(uint32_t);
+  const size_t output_bytes =
+      3ULL * 2ULL * kP3Rows * kMaxColumns * sizeof(uint32_t);
+  const size_t auxiliary_bytes =
+      3ULL * kMaxColumns * sizeof(unsigned long long) + sizeof(uint32_t);
+  if (offset_bytes > SIZE_MAX - pair_offset_bytes ||
+      offset_bytes + pair_offset_bytes > SIZE_MAX - entry_bytes ||
+      offset_bytes + pair_offset_bytes + entry_bytes >
+          SIZE_MAX - output_bytes ||
+      offset_bytes + pair_offset_bytes + entry_bytes + output_bytes >
+          SIZE_MAX - auxiliary_bytes) {
+    set_error(error, error_capacity,
+              "CUDA p3 three-prime allocation byte count overflow");
+    return 1;
+  }
+  const size_t additional_bytes =
+      offset_bytes + pair_offset_bytes + entry_bytes + output_bytes +
+      auxiliary_bytes;
+  if (additional_bytes > UINT64_MAX - context->allocated_bytes ||
+      context->allocated_bytes + additional_bytes >
+          context->recoupling_hard_cap_bytes) {
+    set_error(error, error_capacity,
+              "CUDA p3 three-prime plan exceeds configured device cap");
+    return 1;
+  }
+  size_t free_bytes = 0;
+  size_t total_bytes = 0;
+  if (!check_cuda(cudaMemGetInfo(&free_bytes, &total_bytes), error,
+                  error_capacity,
+                  "query CUDA p3 three-prime device memory") ||
+      additional_bytes > free_bytes ||
+      free_bytes - additional_bytes < kDeviceHeadroomBytes) {
+    if (additional_bytes > free_bytes ||
+        free_bytes - additional_bytes < kDeviceHeadroomBytes) {
+      set_error(error, error_capacity,
+                "insufficient CUDA memory for p3 three-prime plan");
+    }
+    return 1;
+  }
+  uint32_t *new_plan_offsets = nullptr;
+  uint32_t *new_plan_pair_offsets = nullptr;
+  P3ThreePrimeDeviceEntry *new_plan_entries = nullptr;
+  uint32_t *new_output_real = nullptr;
+  uint32_t *new_output_imaginary = nullptr;
+  unsigned long long *new_expanded = nullptr;
+  uint32_t *new_invalid = nullptr;
+  const auto rollback = [&]() {
+    cudaFree(new_plan_offsets);
+    cudaFree(new_plan_pair_offsets);
+    cudaFree(new_plan_entries);
+    cudaFree(new_output_real);
+    cudaFree(new_output_imaginary);
+    cudaFree(new_expanded);
+    cudaFree(new_invalid);
+  };
+  if (!check_cuda(cudaMalloc(&new_plan_offsets, offset_bytes), error,
+                  error_capacity,
+                  "allocate CUDA p3 three-prime offsets") ||
+      !check_cuda(cudaMalloc(&new_plan_pair_offsets, pair_offset_bytes), error,
+                  error_capacity,
+                  "allocate CUDA p3 three-prime pair offsets") ||
+      !check_cuda(cudaMalloc(&new_plan_entries, entry_bytes), error,
+                  error_capacity,
+                  "allocate CUDA p3 three-prime entries") ||
+      !check_cuda(cudaMalloc(&new_output_real, output_bytes / 2), error,
+                  error_capacity,
+                  "allocate CUDA p3 three-prime real output") ||
+      !check_cuda(cudaMalloc(&new_output_imaginary, output_bytes / 2), error,
+                  error_capacity,
+                  "allocate CUDA p3 three-prime imaginary output") ||
+      !check_cuda(cudaMalloc(&new_expanded,
+                             3ULL * kMaxColumns *
+                                 sizeof(unsigned long long)),
+                  error, error_capacity,
+                  "allocate CUDA p3 three-prime counters") ||
+      !check_cuda(cudaMalloc(&new_invalid, sizeof(uint32_t)), error,
+                  error_capacity,
+                  "allocate CUDA p3 three-prime validity flag") ||
+      !check_cuda(cudaMemcpyAsync(new_plan_offsets, plan_offsets, offset_bytes,
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA p3 three-prime offsets") ||
+      !check_cuda(cudaMemcpyAsync(
+                      new_plan_pair_offsets, host_pair_offsets.data(),
+                      pair_offset_bytes, cudaMemcpyHostToDevice,
+                      context->stream),
+                  error, error_capacity,
+                  "upload CUDA p3 three-prime pair offsets") ||
+      !check_cuda(cudaMemcpyAsync(new_plan_entries, host_device_entries.data(), entry_bytes,
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA p3 three-prime entries") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error,
+                  error_capacity,
+                  "finish CUDA p3 three-prime static upload")) {
+    rollback();
+    return 1;
+  }
+  context->p3_plan_offsets = new_plan_offsets;
+  context->p3_plan_pair_offsets = new_plan_pair_offsets;
+  context->p3_three_prime_plan_entries = new_plan_entries;
+  context->p3_three_prime_output_real = new_output_real;
+  context->p3_three_prime_output_imaginary = new_output_imaginary;
+  context->p3_three_prime_expanded = new_expanded;
+  context->p3_three_prime_invalid = new_invalid;
+  std::memcpy(context->p3_three_prime_values, primes, sizeof(pinned_primes));
+  std::memcpy(context->p3_three_prime_inverse_scale, inverse_scales,
+              sizeof(context->p3_three_prime_inverse_scale));
+  context->p3_plan_entry_count = plan_entry_count;
+  context->p3_three_prime_active_columns = 1;
+  context->allocated_bytes += additional_bytes;
+  context->buffer_high_water_bytes =
+      max(context->buffer_high_water_bytes, context->allocated_bytes);
+  return 0;
+}
+
 int adynkra_fx_cuda_reset_p3_columns(
     void *opaque, const uint32_t *input_real, const uint32_t *input_imaginary,
     uint32_t active_columns, char *error, size_t error_capacity) {
@@ -2606,6 +3129,53 @@ int adynkra_fx_cuda_reset_p3_columns(
     return 1;
   }
   context->p3_active_columns = active_columns;
+  return 0;
+}
+
+int adynkra_fx_cuda_reset_p3_three_prime_columns(
+    void *opaque, const uint32_t *input_real,
+    const uint32_t *input_imaginary, uint32_t active_columns, char *error,
+    size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || active_columns == 0 || active_columns > 32 ||
+      (input_real == nullptr) != (input_imaginary == nullptr) ||
+      context->p3_three_prime_plan_entries == nullptr ||
+      context->p3_three_prime_output_real == nullptr ||
+      context->p3_three_prime_output_imaginary == nullptr) {
+    set_error(error, error_capacity,
+              "invalid CUDA p3 three-prime persistent reset");
+    return 1;
+  }
+  const size_t bytes = 3ULL * active_columns * kP3Rows * sizeof(uint32_t);
+  const bool upload = input_real != nullptr;
+  if (!(upload ? check_cuda(cudaMemcpyAsync(
+                                context->p3_three_prime_output_real,
+                                input_real, bytes, cudaMemcpyHostToDevice,
+                                context->stream),
+                            error, error_capacity,
+                            "upload CUDA p3 three-prime real columns")
+               : check_cuda(cudaMemsetAsync(
+                                context->p3_three_prime_output_real, 0, bytes,
+                                context->stream),
+                            error, error_capacity,
+                            "clear CUDA p3 three-prime real columns")) ||
+      !(upload ? check_cuda(cudaMemcpyAsync(
+                                context->p3_three_prime_output_imaginary,
+                                input_imaginary, bytes,
+                                cudaMemcpyHostToDevice, context->stream),
+                            error, error_capacity,
+                            "upload CUDA p3 three-prime imaginary columns")
+               : check_cuda(cudaMemsetAsync(
+                                context->p3_three_prime_output_imaginary, 0,
+                                bytes, context->stream),
+                            error, error_capacity,
+                            "clear CUDA p3 three-prime imaginary columns")) ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error,
+                  error_capacity,
+                  "finish CUDA p3 three-prime persistent reset")) {
+    return 1;
+  }
+  context->p3_three_prime_active_columns = active_columns;
   return 0;
 }
 
@@ -2785,6 +3355,159 @@ int adynkra_fx_cuda_download_p3_columns(
                   "download CUDA p3 imaginary columns") ||
       !check_cuda(cudaStreamSynchronize(context->stream), error, error_capacity,
                   "finish CUDA p3 column download")) {
+    return 1;
+  }
+  return 0;
+}
+
+int adynkra_fx_cuda_accumulate_p3_three_prime_multicol(
+    void *opaque, const uint64_t *keys,
+    const uint32_t *key_prime_column_coefficients, uint32_t unique_count,
+    uint32_t active_columns, uint64_t *expanded_contributions,
+    float *kernel_milliseconds, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || keys == nullptr ||
+      key_prime_column_coefficients == nullptr || unique_count == 0 ||
+      active_columns == 0 || active_columns > 32 ||
+      active_columns != context->p3_three_prime_active_columns ||
+      expanded_contributions == nullptr || kernel_milliseconds == nullptr ||
+      context->p3_plan_pair_offsets == nullptr ||
+      context->p3_three_prime_plan_entries == nullptr ||
+      context->p3_three_prime_output_real == nullptr ||
+      context->p3_three_prime_output_imaginary == nullptr ||
+      context->p3_three_prime_expanded == nullptr ||
+      context->p3_three_prime_invalid == nullptr) {
+    set_error(error, error_capacity,
+              "invalid CUDA p3 three-prime multi-column input");
+    return 1;
+  }
+  if (!ensure_multicol_workspace(context, unique_count, active_columns, error,
+                                 error_capacity)) {
+    return 1;
+  }
+  size_t coefficient_count = 0;
+  size_t coefficient_bytes = 0;
+  if (!checked_multiply_size(unique_count, 3ULL * active_columns,
+                             &coefficient_count) ||
+      !checked_multiply_size(coefficient_count, sizeof(uint32_t),
+                             &coefficient_bytes)) {
+    set_error(error, error_capacity,
+              "CUDA p3 three-prime coefficient byte count overflow");
+    return 1;
+  }
+  if (coefficient_bytes >
+      static_cast<size_t>(context->multicol_key_capacity) *
+          context->multicol_lane_capacity * sizeof(WideValue)) {
+    set_error(error, error_capacity,
+              "CUDA p3 three-prime coefficient workspace is undersized");
+    return 1;
+  }
+  if (!check_cuda(cudaMemcpyAsync(context->multicol_keys, keys,
+                                  unique_count * sizeof(uint64_t),
+                                  cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA p3 three-prime keys") ||
+      !check_cuda(cudaMemcpyAsync(
+                      reinterpret_cast<uint32_t *>(context->multicol_values),
+                      key_prime_column_coefficients, coefficient_bytes,
+                      cudaMemcpyHostToDevice, context->stream),
+                  error, error_capacity,
+                  "upload CUDA p3 three-prime coefficients") ||
+      !check_cuda(cudaMemsetAsync(
+                      context->p3_three_prime_expanded, 0,
+                      3ULL * active_columns * sizeof(unsigned long long),
+                      context->stream),
+                  error, error_capacity,
+                  "clear CUDA p3 three-prime counters") ||
+      !check_cuda(cudaMemsetAsync(context->p3_three_prime_invalid, 0,
+                                  sizeof(uint32_t), context->stream),
+                  error, error_capacity,
+                  "clear CUDA p3 three-prime validity") ||
+      !check_cuda(cudaEventRecord(context->started, context->stream), error,
+                  error_capacity,
+                  "record CUDA p3 three-prime start")) {
+    return 1;
+  }
+  constexpr uint32_t threads = 128;
+  accumulate_p3_three_prime_multicol_kernel<<<unique_count, threads, 0,
+                                               context->stream>>>(
+      context->multicol_keys,
+      reinterpret_cast<const uint32_t *>(context->multicol_values),
+      unique_count, active_columns, context->p3_plan_pair_offsets,
+      context->p3_three_prime_plan_entries, context->pair_salts,
+      context->p3_three_prime_values[0], context->p3_three_prime_values[1],
+      context->p3_three_prime_values[2],
+      context->p3_three_prime_inverse_scale[0],
+      context->p3_three_prime_inverse_scale[1],
+      context->p3_three_prime_inverse_scale[2],
+      context->p3_three_prime_output_real,
+      context->p3_three_prime_output_imaginary,
+      context->p3_three_prime_expanded, context->p3_three_prime_invalid);
+  uint32_t invalid = 0;
+  if (!check_cuda(cudaGetLastError(), error, error_capacity,
+                  "launch CUDA p3 three-prime multi-column kernel") ||
+      !check_cuda(cudaEventRecord(context->finished, context->stream), error,
+                  error_capacity,
+                  "record CUDA p3 three-prime finish") ||
+      !check_cuda(cudaMemcpyAsync(
+                      expanded_contributions,
+                      context->p3_three_prime_expanded,
+                      3ULL * active_columns * sizeof(unsigned long long),
+                      cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download CUDA p3 three-prime counters") ||
+      !check_cuda(cudaMemcpyAsync(&invalid,
+                                  context->p3_three_prime_invalid,
+                                  sizeof(uint32_t), cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  error, error_capacity,
+                  "download CUDA p3 three-prime validity") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error,
+                  error_capacity,
+                  "finish CUDA p3 three-prime accumulation") ||
+      !check_cuda(cudaEventElapsedTime(kernel_milliseconds, context->started,
+                                       context->finished),
+                  error, error_capacity,
+                  "measure CUDA p3 three-prime kernel")) {
+    return 1;
+  }
+  if (invalid != 0) {
+    set_error(error, error_capacity,
+              "invalid key or coefficient in CUDA p3 three-prime kernel");
+    return 1;
+  }
+  return 0;
+}
+
+int adynkra_fx_cuda_download_p3_three_prime_columns(
+    void *opaque, uint32_t active_columns, uint32_t *output_real,
+    uint32_t *output_imaginary, char *error, size_t error_capacity) {
+  Context *context = static_cast<Context *>(opaque);
+  if (context == nullptr || active_columns == 0 || active_columns > 32 ||
+      active_columns != context->p3_three_prime_active_columns ||
+      output_real == nullptr || output_imaginary == nullptr ||
+      context->p3_three_prime_output_real == nullptr ||
+      context->p3_three_prime_output_imaginary == nullptr) {
+    set_error(error, error_capacity,
+              "invalid CUDA p3 three-prime column download input");
+    return 1;
+  }
+  const size_t bytes =
+      3ULL * active_columns * kP3Rows * sizeof(uint32_t);
+  if (!check_cuda(cudaMemcpyAsync(output_real,
+                                  context->p3_three_prime_output_real, bytes,
+                                  cudaMemcpyDeviceToHost, context->stream),
+                  error, error_capacity,
+                  "download CUDA p3 three-prime real columns") ||
+      !check_cuda(cudaMemcpyAsync(output_imaginary,
+                                  context->p3_three_prime_output_imaginary,
+                                  bytes, cudaMemcpyDeviceToHost,
+                                  context->stream),
+                  error, error_capacity,
+                  "download CUDA p3 three-prime imaginary columns") ||
+      !check_cuda(cudaStreamSynchronize(context->stream), error,
+                  error_capacity,
+                  "finish CUDA p3 three-prime column download")) {
     return 1;
   }
   return 0;

@@ -370,6 +370,9 @@ fn main() {
         "adynkra-11d-second-momentum-p3-gpu-worker" => {
             cmd_adynkra_11d_second_momentum_p3_gpu_worker(&args)
         }
+        "adynkra-11d-second-momentum-p3-gpu-three-prime-worker" => {
+            cmd_adynkra_11d_second_momentum_p3_gpu_three_prime_worker(&args)
+        }
         "adynkra-11d-second-momentum-p3-gpu-rank" => {
             cmd_adynkra_11d_second_momentum_p3_gpu_rank(&args)
         }
@@ -735,6 +738,9 @@ fn print_usage(prog: &str) {
     eprintln!("                          Validate portable p3 job coverage and artifacts");
     eprintln!(
         "  adynkra-11d-second-momentum-p3-gpu-worker <job-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]"
+    );
+    eprintln!(
+        "  adynkra-11d-second-momentum-p3-gpu-three-prime-worker <group-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]"
     );
     eprintln!("                          Run bounded word-resumable p3 jobs with 5-second status");
     eprintln!(
@@ -2377,6 +2383,145 @@ fn cmd_adynkra_11d_second_momentum_p3_gpu_worker(args: &[String]) {
 #[cfg(not(feature = "cuda"))]
 fn cmd_adynkra_11d_second_momentum_p3_gpu_worker(_args: &[String]) {
     eprintln!("p3 GPU worker requires a CUDA-enabled build");
+    std::process::exit(2);
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_p3_gpu_three_prime_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 4 || args.len() > 7 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-p3-gpu-three-prime-worker <group-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let groups =
+        second_momentum_p3_gpu_production::parse_group_list(&args[2]).unwrap_or_else(|error| {
+            eprintln!("invalid p3 fused group list: {error}");
+            std::process::exit(2);
+        });
+    let map_directory = std::path::PathBuf::from(&args[3]);
+    let output = std::path::PathBuf::from(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_p3_gpu"),
+    );
+    let device = args
+        .get(5)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let total_cap = args
+        .get(6)
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("total device cap must be unsigned");
+            std::process::exit(2);
+        })
+        .unwrap_or(20 * 1024 * 1024 * 1024);
+    if device < 0 || total_cap == 0 {
+        eprintln!("device and total device cap must be nonnegative and nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_p3_gpu_production::write_or_validate_manifest(&output).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish p3 production manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+    let columns = eleven_dimensional_second_momentum_full_inventory::full_column_specs();
+    for group_index in groups {
+        let job = second_momentum_p3_gpu_production::P3ProductionJobKey::new(group_index, 0)
+            .unwrap_or_else(|error| {
+                eprintln!("cannot resolve fused group {group_index}: {error}");
+                std::process::exit(2);
+            });
+        let ordinals = job.global_ordinals().unwrap_or_else(|error| {
+            eprintln!("cannot resolve fused group {group_index}: {error}");
+            std::process::exit(2);
+        });
+        let first = &columns[ordinals[0]];
+        let bundle_id = format!("p3-g{group_index}-mp012");
+        let directory = output.join("jobs").join(&bundle_id);
+        let result_path = directory.join("bundle-result.json");
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-p3-gpu-three-prime-worker".to_string(),
+            tranche: first.intermediate_dynkin_label.clone(),
+            local_ordinal: ordinals[0],
+            global_ordinal: ordinals[0],
+            tranche_columns_total: columns
+                .iter()
+                .filter(|column| {
+                    column.intermediate_dynkin_label == first.intermediate_dynkin_label
+                })
+                .count(),
+            prime: eleven_dimensional_second_momentum_gpu::GPU_FX_PRIMES[0],
+            device,
+            cpu_parity_terms: 0,
+            output_directory: output.clone(),
+            binary_output_path: result_path.clone(),
+            report_output_path: result_path,
+            status_snapshot_path: directory.join("status.json"),
+            group: Some(GroupProgressConfig {
+                job_id: bundle_id.clone(),
+                group_id: format!("pending-preflight:{bundle_id}"),
+                active_columns: ordinals.len(),
+                ordered_local_ordinals: ordinals.clone(),
+                ordered_global_ordinals: ordinals.clone(),
+                ordered_source_copies: ordinals
+                    .iter()
+                    .map(|ordinal| columns[*ordinal].source_copy)
+                    .collect(),
+                checkpoint_path: directory.join("checkpoint.json"),
+                event_log_path: directory.join("events.jsonl"),
+                resumable: true,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {bundle_id} progress reporter: {error}");
+            std::process::exit(2);
+        });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            second_momentum_p3_gpu_production::run_three_prime_bundle(
+                group_index,
+                &map_directory,
+                &output,
+                device,
+                total_cap,
+                &live,
+            )
+            .and_then(|reports| serde_json::to_value(reports).map_err(|error| error.to_string()))
+        }));
+        match outcome {
+            Ok(Ok(result)) => reporter.finish_success(result).unwrap_or_else(|error| {
+                eprintln!("{bundle_id} terminal status failed: {error}");
+                std::process::exit(2);
+            }),
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{bundle_id} failed: {error}");
+                std::process::exit(2);
+            }
+            Err(_) => {
+                let _ = reporter.finish_failure("p3 fused production worker panicked");
+                eprintln!("{bundle_id} panicked");
+                std::process::exit(101);
+            }
+        }
+    }
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_p3_gpu_three_prime_worker(_args: &[String]) {
+    eprintln!("p3 fused GPU worker requires a CUDA-enabled build");
     std::process::exit(2);
 }
 

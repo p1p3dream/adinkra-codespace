@@ -1724,6 +1724,19 @@ mod cuda_backend {
 
     #[derive(Clone, Copy)]
     #[repr(C)]
+    struct CudaP3ThreePrimePlanEntry {
+        contracted_spinor: u32,
+        template_spinor: u32,
+        contraction_axis: u32,
+        sector: u32,
+        output_coordinate: u32,
+        scaled_real: i16,
+        scaled_imaginary: i16,
+        functional_salt: u64,
+    }
+
+    #[derive(Clone, Copy)]
+    #[repr(C)]
     struct CudaSourceEntry {
         exterior_mask: u32,
         coefficient: u32,
@@ -1869,6 +1882,16 @@ mod cuda_backend {
             error: *mut c_char,
             error_capacity: usize,
         ) -> i32;
+        fn adynkra_fx_cuda_configure_p3_three_prime(
+            context: *mut c_void,
+            primes: *const u32,
+            inverse_scales: *const u32,
+            plan_offsets: *const u32,
+            plan_entries: *const CudaP3ThreePrimePlanEntry,
+            plan_entry_count: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
         fn adynkra_fx_cuda_accumulate_p3(
             context: *mut c_void,
             sources: *const CudaSourceEntry,
@@ -1910,6 +1933,33 @@ mod cuda_backend {
             error_capacity: usize,
         ) -> i32;
         fn adynkra_fx_cuda_download_p3_columns(
+            context: *mut c_void,
+            active_columns: u32,
+            output_real: *mut u32,
+            output_imaginary: *mut u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_reset_p3_three_prime_columns(
+            context: *mut c_void,
+            input_real: *const u32,
+            input_imaginary: *const u32,
+            active_columns: u32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_accumulate_p3_three_prime_multicol(
+            context: *mut c_void,
+            keys: *const u64,
+            key_prime_column_coefficients: *const u32,
+            unique_count: u32,
+            active_columns: u32,
+            expanded_contributions: *mut u64,
+            kernel_milliseconds: *mut f32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_fx_cuda_download_p3_three_prime_columns(
             context: *mut c_void,
             active_columns: u32,
             output_real: *mut u32,
@@ -3407,6 +3457,349 @@ mod cuda_backend {
                 },
                 timing,
             ))
+        }
+    }
+
+    pub(crate) struct CudaModularP3ThreePrime {
+        cuda: CudaModularFx,
+        flat_plan_sha256: [String; 3],
+        coefficients: Vec<u32>,
+    }
+
+    #[derive(Clone, Debug, Serialize)]
+    pub(crate) struct CudaP3ThreePrimeTiming {
+        pub source_counts: Vec<Vec<usize>>,
+        pub plan_entry_count: u32,
+        pub expanded_contributions: Vec<Vec<u64>>,
+        pub kernel_milliseconds: f32,
+        pub resident_bytes: u64,
+        pub buffer_high_water_bytes: u64,
+        pub device_hard_cap_bytes: u64,
+    }
+
+    fn cuda_p3_three_prime_plan_entries(
+        plans: &[P3ModularFlatPlan; 3],
+    ) -> Result<Vec<CudaP3ThreePrimePlanEntry>, String> {
+        const EXACT_SCALE: u64 = 13_440;
+        for (slot, plan) in plans.iter().enumerate() {
+            validate_p3_modular_flat_plan(plan)?;
+            if plan.prime != GPU_FX_PRIMES[slot]
+                || plan.offsets != plans[0].offsets
+                || plan.entries.len() != plans[0].entries.len()
+                || plan
+                    .entries
+                    .iter()
+                    .zip(&plans[0].entries)
+                    .any(|(entry, canonical)| entry.key != canonical.key)
+            {
+                return Err(
+                    "CUDA p3 three-prime plans do not share canonical structure".to_string()
+                );
+            }
+        }
+        let mut entries = Vec::with_capacity(plans[0].entries.len());
+        for index in 0..plans[0].entries.len() {
+            let entry = plans[0].entries[index];
+            let scaled = [0_usize, 1_usize]
+                .map(|component| {
+                    let values = (0..3)
+                        .map(|slot| {
+                            let prime = u64::from(GPU_FX_PRIMES[slot]);
+                            let coefficient = plans[slot].entries[index].coefficient;
+                            let residue = if component == 0 {
+                                coefficient.real
+                            } else {
+                                coefficient.imaginary
+                            };
+                            let raw = u64::from(residue) * EXACT_SCALE % prime;
+                            if raw <= prime / 2 {
+                                raw as i64
+                            } else {
+                                raw as i64 - prime as i64
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    if values.windows(2).any(|pair| pair[0] != pair[1]) {
+                        return Err(
+                            "CUDA p3 three-prime coefficient has no common exact lift".to_string()
+                        );
+                    }
+                    i16::try_from(values[0]).map_err(|_| {
+                        "CUDA p3 three-prime exact coefficient exceeds i16".to_string()
+                    })
+                })
+                .into_iter()
+                .collect::<Result<Vec<_>, _>>()?;
+            if scaled == [0, 0] {
+                return Err("CUDA p3 three-prime exact coefficient is zero".to_string());
+            }
+            entries.push(CudaP3ThreePrimePlanEntry {
+                contracted_spinor: u32::from(entry.key.contracted_spinor),
+                template_spinor: u32::from(entry.key.template_spinor),
+                contraction_axis: u32::from(entry.key.contraction_axis),
+                sector: u32::from(entry.key.sector),
+                output_coordinate: u32::from(entry.key.output_coordinate),
+                scaled_real: scaled[0],
+                scaled_imaginary: scaled[1],
+                functional_salt: 0,
+            });
+        }
+        for schedule in 0..GAUGE_DEGREE_COUNT * 32 {
+            let degree = schedule / 32;
+            for entry in &mut entries
+                [plans[0].offsets[schedule] as usize..plans[0].offsets[schedule + 1] as usize]
+            {
+                entry.functional_salt = (degree as u64).rotate_left(9)
+                    ^ u64::from(entry.output_coordinate).rotate_left(31)
+                    ^ 0x03d1_1000_0000_0002
+                    ^ u64::from(entry.contraction_axis).rotate_left(53)
+                    ^ if entry.sector == 0 {
+                        0x1100_0000_0000_0002
+                    } else {
+                        0x1000_2000_0000_0005
+                    };
+            }
+        }
+        Ok(entries)
+    }
+
+    impl CudaModularP3ThreePrime {
+        pub(crate) fn new_with_device_cap(
+            static_data: &[ModularFxStaticData; 3],
+            plans: &[P3ModularFlatPlan; 3],
+            device: i32,
+            device_hard_cap_bytes: u64,
+        ) -> Result<Self, String> {
+            for slot in 0..3 {
+                if static_data[slot].prime != GPU_FX_PRIMES[slot]
+                    || plans[slot].prime != GPU_FX_PRIMES[slot]
+                {
+                    return Err("CUDA p3 three-prime pinned-prime order is invalid".to_string());
+                }
+            }
+            let entries = cuda_p3_three_prime_plan_entries(plans)?;
+            let inverse_scales = GPU_FX_PRIMES.map(|prime| inverse_mod(13_440_u32 % prime, prime));
+            let mut cuda = CudaModularFx::new(&static_data[0], device)?;
+            cuda.set_recoupling_hard_cap(device_hard_cap_bytes)?;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_configure_p3_three_prime(
+                    cuda.context.as_ptr(),
+                    GPU_FX_PRIMES.as_ptr(),
+                    inverse_scales.as_ptr(),
+                    plans[0].offsets.as_ptr(),
+                    entries.as_ptr(),
+                    u32::try_from(entries.len())
+                        .map_err(|_| "CUDA p3 three-prime plan exceeds u32".to_string())?,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(Self {
+                cuda,
+                flat_plan_sha256: std::array::from_fn(|slot| plans[slot].semantic_sha256.clone()),
+                coefficients: Vec::new(),
+            })
+        }
+
+        pub(crate) fn flat_plan_sha256(&self) -> &[String; 3] {
+            &self.flat_plan_sha256
+        }
+
+        pub(crate) fn resident_bytes(&self) -> u64 {
+            self.cuda.resident_bytes()
+        }
+
+        pub(crate) fn buffer_high_water_bytes(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_buffer_high_water_bytes(self.cuda.context.as_ptr()) }
+        }
+
+        pub(crate) fn device_hard_cap_bytes(&self) -> u64 {
+            unsafe { adynkra_fx_cuda_hard_cap_bytes(self.cuda.context.as_ptr()) }
+        }
+
+        pub(crate) fn plan_entry_count(&self) -> u32 {
+            unsafe { adynkra_fx_cuda_p3_plan_entry_count(self.cuda.context.as_ptr()) }
+        }
+
+        pub(crate) fn reset_persistent_columns(
+            &mut self,
+            columns: &[Vec<Vec<GaussianResidue>>],
+        ) -> Result<(), String> {
+            let active_columns = columns.first().map_or(0, Vec::len);
+            if columns.len() != 3
+                || active_columns == 0
+                || active_columns > 32
+                || columns.iter().any(|prime_columns| {
+                    prime_columns.len() != active_columns
+                        || prime_columns
+                            .iter()
+                            .any(|rows| rows.len() != P3_FUNCTIONAL_ROW_COUNT)
+                })
+            {
+                return Err("CUDA p3 three-prime persistent column shape is invalid".to_string());
+            }
+            let value_count = 3_usize
+                .checked_mul(active_columns)
+                .and_then(|value| value.checked_mul(P3_FUNCTIONAL_ROW_COUNT))
+                .ok_or_else(|| "CUDA p3 three-prime reset size overflow".to_string())?;
+            let mut real = Vec::with_capacity(value_count);
+            let mut imaginary = Vec::with_capacity(value_count);
+            for prime_slot in 0..3 {
+                let prime = GPU_FX_PRIMES[prime_slot];
+                for rows in &columns[prime_slot] {
+                    if rows
+                        .iter()
+                        .any(|value| value.real >= prime || value.imaginary >= prime)
+                    {
+                        return Err("CUDA p3 three-prime persistent residue is invalid".to_string());
+                    }
+                    real.extend(rows.iter().map(|value| value.real));
+                    imaginary.extend(rows.iter().map(|value| value.imaginary));
+                }
+            }
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_reset_p3_three_prime_columns(
+                    self.cuda.context.as_ptr(),
+                    real.as_ptr(),
+                    imaginary.as_ptr(),
+                    active_columns as u32,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(error_string(&error))
+            }
+        }
+
+        pub(crate) fn accumulate_reduced_union_multilane_persistent(
+            &mut self,
+            keys: &[u64],
+            key_major_values: &[i128],
+            active_columns: usize,
+        ) -> Result<CudaP3ThreePrimeTiming, String> {
+            if keys.is_empty()
+                || active_columns == 0
+                || active_columns > 32
+                || key_major_values.len() != keys.len().saturating_mul(active_columns)
+                || keys.windows(2).any(|pair| pair[0] >= pair[1])
+            {
+                return Err("CUDA persistent p3 three-prime identity is invalid".to_string());
+            }
+            self.cuda.reserve_multicol(keys.len(), active_columns)?;
+            let coefficient_count = keys
+                .len()
+                .checked_mul(3)
+                .and_then(|value| value.checked_mul(active_columns))
+                .ok_or_else(|| "CUDA p3 three-prime coefficient count overflow".to_string())?;
+            self.coefficients.clear();
+            self.coefficients
+                .try_reserve_exact(coefficient_count.saturating_sub(self.coefficients.capacity()))
+                .map_err(|error| format!("reserve CUDA p3 three-prime coefficients: {error}"))?;
+            let mut source_counts = vec![vec![0_usize; active_columns]; 3];
+            for (key_index, &key) in keys.iter().enumerate() {
+                unpack_recoupling_key(key)?;
+                for prime_slot in 0..3 {
+                    let prime = GPU_FX_PRIMES[prime_slot];
+                    for lane in 0..active_columns {
+                        let coefficient = key_major_values[key_index * active_columns + lane];
+                        let residue = i128_mod(coefficient, prime);
+                        self.coefficients.push(residue);
+                        if residue != 0 {
+                            source_counts[prime_slot][lane] += 1;
+                        }
+                    }
+                }
+            }
+            if source_counts.iter().flatten().all(|&count| count == 0) {
+                return Err("CUDA persistent p3 three-prime input is zero".to_string());
+            }
+            let mut expanded_flat = vec![0_u64; 3 * active_columns];
+            let mut kernel_milliseconds = 0.0;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_accumulate_p3_three_prime_multicol(
+                    self.cuda.context.as_ptr(),
+                    keys.as_ptr(),
+                    self.coefficients.as_ptr(),
+                    u32::try_from(keys.len())
+                        .map_err(|_| "CUDA p3 three-prime key count exceeds u32".to_string())?,
+                    active_columns as u32,
+                    expanded_flat.as_mut_ptr(),
+                    &mut kernel_milliseconds,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            Ok(CudaP3ThreePrimeTiming {
+                source_counts,
+                plan_entry_count: self.plan_entry_count(),
+                expanded_contributions: expanded_flat
+                    .chunks_exact(active_columns)
+                    .map(<[u64]>::to_vec)
+                    .collect(),
+                kernel_milliseconds,
+                resident_bytes: self.resident_bytes(),
+                buffer_high_water_bytes: self.buffer_high_water_bytes(),
+                device_hard_cap_bytes: self.device_hard_cap_bytes(),
+            })
+        }
+
+        pub(crate) fn download_persistent_columns(
+            &mut self,
+            active_columns: usize,
+        ) -> Result<Vec<Vec<Vec<GaussianResidue>>>, String> {
+            if active_columns == 0 || active_columns > 32 {
+                return Err("CUDA p3 three-prime download width is invalid".to_string());
+            }
+            let value_count = 3_usize
+                .checked_mul(active_columns)
+                .and_then(|value| value.checked_mul(P3_FUNCTIONAL_ROW_COUNT))
+                .ok_or_else(|| "CUDA p3 three-prime download size overflow".to_string())?;
+            let mut real = vec![0; value_count];
+            let mut imaginary = vec![0; value_count];
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_fx_cuda_download_p3_three_prime_columns(
+                    self.cuda.context.as_ptr(),
+                    active_columns as u32,
+                    real.as_mut_ptr(),
+                    imaginary.as_mut_ptr(),
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            let rows_per_prime = active_columns * P3_FUNCTIONAL_ROW_COUNT;
+            Ok((0..3)
+                .map(|prime_slot| {
+                    let begin = prime_slot * rows_per_prime;
+                    let end = begin + rows_per_prime;
+                    real[begin..end]
+                        .chunks_exact(P3_FUNCTIONAL_ROW_COUNT)
+                        .zip(imaginary[begin..end].chunks_exact(P3_FUNCTIONAL_ROW_COUNT))
+                        .map(|(real, imaginary)| {
+                            real.iter()
+                                .copied()
+                                .zip(imaginary.iter().copied())
+                                .map(|(real, imaginary)| GaussianResidue { real, imaginary })
+                                .collect()
+                        })
+                        .collect()
+                })
+                .collect())
         }
     }
 
@@ -5045,6 +5438,465 @@ mod cuda_backend {
             }
         }
 
+        #[test]
+        fn p3_three_prime_cuda_fusion_matches_serial_rows_counts_and_artifacts() {
+            assert_eq!(std::mem::size_of::<CudaP3ThreePrimePlanEntry>(), 32);
+            assert_eq!(std::mem::align_of::<CudaP3ThreePrimePlanEntry>(), 8);
+            assert_eq!(
+                std::mem::offset_of!(CudaP3ThreePrimePlanEntry, scaled_real),
+                20
+            );
+            assert_eq!(
+                std::mem::offset_of!(CudaP3ThreePrimePlanEntry, functional_salt),
+                24
+            );
+            let static_data: [ModularFxStaticData; 3] =
+                GPU_FX_PRIMES.map(|prime| ModularFxStaticData::build(prime).unwrap());
+            let plans: [P3ModularFlatPlan; 3] =
+                std::array::from_fn(|slot| build_p3_modular_flat_plan(&static_data[slot]).unwrap());
+            let base_resident = CudaModularFx::new(&static_data[0], 0)
+                .unwrap()
+                .resident_bytes();
+            assert!(
+                CudaModularP3ThreePrime::new_with_device_cap(
+                    &static_data,
+                    &plans,
+                    0,
+                    base_resident
+                )
+                .is_err()
+            );
+            let mut mutated = plans.clone();
+            mutated[1].entries[0].key.output_coordinate ^= 1;
+            assert!(
+                CudaModularP3ThreePrime::new_with_device_cap(
+                    &static_data,
+                    &mutated,
+                    0,
+                    10 * 1024 * 1024 * 1024
+                )
+                .is_err()
+            );
+
+            let mut fused = CudaModularP3ThreePrime::new_with_device_cap(
+                &static_data,
+                &plans,
+                0,
+                10 * 1024 * 1024 * 1024,
+            )
+            .unwrap();
+            assert_eq!(fused.plan_entry_count() as usize, plans[0].entry_count());
+            assert_eq!(
+                fused.flat_plan_sha256(),
+                &std::array::from_fn::<_, 3, _>(|slot| plans[slot].semantic_sha256.clone())
+            );
+            const PAIR_OFFSET_BYTES: usize =
+                (GAUGE_DEGREE_COUNT * 32 * 32 * 32 + 1) * std::mem::size_of::<u32>();
+            // The authenticated host ABI is 32 bytes, while configure_p3_three_prime
+            // projects it into a validated 16-byte device-only hot entry.
+            const COMPACT_DEVICE_PLAN_ENTRY_BYTES: usize = 16;
+            let configured_expected = base_resident
+                + ((GAUGE_DEGREE_COUNT * 32 + 1) * std::mem::size_of::<u32>()) as u64
+                + PAIR_OFFSET_BYTES as u64
+                + (plans[0].entry_count() * COMPACT_DEVICE_PLAN_ENTRY_BYTES) as u64
+                + (3 * 2 * P3_FUNCTIONAL_ROW_COUNT * 32 * std::mem::size_of::<u32>()) as u64
+                + (3 * 32 * std::mem::size_of::<u64>() + std::mem::size_of::<u32>()) as u64;
+            assert_eq!(fused.resident_bytes(), configured_expected);
+
+            let sources = [
+                RecoupledSourceTerm {
+                    momentum_pair: [0, 1],
+                    free_spinor: 7,
+                    exterior_mask: 0x0000_0fff,
+                    coefficient: 1,
+                },
+                RecoupledSourceTerm {
+                    momentum_pair: [2, 5],
+                    free_spinor: 8,
+                    exterior_mask: 0x0000_1ffe,
+                    coefficient: 1,
+                },
+                RecoupledSourceTerm {
+                    momentum_pair: [4, 9],
+                    free_spinor: 9,
+                    exterior_mask: 0x0000_3ffc,
+                    coefficient: 1,
+                },
+            ];
+            let lane_values = [
+                [5_i128, -3, 0],
+                [i128::from(GPU_FX_PRIMES[0]), 11, -13],
+                [2, 0, -7],
+            ];
+            let mut union = sources
+                .iter()
+                .zip(lane_values)
+                .map(|(source, values)| (pack_recoupling_key(source).unwrap(), values))
+                .collect::<Vec<_>>();
+            union.sort_by_key(|(key, _)| *key);
+            let keys = union.iter().map(|(key, _)| *key).collect::<Vec<_>>();
+            let values = union
+                .iter()
+                .flat_map(|(_, values)| values.iter().copied())
+                .collect::<Vec<_>>();
+            let resident_before_failed_reservation = fused.resident_bytes();
+            let high_water_before_failed_reservation = fused.buffer_high_water_bytes();
+            fused
+                .cuda
+                .set_recoupling_hard_cap(resident_before_failed_reservation)
+                .unwrap();
+            assert!(
+                fused
+                    .accumulate_reduced_union_multilane_persistent(&keys, &values, 3)
+                    .is_err()
+            );
+            assert_eq!(fused.resident_bytes(), resident_before_failed_reservation);
+            assert_eq!(
+                fused.buffer_high_water_bytes(),
+                high_water_before_failed_reservation
+            );
+            fused
+                .cuda
+                .set_recoupling_hard_cap(10 * 1024 * 1024 * 1024)
+                .unwrap();
+            let zero_rows =
+                vec![vec![vec![GaussianResidue::zero(); P3_FUNCTIONAL_ROW_COUNT]; 3]; 3];
+            fused.reset_persistent_columns(&zero_rows).unwrap();
+            let fused_timing = fused
+                .accumulate_reduced_union_multilane_persistent(&keys, &values, 3)
+                .unwrap();
+            assert_eq!(fused_timing.source_counts[0], vec![2, 2, 2]);
+            assert_eq!(fused_timing.source_counts[1], vec![3, 2, 2]);
+            assert_eq!(fused_timing.source_counts[2], vec![3, 2, 2]);
+            let fused_rows = fused.download_persistent_columns(3).unwrap();
+
+            // A durable boundary stores all three prime-major row planes. A
+            // fresh context must restore that state and produce the exact
+            // uninterrupted result after the remaining union keys.
+            let split = 1;
+            let mut before_restart = CudaModularP3ThreePrime::new_with_device_cap(
+                &static_data,
+                &plans,
+                0,
+                10 * 1024 * 1024 * 1024,
+            )
+            .unwrap();
+            before_restart.reset_persistent_columns(&zero_rows).unwrap();
+            let first_timing = before_restart
+                .accumulate_reduced_union_multilane_persistent(
+                    &keys[..split],
+                    &values[..split * 3],
+                    3,
+                )
+                .unwrap();
+            let durable_rows = before_restart.download_persistent_columns(3).unwrap();
+            drop(before_restart);
+            let mut after_restart = CudaModularP3ThreePrime::new_with_device_cap(
+                &static_data,
+                &plans,
+                0,
+                10 * 1024 * 1024 * 1024,
+            )
+            .unwrap();
+            after_restart
+                .reset_persistent_columns(&durable_rows)
+                .unwrap();
+            let second_timing = after_restart
+                .accumulate_reduced_union_multilane_persistent(
+                    &keys[split..],
+                    &values[split * 3..],
+                    3,
+                )
+                .unwrap();
+            assert_eq!(
+                after_restart.download_persistent_columns(3).unwrap(),
+                fused_rows
+            );
+            for prime_slot in 0..3 {
+                for lane in 0..3 {
+                    assert_eq!(
+                        first_timing.expanded_contributions[prime_slot][lane]
+                            + second_timing.expanded_contributions[prime_slot][lane],
+                        fused_timing.expanded_contributions[prime_slot][lane]
+                    );
+                }
+            }
+
+            let mut semantic_hashes = std::collections::BTreeSet::new();
+            for prime_slot in 0..3 {
+                let mut serial = CudaModularP3::new_with_device_cap(
+                    &static_data[prime_slot],
+                    &plans[prime_slot],
+                    0,
+                    10 * 1024 * 1024 * 1024,
+                )
+                .unwrap();
+                serial
+                    .reset_persistent_columns(&vec![
+                        vec![
+                            GaussianResidue::zero();
+                            P3_FUNCTIONAL_ROW_COUNT
+                        ];
+                        3
+                    ])
+                    .unwrap();
+                let serial_timing = serial
+                    .accumulate_reduced_union_multilane_persistent(&keys, &values, 3)
+                    .unwrap();
+                let serial_rows = serial.download_persistent_columns(3).unwrap();
+                assert_eq!(fused_rows[prime_slot], serial_rows);
+                assert_eq!(
+                    fused_timing.expanded_contributions[prime_slot],
+                    serial_timing.expanded_contributions
+                );
+                for lane in 0..3 {
+                    let column = ModularP3FunctionalColumn {
+                        prime: GPU_FX_PRIMES[prime_slot],
+                        global_ordinal: lane,
+                        semantic_sha256: p3_column_semantic_sha256(
+                            GPU_FX_PRIMES[prime_slot],
+                            lane,
+                            &fused_rows[prime_slot][lane],
+                        ),
+                        rows: fused_rows[prime_slot][lane].clone(),
+                        expanded_contributions: fused_timing.expanded_contributions[prime_slot]
+                            [lane],
+                    };
+                    let bytes =
+                        encode_p3_column_artifact(&plans[prime_slot].semantic_sha256, &column)
+                            .unwrap();
+                    let (decoded_plan, decoded) = decode_p3_column_artifact(&bytes).unwrap();
+                    assert_eq!(decoded_plan, plans[prime_slot].semantic_sha256);
+                    assert_eq!(decoded.prime, column.prime);
+                    assert_eq!(decoded.global_ordinal, column.global_ordinal);
+                    assert_eq!(decoded.rows, column.rows);
+                    assert_eq!(
+                        decoded.expanded_contributions,
+                        column.expanded_contributions
+                    );
+                    assert_eq!(decoded.semantic_sha256, column.semantic_sha256);
+                    semantic_hashes.insert(decoded.semantic_sha256);
+                }
+            }
+            assert_eq!(semantic_hashes.len(), 9);
+        }
+
+        #[test]
+        #[ignore = "runs one real width-3 PBW word through serial and fused three-prime CUDA paths"]
+        fn p3_three_prime_real_word_benchmark_matches_three_serial_runs() {
+            use crate::second_momentum_gpu_group::{
+                GpuFxTranche, GroupRuntimeIdentity, GroupWordOrchestrationConfig,
+                prepare_cuda_column_group,
+            };
+            const WIDTH: usize = 3;
+            const LOCAL_ORDINALS: [usize; WIDTH] = [4, 5, 6];
+            const RAW_BATCH_TERMS: usize = 65_536;
+            const MAX_UNION_KEYS: usize = 131_072;
+            const MIB: u64 = 1024 * 1024;
+            const GIB: u64 = 1024 * MIB;
+
+            let static_data: [ModularFxStaticData; 3] =
+                GPU_FX_PRIMES.map(|prime| ModularFxStaticData::build(prime).unwrap());
+            let p3_plans: [P3ModularFlatPlan; 3] =
+                std::array::from_fn(|slot| build_p3_modular_flat_plan(&static_data[slot]).unwrap());
+            let plans: Vec<crate::second_momentum_gpu_group::PreparedColumnGroup> = (0..3)
+                .map(|slot| {
+                    let probe = CudaModularFx::new(&static_data[slot], 0).unwrap();
+                    let runtime = GroupRuntimeIdentity {
+                        prime: GPU_FX_PRIMES[slot],
+                        static_semantic_sha256: static_data[slot].semantic_sha256().to_string(),
+                        flat_plan_sha256: probe.flat_plan_sha256().to_string(),
+                    };
+                    drop(probe);
+                    prepare_cuda_column_group(GpuFxTranche::Two0001, &LOCAL_ORDINALS, runtime)
+                        .unwrap()
+                })
+                .collect();
+            assert!(plans.windows(2).all(|pair| {
+                pair[0].ordered_global_ordinals == pair[1].ordered_global_ordinals
+                    && pair[0].pbw_word_count == pair[1].pbw_word_count
+            }));
+            let config = GroupWordOrchestrationConfig {
+                start_word_ordinal: 0,
+                end_word_ordinal_exclusive: 1,
+                first_global_batch_ordinal: 0,
+                raw_batch_term_cap_per_lane: RAW_BATCH_TERMS,
+                max_union_keys_per_batch: MAX_UNION_KEYS,
+                aggregate_host_payload_cap_bytes: 4 * GIB,
+            };
+            let mut serial_p2_rows = Vec::new();
+            let mut serial_p3_rows = Vec::new();
+            let mut serial_expanded = Vec::new();
+            let mut serial_raw_counts = Vec::new();
+            let mut serial_p3_kernel_ms = Vec::new();
+            let mut serial_wall_seconds = Vec::new();
+            for slot in 0..3 {
+                let mut executor = super::super::PersistentCudaGroupExecutor::new(
+                    plans[slot].clone(),
+                    &static_data[slot],
+                    0,
+                    MAX_UNION_KEYS,
+                    6 * GIB,
+                    2 * GIB,
+                    GIB,
+                    1_048_576,
+                )
+                .unwrap();
+                let mut p3 = CudaModularP3::new_with_device_cap(
+                    &static_data[slot],
+                    &p3_plans[slot],
+                    0,
+                    2 * GIB,
+                )
+                .unwrap();
+                p3.reset_persistent_columns(&vec![
+                    vec![
+                        GaussianResidue::zero();
+                        P3_FUNCTIONAL_ROW_COUNT
+                    ];
+                    WIDTH
+                ])
+                .unwrap();
+                let mut raw_counts = vec![0_u64; WIDTH];
+                let mut expanded = vec![0_u64; WIDTH];
+                let mut kernel_ms = 0.0_f64;
+                let started = std::time::Instant::now();
+                executor
+                    .run_word_synchronous_batched_with_union(
+                        config.clone(),
+                        |lane, _, terms| {
+                            raw_counts[lane] += terms.len() as u64;
+                            Ok(())
+                        },
+                        |_, union| {
+                            let timing = p3.accumulate_reduced_union_multilane_persistent(
+                                &union.keys,
+                                &union.key_major_values,
+                                WIDTH,
+                            )?;
+                            for lane in 0..WIDTH {
+                                expanded[lane] += timing.expanded_contributions[lane];
+                            }
+                            kernel_ms += f64::from(timing.kernel_milliseconds);
+                            Ok(())
+                        },
+                        |_| Ok(()),
+                        |_, _| Ok(()),
+                    )
+                    .unwrap();
+                serial_wall_seconds.push(started.elapsed().as_secs_f64());
+                serial_raw_counts.push(raw_counts);
+                serial_expanded.push(expanded);
+                serial_p3_kernel_ms.push(kernel_ms);
+                serial_p2_rows.push(executor.final_columns().to_vec());
+                serial_p3_rows.push(p3.download_persistent_columns(WIDTH).unwrap());
+            }
+
+            let mut fused_executor = super::super::PersistentCudaMultiPrimeGroupExecutor::new(
+                plans.clone(),
+                &static_data,
+                0,
+                MAX_UNION_KEYS,
+                10 * GIB,
+                2 * GIB,
+                GIB,
+                1_048_576,
+                None,
+            )
+            .unwrap();
+            let mut fused_p3 =
+                CudaModularP3ThreePrime::new_with_device_cap(&static_data, &p3_plans, 0, 2 * GIB)
+                    .unwrap();
+            fused_p3
+                .reset_persistent_columns(&vec![
+                    vec![
+                        vec![
+                            GaussianResidue::zero();
+                            P3_FUNCTIONAL_ROW_COUNT
+                        ];
+                        WIDTH
+                    ];
+                    3
+                ])
+                .unwrap();
+            let mut fused_raw_counts = vec![0_u64; WIDTH];
+            let mut fused_expanded = vec![vec![0_u64; WIDTH]; 3];
+            let mut fused_kernel_ms = 0.0_f64;
+            let started = std::time::Instant::now();
+            fused_executor
+                .run_word_synchronous_batched_with_union(
+                    config,
+                    |lane, _, terms| {
+                        fused_raw_counts[lane] += terms.len() as u64;
+                        Ok(())
+                    },
+                    |_, union| {
+                        let timing = fused_p3.accumulate_reduced_union_multilane_persistent(
+                            &union.keys,
+                            &union.key_major_values,
+                            WIDTH,
+                        )?;
+                        for prime_slot in 0..3 {
+                            for lane in 0..WIDTH {
+                                fused_expanded[prime_slot][lane] +=
+                                    timing.expanded_contributions[prime_slot][lane];
+                            }
+                        }
+                        fused_kernel_ms += f64::from(timing.kernel_milliseconds);
+                        Ok(())
+                    },
+                    |_, _, _| Ok(()),
+                    |_, _| Ok(()),
+                )
+                .unwrap();
+            let fused_wall_seconds = started.elapsed().as_secs_f64();
+            let fused_p3_rows = fused_p3.download_persistent_columns(WIDTH).unwrap();
+            for slot in 0..3 {
+                assert_eq!(fused_raw_counts, serial_raw_counts[slot]);
+                assert_eq!(fused_expanded[slot], serial_expanded[slot]);
+                assert_eq!(fused_p3_rows[slot], serial_p3_rows[slot]);
+                assert_eq!(
+                    fused_executor.final_columns(slot).unwrap(),
+                    serial_p2_rows[slot]
+                );
+                for lane in 0..WIDTH {
+                    let ordinal = plans[slot].ordered_global_ordinals[lane];
+                    let column = ModularP3FunctionalColumn {
+                        prime: GPU_FX_PRIMES[slot],
+                        global_ordinal: ordinal,
+                        rows: fused_p3_rows[slot][lane].clone(),
+                        expanded_contributions: fused_expanded[slot][lane],
+                        semantic_sha256: p3_column_semantic_sha256(
+                            GPU_FX_PRIMES[slot],
+                            ordinal,
+                            &fused_p3_rows[slot][lane],
+                        ),
+                    };
+                    let bytes =
+                        encode_p3_column_artifact(p3_plans[slot].semantic_sha256(), &column)
+                            .unwrap();
+                    let (digest, decoded) = decode_p3_column_artifact(&bytes).unwrap();
+                    assert_eq!(digest, p3_plans[slot].semantic_sha256());
+                    assert_eq!(decoded.semantic_sha256, column.semantic_sha256);
+                }
+            }
+            let serial_wall_total: f64 = serial_wall_seconds.iter().sum();
+            println!(
+                "{}",
+                serde_json::json!({
+                    "event": "p3_three_prime_real_word_benchmark",
+                    "serial_wall_seconds": serial_wall_seconds,
+                    "serial_wall_total_seconds": serial_wall_total,
+                    "serial_p3_kernel_milliseconds": serial_p3_kernel_ms,
+                    "fused_wall_seconds": fused_wall_seconds,
+                    "fused_p3_kernel_milliseconds": fused_kernel_ms,
+                    "wall_speedup": serial_wall_total / fused_wall_seconds,
+                    "raw_terms_per_column": fused_raw_counts,
+                    "union_batches": fused_executor.batches_folded().unwrap(),
+                })
+            );
+        }
+
         fn sample_column(term_count: usize) -> GpuFxColumnInput {
             let base_mask = (0..12).fold(0_u32, |mask, bit| mask | (1_u32 << bit));
             GpuFxColumnInput {
@@ -6324,8 +7176,8 @@ mod cuda_backend {
 
 #[cfg(feature = "cuda")]
 pub(crate) use cuda_backend::{
-    CudaModularFx, CudaModularP3, CudaMultiColumnBatch, CudaMultiColumnStats, CudaP3Timing,
-    lower_sparse_exact,
+    CudaModularFx, CudaModularP3, CudaModularP3ThreePrime, CudaMultiColumnBatch,
+    CudaMultiColumnStats, CudaP3ThreePrimeTiming, CudaP3Timing, lower_sparse_exact,
 };
 
 #[cfg(feature = "cuda")]
@@ -6883,6 +7735,68 @@ impl PersistentCudaMultiPrimeGroupExecutor {
         )
     }
 
+    pub(crate) fn run_word_synchronous_batched_with_union<O, U, B, W>(
+        &mut self,
+        config: crate::second_momentum_gpu_group::GroupWordOrchestrationConfig,
+        observe_raw_batch: O,
+        mut observe_union: U,
+        mut observe_batch: B,
+        complete_word: W,
+    ) -> Result<crate::second_momentum_gpu_group::GroupWordOrchestrationReport, String>
+    where
+        O: FnMut(usize, usize, &[RecoupledSourceTerm]) -> Result<(), String>,
+        U: FnMut(usize, &crate::second_momentum_gpu_group::ExactUnionBatch) -> Result<(), String>,
+        B: FnMut(
+            usize,
+            u32,
+            &crate::second_momentum_gpu_group::GroupBatchObservation,
+        ) -> Result<(), String>,
+        W: FnMut(
+            usize,
+            &[crate::second_momentum_gpu_group::LaneWordCompletion],
+        ) -> Result<(), String>,
+    {
+        let lanes = &self.lanes;
+        let source_plan = self.source_plan.clone();
+        let contractions = &mut self.contractions;
+        crate::second_momentum_gpu_group::orchestrate_group_words_with_batch_observer(
+            &source_plan,
+            &self.bundle_group_id,
+            config,
+            &|lane_index,
+              expected_local_ordinal,
+              expected_global_ordinal,
+              expected_source_copy,
+              word_ordinal,
+              emit_term| {
+                lanes.run_lane_word(
+                    lane_index,
+                    expected_local_ordinal,
+                    expected_global_ordinal,
+                    expected_source_copy,
+                    word_ordinal,
+                    emit_term,
+                )
+            },
+            observe_raw_batch,
+            |word_ordinal, raw_counts, batch| {
+                observe_union(word_ordinal, &batch)?;
+                for (prime_slot, contraction) in contractions.iter_mut().enumerate() {
+                    let prime = contraction.prime();
+                    let observation = contraction.accumulate_batch(
+                        &batch,
+                        word_ordinal,
+                        None,
+                        raw_counts.clone(),
+                    )?;
+                    observe_batch(prime_slot, prime, &observation)?;
+                }
+                Ok(())
+            },
+            complete_word,
+        )
+    }
+
     pub(crate) fn device_budget(&self) -> &PersistentMultiPrimeDeviceBudget {
         &self.budget
     }
@@ -7384,6 +8298,80 @@ pub(crate) fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn p3_three_prime_plans_have_identical_structure() {
+        let plans = GPU_FX_PRIMES
+            .iter()
+            .map(|&prime| {
+                let static_data = ModularFxStaticData::build(prime).unwrap();
+                build_p3_modular_flat_plan(&static_data).unwrap()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            plans
+                .iter()
+                .map(|plan| plan.entries.len())
+                .collect::<Vec<_>>(),
+            vec![5_390_208; 3]
+        );
+        for slot in 1..plans.len() {
+            let left = &plans[0];
+            let right = &plans[slot];
+            let same_offsets = left.offsets == right.offsets;
+            let same_keys = left.entries.len() == right.entries.len()
+                && left
+                    .entries
+                    .iter()
+                    .zip(&right.entries)
+                    .all(|(left, right)| left.key == right.key);
+            let differing_coefficients = left
+                .entries
+                .iter()
+                .zip(&right.entries)
+                .filter(|(left, right)| left.coefficient != right.coefficient)
+                .count();
+            assert!(same_offsets);
+            assert!(same_keys);
+            assert_eq!(differing_coefficients, plans[0].entries.len());
+        }
+        assert_eq!(
+            plans
+                .iter()
+                .map(|plan| plan.semantic_sha256.as_str())
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            3
+        );
+        for index in 0..plans[0].entries.len() {
+            let scaled = [0_usize, 1_usize].map(|component| {
+                (0..3)
+                    .map(|slot| {
+                        let prime = u64::from(GPU_FX_PRIMES[slot]);
+                        let coefficient = plans[slot].entries[index].coefficient;
+                        let residue = if component == 0 {
+                            coefficient.real
+                        } else {
+                            coefficient.imaginary
+                        };
+                        let raw = u64::from(residue) * 13_440 % prime;
+                        if raw <= prime / 2 {
+                            raw as i64
+                        } else {
+                            raw as i64 - prime as i64
+                        }
+                    })
+                    .collect::<Vec<_>>()
+            });
+            assert!(
+                scaled
+                    .iter()
+                    .all(|values| values.windows(2).all(|pair| pair[0] == pair[1]))
+            );
+            assert!(scaled.iter().flatten().all(|value| value.abs() <= 3_024));
+            assert!(scaled[0][0] != 0 || scaled[1][0] != 0);
+        }
+    }
 
     #[test]
     fn pinned_primes_are_valid_gaussian_extension_fields() {
