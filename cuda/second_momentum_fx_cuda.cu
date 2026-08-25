@@ -749,14 +749,15 @@ __global__ void accumulate_p3_multicol_kernel(
   __shared__ uint8_t shared_negative[kAdmissiblePairs];
   constexpr uint32_t kRowsPerDegreePair =
       kSectors * kContractionAxes * kSeeds * kBuckets;
-  constexpr uint32_t kAggregatedColumns = 3;
   // A bin receives no more than the u32-bounded flat-plan entry count and
   // every residue is below the pinned 30-bit prime, so the unreduced sum is
   // strictly below 2^62 and cannot overflow u64.
-  __shared__ unsigned long long
-      shared_real[kAggregatedColumns * kRowsPerDegreePair];
-  __shared__ unsigned long long
-      shared_imaginary[kAggregatedColumns * kRowsPerDegreePair];
+  // The contraction is linear in each lane's source coefficient. Accumulate
+  // the coefficient-one response once, then scale it for every active column
+  // during the global flush. This preserves exact rows while removing the
+  // active-column factor from all plan-entry arithmetic and shared atomics.
+  __shared__ unsigned long long shared_real[kRowsPerDegreePair];
+  __shared__ unsigned long long shared_imaginary[kRowsPerDegreePair];
 
   if (threadIdx.x == 0) {
     shared_valid = 0;
@@ -818,16 +819,12 @@ __global__ void accumulate_p3_multicol_kernel(
   unsigned long long local_expanded = 0;
   if (shared_valid != 0) {
     for (uint32_t degree = 0; degree < kGaugeDegrees; ++degree) {
-      if (active_columns <= kAggregatedColumns) {
-        const uint32_t shared_count =
-            active_columns * kRowsPerDegreePair;
-        for (uint32_t index = threadIdx.x; index < shared_count;
-             index += kThreads) {
-          shared_real[index] = 0;
-          shared_imaginary[index] = 0;
-        }
-        __syncthreads();
+      for (uint32_t index = threadIdx.x; index < kRowsPerDegreePair;
+           index += kThreads) {
+        shared_real[index] = 0;
+        shared_imaginary[index] = 0;
       }
+      __syncthreads();
       const uint32_t schedule = degree * kSpinors + shared_free_spinor;
       const uint32_t lane = threadIdx.x & 31U;
       const uint32_t warp = threadIdx.x >> 5;
@@ -851,69 +848,52 @@ __global__ void accumulate_p3_multicol_kernel(
             const uint64_t hash = splitmix64(base ^ kFunctionalSeeds[seed]);
             const uint32_t bucket =
                 static_cast<uint32_t>(hash) & (kBuckets - 1);
-            const uint32_t row = p3_row_ordinal(
-                degree, shared_pair, entry.sector, entry.contraction_axis,
-                seed, bucket);
             const uint32_t local_row =
                 (((entry.sector * kContractionAxes + entry.contraction_axis) *
                    kSeeds +
                    seed) *
                   kBuckets) +
                 bucket;
-            for (uint32_t column = 0; column < active_columns; ++column) {
-              const uint32_t coefficient = shared_coefficients[column];
-              if (coefficient == 0 || coefficient >= prime) continue;
-              GaussianResidue contribution =
-                  scale_gaussian(entry.coefficient, coefficient, prime);
-              if ((shared_negative[pair_slot] != 0) !=
-                  ((hash >> 63) != 0)) {
-                contribution = negate_gaussian(contribution, prime);
-              }
-              if (contribution.real == 0 && contribution.imaginary == 0) {
-                continue;
-              }
-              if (active_columns <= kAggregatedColumns) {
-                const uint32_t shared_output =
-                    column * kRowsPerDegreePair + local_row;
-                atomicAdd(&shared_real[shared_output],
-                          static_cast<unsigned long long>(contribution.real));
-                atomicAdd(
-                    &shared_imaginary[shared_output],
-                    static_cast<unsigned long long>(contribution.imaginary));
-              } else {
-                const uint64_t output =
-                    static_cast<uint64_t>(column) * kP3Rows + row;
-                atomic_add_mod(&output_real[output], contribution.real, prime);
-                atomic_add_mod(&output_imaginary[output],
-                               contribution.imaginary, prime);
-              }
+            GaussianResidue contribution = entry.coefficient;
+            if ((shared_negative[pair_slot] != 0) !=
+                ((hash >> 63) != 0)) {
+              contribution = negate_gaussian(contribution, prime);
             }
+            if (contribution.real == 0 && contribution.imaginary == 0) {
+              continue;
+            }
+            atomicAdd(&shared_real[local_row],
+                      static_cast<unsigned long long>(contribution.real));
+            atomicAdd(&shared_imaginary[local_row],
+                      static_cast<unsigned long long>(contribution.imaginary));
           }
           ++local_expanded;
         }
       }
-      if (active_columns <= kAggregatedColumns) {
-        __syncthreads();
-        const uint32_t shared_count =
-            active_columns * kRowsPerDegreePair;
-        for (uint32_t index = threadIdx.x; index < shared_count;
-             index += kThreads) {
-          const uint32_t column = index / kRowsPerDegreePair;
-          const uint32_t local_row = index % kRowsPerDegreePair;
-          const uint32_t row =
-              (degree * kMomentumPairs + shared_pair) * kRowsPerDegreePair +
-              local_row;
-          const uint64_t output =
-              static_cast<uint64_t>(column) * kP3Rows + row;
-          const uint32_t real =
-              static_cast<uint32_t>(shared_real[index] % prime);
-          const uint32_t imaginary =
-              static_cast<uint32_t>(shared_imaginary[index] % prime);
-          atomic_add_mod(&output_real[output], real, prime);
-          atomic_add_mod(&output_imaginary[output], imaginary, prime);
-        }
-        __syncthreads();
+      __syncthreads();
+      const uint32_t output_count = active_columns * kRowsPerDegreePair;
+      for (uint32_t index = threadIdx.x; index < output_count;
+           index += kThreads) {
+        const uint32_t column = index / kRowsPerDegreePair;
+        const uint32_t local_row = index % kRowsPerDegreePair;
+        const uint32_t coefficient = shared_coefficients[column];
+        if (coefficient == 0 || coefficient >= prime) continue;
+        const GaussianResidue response{
+            reduce_u64_mod(shared_real[local_row], prime),
+            reduce_u64_mod(shared_imaginary[local_row], prime)};
+        const GaussianResidue contribution =
+            scale_gaussian(response, coefficient, prime);
+        if (contribution.real == 0 && contribution.imaginary == 0) continue;
+        const uint32_t row =
+            (degree * kMomentumPairs + shared_pair) * kRowsPerDegreePair +
+            local_row;
+        const uint64_t output =
+            static_cast<uint64_t>(column) * kP3Rows + row;
+        atomic_add_mod(&output_real[output], contribution.real, prime);
+        atomic_add_mod(&output_imaginary[output], contribution.imaginary,
+                       prime);
       }
+      __syncthreads();
     }
   }
   for (uint32_t delta = 16; delta != 0; delta >>= 1) {
