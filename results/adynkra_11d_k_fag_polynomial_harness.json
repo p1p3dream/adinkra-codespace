@@ -36,7 +36,7 @@
   "channel_separation_enforced": true,
   "quotient_aware_verdicts_implemented": true,
   "current_physical_curvature_schema": "adynkra-11d-physical-curvature-operator-v10",
-  "current_physical_curvature_envelope_sha256": "3c31f29d0853f415a11adda78bbb52368e59d848013486affeb4aa9e88a23b13",
+  "current_physical_curvature_envelope_sha256": "c811ede71330388c3e932fb145234365277304b39d97efe45c74e88b1f390908",
   "current_physical_curvature_envelope_provenance_validated": true,
   "current_physical_curvature_complete_f": false,
   "current_physical_curvature_fag_ready": false,

@@ -401,7 +401,7 @@ fn first_momentum_physical_fx_artifact_gate() -> FirstMomentumPhysicalFxArtifact
         "5a9a6e13ff57789817689a6d1791ec3d4e94b5731af02a1ed618bedd1a30f4f9";
     const PHYSICAL_PATH: &str = "results/adynkra_11d_physical_curvature_validation.json";
     const PHYSICAL_SHA256: &str =
-        "3c31f29d0853f415a11adda78bbb52368e59d848013486affeb4aa9e88a23b13";
+        "c811ede71330388c3e932fb145234365277304b39d97efe45c74e88b1f390908";
     const FX_INPUT_PATH: &str = "results/adynkra_11d_physical_curvature_fx_input_v10.json";
     const FX_INPUT_SHA256: &str =
         "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f";
@@ -706,10 +706,10 @@ fn first_momentum_physical_fx_artifact_gate() -> FirstMomentumPhysicalFxArtifact
 
 fn k_fag_artifact_gate() -> KAndFagArtifactGate {
     const PATH: &str = "results/adynkra_11d_k_fag_polynomial_harness.json";
-    const SHA256: &str = "11ec33c36d9536e17e617839cc8dbabc885b9d30bf13ff05a4d0dc5e6b9fe562";
+    const SHA256: &str = "e62c884330f39aabb78da0361d0409695defb3d5b3aaabc64c00b8a54402ec04";
     const SCHEMA: &str = "adynkra-11d-k-fag-polynomial-harness-v1";
     const PHYSICAL_SHA256: &str =
-        "3c31f29d0853f415a11adda78bbb52368e59d848013486affeb4aa9e88a23b13";
+        "c811ede71330388c3e932fb145234365277304b39d97efe45c74e88b1f390908";
     const FX_INPUT_SHA256: &str =
         "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f";
 
@@ -1230,7 +1230,7 @@ mod tests {
                 .first_momentum_physical_fx
                 .current_physical_curvature_artifact_sha256
                 .as_deref(),
-            Some("3c31f29d0853f415a11adda78bbb52368e59d848013486affeb4aa9e88a23b13")
+            Some("c811ede71330388c3e932fb145234365277304b39d97efe45c74e88b1f390908")
         );
         assert!(report.physical_curvature.bounded_slice_passed);
         assert!(report.physical_adapter_audit.passed);
@@ -1244,7 +1244,7 @@ mod tests {
         assert!(report.k_fag_artifact.report_integrity_passed);
         assert_eq!(
             report.k_fag_artifact.artifact_sha256.as_deref(),
-            Some("11ec33c36d9536e17e617839cc8dbabc885b9d30bf13ff05a4d0dc5e6b9fe562")
+            Some("e62c884330f39aabb78da0361d0409695defb3d5b3aaabc64c00b8a54402ec04")
         );
         assert!(
             report
