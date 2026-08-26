@@ -10,8 +10,8 @@ wrong: all targets are conjugates of CLS by construction, hence isomorphic,
 so any isomorphism-invariant comparison must return the self-value on every
 entry. This script demonstrates exactly where the invariance breaks and then
 answers the question that actually matters (the external review's step 2):
-are the conjugated presentations equivalent to the original under node
-permutations, color permutations, and sign flips?
+are the conjugated presentations equivalent to the original under signed
+node relabelings, color permutations, and color sign rescalings?
 
 Method: exact rational/integer arithmetic only.
 
@@ -24,14 +24,14 @@ Method: exact rational/integer arithmetic only.
   3. Verify the 9 conjugates collapse to 3 distinct ordered quadruples
      and that the collapse is commutant arithmetic (G_j^-1 G_i commutes
      with all four L_I).
-  4. Exact equivalence search: all quadruples involved are block-diagonal
-     4+4+4. Any intertwiner S of the color algebra decouples into
-     independent 4x4 block conditions (the intertwiner space between two
-     irreducible 4-dim block quadruples is at most 1-dimensional by Schur,
-     and global monomiality forces exactly one nonzero block per block row
-     and column). Brute force over the 384 4x4 signed permutations per
-     block therefore decides equivalence exactly, including block-mixing
-     intertwiners.
+  4. Exact signed-monomial equivalence search: all quadruples involved are
+     block-diagonal 4+4+4, and each 4-node block is a connected component of
+     the union of its colored node graph. A signed monomial intertwiner
+     preserves colored adjacency, so it maps each whole connected block onto
+     a whole connected block. Brute force over all 3! block assignments, all
+     384 signed permutations inside each 4x4 block, and the allowed global
+     color permutations and color signs therefore decides the stated
+     signed-monomial equivalence relation exactly.
 
 Run: python3 scripts/lever_a/garden_target_equivalence_check.py
 """
@@ -238,9 +238,40 @@ def block_diag(quad):
     return True
 
 
+def block_connected(quad, block_index):
+    """Connectivity of one 4-node block in the unsigned union of color edges.
+
+    Identity-color loops do not affect connectivity. Signs also do not affect
+    the underlying colored adjacency that a signed monomial intertwiner must
+    preserve.
+    """
+    lo = NB * block_index
+    hi = lo + NB
+    adj = {i: set() for i in range(lo, hi)}
+    for addr in quad[1:]:
+        for i in range(lo, hi):
+            j = abs(addr[i]) - 1
+            if not lo <= j < hi:
+                return False
+            adj[i].add(j)
+            adj[j].add(i)
+    seen = {lo}
+    stack = [lo]
+    while stack:
+        v = stack.pop()
+        for w in adj[v]:
+            if w not in seen:
+                seen.add(w)
+                stack.append(w)
+    return len(seen) == NB
+
+
 check("original L_I are block-diagonal 4+4+4", block_diag(orig_quad))
 check("all 3 target quadruples are block-diagonal 4+4+4",
       all(block_diag(q) for q in targets))
+check("every 4-node block is connected in the union colored graph",
+      all(block_connected(q, k) for q in [orig_quad] + list(targets)
+          for k in range(3)))
 
 OB = [[blocks(addr_to_mat(a))[k] for a in orig_quad] for k in range(3)]
 # OB[k][I] = 4x4 block k of color I.
@@ -337,7 +368,7 @@ for a in range(3):
         print("inducible (b%d -> b%d): %d (sigma,eps) combos, pure-color: %s"
               % (a + 1, b + 1, len(P[(a, b)]), " ".join(pure) or "none"))
 
-# Global equivalence, exact per the block-decoupling argument:
+# Global signed-monomial equivalence, exact by the connected-block argument:
 #   S signed 12-perm of block-tau form, global sigma (fixes color 1),
 #   global eps (eps[0] = +1), with S L^a_I S^-1 = eps[I] L^b_{sigma[I]}.
 # Per target block j fed from source block tau(j) with plans
@@ -400,7 +431,7 @@ for i, q in enumerate(targets):
 check("CLS is equivalent to itself (sanity, S = I certificate expected)",
       equivalent(orig_quad, orig_quad) is not None)
 
-# Monomial rebasis demonstration: T2 is node-relabeling equivalent to T1
+# Monomial rebasis demonstration: T2 is signed-node-relabeling equivalent to T1
 # (witness just verified), so rebasing T2 by that witness maps it EXACTLY
 # onto T1, a pure relabeling of the same representation. A basis-independent
 # functional cannot move under it; the gadget does.
@@ -409,7 +440,8 @@ sigma_w, eps_w, tau_w, wit_w = w21
 S21 = full_witness(targets[1], targets[0])
 Si = inv_addr(S21)
 rebased_T2 = tuple(comp_addr(comp_addr(S21, a), Si) for a in targets[1])
-check("rebased T2 is exactly T1 (pure node relabeling)", rebased_T2 == targets[0])
+check("rebased T2 is exactly T1 (signed node relabeling)",
+      rebased_T2 == targets[0])
 g_before = gadget(targets[0], targets[1])
 g_after = gadget(targets[0], rebased_T2)
 check("gadget is NOT an invariant: relabeling T2 onto T1 moves gadget(T1, .)",
@@ -418,7 +450,7 @@ check("gadget is NOT an invariant: relabeling T2 onto T1 moves gadget(T1, .)",
 all_quads = [orig_quad] + list(targets)
 names = ["CLS"] + ["T%d" % (i + 1) for i in range(len(targets))]
 print()
-print("equivalence under node perm + color perm + sign flips:")
+print("equivalence under signed-node + color-perm + color-sign operations:")
 for i, q in enumerate(all_quads):
     for j in range(i):
         w = equivalent(all_quads[j], q)

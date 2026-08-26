@@ -90,7 +90,8 @@ Dies:
 - Any framing that the scan computed holoraumy. It tested conjugation and
   signed-permutation structure. Preservation of algebraic relations under
   similarity is tautological and carries no information.
-- Any use of C_I^2 = -I on conjugates as evidence: it is similarity-forced.
+- Any use of C_I^2 = -I for colors 2-4 on conjugates as evidence: it is
+  similarity-forced. Color 1 instead has C_1^2 = +I.
 
 Survives, as a narrow exact fact: nine of the 4,077 stored matrices
 conjugate all four L_I into signed-permutation matrices (which then
@@ -101,10 +102,12 @@ unknown until class members beyond the stored representatives are tested
 
 ## Next steps (per the review, unchanged)
 
-1. Compute genuine holoraumy for the nine presentations.
-2. Equivalence classes of the nine under node permutations, color
-   permutations, and sign flips (intertwiner S with
-   S^-1 C^b_I S = C^a_{sigma(I)}).
+1. Compute genuine holoraumy for the three presentations produced by the nine
+   qualifying matrices.
+2. Equivalence classes of the three presentations under signed node
+   relabelings, color
+   permutations, and optional color sign rescalings (intertwiner S with
+   S C^a_I S^-1 = epsilon_I C^b_{sigma(I)}).
 3. Targeted class-member tests before attaching any population count.
 
 Reproduce: `python3 scripts/lever_a/garden_presentation_scan.py`
@@ -139,42 +142,50 @@ products within a single rep conjugate through; same trap family as the
 transpose-Garden discussion above).
 
 Direct certificate (scripts/lever_a/garden_target_equivalence_check.py,
-all checks PASS): a node-relabeling witness S maps T2 exactly onto T1, and
-under that pure relabeling gadget(T1, .) moves from 1 to 3.
+all checks PASS): a signed-node-relabeling witness S maps T2 exactly onto T1,
+and under that relabeling gadget(T1, .) moves from 1 to 3.
 
-Exact equivalence answer (the external review's step 2), by complete
-search: CLS, T1, T2, T3 are all equivalent under node permutation ALONE
-(sigma = identity, no color permutation, no sign flips). Witnesses in
-address form, each verified entrywise (S L_I S^-1 = T_I for all I):
+Exact equivalence answer (the external review's step 2): CLS, T1, T2, T3 are
+all equivalent under signed node relabeling alone (sigma = identity and
+epsilon = (+1,+1,+1,+1), so no color permutation or color sign rescaling).
+Witnesses in address form, each verified entrywise
+(S L_I S^-1 = T_I for all I):
 
 - CLS -> T1: (1, 4, 2, 3, 5, -7, 8, -6, 9, -11, -12, 10)
 - CLS -> T2: (5, -7, 6, -8, 1, 4, -3, -2, 9, -11, -12, 10)
 - CLS -> T3: (5, -8, -7, 6, 9, 11, 12, 10, 1, -2, 4, -3)
 
-The search is exact, not heuristic: all four quadruples are block-diagonal
-4+4+4; any intertwiner of the color algebra decouples into independent 4x4
-block conditions with at most 1-dimensional solution spaces (Schur), and
-monomiality forces exactly one nonzero block per block row and column, so
-brute force over the 384 4x4 signed permutations per block is complete,
-including block-mixing intertwiners.
+The one-class conclusion is constructive: the three witnesses above already
+prove it. The accompanying signed-monomial search is exact, not heuristic.
+All four quadruples are block-diagonal 4+4+4, and every 4-node block is a
+connected component of the union of its colored node graph. A signed
+monomial intertwiner preserves that colored adjacency, so it must map each
+whole connected block onto a whole connected block. The search enumerates all
+3! block assignments, all 4! 2^4 = 384 signed permutations inside each
+matched block, all allowed global color permutations, and all color sign
+choices. The script now gates block connectivity explicitly.
 
 Consequences:
 
-- Review step 1 (genuine holoraumy for the 9) needs no new computation:
-  the 9 presentations are node-relabelings of the CLS presentation, so
-  their holoraumy data are identical to CLS's. Exactly one holoraumy class
-  among the stored Garden presentations.
+- Review step 1 closes at the equivalence-class level: the 9 qualifying
+  matrices produce presentations related to CLS by signed node relabelings,
+  so their holoraumy tuples are conjugate by the same relabelings, not
+  generally entrywise identical in the displayed bases. Exactly one
+  holoraumy equivalence class occurs among the stored Garden presentations.
 - Block plans: T1 = per-block color permutations (234)/(243)/(243) of the
   original blocks; T2 = (23)/(24)/(243); T3 = (24)/(243)/(34). Within a
   block family the inducible pure color permutations are exactly the even
   ones (id and the two 3-cycles); the cross-family block conjugators
   induce exactly the transpositions. Every plan is therefore realizable by
-  node relabeling, which is why everything collapses to one class.
-- The gadget remains legitimate for genuinely different representations
-  (the d=4 CS/VS tests); it is a functional of a pair of PRESENTATIONS,
-  not of a pair of isomorphism classes.
+  signed node relabeling, which is why everything collapses to one class.
+- The raw cross-gadget is a basis-alignment functional for every pair of
+  presentations, whether the underlying representations are equivalent or
+  inequivalent. A representation-level comparison requires a common basis
+  convention, an explicit alignment prescription, orbit optimization, or a
+  separately proved invariant construction.
 - What the 9 G-matrices actually are: integral, non-monomial basis changes
-  connecting the CLS monomial presentation to node-relabelings of itself.
+  connecting the CLS monomial presentation to signed node relabelings of
+  itself.
   The nontrivial census fact stays as stated above (nine of 4,077 stored
   reps conjugate into signed-permutation form); no new adinkra invariant
   content.
@@ -198,7 +209,17 @@ unaffected by the bug.
 cross-matrix over {CLS, T1, T2, T3} was correctly computed but
 misinterpreted; cross entries are basis artifacts (witness certificate:
 relabeling T2 onto T1 moves gadget(T1, .) from 1 to 3). Exact equivalence
-search: all four quadruples form one class under node permutation alone;
+search: all four quadruples form one class under signed node relabeling alone;
 review steps 1 and 2 are thereby closed. Step 3 (population testing via
 the solution-dump hook) remains open. Script:
 scripts/lever_a/garden_target_equivalence_check.py.
+
+2026-08-26, mathematical-language correction: removed the false claim that
+real 4x4 intertwiner spaces are at most one-dimensional by Schur. Exact
+linear solves show dimension four for several block pairs. The one-class
+result is unaffected because it is constructively certified by the displayed
+witnesses. Exhaustiveness of the signed-monomial search now rests on the
+explicitly gated connectivity of each 4-node colored block, not on commutant
+dimension. Also corrected "node permutation" to "signed node relabeling,"
+holoraumy "identical" to "conjugate," and the scope of raw cross-gadget basis
+dependence to all representation pairs.

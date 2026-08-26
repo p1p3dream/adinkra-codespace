@@ -1,0 +1,365 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage[letterpaper,margin=0.82in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{url}
+
+\definecolor{ink}{HTML}{172033}
+\definecolor{accent}{HTML}{315A8A}
+\definecolor{soft}{HTML}{EDF3F8}
+\definecolor{rulegray}{HTML}{C9D3DE}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  citecolor=accent,
+  urlcolor=accent,
+  pdftitle={CLS Garden Presentations: Exact Scan and Equivalence Closure},
+  pdfauthor={Brandon Kirkland},
+  pdfsubject={Which CLS census G-matrices conjugate the L-matrices to signed-permutation form, and the equivalence classes of those presentations}
+}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.35em,itemsep=0.2em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.2em,topsep=0.25em}
+\titleformat{\section}{\large\bfseries\color{ink}}{}{0pt}{}[\vspace{-0.25em}\color{rulegray}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{accent}}{}{0pt}{}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small CLS Garden presentations: scan and equivalence}
+\rhead{\small Pr\'ecis, August 2026}
+\cfoot{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\newcommand{\summarybox}[1]{%
+  \begin{center}
+  \fcolorbox{rulegray}{soft}{\begin{minipage}{0.94\linewidth}\small #1\end{minipage}}
+  \end{center}}
+\newcommand{\pathcode}[1]{\nolinkurl{#1}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{ink} Garden Presentations of the CLS Valise}\par
+  \vspace{0.3em}
+  {\large Exact scan of the census G-matrix representatives, and closure of the equivalence question}\par
+  \vspace{0.55em}
+  {\small Pr\'ecis prepared for S.\,J.\ Gates Jr.\ and Y.\ (Tom) Lee}
+\end{center}
+
+\summarybox{%
+This is the companion to the CLS valise G-matrix census pr\'ecis
+(\pathcode{docs/cls-gmatrix-census-precis-for-gates.tex}).  The census found
+$123{,}984{,}864$ matrices $G\in\{-1,0,1\}^{12\times 12}$ with $G^2 = A$ and
+stored 4{,}536 class representatives (4{,}077 distinct matrices).  The natural
+follow-up, prompted by the holoraumy program of \cite{gates2024precis}, is:
+\emph{which} stored $G$ conjugate all four CLS color matrices $L_I$ into
+signed-permutation (Garden) form?  Exact answer over the stored record:
+\textbf{exactly 9 of the 4{,}077}, all first stored in the two
+highest-mass census items.  These nine qualifying matrices produce three
+Garden-presentation quadruples, and entrywise-verified signed node
+relabelings carry every one of them to the CLS presentation with the color
+index untouched.  Consequences: exactly \textbf{one signed-node-relabeling
+equivalence class} among the stored Garden presentations; their holoraumy
+tuples are conjugate, rather than entrywise identical, and carry the same
+invariant content.  The nine $G$-matrices are integral, non-monomial basis
+changes connecting the CLS monomial presentation to signed node relabelings
+of itself.  An internal preliminary extrapolation of $33{,}696$ qualifying
+matrices was rejected before delivery because the required taxonomy-constancy
+hypothesis is false.}
+
+\section{The question}
+
+The census pr\'ecis enumerated all $G\in\{-1,0,1\}^{12\times 12}$ satisfying
+$G^2 = A$ with $A = (L_1+L_2+L_3+L_4)\,L_1^{-1}$ for the CLS color matrices of
+\cite[Appendix~C]{gates2024precis}.  The CLS $L_I$ are signed permutations
+satisfying the Garden algebra entrywise,
+\[
+  L_I L_J^{T} + L_J L_I^{T} \;=\; 2\,\delta_{IJ}\,I_{12},
+\]
+with multiplicative companions $L_I^2 = -I$ for colors 2, 3, 4 (color 1 is the
+identity) and anticommutation among colors 2, 3, 4.
+
+Conjugation $C_I = G\,L_I\,G^{-1}$ preserves the multiplicative relations for
+any invertible $G$ but destroys monomiality in general.  A \emph{Garden
+presentation} here means the ordered quadruple
+$C=(C_1,C_2,C_3,C_4)$ when all four $C_I$ are integer signed-permutation
+matrices.  A census matrix $G$ \emph{qualifies} when it produces such a
+quadruple.  A qualifying $G$ turns the valise back into a monomial adinkra
+presentation in a different basis, which is the entry point for comparing
+holoraumy data across bases.  The scan asks, exactly, how often that happens
+among the stored census representatives and what the resulting presentations
+are up to equivalence.
+
+\section{Exact scan of the stored representatives}
+
+Method (\pathcode{scripts/lever_a/garden_presentation_scan.py}, exact
+\texttt{Fraction} arithmetic, no floating point anywhere, one core, about
+50 seconds):
+
+\begin{itemize}
+  \item The four $L_I$ are transcribed in signed-address form from
+        \pathcode{src/four_color/cls.rs}
+        (Appendix~C of \cite{gates2024precis}), with $L_1 = I_{12}$.
+  \item Sanity anchors, all verified entrywise before any scan: the four
+        $L_I$ are signed permutations; the Garden algebra above holds;
+        $A = (L_1+L_2+L_3+L_4)\,L_1^{-1}$ matches the census artifact
+        \pathcode{results/four_color_cls_gmatrix.json} entrywise, tying the
+        color matrices to the census target; $L_2^2 = L_3^2 = L_4^2 = -I$
+        with $L_1^2 = +I$; colors 2, 3, 4 pairwise anticommute.
+  \item Input: all 138 shard files across the three canonical census run
+        directories; every stored class representative: 4{,}536 records,
+        4{,}077 distinct matrices, 1{,}076 taxonomy keys
+        $(\mathrm{nnz}, \mathrm{support}, \mathrm{ranks})$.
+  \item Classification by exact rational inverse and matrix product:
+        bucket~1 if all four $C_I$ are integer signed permutations, bucket~2
+        if all integer but at least one not signed-permutation, bucket~3 if
+        any entry is non-integer.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Classification over the 4{,}077 distinct stored matrices & Count \\
+\midrule
+Qualifying $G$: all four colors signed-permutation & \textbf{9} \\
+Integer, only partially signed-permutation & 228 \\
+At least one non-integer conjugated color & 3{,}840 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Provenance of the nine: 7 are first stored in the shard of census item~52 and
+2 in the shard of item~204, the two items contributing the largest census
+mass.  All nine also satisfy the Garden algebra entrywise on their conjugated
+colors, but this is a corollary, not an extra filter: signed-permutation
+conjugates are orthogonal.  For $I=2,3,4$, the similarity-preserved relation
+$C_I^2=-I$ therefore gives $C_I^T=C_I^{-1}=-C_I$.  Anticommutation among
+colors 2, 3, 4 then gives
+$C_I C_J^{T} + C_J C_I^{T}=0$ for distinct $I,J$ in that range.  For a pair
+involving color 1, $C_1=I$ and $C_J^T=-C_J$, so
+$C_1C_J^T+C_JC_1^T=C_J^T+C_J=0$.  The diagonal relations follow directly
+from orthogonality.
+
+\section{Why no population count follows}
+
+Two traps close off any extrapolation from the nine to the full
+$123{,}984{,}864$.
+
+\emph{Taxonomy non-constancy.}  The property is not constant on the census
+taxonomy classes.  Counts of keys whose stored representatives disagree, by
+explicit definition of the classification:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Definition of the classification & Mixed keys \\
+\midrule
+Coarse bucket (3-way) & 34 \\
+Full four-color signed-permutation flags & 50 \\
+Combined (bucket, signed-permutation flags) & 55 \\
+Number of integer colors & 182 \\
+Full four-color integer flags & 188 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Every definition is far above zero, so a taxonomy key does not determine the
+conjugation property.  The internal preliminary estimate that $33{,}696$
+matrices qualify (extrapolated by assuming constancy on classes) is therefore
+unsupported and was rejected before delivery.  Nothing in the shipped census
+pr\'ecis ever carried that number; this document records the validated
+position.
+
+\emph{Similarity tautologies.}  Multiplicative relations among the $C_I$ are
+preserved by any similarity and carry no information beyond
+$C_I^2=G L_I^2G^{-1}$.  Thus $C_1^2=+I$ and
+$C_2^2=C_3^2=C_4^2=-I$ are forced and are not evidence of an additional
+property.  Only the non-similarity-invariant structure (integrality,
+monomiality of the conjugated colors, and the transpose algebra, which for
+bucket~1 follows from monomiality as shown above) has content.
+
+\section{The nine collapse to three quadruples}
+
+The nine bucket-1 matrices produce only \emph{three} distinct conjugated
+quadruples $T^{(1)}, T^{(2)}, T^{(3)}$: seven of the nine land on $T^{(1)}$
+and one each on $T^{(2)}$ and $T^{(3)}$.  The collapse mechanism is verified
+directly: within each group, $G_j^{-1} G_i$ commutes with all four $L_I$
+(commutant collisions), so the different $G$'s differ by elements of the
+commutant of the color algebra rather than by genuine presentation changes.
+
+\section{One class: exact signed-monomial equivalence closure}
+
+For ordered presentations $C^{(a)}$ and $C^{(b)}$, the tested adinkra
+equivalence relation asks for a signed node map $S$, a color permutation
+$\sigma$, and optional color sign rescalings $\epsilon_I\in\{\pm1\}$ such
+that
+\[
+  S C^{(a)}_I S^{-1}=\epsilon_I C^{(b)}_{\sigma(I)}.
+\]
+Signs carried by the signed monomial matrix $S$ are node signs; they are
+distinct from the optional color signs $\epsilon_I$.  The executed result has
+$\sigma=\mathrm{id}$ and $\epsilon=(1,1,1,1)$ for every displayed witness:
+
+\begin{center}
+\fcolorbox{rulegray}{soft}{\begin{minipage}{0.94\linewidth}\small
+All four quadruples (CLS itself, $T^{(1)}$, $T^{(2)}$, $T^{(3)}$) form
+\textbf{one equivalence class under signed node relabeling alone}: $\sigma$
+is the identity, and no color permutation or color sign rescaling is needed.
+The signed node intertwiners are verified entrywise
+($S L_I S^{-1}=T_I$ for all four colors).
+\end{minipage}}
+\end{center}
+
+\noindent In signed-address form (row $i$ carries its single nonzero,
+$\mathrm{sign}(a_i)$ in column $|a_i|$):
+
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Map & Intertwiner $S$ (address form) \\
+\midrule
+CLS $\to T^{(1)}$ & $(1,\,4,\,2,\,3,\,5,\,-7,\,8,\,-6,\,9,\,-11,\,-12,\,10)$ \\
+CLS $\to T^{(2)}$ & $(5,\,-7,\,6,\,-8,\,1,\,4,\,-3,\,-2,\,9,\,-11,\,-12,\,10)$ \\
+CLS $\to T^{(3)}$ & $(5,\,-8,\,-7,\,6,\,9,\,11,\,12,\,10,\,1,\,-2,\,4,\,-3)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The conclusion that the four displayed presentations form one class is
+constructive: the three witnesses above already prove it.  The accompanying
+search also exhausts the stated signed-monomial equivalence relation.  Each
+quadruple is block-diagonal $4{+}4{+}4$, and each 4-node block is a connected
+component of the union of its colored node graph.  A signed monomial
+intertwiner preserves this colored adjacency and therefore maps each complete
+connected block onto a complete connected block.  Its support consequently
+contains exactly one $4\times4$ signed-permutation block in each block row and
+block column.  The search enumerates all $3!$ block assignments, all
+$4!\,2^4=384$ signed permutations inside each matched block, all allowed
+global color permutations, and all color sign choices.  Block connectivity,
+the resulting plans, and every displayed witness are checked entrywise by
+\pathcode{scripts/lever_a/garden_target_equivalence_check.py}.
+
+The block plans make the collapse structural.  Writing each $T$ as a triple
+of color permutations of the original CLS blocks:
+$T^{(1)}$ uses $(234)/(243)/(243)$, $T^{(2)}$ uses $(23)/(24)/(243)$, and
+$T^{(3)}$ uses $(24)/(243)/(34)$.  Within a block family the inducible pure
+color permutations are exactly the even ones (the identity and the two
+3-cycles); cross-family block conjugators induce exactly the transpositions.
+Every plan is realizable by signed node relabeling, which is why everything
+collapses to one class.
+
+\section{Holoraumy consequence, and a cross-gadget artifact}
+
+Because the nine qualifying matrices produce presentations related to CLS by
+signed node relabelings, their holoraumy tuples are conjugate by the same
+relabelings.  They are not generally entrywise identical in the displayed
+bases.  There is exactly one holoraumy equivalence class among the stored
+Garden presentations, so no new invariant content is present.
+
+One recorded misreading is worth stating precisely, because it is a trap for
+any future basis comparison.  The holoraumy gadget
+(\pathcode{src/holoraumy.rs}) was evaluated over the four quadruples,
+summing traces of products of the $\widetilde{V}$ matrices of one
+presentation against those of another.  The resulting cross-matrix,
+\[
+  \begin{array}{c|cccc}
+      & \text{CLS} & T^{(1)} & T^{(2)} & T^{(3)} \\ \hline
+    \text{CLS}   & 3 & 0 & 0 & 0 \\
+    T^{(1)}      & 0 & 3 & 1 & 1 \\
+    T^{(2)}      & 0 & 1 & 3 & 0 \\
+    T^{(3)}      & 0 & 1 & 0 & 3
+  \end{array}
+\]
+was briefly read as ``CLS is holoraumy-orthogonal to its conjugates.''  That
+reading refutes itself: every target is a conjugate of CLS by construction,
+so an isomorphism-invariant comparison must return the self-value 3 on every
+entry.  The observed 0s and 1s prove the cross-gadget is a functional of a
+pair of \emph{presentations}, not of a pair of isomorphism classes: the trace
+of a product of a matrix from one basis against a matrix from another basis
+moves under independent conjugation of the two factors.  Direct certificate:
+the witness relabeling that carries $T^{(2)}$ onto $T^{(1)}$ moves the
+$(T^{(1)}, T^{(2)})$ entry from 1 to the self-value 3.  This basis dependence
+applies to every pair of presentations, whether their underlying
+representations are equivalent or inequivalent.  The raw cross-gadget is
+therefore a basis-alignment functional, not by itself a representation-level
+comparison.  Such a comparison requires a common basis convention, an
+explicit alignment prescription, optimization over the allowed relabeling
+orbit, or a separately proved invariant construction.
+
+What the nine $G$-matrices actually are, then: integral, non-monomial basis
+changes connecting the CLS monomial presentation to signed node relabelings
+of itself.  The narrow
+exact fact that survives is the scan headline: nine of
+the 4{,}077 stored representatives conjugate into signed-permutation form,
+and that presentation is unique up to signed node relabeling.
+
+\section{What remains open}
+
+Whether \emph{additional} matrices in the nine taxonomy classes (beyond the
+stored representatives) also conjugate into Garden form is unknown.  Testing
+that requires materializing class members, which needs the census
+solution-dump hook and a targeted rerun of the two affected census items,
+items~52 and~204, while materializing members of the nine affected taxonomy
+classes.  It does not require a new census.  Until that runs, no population
+count of any size should be attached to the property.
+
+\section{Artifacts and reproduction}
+
+The computational record is pinned to repository
+\url{https://github.com/p1p3dream/adinkra-codespace} at commit
+\pathcode{69fe57ba230b0dbd8cbc677b0c1b00b08c5b94b6}.  That commit fixes the
+numerical scan, the three target quadruples, the signed-node witnesses, and
+the cross-gadget rebasing certificate.  This pr\'ecis and its compiled PDF are
+versioned beside the supporting artifacts under \pathcode{docs/}.
+
+\begin{itemize}
+  \item \pathcode{results/cls-garden-presentation-scan-20260822.md}:
+        full writeup with correction log
+  \item \pathcode{scripts/lever_a/garden_presentation_scan.py}:
+        the exact scan; \texttt{python3} it, runs in about 50 seconds on one
+        core, reproduces $9/228/3{,}840$ and all bookkeeping counts
+        (4{,}536 records, 4{,}077 distinct, 1{,}076 keys, 712 multi-representative
+        keys, mixed-key counts $34/50/55/182/188$)
+  \item Equivalence check, directory \pathcode{scripts/lever_a/}:\\[-0.2em]
+        \pathcode{garden_target_equivalence_check.py}.  It performs the
+        commutant-collapse checks, connectivity gates, intertwiner
+        verification, and complete signed-monomial block search; all checks
+        pass
+  \item \pathcode{src/four_color/cls.rs}:
+        the CLS $L$-matrices in signed-address form
+  \item Companion: \pathcode{docs/cls-gmatrix-census-precis-for-gates.tex}
+        (the census itself)
+  \item This document:
+        \pathcode{docs/cls-garden-presentation-equivalence-precis-for-gates.tex}
+        and its generated PDF
+\end{itemize}
+
+\begin{thebibliography}{99}
+\small
+\setlength{\itemsep}{0.45\baselineskip}
+
+\bibitem{gates2024precis}
+S.\,J.\ Gates Jr.\ and Y.\ Lee,
+``A Pr\'ecis: Minimal Four Color Holoraumy and Wolfram's `New Kind
+of Science' Paradigm,''
+preprint (2024),
+\href{https://arxiv.org/abs/2408.09342}{arXiv:2408.09342 [hep-th]}.
+
+\end{thebibliography}
+
+\end{document}
