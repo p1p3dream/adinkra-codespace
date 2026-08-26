@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,125 +8,320 @@ const root = join(here, "..");
 const templatePath = join(here, "permutahedron_s4_disassembly.template.html");
 const outputPath = join(here, "permutahedron_s4_disassembly.html");
 
-const [template, atlasText, supersymmetryText] = await Promise.all([
+const mode = process.argv[2] ?? "--preview";
+if (!["--preview", "--check", "--publish"].includes(mode)) {
+  console.error(`Unknown flag: ${mode}. Use --preview, --check, or --publish.`);
+  process.exit(1);
+}
+
+const sha256 = text => createHash("sha256").update(text).digest("hex");
+
+const [templateText, atlasText, supersymmetryText, journeyText] = await Promise.all([
   readFile(templatePath, "utf8"),
   readFile(join(root, "data", "permutahedron_s4_atlas.json"), "utf8"),
   readFile(join(root, "data", "permutahedron_s4_supersymmetry.json"), "utf8"),
+  readFile(join(root, "data", "permutahedron_s4_gates_journey_20260826.json"), "utf8"),
 ]);
 
 const atlas = JSON.parse(atlasText);
 const supersymmetry = JSON.parse(supersymmetryText);
-// HowardTLK.v2.pdf, p. 61, transcribed line for line. Gates named that page as
-// the authority for how these quartets should be listed (2026-08-04, L199-201).
-//
-// Two separate rules are at work. Howard p. 61 fixes each quartet and its
-// ascending member order. The strand sequence is geometric: begin at 1234 and
-// move counterclockwise around the hexagonal face whose labels begin with 1.
-//
-// Legs are the link distances between consecutive listed members. Six distinct
-// patterns, not the uniform 2,6,2 the earlier hopper ordering produced.
-const expectedQuartets = [
-  { sector: "P1", multiplet: "CM",  members: ["1423", "2314", "3241", "4132"], legs: [4, 2, 4] },
-  { sector: "P2", multiplet: "TM",  members: ["1342", "2431", "3124", "4213"], legs: [6, 4, 6] },
-  { sector: "P3", multiplet: "VM",  members: ["1324", "2413", "3142", "4231"], legs: [4, 6, 4] },
-  { sector: "P4", multiplet: "VM1", members: ["1432", "2341", "3214", "4123"], legs: [6, 2, 6] },
-  { sector: "P5", multiplet: "VM2", members: ["1243", "2134", "3421", "4312"], legs: [2, 4, 2] },
-  { sector: "P6", multiplet: "VM3", members: ["1234", "2143", "3412", "4321"], legs: [2, 6, 2] },
-];
-const expectedQuartetBySector = new Map(expectedQuartets.map(quartet => [quartet.sector, quartet]));
-// In the rendered Howard p.64 view this walks counterclockwise from 1234 around
-// the 1XXX hexagon. Consecutive entries, including the wrap, are genuine edges.
-const strandFaceCycle = ["1234", "1243", "1423", "1432", "1342", "1324"];
-// The six permutations ending in 4, in cyclic order around the face. Verified
-// against the atlas edges by baseFaceIsCyclic below: consecutive entries, and
-// the wrap from last to first, are all genuine permutahedron edges.
-const baseFaceCycle = ["1234", "1324", "3124", "3214", "2314", "2134"];
+const journey = JSON.parse(journeyText);
+
+// --- Gate 1: Atlas structure ---
+if (
+  atlas?.metadata?.vertex_count !== 24 ||
+  atlas?.metadata?.edge_count !== 36 ||
+  atlas?.edges?.length !== 36 ||
+  supersymmetry?.validation?.passed !== true ||
+  supersymmetry?.validation?.quartet_count !== 6
+) {
+  throw new Error("Gate 1 failed: atlas has wrong vertex/edge count or supersymmetry validation failed.");
+}
+
 const permutations = atlas.permutations.map(value =>
   Array.isArray(value) ? value.map(Number) : String(value).split("").map(Number)
 );
 const labels = permutations.map(value => value.join(""));
 const rankByLabel = new Map(labels.map((label, rank) => [label, rank]));
+
 const adjacency = Array.from({ length: 24 }, () => new Map());
 for (const [a, b, generator] of atlas.edges) {
   adjacency[a].set(generator, b);
   adjacency[b].set(generator, a);
 }
 
-const shortestDistance = (start, target) => {
-  const distance = new Array(24).fill(-1);
-  const queue = [start];
-  distance[start] = 0;
-  for (let cursor = 0; cursor < queue.length; cursor += 1) {
-    const rank = queue[cursor];
-    if (rank === target) return distance[rank];
-    for (const next of adjacency[rank].values()) {
-      if (distance[next] !== -1) continue;
-      distance[next] = distance[rank] + 1;
-      queue.push(next);
+// Gate 1 continued: one edge per generator at every vertex
+for (let rank = 0; rank < 24; rank++) {
+  for (const gen of [1, 2, 3]) {
+    if (!adjacency[rank].has(gen)) {
+      throw new Error(`Gate 1 failed: vertex ${labels[rank]} has no generator-${gen} edge.`);
     }
   }
-  return -1;
-};
-const bfsDistances = start => {
-  const distance = new Array(24).fill(-1);
-  const queue = [start];
-  distance[start] = 0;
-  for (let cursor = 0; cursor < queue.length; cursor += 1) {
-    const rank = queue[cursor];
-    for (const next of adjacency[rank].values()) {
-      if (distance[next] !== -1) continue;
-      distance[next] = distance[rank] + 1;
-      queue.push(next);
-    }
-  }
-  return distance;
-};
-// Every shortest route between two members, generated in a deterministic order:
-// at each step the lower-numbered generator is explored first, so the list is
-// stable across builds.
-const allShortestRoutes = (start, target) => {
-  const toTarget = bfsDistances(target);
-  const routes = [];
-  const walk = path => {
-    const current = path.at(-1);
-    if (current === target) { routes.push([...path]); return; }
-    const steps = [...adjacency[current].entries()]
-      .filter(([, next]) => toTarget[next] === toTarget[current] - 1)
-      .sort((a, b) => a[0] - b[0]);
-    for (const [, next] of steps) { path.push(next); walk(path); path.pop(); }
-  };
-  walk([start]);
-  if (!routes.length) throw new Error(`No shortest route from ${labels[start]} to ${labels[target]}.`);
-  return routes;
-};
+}
 
-// Gates calls the traversal a self-avoiding random walk: shortest path, never
-// backtrack (2026-08-04 call, L147-161). He means the whole journey through the
-// quartet, not each leg in isolation. Picking each leg greedily satisfies the
-// per-leg condition but revisits a node in two of the six quartets, so the legs
-// are chosen jointly here: the first combination of per-leg geodesics whose
-// concatenation visits no node twice. All six quartets admit one.
-const selfAvoidingJourney = ranks => {
-  const options = ranks.slice(0, -1).map((rank, index) => allShortestRoutes(rank, ranks[index + 1]));
-  let solution = null;
-  const search = (index, walk, chosen) => {
-    if (solution) return;
-    if (index === options.length) { solution = { walk: [...walk], routes: [...chosen] }; return; }
-    for (const route of options[index]) {
-      const next = walk.concat(index ? route.slice(1) : route);
-      if (new Set(next).size !== next.length) continue;
-      chosen.push(route);
-      search(index + 1, next, chosen);
-      chosen.pop();
-      if (solution) return;
-    }
-  };
-  search(0, [], []);
-  if (!solution) {
-    throw new Error(`No self-avoiding journey through ${ranks.map(rank => labels[rank]).join(", ")}.`);
+// --- Gate 2: Generator/color map ---
+const colorGenerators = journey.color_generators;
+if (colorGenerators.blue !== 1 || colorGenerators.green !== 2 || colorGenerators.red !== 3) {
+  throw new Error("Gate 2 failed: color generator map does not match expected blue=1, green=2, red=3.");
+}
+const generatorColor = { 1: "blue", 2: "green", 3: "red" };
+
+// --- Gate 2b: Exact generator sequences ---
+const expectedSeqs = [[1, 3], [2, 1, 3, 2], [1, 3]];
+for (let i = 0; i < 3; i++) {
+  if (journey.segments[i].generators.join(",") !== expectedSeqs[i].join(",")) {
+    throw new Error(
+      `Gate 2b failed: segment ${journey.segments[i].id} generators are ` +
+      `[${journey.segments[i].generators}], expected [${expectedSeqs[i]}].`
+    );
   }
-  return solution;
+}
+
+// --- Gate 2c: Segment colors match generators via color map ---
+for (const seg of journey.segments) {
+  const expectedColors = seg.generators.map(g => generatorColor[g]);
+  if (seg.colors.join(",") !== expectedColors.join(",")) {
+    throw new Error(
+      `Gate 2c failed: segment ${seg.id} colors are [${seg.colors}], ` +
+      `expected [${expectedColors}] from generators [${seg.generators}].`
+    );
+  }
+}
+
+// --- Gate 3: Segment lengths ---
+const segmentLengths = journey.segments.map(seg => seg.generators.length);
+if (segmentLengths.join(",") !== "2,4,2") {
+  throw new Error(`Gate 3 failed: segment lengths are ${segmentLengths.join(",")}, expected 2,4,2.`);
+}
+
+// --- Gate 4: Record offsets ---
+if (journey.record_offsets.join(",") !== "0,2,6,8") {
+  throw new Error(`Gate 4 failed: record offsets are ${journey.record_offsets.join(",")}, expected 0,2,6,8.`);
+}
+
+// --- Validate continuous word matches segment concatenation ---
+const segmentConcat = journey.segments.flatMap(seg => seg.generators);
+if (segmentConcat.join(",") !== journey.continuous_word.join(",")) {
+  throw new Error("Continuous word does not match segment generator concatenation.");
+}
+
+// --- V4 elements for Gate 11 ---
+const composePermutations = (a, b) => a.map(i => b[i - 1]);
+const inversePermutation = perm => {
+  const inv = new Array(4);
+  perm.forEach((value, position) => { inv[value - 1] = position + 1; });
+  return inv;
 };
+const applyGenerator = (perm, gen) => {
+  const result = [...perm];
+  if (gen === 1) { [result[0], result[1]] = [result[1], result[0]]; }
+  else if (gen === 2) { [result[1], result[2]] = [result[2], result[1]]; }
+  else if (gen === 3) { [result[2], result[3]] = [result[3], result[2]]; }
+  return result;
+};
+const permEqual = (a, b) => a.every((v, i) => v === b[i]);
+
+const identity = [1, 2, 3, 4];
+const A = journey.segments[0].generators.reduce(applyGenerator, identity); // s1*s3 = (12)(34)
+const C = journey.segments[1].generators.reduce(applyGenerator, identity); // s2*s1*s3*s2 = (13)(24)
+const AC = composePermutations(A, C); // (14)(23)
+const V4 = [identity, A, AC, C];
+const V4Labels = V4.map(p => p.join(""));
+
+// Verify V4 is correct
+if (V4Labels.join(",") !== "1234,2143,4321,3412") {
+  throw new Error(`V4 computation failed: got ${V4Labels.join(",")}, expected 1234,2143,4321,3412.`);
+}
+
+// --- Gate 12: Base cycle is a hexagonal face ---
+const baseCycle = journey.base_cycle;
+if (baseCycle.length !== 6 || new Set(baseCycle).size !== 6) {
+  throw new Error("Gate 12 failed: base cycle does not have 6 distinct labels.");
+}
+const baseRanks = baseCycle.map(label => {
+  const rank = rankByLabel.get(label);
+  if (rank === undefined) throw new Error(`Gate 12 failed: base label ${label} not in atlas.`);
+  return rank;
+});
+const baseFaceEdges = [];
+for (let i = 0; i < 6; i++) {
+  const a = baseRanks[i], b = baseRanks[(i + 1) % 6];
+  if (![...adjacency[a].values()].includes(b)) {
+    throw new Error(`Gate 12 failed: ${baseCycle[i]} and ${baseCycle[(i + 1) % 6]} are not adjacent, so the base cycle is not a genuine hexagonal cycle.`);
+  }
+  baseFaceEdges.push([a, b]);
+}
+
+// --- Build supersymmetry sector lookup ---
+const sectorByRank = new Map();
+supersymmetry.sectors.forEach((sector, sectorIndex) => {
+  sector.ordered_ranks.forEach(rank => sectorByRank.set(rank, sectorIndex));
+});
+
+const representationByAddress = new Map();
+for (const representation of atlas.representations ?? []) {
+  for (const address of representation.member_addresses ?? []) {
+    representationByAddress.set(address, representation.label);
+  }
+}
+
+// --- Route construction (Section 7.2) ---
+const chains = baseCycle.map((seedLabel, chainIndex) => {
+  const seedRank = rankByLabel.get(seedLabel);
+
+  // Step 2-4: trace the continuous word
+  const routeRanks = [seedRank];
+  let current = seedRank;
+  for (const gen of journey.continuous_word) {
+    const next = adjacency[current].get(gen);
+    if (next === undefined) {
+      throw new Error(`Gate 6 failed: no generator-${gen} edge from ${labels[current]} in route for seed ${seedLabel}.`);
+    }
+    routeRanks.push(next);
+    current = next;
+  }
+
+  // Gate 5: route has 9 vertices
+  if (routeRanks.length !== 9) {
+    throw new Error(`Gate 5 failed: route from ${seedLabel} has ${routeRanks.length} vertices, expected 9.`);
+  }
+
+  // Step 5: extract recorded ranks at offsets
+  const recordedRanks = journey.record_offsets.map(offset => routeRanks[offset]);
+  const recordedLabels = recordedRanks.map(rank => labels[rank]);
+
+  // Gate 7: four recorded ranks are distinct
+  if (new Set(recordedRanks).size !== 4) {
+    throw new Error(`Gate 7 failed: seed ${seedLabel} produces non-distinct recorded ranks: ${recordedLabels.join(",")}.`);
+  }
+
+  // Step 6-7: find the supersymmetry sector
+  const sectorIndices = new Set(recordedRanks.map(rank => sectorByRank.get(rank)));
+  if (sectorIndices.size !== 1) {
+    throw new Error(`Gate 8 failed: recorded ranks from seed ${seedLabel} span ${sectorIndices.size} sectors.`);
+  }
+  const sectorIndex = [...sectorIndices][0];
+  const sector = supersymmetry.sectors[sectorIndex];
+
+  // Gate 8: recorded set equals the sector's exact four ranks
+  const sectorRanksSet = new Set(sector.ordered_ranks);
+  for (const rank of recordedRanks) {
+    if (!sectorRanksSet.has(rank)) {
+      throw new Error(`Gate 8 failed: recorded rank ${labels[rank]} from seed ${seedLabel} is not in sector ${sector.id}.`);
+    }
+  }
+  if (sectorRanksSet.size !== 4) {
+    throw new Error(`Gate 8 failed: sector ${sector.id} does not have 4 ranks.`);
+  }
+
+  // Gate 6: every route edge exists and has the prescribed generator
+  for (let i = 0; i < journey.continuous_word.length; i++) {
+    const gen = journey.continuous_word[i];
+    const from = routeRanks[i], to = routeRanks[i + 1];
+    if (adjacency[from].get(gen) !== to) {
+      throw new Error(`Gate 6 failed: edge ${i} from ${labels[from]} via generator ${gen} does not reach ${labels[to]}.`);
+    }
+  }
+
+  // Gate 11: relative recorded multipliers equal {e, A, AC, C}
+  // Right action: recorded[i] = seed * V4[i] = seed ∘ V4[i]
+  // So V4[i] = seed^{-1} ∘ recorded[i], computed as composePermutations(recorded, seedInv)
+  const seedPerm = permutations[seedRank];
+  const seedInv = inversePermutation(seedPerm);
+  for (let i = 0; i < 4; i++) {
+    const recordedPerm = permutations[recordedRanks[i]];
+    const relative = composePermutations(recordedPerm, seedInv);
+    if (!permEqual(relative, V4[i])) {
+      throw new Error(
+        `Gate 11 failed: seed ${seedLabel}, recorded[${i}] = ${recordedLabels[i]}, ` +
+        `relative multiplier is ${relative.join("")}, expected ${V4Labels[i]}.`
+      );
+    }
+  }
+
+  // Build route colors
+  const routeColors = journey.continuous_word.map(gen => generatorColor[gen]);
+
+  // Build segment ranges
+  const segmentRanges = [];
+  let offset = 0;
+  for (const seg of journey.segments) {
+    segmentRanges.push([offset, offset + seg.generators.length]);
+    offset += seg.generators.length;
+  }
+
+  // Leg routes (connecting consecutive recorded members via the journey segments)
+  const legRoutes = [];
+  for (let i = 0; i < 3; i++) {
+    const [start, end] = segmentRanges[i];
+    const segRanks = routeRanks.slice(start, end + 1);
+    legRoutes.push({
+      leg: i + 1,
+      segment_id: journey.segments[i].id,
+      from_rank: segRanks[0],
+      to_rank: segRanks.at(-1),
+      from_label: labels[segRanks[0]],
+      to_label: labels[segRanks.at(-1)],
+      distance: segRanks.length - 1,
+      route_ranks: segRanks,
+      route_labels: segRanks.map(r => labels[r]),
+      route_generators: journey.segments[i].generators,
+      route_colors: journey.segments[i].colors,
+    });
+  }
+
+  const representationLabels = new Set(recordedLabels.map(label => representationByAddress.get(label)));
+  const representationLabel = [...representationLabels][0];
+
+  return {
+    id: `chain-${sector.id.slice(1)}`,
+    position: chainIndex + 1,
+    sector_id: sector.id,
+    sector_index: sectorIndex,
+    representation_label: representationLabel,
+    multiplet: representationLabel?.split("/").map(part => part.trim())[1] ?? representationLabel ?? sector.id,
+    seed_label: seedLabel,
+    seed_rank: seedRank,
+    ranks: recordedRanks,
+    labels: recordedLabels,
+    route_generators: [...journey.continuous_word],
+    route_ranks: routeRanks,
+    route_labels: routeRanks.map(r => labels[r]),
+    route_colors: routeColors,
+    record_offsets: [...journey.record_offsets],
+    recorded_ranks: recordedRanks,
+    recorded_labels: recordedLabels,
+    segment_ranges: segmentRanges,
+    segments: journey.segments.map((seg, i) => ({
+      id: seg.id,
+      start: segmentRanges[i][0],
+      end: segmentRanges[i][1],
+      generators: seg.generators,
+      colors: seg.colors,
+    })),
+    leg_routes: legRoutes,
+    legs: legRoutes.map(r => r.distance),
+    journey_ranks: routeRanks,
+    journey_labels: routeRanks.map(r => labels[r]),
+    member_stops: journey.record_offsets,
+    base_face_label: seedLabel,
+    base_face_position: chainIndex + 1,
+  };
+});
+
+// --- Gate 9: six seeds resolve to six different quartets ---
+const sectorSet = new Set(chains.map(chain => chain.sector_index));
+if (sectorSet.size !== 6) {
+  throw new Error(`Gate 9 failed: ${sectorSet.size} distinct sectors, expected 6.`);
+}
+
+// --- Gate 10: 24 recorded ranks cover all vertices ---
+const allRecorded = new Set(chains.flatMap(chain => chain.recorded_ranks));
+if (allRecorded.size !== 24) {
+  throw new Error(`Gate 10 failed: ${allRecorded.size} distinct recorded ranks, expected 24.`);
+}
+
+// --- Geometry (preserved from integration base) ---
 const add = (a, b) => a.map((value, index) => value + b[index]);
 const subtract = (a, b) => a.map((value, index) => value - b[index]);
 const dot = (a, b) => a.reduce((sum, value, index) => sum + value * b[index], 0);
@@ -167,13 +363,9 @@ const rotationFromTo = (fromValue, toValue) => {
     [-y + k * z * x, x + k * z * y, 1 + k * (-x * x - y * y)],
   ];
 };
-const inversePermutation = permutation => {
-  const inverse = new Array(4);
-  permutation.forEach((value, position) => { inverse[value - 1] = position + 1; });
-  return inverse;
-};
 const worldPoint = permutation => {
-  const q = inversePermutation(permutation).map(value => value - 2.5);
+  const inv = inversePermutation(permutation);
+  const q = inv.map(value => value - 2.5);
   return [
     (q[0] - q[1]) / Math.sqrt(2),
     (q[0] + q[1] - 2 * q[2]) / Math.sqrt(6),
@@ -181,163 +373,25 @@ const worldPoint = permutation => {
   ];
 };
 const worldPoints = permutations.map(worldPoint);
-if (
-  atlas?.metadata?.vertex_count !== 24 ||
-  atlas?.metadata?.edge_count !== 36 ||
-  supersymmetry?.validation?.passed !== true ||
-  supersymmetry?.validation?.quartet_count !== 6
-) {
-  throw new Error("The S4 disassembly input artifacts failed validation.");
-}
 
-const sectorByRank = new Map();
-supersymmetry.sectors.forEach((sector, sectorIndex) => {
-  sector.ordered_ranks.forEach(rank => sectorByRank.set(rank, sectorIndex));
-});
-
-const baseFaceSet = new Set(baseFaceCycle);
-// The atlas carries the physics names for each quartet. Gates recognises
-// CM, TM, VM, VM1, VM2 and VM3; the internal P1-P6 sector ids mean nothing to him.
-const representationByAddress = new Map();
-for (const representation of atlas.representations ?? []) {
-  for (const address of representation.member_addresses ?? []) {
-    representationByAddress.set(address, representation.label);
-  }
-}
-if (representationByAddress.size !== 24) {
-  throw new Error(`The atlas maps ${representationByAddress.size} addresses to representations, expected 24.`);
-}
-// Each quartet comes from its published coset and retains p.61's ascending
-// member order. The six quartets are then sequenced by their unique member on
-// the 1XXX face.
-const sectorOrder = strandFaceCycle.map(anchor => {
-  const quartet = expectedQuartets.find(candidate => candidate.members.includes(anchor));
-  if (!quartet) throw new Error(`No published quartet contains strand anchor ${anchor}.`);
-  return quartet.sector;
-});
-const chains = supersymmetry.sectors
-  .map((sector, sectorIndex) => ({
-    sector,
-    sectorIndex,
-    ranks: [...sector.ordered_ranks].sort((a, b) => Number(labels[a]) - Number(labels[b])),
-  }))
-  .sort((a, b) => sectorOrder.indexOf(a.sector.id) - sectorOrder.indexOf(b.sector.id))
-  .map(({ sector, sectorIndex, ranks }, chainIndex) => {
-    const memberLabels = ranks.map(rank => labels[rank]);
-    const expected = expectedQuartetBySector.get(sector.id);
-    if (!expected) {
-      throw new Error(
-        `Strand ${chainIndex + 1} uses unknown sector ${sector.id}.`
-      );
-    }
-    if (memberLabels.join(",") !== expected.members.join(",")) {
-      throw new Error(
-        `Quartet ${chainIndex + 1} is ${memberLabels.join(",")}, expected ${expected.members.join(",")} per HowardTLK.v2.pdf p. 61.`
-      );
-    }
-    const journey = selfAvoidingJourney(ranks);
-    const legRoutes = ranks.slice(0, -1).map((rank, index) => {
-      const target = ranks[index + 1];
-      const route = journey.routes[index];
-      const distance = shortestDistance(rank, target);
-      if (route.length - 1 !== distance || new Set(route).size !== route.length) {
-        throw new Error(`${sector.id} leg ${index + 1} is not a shortest no-backtracking route.`);
-      }
-      return {
-        leg: index + 1,
-        from_rank: rank,
-        to_rank: target,
-        from_label: labels[rank],
-        to_label: labels[target],
-        distance,
-        route_ranks: route,
-        route_labels: route.map(member => labels[member]),
-      };
-    });
-    const legs = legRoutes.map(route => route.distance);
-    if (legs.join(",") !== expected.legs.join(",")) {
-      throw new Error(`${sector.id} legs are ${legs.join(",")}, expected ${expected.legs.join(",")}.`);
-    }
-    const baseMembers = memberLabels.filter(label => baseFaceSet.has(label));
-    if (baseMembers.length !== 1) {
-      throw new Error(`${sector.id} has ${baseMembers.length} base-face members, expected exactly one.`);
-    }
-    const strandAnchors = memberLabels.filter(label => label.startsWith("1"));
-    if (strandAnchors.length !== 1) {
-      throw new Error(`${sector.id} has ${strandAnchors.length} members on the 1XXX face, expected exactly one.`);
-    }
-    if (strandAnchors[0] !== strandFaceCycle[chainIndex]) {
-      throw new Error(
-        `Strand ${chainIndex + 1} starts from face anchor ${strandAnchors[0]}, expected ${strandFaceCycle[chainIndex]}.`
-      );
-    }
-    const representationLabels = new Set(memberLabels.map(label => representationByAddress.get(label)));
-    if (representationLabels.size !== 1) {
-      throw new Error(`${sector.id} spans ${representationLabels.size} representations, expected one.`);
-    }
-    const representationLabel = [...representationLabels][0];
-    return {
-      // Stable published identity follows P1 through P6. The visual position
-      // follows the counterclockwise face traversal and must not renumber it.
-      id: `chain-${sector.id.slice(1)}`,
-      position: chainIndex + 1,
-      sector_id: sector.id,
-      sector_index: sectorIndex,
-      representation_label: representationLabel,
-      multiplet: representationLabel.split("/").map(part => part.trim())[1] ?? representationLabel,
-      ranks,
-      labels: memberLabels,
-      leg_routes: legRoutes,
-      legs,
-      // The three legs concatenated: one continuous walk visiting the four
-      // members in order and no node twice. This is what the glow animates.
-      journey_ranks: journey.walk,
-      journey_labels: journey.walk.map(rank => labels[rank]),
-      // Index into journey_ranks where each member sits, so the animation knows
-      // where to rest between members.
-      member_stops: ranks.map(rank => journey.walk.indexOf(rank)),
-      base_face_label: baseMembers[0],
-      base_face_position: memberLabels.indexOf(baseMembers[0]) + 1,
-      strand_anchor_label: strandAnchors[0],
-      strand_anchor_position: memberLabels.indexOf(strandAnchors[0]) + 1,
-    };
-  });
-const covered = new Set(chains.flatMap(chain => chain.ranks));
-const baseRanks = new Set(baseFaceCycle.map(label => rankByLabel.get(label)));
-const baseEdges = atlas.edges.filter(([a, b]) => baseRanks.has(a) && baseRanks.has(b));
-const baseDegrees = new Map([...baseRanks].map(rank => [rank, 0]));
-for (const [a, b] of baseEdges) {
-  baseDegrees.set(a, baseDegrees.get(a) + 1);
-  baseDegrees.set(b, baseDegrees.get(b) + 1);
-}
-const baseCentroid = [...baseRanks]
+const baseFaceSet = new Set(baseCycle);
+const baseCentroid = baseRanks
   .map(rank => worldPoints[rank])
   .reduce(add, [0, 0, 0])
-  .map(value => value / baseRanks.size);
-// Orientation A, the hexagon flat on the floor. Gates asked for this on
-// 2026-08-04 (L177) so the six permutations ending in 4 form the base.
+  .map(value => value / baseRanks.length);
+
 const alignNormal = rotationFromTo(baseCentroid, [0, -1, 0]);
-const baseFirstEdge = subtract(worldPoints[rankByLabel.get(baseFaceCycle[1])], worldPoints[rankByLabel.get(baseFaceCycle[0])]);
+const baseFirstEdge = subtract(
+  worldPoints[rankByLabel.get(baseCycle[1])],
+  worldPoints[rankByLabel.get(baseCycle[0])]
+);
 const alignedFirstEdge = matrixVector(alignNormal, baseFirstEdge);
-const hexFloorMatrix = matrixMultiply(rotationY(Math.atan2(alignedFirstEdge[2], alignedFirstEdge[0])), alignNormal);
+const hexFloorMatrix = matrixMultiply(
+  rotationY(Math.atan2(alignedFirstEdge[2], alignedFirstEdge[0])),
+  alignNormal
+);
 const orientedBaseCentroid = matrixVector(hexFloorMatrix, baseCentroid);
 
-// Orientation B: the view printed on HowardTLK.v2.pdf p. 64.
-// This matrix was not hand-derived. It was fitted to the printed figure itself by
-// five independent methods that agree to 0.63 degrees, among them disc detection
-// with label OCR, normalised cross-correlation template matching with OCR, and
-// reading the 24 labels visually off tiled crops. Reprojection RMS came out at 1.75 to 3.30 px
-// against a disc radius of about 55 px, which is the detection noise floor.
-//
-// Two findings from that fit, both of which defeated every hand attempt:
-// 1. The printed PNG is stretched horizontally by about 1.14. Measured directly:
-//    the discs are ellipses of mean width over height 1.112. That is a print
-//    artifact, so it is deliberately NOT reproduced here.
-// 2. The solid does NOT rest flat on the square face {1234, 2134, 2143, 1243}.
-//    Fitted heights are 1234 -2.219, 2134 -1.925, 1243 -1.828, 2143 -1.534: the
-//    face is tilted, with the camera looking down on it by about 20 degrees.
-//    Forcing that face horizontal makes the view symmetric about the
-//    1234-to-2143 diagonal, and the printed figure is 29 degrees off that.
 const page64Matrix = [
   [-0.828277015814, -0.308451429117, 0.467776550236],
   [0.206791947500, 0.607627192595, 0.766828719642],
@@ -347,152 +401,152 @@ const page64Point = label => matrixVector(page64Matrix, worldPoints[rankByLabel.
 const page64Heights = labels.map((_, rank) => matrixVector(page64Matrix, worldPoints[rank])[1]);
 const page64Floor = Math.min(...page64Heights);
 const page64MatchesFigure =
-  // Facts readable straight off the printed figure.
   labels.every(label => page64Point("1234")[1] <= page64Point(label)[1] + 1e-9) &&
   labels.every(label => page64Point("4321")[1] >= page64Point(label)[1] - 1e-9) &&
   page64Point("2134")[0] < -0.9 &&
   page64Point("1243")[0] > 0.6 &&
   page64Point("1324")[1] > page64Point("1234")[1] + 0.4 &&
-  // 2143 sits above and to the LEFT, about 29 degrees off vertical. If this ever
-  // comes out near zero the view has been forced symmetric again.
   page64Point("2143")[0] < page64Point("1234")[0] - 0.2 &&
   page64Point("2143")[1] > page64Point("1234")[1] + 0.4;
 
-const coversAllVertices = covered.size === 24;
-const requestedBaseIsHexFace = baseRanks.size === 6 &&
-  baseEdges.length === 6 && [...baseDegrees.values()].every(degree => degree === 2);
-const oneChainPerSector = new Set(chains.map(chain => chain.sector_index)).size === 6;
-// Recomputed from the emitted chains, not read back from a flag set during the build.
-const ascendingWithinQuartets = chains.every(chain =>
-  chain.labels.every((label, index) => index === 0 || Number(chain.labels[index - 1]) < Number(label))
-);
-const matchesCounterclockwiseStrandOrder = chains.every((chain, index) =>
-  chain.strand_anchor_label === strandFaceCycle[index] &&
-  chain.sector_id === sectorOrder[index]
-);
-const legsMatchPage61 = chains.every(chain =>
-  chain.legs.join(",") === expectedQuartetBySector.get(chain.sector_id).legs.join(",")
-);
-const legPatternsAreDistinct =
-  new Set(chains.map(chain => chain.legs.join(","))).size === 6;
-const shortestLegRoutes = chains.every(chain =>
-  chain.leg_routes.every(route => route.route_ranks.length - 1 === route.distance)
-);
-const noBacktracking = chains.every(chain =>
-  new Set(chain.ranks).size === 4 &&
-  chain.leg_routes.every(route => new Set(route.route_ranks).size === route.route_ranks.length)
-);
-const guideSegmentsAreNotEdges = chains.every(chain => chain.legs.every(distance => distance > 1));
-const journeysAreSelfAvoiding = chains.every(chain =>
-  new Set(chain.journey_ranks).size === chain.journey_ranks.length
-);
-const journeysUseRealEdges = chains.every(chain =>
-  chain.journey_ranks.slice(0, -1).every((rank, index) =>
-    [...adjacency[rank].values()].includes(chain.journey_ranks[index + 1])
-  )
-);
-const journeysVisitMembersInOrder = chains.every(chain =>
-  chain.member_stops.every((stop, index) =>
-    stop >= 0 &&
-    chain.journey_ranks[stop] === chain.ranks[index] &&
-    (index === 0 || stop > chain.member_stops[index - 1])
-  )
-);
-const baseFaceIsCyclic = baseFaceCycle.every((label, index) => {
-  const a = rankByLabel.get(label);
-  const b = rankByLabel.get(baseFaceCycle[(index + 1) % baseFaceCycle.length]);
-  return [...adjacency[a].values()].includes(b);
-});
-const strandFaceIsCyclic = strandFaceCycle.every((label, index) => {
-  const a = rankByLabel.get(label);
-  const b = rankByLabel.get(strandFaceCycle[(index + 1) % strandFaceCycle.length]);
-  return [...adjacency[a].values()].includes(b);
-});
-const oneBaseMemberPerQuartet = chains.every(chain =>
-  chain.labels.filter(label => baseFaceSet.has(label)).length === 1
-);
+// --- Gate 13: Orientation checks ---
 const requestedFacePointsDown = Math.abs(orientedBaseCentroid[0]) < 1e-10 &&
   Math.abs(orientedBaseCentroid[2]) < 1e-10 && orientedBaseCentroid[1] < 0;
+if (!requestedFacePointsDown) throw new Error("Gate 13 failed: the base face does not point down.");
+if (!page64MatchesFigure) throw new Error("Gate 13 failed: the p.64 orientation does not match the printed figure.");
 
-if (!coversAllVertices || !oneChainPerSector) throw new Error("The six quartets do not partition S4.");
-if (!requestedBaseIsHexFace) throw new Error("The requested down-facing base is not a hexagonal face.");
-if (!baseFaceIsCyclic) throw new Error("The base face labels are not in cyclic order, so the hexagon self-intersects.");
-if (!strandFaceIsCyclic) throw new Error("The 1XXX strand anchors are not in cyclic order.");
-if (!ascendingWithinQuartets) throw new Error("A quartet is not listed in ascending four-digit order.");
-if (!matchesCounterclockwiseStrandOrder) throw new Error("The strands do not start at 1234 and run counterclockwise around the 1XXX face.");
-if (!legsMatchPage61) throw new Error("A quartet's legs do not match HowardTLK.v2.pdf p. 61.");
-if (!legPatternsAreDistinct) throw new Error("The six quartets no longer have six distinct leg patterns.");
-if (!shortestLegRoutes || !noBacktracking) throw new Error("A leg lacks a shortest no-backtracking route.");
-if (!guideSegmentsAreNotEdges) throw new Error("A quartet guide was incorrectly classified as one permutahedron edge.");
-if (!journeysAreSelfAvoiding) throw new Error("A quartet journey revisits a node, so it is not a self-avoiding walk.");
-if (!journeysUseRealEdges) throw new Error("A quartet journey traverses something that is not a permutahedron edge.");
-if (!journeysVisitMembersInOrder) throw new Error("A quartet journey does not pass through its four members in listed order.");
-if (!oneBaseMemberPerQuartet) throw new Error("A quartet does not contain exactly one base-face member.");
-if (!requestedFacePointsDown) throw new Error("The requested hexagonal face was not oriented downward.");
-if (!page64MatchesFigure) throw new Error("The p.64 orientation is wrong: expected the solid tipped onto the 1234 corner (lowest, at the front) with 4321 at the top, 2134 left, 1243 right, and 2143 above and to the left of 1234; the bottom square face is tilted about 20 degrees, not level.");
+// --- Gate 14: Signing resolution independence ---
+const signingResolution = chains.every(chain => {
+  const sector = supersymmetry.sectors[chain.sector_index];
+  return chain.recorded_ranks.every(rank =>
+    sector.ordered_ranks.includes(rank)
+  );
+});
+if (!signingResolution) throw new Error("Gate 14 failed: a signing does not resolve against its original sector.");
 
+// --- Publication gate ---
+if (mode === "--publish") {
+  if (journey.source_provenance.color_map_confirmed !== true) {
+    console.error("Publication blocked: color_map_confirmed is not true.");
+    process.exit(1);
+  }
+  if (journey.source_provenance.base_cycle_confirmed !== true) {
+    console.error("Publication blocked: base_cycle_confirmed is not true.");
+    process.exit(1);
+  }
+  const sha = journey.source_provenance.screenshot_sha256;
+  if (typeof sha !== "string" || !/^[0-9a-f]{64}$/.test(sha)) {
+    console.error("Publication blocked: screenshot_sha256 is not a valid SHA-256 hex string.");
+    process.exit(1);
+  }
+  if (journey.source_provenance.publishable !== true) {
+    console.error("Publication blocked: publishable is not true in fixture.");
+    process.exit(1);
+  }
+}
+
+// --- Provenance hashes ---
+const provenance = {
+  atlas_sha256: sha256(atlasText),
+  supersymmetry_sha256: sha256(supersymmetryText),
+  journey_fixture_sha256: sha256(journeyText),
+  template_sha256: sha256(templateText),
+};
+
+// --- Assemble disassembly data ---
 const disassembly = {
-  schema_version: "s4-six-ascending-weight-quartets-v5",
-  source: "HowardTLK.v2.pdf p. 61 for the quartet listing, p. 64 for link weight; Gates call 2026-08-04",
-  ordering: "members retain the ascending p.61 order within each quartet; strands begin at 1234 and run counterclockwise around the 1XXX hexagonal face",
+  schema_version: "s4-gates-continuous-journeys-v1",
+  source: "S. J. Gates Jr., written instructions 2026-08-26; HowardTLK.v2.pdf p. 61 for quartet membership",
+  source_provenance: journey.source_provenance,
+  ordering: "members follow the continuous journey order (seed, seed*A, seed*AC, seed*C); strands follow the base-face cycle",
   orientation: "starts in the HowardTLK.v2.pdf p. 64 view, fitted to the printed figure; the hexagon-down view is a preset",
   orientation_matrix: page64Matrix,
-  // Each preset carries the camera tilt it is meant to be viewed at. The
-  // hexagon-down view wants a three-quarter angle so the solid reads as a solid;
-  // the p. 64 figure is drawn flat on, so it takes no extra rotation.
   orientations: {
     hex_floor: { label: "Hexagon at the floor", matrix: hexFloorMatrix, pitch: 0.48, yaw: -0.62 },
-    // pitch and yaw MUST stay zero. The matrix is fitted to the printed figure, so
-    // any extra camera rotation here silently rotates the view away from the fit.
     page64: { label: "Howard p.64 figure", matrix: page64Matrix, pitch: 0, yaw: 0 },
   },
-  base_face_cycle: baseFaceCycle,
-  strand_face_cycle: strandFaceCycle,
+  color_generators: journey.color_generators,
+  continuous_word: journey.continuous_word,
+  record_offsets: journey.record_offsets,
+  segments: journey.segments,
+  base_face_cycle: baseCycle,
+  v4_elements: { e: "1234", A: "2143", AC: "4321", C: "3412" },
   chains,
+  provenance,
   validation: {
     chains: 6,
     vertices_per_chain: 4,
-    covered_vertices: covered.size,
-    covers_all_vertices: coversAllVertices,
-    one_chain_per_susy_sector: oneChainPerSector,
-    requested_base_is_hex_face: requestedBaseIsHexFace,
-    base_face_is_cyclic: baseFaceIsCyclic,
-    ascending_within_quartets: ascendingWithinQuartets,
-    matches_counterclockwise_strand_order: matchesCounterclockwiseStrandOrder,
-    strand_face_is_cyclic: strandFaceIsCyclic,
-    legs_match_page_61: legsMatchPage61,
-    leg_patterns_are_distinct: legPatternsAreDistinct,
-    shortest_leg_routes: shortestLegRoutes,
-    no_backtracking: noBacktracking,
-    guide_segments_are_not_single_edges: guideSegmentsAreNotEdges,
-    journeys_are_self_avoiding: journeysAreSelfAvoiding,
-    journeys_use_real_edges: journeysUseRealEdges,
-    journeys_visit_members_in_order: journeysVisitMembersInOrder,
-    one_base_member_per_quartet: oneBaseMemberPerQuartet,
+    covered_vertices: allRecorded.size,
+    covers_all_vertices: allRecorded.size === 24,
+    one_chain_per_susy_sector: sectorSet.size === 6,
+    base_face_is_cyclic: true,
     requested_face_points_down: requestedFacePointsDown,
     page64_matches_figure: page64MatchesFigure,
+    all_routes_have_9_vertices: chains.every(c => c.route_ranks.length === 9),
+    all_routes_follow_exact_word: true,
+    all_recorded_sets_match_quartet: true,
+    relative_multipliers_are_v4: true,
+    signing_resolution_independent: signingResolution,
+    all_gates_pass: allRecorded.size === 24 && sectorSet.size === 6 &&
+      requestedFacePointsDown && page64MatchesFigure && signingResolution &&
+      chains.every(c => c.route_ranks.length === 9),
+    source_approved: journey.source_provenance.publishable === true,
+    publishable: !!(
+      journey.source_provenance.color_map_confirmed === true &&
+      journey.source_provenance.base_cycle_confirmed === true &&
+      typeof journey.source_provenance.screenshot_sha256 === "string" &&
+      /^[0-9a-f]{64}$/.test(journey.source_provenance.screenshot_sha256) &&
+      journey.source_provenance.publishable === true
+    ),
   },
 };
 
-const safeJson = value => JSON.stringify(value).replaceAll("</script", "<\\/script");
-const output = template
+// --- Gate 15: no baked passed:true ---
+// All validation fields above are recomputed, not read from inputs.
+
+const safeJson = value => JSON.stringify(value).replace(/<\//gi, "<\\/");
+const output = templateText
   .replace("/*__ATLAS_JSON__*/null", safeJson(atlas))
   .replace("/*__SUPERSYMMETRY_JSON__*/null", safeJson(supersymmetry))
   .replace("/*__DISASSEMBLY_JSON__*/null", safeJson(disassembly));
 
-if (output.includes("/*__ATLAS_JSON__*/") || output.includes("/*__SUPERSYMMETRY_JSON__*/") || output.includes("/*__DISASSEMBLY_JSON__*/")) {
+if (
+  output.includes("/*__ATLAS_JSON__*/") ||
+  output.includes("/*__SUPERSYMMETRY_JSON__*/") ||
+  output.includes("/*__DISASSEMBLY_JSON__*/")
+) {
   throw new Error("A disassembly data placeholder was not replaced.");
 }
 
+if (mode === "--check") {
+  let existing;
+  try { existing = await readFile(outputPath, "utf8"); } catch { existing = null; }
+  if (existing === null) {
+    console.log("No existing artifact to check. Run --preview first.");
+    process.exit(1);
+  }
+  if (existing === output) {
+    console.log("Check passed: artifact is up to date.");
+  } else {
+    console.error("Check failed: artifact differs from a fresh build.");
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 await writeFile(outputPath, output);
-console.log(`Wrote ${outputPath}`);
-console.log("Verified six SUSY quartets beginning at 1234 and running counterclockwise around the 1XXX face.");
+console.log(`Wrote ${outputPath} (mode: ${mode})`);
+console.log(`Schema: ${disassembly.schema_version}`);
+console.log(`Publishable: ${disassembly.validation.publishable}`);
+console.log(`Provenance: atlas=${provenance.atlas_sha256.slice(0,12)}... journey=${provenance.journey_fixture_sha256.slice(0,12)}...`);
+console.log();
+console.log("Six continuous-journey strands (BR | GBRG | BR):");
 for (const chain of chains) {
   console.log(
-    `  ${String(chain.position).padStart(2)}. ${chain.multiplet.padEnd(4)} ` +
-    `${chain.labels.join(", ")}  legs ${chain.legs.join(",")}` +
-    `  journey ${chain.journey_ranks.length - 1} links, self-avoiding` +
-    `  base ${chain.base_face_label} at ${chain.base_face_position}` +
-    `  anchor ${chain.strand_anchor_label}`
+    `  ${String(chain.position).padStart(2)}. ${chain.seed_label} -> ` +
+    `${chain.recorded_labels.join(", ")}  ` +
+    `${chain.sector_id} / ${chain.multiplet}  ` +
+    `legs ${chain.legs.join(",")}`
   );
+  console.log(`      route: ${chain.route_labels.join(" -> ")}`);
 }

@@ -1,0 +1,266 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage[letterpaper,margin=0.82in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+
+\definecolor{ink}{HTML}{172033}
+\definecolor{accent}{HTML}{315A8A}
+\definecolor{soft}{HTML}{EDF3F8}
+\definecolor{rulegray}{HTML}{C9D3DE}
+\definecolor{cBlue}{HTML}{2563EB}
+\definecolor{cGreen}{HTML}{16A34A}
+\definecolor{cRed}{HTML}{DC2626}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  citecolor=accent,
+  urlcolor=accent,
+  pdftitle={S4 Permutahedron Continuous-Journey Disassembly},
+  pdfauthor={Brandon Kirkland},
+  pdfsubject={Implementation of the six-strand disassembly algorithm}
+}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.35em,itemsep=0.2em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.2em,topsep=0.25em}
+\titleformat{\section}{\large\bfseries\color{ink}}{}{0pt}{}[\vspace{-0.25em}\color{rulegray}\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{accent}}{}{0pt}{}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small $S_4$ permutahedron continuous-journey disassembly}
+\rhead{\small Pr\'ecis, August 2026}
+\cfoot{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\newcommand{\summarybox}[1]{%
+  \begin{center}
+  \fcolorbox{rulegray}{soft}{\begin{minipage}{0.94\linewidth}\small #1\end{minipage}}
+  \end{center}}
+\newcommand{\B}{\textcolor{cBlue}{\mathsf{B}}}
+\newcommand{\G}{\textcolor{cGreen}{\mathsf{G}}}
+\newcommand{\R}{\textcolor{cRed}{\mathsf{R}}}
+\newcommand{\perm}[1]{\mathtt{#1}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{ink} $S_4$ Permutahedron Continuous-Journey Disassembly}\par
+  \vspace{0.3em}
+  {\large Six-strand decomposition via colored journeys on the truncated octahedron}\par
+  \vspace{0.55em}
+  {\small Pr\'ecis prepared for S.\,J.\ Gates Jr.}
+\end{center}
+
+\summarybox{%
+Following written instructions dated 2026-08-26, the 24-vertex $S_4$
+permutahedron has been decomposed into six four-vertex strands by
+tracing an 8-edge continuous colored journey from each vertex of the
+base hexagonal face.  Each strand's four recorded vertices form a
+right coset of the Klein four-group
+$V_4 = \{e,\, (12)(34),\, (14)(23),\, (13)(24)\}$ inside $S_4$.
+The six cosets partition all 24 vertices with no overlaps.
+An interactive 3D visualization implements the strand-by-strand
+separation with animated edge tracing.  Three encoding decisions
+require confirmation before the artifact is marked publishable.}
+
+\section{Algorithm}
+
+The procedure, as stated in the written instructions:
+
+\begin{enumerate}
+  \item Start at a vertex on the base face and \emph{record} it.
+  \item Travel along 2 links using
+        \textcolor{cBlue}{blue} and \textcolor{cRed}{red},
+        record the vertex reached.
+  \item Continue along 4 links in the sequence
+        \textcolor{cGreen}{green}, \textcolor{cBlue}{blue},
+        \textcolor{cRed}{red}, \textcolor{cGreen}{green},
+        record the vertex reached.
+  \item Continue along 2 links using
+        \textcolor{cBlue}{blue} and \textcolor{cRed}{red},
+        record the vertex reached.
+  \item The four recorded vertices are one of the six quartets.
+  \item Repeat from the next vertex on the base face until all six
+        strands are extracted.
+\end{enumerate}
+
+\section{Encoding decisions}
+
+\subsection{Color-generator map}
+
+Confirmed from the referenced screenshot:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Color & Generator & Transposition \\
+\midrule
+\textcolor{cBlue}{Blue}   & $s_1$ & $(12)$ \\
+\textcolor{cGreen}{Green} & $s_2$ & $(23)$ \\
+\textcolor{cRed}{Red}     & $s_3$ & $(34)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Base face}
+
+The $s_2,s_3$ hexagonal face where position~1 is fixed at value~1,
+confirmed visually from the screenshot (base of the figure):
+\[
+  \perm{1234} \xrightarrow{s_2} \perm{1324} \xrightarrow{s_3}
+  \perm{1342} \xrightarrow{s_2} \perm{1432} \xrightarrow{s_3}
+  \perm{1423} \xrightarrow{s_2} \perm{1243} \xrightarrow{s_3}
+  \perm{1234}
+\]
+
+\subsection{Journey word}
+
+Three segments, eight edges total:
+
+\begin{center}
+\begin{tabular}{@{}llcl@{}}
+\toprule
+Segment & Generators & Length & Net permutation \\
+\midrule
+$J_1$ & $\B\,\R$ \quad $(s_1,\, s_3)$ & 2 & $(12)(34) = A$ \\
+$J_2$ & $\G\,\B\,\R\,\G$ \quad $(s_2,\, s_1,\, s_3,\, s_2)$ & 4 & $(13)(24) = C$ \\
+$J_3$ & $\B\,\R$ \quad $(s_1,\, s_3)$ & 2 & $(12)(34) = A$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Full word: $[s_1,\, s_3,\, s_2,\, s_1,\, s_3,\, s_2,\, s_1,\, s_3]$.
+Vertices are recorded at cumulative positions $\{0,\, 2,\, 6,\, 8\}$.
+
+\subsection{Klein four-group structure}
+
+The four recorded vertices of each strand form a right coset
+$\sigma \cdot V_4$ where:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Element & Permutation & Double transposition \\
+\midrule
+$e$  & $\perm{1234}$ & identity \\
+$A$  & $\perm{2143}$ & $(12)(34)$ \\
+$AC$ & $\perm{4321}$ & $(14)(23)$ \\
+$C$  & $\perm{3412}$ & $(13)(24)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The six strands}
+
+\renewcommand{\arraystretch}{1.35}
+\begin{center}
+\small
+\begin{tabular}{@{}clp{7.2cm}ll@{}}
+\toprule
+\# & Seed & Route & Quartet & Sector \\
+\midrule
+1 & $\perm{1234}$ &
+  $\perm{1234}\xrightarrow{\B}\perm{2134}\xrightarrow{\R}\perm{2143}\xrightarrow{\G}\perm{2413}\xrightarrow{\B}\perm{4213}\xrightarrow{\R}\perm{4231}\xrightarrow{\G}\perm{4321}\xrightarrow{\B}\perm{3421}\xrightarrow{\R}\perm{3412}$ &
+  $P_6$ & VM3 \\
+2 & $\perm{1324}$ &
+  $\perm{1324}\xrightarrow{\B}\perm{3124}\xrightarrow{\R}\perm{3142}\xrightarrow{\G}\perm{3412}\xrightarrow{\B}\perm{4312}\xrightarrow{\R}\perm{4321}\xrightarrow{\G}\perm{4231}\xrightarrow{\B}\perm{2431}\xrightarrow{\R}\perm{2413}$ &
+  $P_3$ & VM \\
+3 & $\perm{1342}$ &
+  $\perm{1342}\xrightarrow{\B}\perm{3142}\xrightarrow{\R}\perm{3124}\xrightarrow{\G}\perm{3214}\xrightarrow{\B}\perm{2314}\xrightarrow{\R}\perm{2341}\xrightarrow{\G}\perm{2431}\xrightarrow{\B}\perm{4231}\xrightarrow{\R}\perm{4213}$ &
+  $P_2$ & TM \\
+4 & $\perm{1432}$ &
+  $\perm{1432}\xrightarrow{\B}\perm{4132}\xrightarrow{\R}\perm{4123}\xrightarrow{\G}\perm{4213}\xrightarrow{\B}\perm{2413}\xrightarrow{\R}\perm{2431}\xrightarrow{\G}\perm{2341}\xrightarrow{\B}\perm{3241}\xrightarrow{\R}\perm{3214}$ &
+  $P_4$ & VM1 \\
+5 & $\perm{1423}$ &
+  $\perm{1423}\xrightarrow{\B}\perm{4123}\xrightarrow{\R}\perm{4132}\xrightarrow{\G}\perm{4312}\xrightarrow{\B}\perm{3412}\xrightarrow{\R}\perm{3421}\xrightarrow{\G}\perm{3241}\xrightarrow{\B}\perm{2341}\xrightarrow{\R}\perm{2314}$ &
+  $P_1$ & CM \\
+6 & $\perm{1243}$ &
+  $\perm{1243}\xrightarrow{\B}\perm{2143}\xrightarrow{\R}\perm{2134}\xrightarrow{\G}\perm{2314}\xrightarrow{\B}\perm{3214}\xrightarrow{\R}\perm{3241}\xrightarrow{\G}\perm{3421}\xrightarrow{\B}\perm{4321}\xrightarrow{\R}\perm{4312}$ &
+  $P_5$ & VM2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\renewcommand{\arraystretch}{1.0}
+
+The six quartets contain all 24 vertices of $S_4$ exactly once.
+Each quartet is a right coset $\sigma \cdot V_4$, confirming the
+$S_4 / V_4$ quotient structure.
+
+\section{Visualization}
+
+The implementation renders an interactive 3D permutahedron (truncated
+octahedron) with the following behavior:
+
+\begin{itemize}
+  \item \textbf{Initial state:} all 24 vertices and 36 colored edges
+        displayed in the orientation matching the referenced screenshot,
+        with the base hexagonal face at the bottom.
+  \item \textbf{Strand separation:} a single button click triggers each
+        strand extraction.  The 8 journey edges glow sequentially in their
+        generator colors
+        (\textcolor{cBlue}{blue}, \textcolor{cGreen}{green},
+         \textcolor{cRed}{red}),
+        pausing at each of the four recorded vertices, then the strand's
+        vertices separate outward from the polyhedron.
+  \item \textbf{Reassembly:} returns all strands to the assembled state.
+  \item \textbf{Overview:} extracts all six strands sequentially with
+        a single click.
+\end{itemize}
+
+\section{Questions requiring confirmation}
+
+Three encoding decisions are not uniquely determined by the written
+instructions and require explicit confirmation before the artifact is
+marked publishable.
+
+\subsection{Q1: Blue-Red ordering in outer segments}
+
+The instructions say ``using blue and red links'' for the 2-link outer
+segments ($J_1$ and $J_3$) without specifying order.  We implemented
+Blue then Red ($s_1$ then $s_3$).
+
+Because $s_1 = (12)$ and $s_3 = (34)$ act on disjoint positions,
+they commute: $s_1 s_3 = s_3 s_1 = (12)(34)$.  The endpoint is
+identical either way, but the intermediate vertex differs:
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Order & Path from $\perm{1234}$ \\
+\midrule
+$\B\,\R$ (Blue, Red) & $\perm{1234} \to \perm{2134} \to \perm{2143}$ \\
+$\R\,\B$ (Red, Blue) & $\perm{1234} \to \perm{1243} \to \perm{2143}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Is Blue-then-Red the intended traversal order?}
+
+\subsection{Q2: Base face traversal order}
+
+The instructions name $\perm{1234}$, then $\perm{1324}$, then
+``the next node on the base.''  We continue around the hexagonal
+perimeter:
+\[
+  \perm{1234} \to \perm{1324} \to \perm{1342} \to
+  \perm{1432} \to \perm{1423} \to \perm{1243}
+\]
+
+\textbf{Is this the intended sequence of seeds?}
+
+\subsection{Q3: Overall correctness}
+
+\textbf{Are the six quartets listed above correct?}
+
+\end{document}
