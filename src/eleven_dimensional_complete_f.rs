@@ -16,7 +16,7 @@ use std::fs::{self, File};
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc;
 
 use serde::Serialize;
@@ -287,21 +287,18 @@ impl GeometryLevelCudaOperators {
 
     fn assemble_first_jet_batch(
         &self,
-        batch: &[FirstSuperspaceJetInput],
+        batch: Vec<FirstSuperspaceJetInput>,
         include_w_2001: bool,
     ) -> Result<Vec<FirstSuperspaceJetOutput>, String> {
-        let d_c_spinor = batch
-            .iter()
-            .map(|input| input.d_c_alpha_beta_gamma.clone())
-            .collect::<Vec<_>>();
-        let d_c_vector = batch
-            .iter()
-            .map(|input| input.d_c_alpha_b_c.clone())
-            .collect::<Vec<_>>();
-        let c_mixed = batch
-            .iter()
-            .map(|input| input.c_alpha_a_gamma.clone())
-            .collect::<Vec<_>>();
+        let lane_count = batch.len();
+        let mut d_c_spinor = Vec::with_capacity(lane_count);
+        let mut d_c_vector = Vec::with_capacity(lane_count);
+        let mut c_mixed = Vec::with_capacity(lane_count);
+        for input in batch {
+            d_c_spinor.push(input.d_c_alpha_beta_gamma);
+            d_c_vector.push(input.d_c_alpha_b_c);
+            c_mixed.push(input.c_alpha_a_gamma);
+        }
         let (d_spinorial_connection, _) = self.d_spinorial_connection.apply_batch(&d_c_vector)?;
         let (mut d_j_one, _) = self.d_j_one_anholonomy.apply_batch(&d_c_spinor)?;
         let (d_j_one_connection, _) = self
@@ -338,7 +335,7 @@ impl GeometryLevelCudaOperators {
             }
             w_2001
         } else {
-            vec![BTreeMap::new(); batch.len()]
+            vec![BTreeMap::new(); lane_count]
         };
         Ok(d_spinorial_connection
             .into_iter()
@@ -362,15 +359,30 @@ impl GeometryLevelCudaOperators {
                         w_2001,
                     ),
                     w_2021,
-                )| FirstSuperspaceJetOutput {
-                    d_spinorial_connection,
-                    bosonic_connection,
-                    d_j_one,
-                    d_j_two,
-                    d_j_plus,
-                    t_alpha_a_gamma,
-                    w_2001,
-                    w_2021,
+                )| {
+                    if include_w_2001 {
+                        FirstSuperspaceJetOutput {
+                            d_spinorial_connection,
+                            bosonic_connection,
+                            d_j_one,
+                            d_j_two,
+                            d_j_plus,
+                            t_alpha_a_gamma,
+                            w_2001,
+                            w_2021,
+                        }
+                    } else {
+                        FirstSuperspaceJetOutput {
+                            d_spinorial_connection: BTreeMap::new(),
+                            bosonic_connection: BTreeMap::new(),
+                            d_j_one: BTreeMap::new(),
+                            d_j_two: BTreeMap::new(),
+                            d_j_plus: BTreeMap::new(),
+                            t_alpha_a_gamma: BTreeMap::new(),
+                            w_2001,
+                            w_2021,
+                        }
+                    }
                 },
             )
             .collect())
@@ -398,27 +410,27 @@ fn merge_exact_sparse(target: &mut BTreeMap<usize, ExactQi>, source: BTreeMap<us
 fn assemble_geometry_level_physical_f_cuda_batch(
     inputs: &[GeometryLevelPhysicalFInput],
 ) -> Result<Vec<GeometryLevelPhysicalFOutput>, String> {
-    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, true, true)
+    assemble_geometry_level_physical_f_cuda_batch_internal(inputs.to_vec(), true, true)
 }
 
 #[cfg(feature = "cuda")]
 fn assemble_geometry_level_physical_f_cuda_batch_for_visitor(
-    inputs: &[GeometryLevelPhysicalFInput],
+    inputs: Vec<GeometryLevelPhysicalFInput>,
     include_w_2001: bool,
 ) -> Result<Vec<GeometryLevelPhysicalFOutput>, String> {
-    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, false, include_w_2001)
+    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, include_w_2001, include_w_2001)
 }
 
 #[cfg(feature = "cuda")]
 fn assemble_geometry_level_physical_f_cuda_batch_internal(
-    inputs: &[GeometryLevelPhysicalFInput],
+    inputs: Vec<GeometryLevelPhysicalFInput>,
     retain_compensator_images: bool,
     include_w_2001: bool,
 ) -> Result<Vec<GeometryLevelPhysicalFOutput>, String> {
     if inputs.is_empty() {
         return Ok(Vec::new());
     }
-    for input in inputs {
+    for input in &inputs {
         validate_sparse_dimension("d_h", &input.d_h, physical::DH_DIMENSION)?;
         validate_sparse_dimension(
             "c_alpha_beta_gamma",
@@ -431,22 +443,17 @@ fn assemble_geometry_level_physical_f_cuda_batch_internal(
             physical::C_ALPHA_VECTOR_VECTOR_DIMENSION,
         )?;
     }
-    let c_spinor = inputs
-        .iter()
-        .map(|input| input.c_alpha_beta_gamma.clone())
-        .collect::<Vec<_>>();
-    let d_h = inputs
-        .iter()
-        .map(|input| input.d_h.clone())
-        .collect::<Vec<_>>();
-    let c_vector = inputs
-        .iter()
-        .map(|input| input.c_alpha_b_c.clone())
-        .collect::<Vec<_>>();
-    let first_jet_inputs = inputs
-        .iter()
-        .map(|input| input.first_jet.clone())
-        .collect::<Vec<_>>();
+    let lane_count = inputs.len();
+    let mut c_spinor = Vec::with_capacity(lane_count);
+    let mut d_h = Vec::with_capacity(lane_count);
+    let mut c_vector = Vec::with_capacity(lane_count);
+    let mut first_jet_inputs = Vec::with_capacity(lane_count);
+    for input in inputs {
+        c_spinor.push(input.c_alpha_beta_gamma);
+        d_h.push(input.d_h);
+        c_vector.push(input.c_alpha_b_c);
+        first_jet_inputs.push(input.first_jet);
+    }
     GEOMETRY_LEVEL_CUDA_OPERATORS.with(|cached| {
         let mut cached = cached.borrow_mut();
         if cached.is_none() {
@@ -459,11 +466,10 @@ fn assemble_geometry_level_physical_f_cuda_batch_internal(
             .j_one_connection
             .apply_batch(&spinorial_connection)?;
         let (j_two, _) = operators.j_two.apply_batch(&c_vector)?;
-        let first_jet = operators.assemble_first_jet_batch(&first_jet_inputs, include_w_2001)?;
+        let first_jet = operators.assemble_first_jet_batch(first_jet_inputs, include_w_2001)?;
         let x = if retain_compensator_images {
-            inputs
-                .iter()
-                .map(|input| physical::apply_leading_physical_x(&input.d_h))
+            d_h.iter()
+                .map(physical::apply_leading_physical_x)
                 .collect::<Vec<_>>()
         } else {
             operators
@@ -488,17 +494,16 @@ fn assemble_geometry_level_physical_f_cuda_batch_internal(
         for (target, source) in j_one.iter_mut().zip(j_one_connection) {
             merge_exact_sparse(target, source);
         }
-        let outputs = inputs
-            .iter()
-            .zip(spinorial_connection)
+        let outputs = spinorial_connection
+            .into_iter()
             .zip(j_one)
             .zip(j_two)
             .zip(first_jet)
             .zip(x)
-            .map(
-                |(((((_input, spinorial_connection), j_one), j_two), first_jet), x)| {
+            .map(|((((spinorial_connection, j_one), j_two), first_jet), x)| {
+                let j_minus = physical::apply_j_minus(&j_one, &j_two);
+                if retain_compensator_images {
                     let j_plus = physical::apply_j_plus(&j_one, &j_two);
-                    let j_minus = physical::apply_j_minus(&j_one, &j_two);
                     GeometryLevelPhysicalFOutput {
                         x,
                         spinorial_connection,
@@ -508,8 +513,27 @@ fn assemble_geometry_level_physical_f_cuda_batch_internal(
                         j_minus,
                         first_jet,
                     }
-                },
-            )
+                } else {
+                    GeometryLevelPhysicalFOutput {
+                        x,
+                        spinorial_connection: BTreeMap::new(),
+                        j_one: BTreeMap::new(),
+                        j_two: BTreeMap::new(),
+                        j_plus: BTreeMap::new(),
+                        j_minus,
+                        first_jet: FirstSuperspaceJetOutput {
+                            d_spinorial_connection: BTreeMap::new(),
+                            bosonic_connection: BTreeMap::new(),
+                            d_j_one: BTreeMap::new(),
+                            d_j_two: BTreeMap::new(),
+                            d_j_plus: BTreeMap::new(),
+                            t_alpha_a_gamma: BTreeMap::new(),
+                            w_2001: first_jet.w_2001,
+                            w_2021: first_jet.w_2021,
+                        },
+                    }
+                }
+            })
             .collect();
         Ok(outputs)
     })
@@ -794,7 +818,7 @@ where
         #[cfg(feature = "cuda")]
         {
             if use_cuda {
-                assemble_geometry_level_physical_f_cuda_batch_for_visitor(&inputs, include_w_2001)?
+                assemble_geometry_level_physical_f_cuda_batch_for_visitor(inputs, include_w_2001)?
             } else {
                 inputs
                     .iter()
@@ -812,22 +836,59 @@ where
         }
     };
     for (monomial, output) in monomials.into_iter().zip(outputs) {
-        for (sector, values) in [
-            (FrameComposedPhysicalFSector::XTwo, output.x.x_two_11000),
-            (FrameComposedPhysicalFSector::XFive, output.x.x_five_10002),
-            (FrameComposedPhysicalFSector::JOne, output.j_one),
-            (FrameComposedPhysicalFSector::JTwo, output.j_two),
-            (FrameComposedPhysicalFSector::JPlus, output.j_plus),
-            (FrameComposedPhysicalFSector::JMinus, output.j_minus),
-            (
+        emit_exact_sector(
+            FrameComposedPhysicalFSector::XTwo,
+            output.x.x_two_11000,
+            &monomial,
+            &mut stats,
+            &mut emit,
+        )?;
+        emit_exact_sector(
+            FrameComposedPhysicalFSector::XFive,
+            output.x.x_five_10002,
+            &monomial,
+            &mut stats,
+            &mut emit,
+        )?;
+        if include_w_2001 {
+            for (sector, values) in [
+                (FrameComposedPhysicalFSector::JOne, output.j_one),
+                (FrameComposedPhysicalFSector::JTwo, output.j_two),
+                (FrameComposedPhysicalFSector::JPlus, output.j_plus),
+            ] {
+                emit_exact_sector(sector, values, &monomial, &mut stats, &mut emit)?;
+            }
+        }
+        emit_exact_sector(
+            FrameComposedPhysicalFSector::JMinus,
+            output.j_minus,
+            &monomial,
+            &mut stats,
+            &mut emit,
+        )?;
+        if include_w_2001 {
+            emit_exact_sector(
                 FrameComposedPhysicalFSector::MixedTorsion,
                 output.first_jet.t_alpha_a_gamma,
-            ),
-            (FrameComposedPhysicalFSector::W2001, output.first_jet.w_2001),
-            (FrameComposedPhysicalFSector::W2021, output.first_jet.w_2021),
-        ] {
-            emit_exact_sector(sector, values, &monomial, &mut stats, &mut emit)?;
+                &monomial,
+                &mut stats,
+                &mut emit,
+            )?;
+            emit_exact_sector(
+                FrameComposedPhysicalFSector::W2001,
+                output.first_jet.w_2001,
+                &monomial,
+                &mut stats,
+                &mut emit,
+            )?;
         }
+        emit_exact_sector(
+            FrameComposedPhysicalFSector::W2021,
+            output.first_jet.w_2021,
+            &monomial,
+            &mut stats,
+            &mut emit,
+        )?;
     }
     Ok(stats)
 }
@@ -2283,19 +2344,20 @@ fn encode_invariant_entry<W: Write>(
     file_hasher: &mut Sha256,
     entry: &GaugeFixedInvariantOutputEntry,
 ) -> io::Result<()> {
-    write_hashed(writer, file_hasher, &[entry.sector.tag()])?;
-    write_hashed(
-        writer,
-        file_hasher,
-        &(entry.coordinate as u64).to_le_bytes(),
-    )?;
-    write_hashed(
-        writer,
-        file_hasher,
-        &entry.monomial.exterior_spinor_mask.to_le_bytes(),
-    )?;
+    let mut record = [0_u8; SUPERFIELD_COLUMN_ENTRY_BYTES];
+    let mut cursor = 0;
+    record[cursor] = entry.sector.tag();
+    cursor += 1;
+    let coordinate = (entry.coordinate as u64).to_le_bytes();
+    record[cursor..cursor + coordinate.len()].copy_from_slice(&coordinate);
+    cursor += coordinate.len();
+    let exterior_mask = entry.monomial.exterior_spinor_mask.to_le_bytes();
+    record[cursor..cursor + exterior_mask.len()].copy_from_slice(&exterior_mask);
+    cursor += exterior_mask.len();
     for exponent in entry.monomial.momentum.exponents {
-        write_hashed(writer, file_hasher, &exponent.to_le_bytes())?;
+        let bytes = exponent.to_le_bytes();
+        record[cursor..cursor + bytes.len()].copy_from_slice(&bytes);
+        cursor += bytes.len();
     }
     for value in [
         entry.coefficient.real.numer(),
@@ -2303,9 +2365,12 @@ fn encode_invariant_entry<W: Write>(
         entry.coefficient.imaginary.numer(),
         entry.coefficient.imaginary.denom(),
     ] {
-        write_hashed(writer, file_hasher, &value.to_le_bytes())?;
+        let bytes = value.to_le_bytes();
+        record[cursor..cursor + bytes.len()].copy_from_slice(&bytes);
+        cursor += bytes.len();
     }
-    Ok(())
+    debug_assert_eq!(cursor, SUPERFIELD_COLUMN_ENTRY_BYTES);
+    write_hashed(writer, file_hasher, &record)
 }
 
 fn take<const N: usize>(bytes: &[u8], cursor: &mut usize) -> Result<[u8; N], String> {
@@ -2707,21 +2772,34 @@ where
         .map(usize::from)
         .unwrap_or(1)
         .min(4);
+    let cuda_requested = cfg!(feature = "cuda")
+        && std::env::var("ADYNKRA_COMPLETE_F_CUDA")
+            .ok()
+            .is_some_and(|value| matches!(value.as_str(), "1" | "true" | "yes"));
+    // Dense lane tiling bounds each CUDA context. The measured production
+    // RTX 4090 and 64 GiB host gate is eight concurrent worker sets; wider runs
+    // fail closed here instead of entering device or host OOM pressure.
+    let maximum_workers = if cuda_requested { 8 } else { 16 };
     let worker_count = std::env::var("ADYNKRA_COMPLETE_F_THREADS")
         .ok()
         .and_then(|value| value.parse::<usize>().ok())
         .unwrap_or(default_workers)
-        .clamp(1, 16);
+        .clamp(1, maximum_workers);
     let next_ordinal = AtomicUsize::new(0);
+    let cancelled = AtomicBool::new(false);
     let (sender, receiver) = mpsc::channel();
     let mut completed = (0..321).map(|_| None).collect::<Vec<_>>();
     std::thread::scope(|scope| -> Result<(), String> {
         for _ in 0..worker_count {
             let sender = sender.clone();
             let next_ordinal = &next_ordinal;
+            let cancelled = &cancelled;
             let shard_directory = shard_directory.map(Path::to_path_buf);
             scope.spawn(move || {
                 loop {
+                    if cancelled.load(Ordering::Acquire) {
+                        break;
+                    }
                     let ordinal = next_ordinal.fetch_add(1, Ordering::Relaxed);
                     if ordinal >= 321 {
                         break;
@@ -2731,7 +2809,14 @@ where
                     } else {
                         gauge_fixed_superfield_column_digest(ordinal)
                     };
+                    let failed = result.is_err();
+                    if failed {
+                        cancelled.store(true, Ordering::Release);
+                    }
                     if sender.send((ordinal, result)).is_err() {
+                        break;
+                    }
+                    if failed {
                         break;
                     }
                 }
@@ -2824,6 +2909,8 @@ mod exact_cuda_sparse {
     use crate::eleven_dimensional_physical_curvature::{ExactQi, SparseQiOperator};
 
     const ERROR_CAPACITY: usize = 1024;
+    const MAX_DENSE_OUTPUT_BYTES_PER_CONTEXT: usize = 64 * 1024 * 1024;
+    static CUDA_CONTEXT_DESTROY_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     #[repr(C)]
     #[derive(Clone, Copy, Debug)]
@@ -2841,6 +2928,32 @@ mod exact_cuda_sparse {
         real: i64,
         imaginary: i64,
     }
+
+    #[repr(C)]
+    #[derive(Clone, Copy, Debug)]
+    struct CudaSparseOutput {
+        lane: u32,
+        row: u32,
+        real: i64,
+        imaginary: i64,
+    }
+
+    const _: () = {
+        assert!(std::mem::size_of::<CudaSparseEntry>() == 24);
+        assert!(std::mem::offset_of!(CudaSparseEntry, row) == 0);
+        assert!(std::mem::offset_of!(CudaSparseEntry, real) == 8);
+        assert!(std::mem::offset_of!(CudaSparseEntry, imaginary) == 16);
+        assert!(std::mem::size_of::<CudaSparseInput>() == 24);
+        assert!(std::mem::offset_of!(CudaSparseInput, lane) == 0);
+        assert!(std::mem::offset_of!(CudaSparseInput, column) == 4);
+        assert!(std::mem::offset_of!(CudaSparseInput, real) == 8);
+        assert!(std::mem::offset_of!(CudaSparseInput, imaginary) == 16);
+        assert!(std::mem::size_of::<CudaSparseOutput>() == 24);
+        assert!(std::mem::offset_of!(CudaSparseOutput, lane) == 0);
+        assert!(std::mem::offset_of!(CudaSparseOutput, row) == 4);
+        assert!(std::mem::offset_of!(CudaSparseOutput, real) == 8);
+        assert!(std::mem::offset_of!(CudaSparseOutput, imaginary) == 16);
+    };
 
     unsafe extern "C" {
         fn adynkra_complete_f_sparse_create(
@@ -2860,6 +2973,19 @@ mod exact_cuda_sparse {
             lane_count: u32,
             output_real: *mut i64,
             output_imaginary: *mut i64,
+            expanded_products: *mut u64,
+            elapsed_milliseconds: *mut f32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
+        fn adynkra_complete_f_sparse_apply_compact_batch(
+            context: *mut c_void,
+            inputs: *const CudaSparseInput,
+            input_count: u32,
+            lane_count: u32,
+            outputs: *mut CudaSparseOutput,
+            output_capacity: u64,
+            output_count: *mut u64,
             expanded_products: *mut u64,
             elapsed_milliseconds: *mut f32,
             error: *mut c_char,
@@ -3038,6 +3164,67 @@ mod exact_cuda_sparse {
             if batch.is_empty() {
                 return Err("complete-F CUDA batch must contain at least one lane".to_string());
             }
+            let bytes_per_lane = self
+                .output_dimension
+                .checked_mul(2 * std::mem::size_of::<i64>())
+                .ok_or_else(|| "complete-F CUDA lane byte count overflow".to_string())?;
+            if bytes_per_lane > MAX_DENSE_OUTPUT_BYTES_PER_CONTEXT {
+                return Err(format!(
+                    "complete-F CUDA lane requires {bytes_per_lane} dense bytes, exceeding the {} byte per-context cap",
+                    MAX_DENSE_OUTPUT_BYTES_PER_CONTEXT
+                ));
+            }
+            let lanes_per_chunk = if bytes_per_lane == 0 {
+                batch.len()
+            } else {
+                MAX_DENSE_OUTPUT_BYTES_PER_CONTEXT / bytes_per_lane
+            };
+            if batch.len() <= lanes_per_chunk {
+                return self.apply_batch_chunk(batch);
+            }
+
+            let mut outputs = Vec::with_capacity(batch.len());
+            let mut stats = ExactCudaSparseStats {
+                lane_count: 0,
+                input_nonzeros: 0,
+                output_nonzeros: 0,
+                expanded_products: 0,
+                kernel_milliseconds: 0.0,
+                resident_bytes: 0,
+                absolute_accumulation_bound: 0,
+            };
+            for chunk in batch.chunks(lanes_per_chunk) {
+                let (mut chunk_outputs, chunk_stats) = self.apply_batch_chunk(chunk)?;
+                outputs.append(&mut chunk_outputs);
+                stats.lane_count = stats
+                    .lane_count
+                    .checked_add(chunk_stats.lane_count)
+                    .ok_or_else(|| "complete-F CUDA lane count overflow".to_string())?;
+                stats.input_nonzeros = stats
+                    .input_nonzeros
+                    .checked_add(chunk_stats.input_nonzeros)
+                    .ok_or_else(|| "complete-F CUDA input count overflow".to_string())?;
+                stats.output_nonzeros = stats
+                    .output_nonzeros
+                    .checked_add(chunk_stats.output_nonzeros)
+                    .ok_or_else(|| "complete-F CUDA output count overflow".to_string())?;
+                stats.expanded_products = stats
+                    .expanded_products
+                    .checked_add(chunk_stats.expanded_products)
+                    .ok_or_else(|| "complete-F CUDA product count overflow".to_string())?;
+                stats.kernel_milliseconds += chunk_stats.kernel_milliseconds;
+                stats.resident_bytes = stats.resident_bytes.max(chunk_stats.resident_bytes);
+                stats.absolute_accumulation_bound = stats
+                    .absolute_accumulation_bound
+                    .max(chunk_stats.absolute_accumulation_bound);
+            }
+            Ok((outputs, stats))
+        }
+
+        fn apply_batch_chunk(
+            &self,
+            batch: &[BTreeMap<usize, ExactQi>],
+        ) -> Result<(Vec<BTreeMap<usize, ExactQi>>, ExactCudaSparseStats), String> {
             let mut inputs = Vec::new();
             let mut output_denominators = Vec::with_capacity(batch.len());
             let mut absolute_accumulation_bound = 0_u128;
@@ -3086,25 +3273,36 @@ mod exact_cuda_sparse {
                 absolute_accumulation_bound = absolute_accumulation_bound.max(lane_bound);
             }
 
-            let output_count = batch
+            let dense_output_count = batch
                 .len()
                 .checked_mul(self.output_dimension)
                 .ok_or_else(|| "complete-F batched output size overflow".to_string())?;
-            let mut output_real = vec![0_i64; output_count];
-            let mut output_imaginary = vec![0_i64; output_count];
+            let expanded_capacity = inputs.iter().try_fold(0_usize, |total, input| {
+                total
+                    .checked_add(self.column_entry_l1[input.column as usize].len())
+                    .ok_or_else(|| "complete-F compact output capacity overflow".to_string())
+            })?;
+            let output_capacity = dense_output_count.min(expanded_capacity);
+            let mut compact_outputs =
+                Vec::<std::mem::MaybeUninit<CudaSparseOutput>>::with_capacity(output_capacity);
+            unsafe { compact_outputs.set_len(output_capacity) };
+            let mut output_count = 0_u64;
             let mut expanded_products = 0_u64;
             let mut kernel_milliseconds = 0_f32;
             let mut error = [0_i8; ERROR_CAPACITY];
             let status = unsafe {
-                adynkra_complete_f_sparse_apply_batch(
+                adynkra_complete_f_sparse_apply_compact_batch(
                     self.context.as_ptr(),
                     inputs.as_ptr(),
                     u32::try_from(inputs.len())
                         .map_err(|_| "complete-F input nonzeros exceed u32".to_string())?,
                     u32::try_from(batch.len())
                         .map_err(|_| "complete-F CUDA lane count exceeds u32".to_string())?,
-                    output_real.as_mut_ptr(),
-                    output_imaginary.as_mut_ptr(),
+                    compact_outputs.as_mut_ptr().cast::<CudaSparseOutput>(),
+                    u64::try_from(output_capacity).map_err(|_| {
+                        "complete-F compact output capacity exceeds u64".to_string()
+                    })?,
+                    &mut output_count,
                     &mut expanded_products,
                     &mut kernel_milliseconds,
                     error.as_mut_ptr(),
@@ -3114,31 +3312,28 @@ mod exact_cuda_sparse {
             if status != 0 {
                 return Err(error_string(&error));
             }
-            let mut outputs = Vec::with_capacity(batch.len());
-            let mut output_nonzeros = 0_usize;
-            for (lane, output_denominator) in output_denominators.into_iter().enumerate() {
-                let mut output = BTreeMap::new();
-                let begin = lane * self.output_dimension;
-                let end = begin + self.output_dimension;
-                for (row, (&real, &imaginary)) in output_real[begin..end]
-                    .iter()
-                    .zip(&output_imaginary[begin..end])
-                    .enumerate()
-                {
-                    if real == 0 && imaginary == 0 {
-                        continue;
-                    }
-                    output.insert(
-                        row,
-                        ExactQi {
-                            real: Ratio::new(real, output_denominator),
-                            imaginary: Ratio::new(imaginary, output_denominator),
-                        },
-                    );
-                }
-                output_nonzeros += output.len();
-                outputs.push(output);
+            let output_count = usize::try_from(output_count)
+                .map_err(|_| "complete-F compact output count exceeds usize".to_string())?;
+            if output_count > output_capacity {
+                return Err("complete-F compact output count exceeds capacity".to_string());
             }
+            let mut outputs = vec![BTreeMap::new(); batch.len()];
+            for output in &compact_outputs[..output_count] {
+                let output = unsafe { output.assume_init_ref() };
+                let lane = output.lane as usize;
+                let row = output.row as usize;
+                if lane >= outputs.len() || row >= self.output_dimension {
+                    return Err("complete-F compact CUDA output is out of range".to_string());
+                }
+                let value = ExactQi {
+                    real: Ratio::new(output.real, output_denominators[lane]),
+                    imaginary: Ratio::new(output.imaginary, output_denominators[lane]),
+                };
+                if value.is_zero() || outputs[lane].insert(row, value).is_some() {
+                    return Err("complete-F compact CUDA output is noncanonical".to_string());
+                }
+            }
+            let output_nonzeros = output_count;
             let resident_bytes =
                 unsafe { adynkra_complete_f_sparse_resident_bytes(self.context.as_ptr()) };
             let stats = ExactCudaSparseStats {
@@ -3325,6 +3520,9 @@ mod exact_cuda_sparse {
 
     impl Drop for ExactCudaSparseOperator {
         fn drop(&mut self) {
+            let _guard = CUDA_CONTEXT_DESTROY_LOCK
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
             unsafe { adynkra_complete_f_sparse_destroy(self.context.as_ptr()) };
         }
     }
@@ -3724,6 +3922,86 @@ mod tests {
         assert!(stats.resident_bytes > 0);
         assert!(stats.absolute_accumulation_bound > 0);
         eprintln!("complete-F exact CUDA sparse stats: {stats:#?}");
+    }
+
+    #[cfg(feature = "cuda")]
+    #[test]
+    fn complete_f_sparse_cuda_compacts_only_after_exact_cancellation() {
+        let operator = physical::SparseQiOperator {
+            input_dimension: 3,
+            output_dimension: 1,
+            columns: vec![
+                vec![physical::SparseQiEntry {
+                    row: 0,
+                    coefficient: ExactQi::from_integer(1),
+                }],
+                vec![physical::SparseQiEntry {
+                    row: 0,
+                    coefficient: ExactQi::from_integer(-1),
+                }],
+                vec![physical::SparseQiEntry {
+                    row: 0,
+                    coefficient: ExactQi::from_integer(1),
+                }],
+            ],
+        };
+        let batch = vec![
+            BTreeMap::from([
+                (0, ExactQi::from_integer(17)),
+                (1, ExactQi::from_integer(17)),
+            ]),
+            BTreeMap::from([
+                (0, ExactQi::from_integer(23)),
+                (1, ExactQi::from_integer(23)),
+                (2, ExactQi::from_integer(-5)),
+            ]),
+            BTreeMap::new(),
+        ];
+        let expected = batch
+            .iter()
+            .map(|input| operator.apply_sparse(input))
+            .collect::<Vec<_>>();
+        assert!(expected[0].is_empty());
+        assert_eq!(
+            expected[1],
+            BTreeMap::from([(0, ExactQi::from_integer(-5))])
+        );
+        assert!(expected[2].is_empty());
+
+        let gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&operator, 0).unwrap();
+        for _ in 0..100 {
+            let (actual, stats) = gpu.apply_batch(&batch).unwrap();
+            assert_eq!(actual, expected);
+            assert_eq!(stats.output_nonzeros, 1);
+        }
+    }
+
+    #[cfg(feature = "cuda")]
+    #[test]
+    fn complete_f_sparse_cuda_context_teardown_is_concurrent_safe() {
+        let operator = physical::SparseQiOperator {
+            input_dimension: 1,
+            output_dimension: 1,
+            columns: vec![vec![physical::SparseQiEntry {
+                row: 0,
+                coefficient: ExactQi::from_integer(3),
+            }]],
+        };
+        std::thread::scope(|scope| {
+            for lane in 0..8_i64 {
+                let operator = &operator;
+                scope.spawn(move || {
+                    for iteration in 0..4_i64 {
+                        let gpu =
+                            exact_cuda_sparse::ExactCudaSparseOperator::new(operator, 0).unwrap();
+                        let input =
+                            BTreeMap::from([(0, ExactQi::from_integer(lane + iteration + 1))]);
+                        let expected = operator.apply_sparse(&input);
+                        assert_eq!(gpu.apply(&input).unwrap().0, expected);
+                    }
+                });
+            }
+        });
     }
 
     #[cfg(feature = "cuda")]

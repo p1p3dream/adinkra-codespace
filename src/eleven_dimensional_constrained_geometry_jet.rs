@@ -466,8 +466,12 @@ where
     }
 
     let (c_spinor, c_vector, c_mixed) = assemble_anholonomies(&eq40, &frame, &delta, &d_delta)?;
-    let d_c_spinor = spinor_derivative(&c_spinor, SPINOR_ANHOLONOMY_DIMENSION)?;
-    let d_c_vector = spinor_derivative(&c_vector, C_ALPHA_VECTOR_VECTOR_DIMENSION)?;
+    let (d_c_spinor, d_c_vector) = rayon::join(
+        || spinor_derivative(&c_spinor, SPINOR_ANHOLONOMY_DIMENSION),
+        || spinor_derivative(&c_vector, C_ALPHA_VECTOR_VECTOR_DIMENSION),
+    );
+    let d_c_spinor = d_c_spinor?;
+    let d_c_vector = d_c_vector?;
 
     let mut stats = ConstrainedGeometryJetStats {
         delta_derivative_identity_residual_terms,
