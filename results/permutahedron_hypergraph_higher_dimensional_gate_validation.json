@@ -1,0 +1,28 @@
+{
+  "controls": 7,
+  "controls_sharing_one_unsigned_family": 7,
+  "controls_sharing_one_valid_worldline_signing_class": 7,
+  "published_assignments_rejected_by_worldline_nonclosure": 4,
+  "exact_four_dimensional_positive_controls": 2,
+  "exact_four_dimensional_component_relations_checked": 1296,
+  "exact_reduced_matrix_entries_checked": 1024,
+  "cv_component_closure_passed": true,
+  "ct_component_closure_passed": true,
+  "cv_anchor_recovered": true,
+  "ct_anchor_recovered": true,
+  "cv_ct_spatial_operators_distinct": true,
+  "cv_ct_gauge_residues_distinct": true,
+  "garden_positive_controls_without_claimed_four_dimensional_parent": [
+    "O"
+  ],
+  "printed_nonclosing_controls_without_target_specification": [
+    "CC",
+    "TT",
+    "TV",
+    "VV"
+  ],
+  "stated_parent_positive_control_gate_complete": true,
+  "full_seven_control_higher_dimensional_gate_applicable": false,
+  "broader_s8_scan_authorized": false,
+  "audit_passed": true
+}

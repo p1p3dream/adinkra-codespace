@@ -1,0 +1,101 @@
+{
+  "schema_version": "adynkra-11d-second-momentum-recoupling-v1",
+  "basis_convention": "exact 32-dimensional complex Euclidean B5 Clifford basis with orthonormal Cartesian vector metric",
+  "tensor_product": "Sym^2(10000) tensor (10001)",
+  "channels": [
+    {
+      "dynkin_label": "00001",
+      "dimension": 32,
+      "multiplicity": 1
+    },
+    {
+      "dynkin_label": "01001",
+      "dimension": 1408,
+      "multiplicity": 1
+    },
+    {
+      "dynkin_label": "10001",
+      "dimension": 320,
+      "multiplicity": 2
+    },
+    {
+      "dynkin_label": "11001",
+      "dimension": 10240,
+      "multiplicity": 1
+    },
+    {
+      "dynkin_label": "20001",
+      "dimension": 1760,
+      "multiplicity": 1
+    },
+    {
+      "dynkin_label": "30001",
+      "dimension": 7040,
+      "multiplicity": 1
+    }
+  ],
+  "symmetric_tensor_dimension": 66,
+  "target_dimension": 320,
+  "tensor_product_dimension": 21120,
+  "decomposed_dimension": 21120,
+  "decomposition_dimension_residual": 0,
+  "ambient_vector_spinor_dimension": 352,
+  "gamma_trace_rank": 32,
+  "gamma_traceless_projector_rank": 320,
+  "gamma_traceless_projector_polynomial_entries_checked": 123904,
+  "gamma_traceless_projector_polynomial_residual_entries": 0,
+  "clifford_entries_checked": 123904,
+  "clifford_residual_entries": 0,
+  "trace_path_image_rank": 320,
+  "symmetric_traceless_path_image_rank": 320,
+  "combined_10001_image_rank": 640,
+  "multiplicity_space_rank": 2,
+  "extraction_matrix": [
+    [
+      11,
+      0
+    ],
+    [
+      1,
+      117
+    ]
+  ],
+  "extraction_determinant": 1287,
+  "trace_path_target_gamma_entries_checked": 743424,
+  "trace_path_target_gamma_residual_entries": 0,
+  "symmetric_traceless_target_gamma_entries_checked": 743424,
+  "symmetric_traceless_target_gamma_residual_entries": 0,
+  "symmetric_traceless_momentum_trace_entries_checked": 123904,
+  "symmetric_traceless_momentum_trace_residual_entries": 0,
+  "trace_extraction_entries_checked": 123904,
+  "trace_extraction_residual_entries": 0,
+  "mixed_extraction_entries_checked": 247808,
+  "mixed_extraction_residual_entries": 0,
+  "symmetric_traceless_embedding_coefficients": [
+    11,
+    -1,
+    -2
+  ],
+  "pinned_level12_10002_fixtures": [
+    {
+      "artifact": "data/eleven_dimensional_spinor_bridge/level12_10002_highest_weight_kernel_1.i16le",
+      "bytes": 113516,
+      "sha256": "c3eb687d6d868cd08fcd90a0c741815681b3c68ca4cf3157ddd929df0aa42e28",
+      "hash_matches": true
+    },
+    {
+      "artifact": "data/eleven_dimensional_spinor_bridge/level12_10002_highest_weight_kernel_2.i16le",
+      "bytes": 113516,
+      "sha256": "ec51e06970fcff1b7b719d7ee5c3d9a69775fdf6558334c400d1540dbd81c7a1",
+      "hash_matches": true
+    }
+  ],
+  "fixture_hashes_complete": true,
+  "representation_inventory_sha256": "83698bf554699aa54c1f576366ca0945424675e9698a4203aadb787f232cff57",
+  "representation_inventory_matches": true,
+  "representation_decomposition_complete": true,
+  "component_source_target_maps_complete": false,
+  "certificate_sha256": "d883b57a3151c02e25e7937400b1dc75c5fcdabd4899969aef8650ce7f37044d",
+  "passed": true,
+  "boundary": "This certifies the B5 representation inventory by dimensions and constructs the two exact (10001) momentum recoupling paths. The level-12 10002 source kernels are hash-pinned, but no complete level-12 source-to-intermediate or intermediate-to-target Clebsch-Gordan map is claimed."
+}

@@ -1,0 +1,3120 @@
+{
+  "schema_version": "permutahedron-hypergraph-recursion-maxwell-bridge-v1",
+  "title": "Hypergraph projection of the signed S8 recursion with embedded Maxwell classes",
+  "method": [
+    "Enumerate all 5,760 aligned signed recursion candidates and retain exact Garden closers.",
+    "Map every closing unsigned support into the complete 151,200-edge constraint hypergraph.",
+    "Attach the independently evaluated ordered chi0 and Maxwell signatures of both retained four-color blocks.",
+    "Cross-check the CT and CV anchors against the published-control projection ledger."
+  ],
+  "candidates": [
+    {
+      "id": "CM->TM:order-1234:mask-2",
+      "first_label": "CM",
+      "second_label": "TM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          2,
+          3,
+          5,
+          7,
+          8,
+          6
+        ],
+        [
+          2,
+          3,
+          1,
+          4,
+          6,
+          8,
+          7,
+          5
+        ],
+        [
+          3,
+          2,
+          4,
+          1,
+          7,
+          5,
+          6,
+          8
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          8,
+          6,
+          5,
+          7
+        ],
+        [
+          5,
+          8,
+          6,
+          7,
+          1,
+          3,
+          4,
+          2
+        ],
+        [
+          6,
+          7,
+          5,
+          8,
+          2,
+          4,
+          3,
+          1
+        ],
+        [
+          7,
+          6,
+          8,
+          5,
+          3,
+          1,
+          2,
+          4
+        ],
+        [
+          8,
+          5,
+          7,
+          6,
+          4,
+          2,
+          1,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        234,
+        76,
+        134,
+        32,
+        244,
+        82,
+        152,
+        62
+      ],
+      "hyperedge_ranks": [
+        1443,
+        5771,
+        10932,
+        15260,
+        25059,
+        29387,
+        34548,
+        38876
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1443,
+      "normalizer_orbit_id": 17,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "CM->TM:order-1234:mask-6",
+      "first_label": "CM",
+      "second_label": "TM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": "CT",
+      "permutations": [
+        [
+          1,
+          4,
+          2,
+          3,
+          5,
+          7,
+          8,
+          6
+        ],
+        [
+          2,
+          3,
+          1,
+          4,
+          6,
+          8,
+          7,
+          5
+        ],
+        [
+          3,
+          2,
+          4,
+          1,
+          7,
+          5,
+          6,
+          8
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          8,
+          6,
+          5,
+          7
+        ],
+        [
+          5,
+          8,
+          6,
+          7,
+          1,
+          3,
+          4,
+          2
+        ],
+        [
+          6,
+          7,
+          5,
+          8,
+          2,
+          4,
+          3,
+          1
+        ],
+        [
+          7,
+          6,
+          8,
+          5,
+          3,
+          1,
+          2,
+          4
+        ],
+        [
+          8,
+          5,
+          7,
+          6,
+          4,
+          2,
+          1,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        234,
+        76,
+        134,
+        32,
+        11,
+        173,
+        103,
+        193
+      ],
+      "hyperedge_ranks": [
+        1443,
+        5771,
+        10932,
+        15260,
+        25059,
+        29387,
+        34548,
+        38876
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1443,
+      "normalizer_orbit_id": 17,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "CM->VM:order-1234:mask-2",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          2,
+          3,
+          5,
+          7,
+          6,
+          8
+        ],
+        [
+          2,
+          3,
+          1,
+          4,
+          6,
+          8,
+          5,
+          7
+        ],
+        [
+          3,
+          2,
+          4,
+          1,
+          7,
+          5,
+          8,
+          6
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          8,
+          6,
+          7,
+          5
+        ],
+        [
+          5,
+          8,
+          6,
+          7,
+          1,
+          3,
+          2,
+          4
+        ],
+        [
+          6,
+          7,
+          5,
+          8,
+          2,
+          4,
+          1,
+          3
+        ],
+        [
+          7,
+          6,
+          8,
+          5,
+          3,
+          1,
+          4,
+          2
+        ],
+        [
+          8,
+          5,
+          7,
+          6,
+          4,
+          2,
+          3,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        202,
+        172,
+        102,
+        0,
+        212,
+        178,
+        120,
+        30
+      ],
+      "hyperedge_ranks": [
+        1442,
+        5770,
+        10933,
+        15261,
+        25058,
+        29386,
+        34549,
+        38877
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1442,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "CM->VM:order-1234:mask-6",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          2,
+          3,
+          5,
+          7,
+          6,
+          8
+        ],
+        [
+          2,
+          3,
+          1,
+          4,
+          6,
+          8,
+          5,
+          7
+        ],
+        [
+          3,
+          2,
+          4,
+          1,
+          7,
+          5,
+          8,
+          6
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          8,
+          6,
+          7,
+          5
+        ],
+        [
+          5,
+          8,
+          6,
+          7,
+          1,
+          3,
+          2,
+          4
+        ],
+        [
+          6,
+          7,
+          5,
+          8,
+          2,
+          4,
+          1,
+          3
+        ],
+        [
+          7,
+          6,
+          8,
+          5,
+          3,
+          1,
+          4,
+          2
+        ],
+        [
+          8,
+          5,
+          7,
+          6,
+          4,
+          2,
+          3,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        202,
+        172,
+        102,
+        0,
+        43,
+        77,
+        135,
+        225
+      ],
+      "hyperedge_ranks": [
+        1442,
+        5770,
+        10933,
+        15261,
+        25058,
+        29386,
+        34549,
+        38877
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1442,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "CM->VM:order-2143:mask-4",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": "CV",
+      "permutations": [
+        [
+          1,
+          4,
+          2,
+          3,
+          6,
+          8,
+          5,
+          7
+        ],
+        [
+          2,
+          3,
+          1,
+          4,
+          5,
+          7,
+          6,
+          8
+        ],
+        [
+          3,
+          2,
+          4,
+          1,
+          8,
+          6,
+          7,
+          5
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          7,
+          5,
+          8,
+          6
+        ],
+        [
+          5,
+          8,
+          6,
+          7,
+          2,
+          4,
+          1,
+          3
+        ],
+        [
+          6,
+          7,
+          5,
+          8,
+          1,
+          3,
+          2,
+          4
+        ],
+        [
+          7,
+          6,
+          8,
+          5,
+          4,
+          2,
+          3,
+          1
+        ],
+        [
+          8,
+          5,
+          7,
+          6,
+          3,
+          1,
+          4,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        170,
+        204,
+        6,
+        96,
+        210,
+        180,
+        126,
+        24
+      ],
+      "hyperedge_ranks": [
+        1450,
+        5762,
+        10941,
+        15253,
+        25066,
+        29378,
+        34557,
+        38869
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1450,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "CM->VM:order-2143:mask-8",
+      "first_label": "CM",
+      "second_label": "VM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          2,
+          3,
+          6,
+          8,
+          5,
+          7
+        ],
+        [
+          2,
+          3,
+          1,
+          4,
+          5,
+          7,
+          6,
+          8
+        ],
+        [
+          3,
+          2,
+          4,
+          1,
+          8,
+          6,
+          7,
+          5
+        ],
+        [
+          4,
+          1,
+          3,
+          2,
+          7,
+          5,
+          8,
+          6
+        ],
+        [
+          5,
+          8,
+          6,
+          7,
+          2,
+          4,
+          1,
+          3
+        ],
+        [
+          6,
+          7,
+          5,
+          8,
+          1,
+          3,
+          2,
+          4
+        ],
+        [
+          7,
+          6,
+          8,
+          5,
+          4,
+          2,
+          3,
+          1
+        ],
+        [
+          8,
+          5,
+          7,
+          6,
+          3,
+          1,
+          4,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        170,
+        204,
+        6,
+        96,
+        45,
+        75,
+        129,
+        231
+      ],
+      "hyperedge_ranks": [
+        1450,
+        5762,
+        10941,
+        15253,
+        25066,
+        29378,
+        34557,
+        38869
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1450,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "TM->CM:order-1234:mask-2",
+      "first_label": "TM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          3,
+          4,
+          2,
+          5,
+          8,
+          6,
+          7
+        ],
+        [
+          2,
+          4,
+          3,
+          1,
+          6,
+          7,
+          5,
+          8
+        ],
+        [
+          3,
+          1,
+          2,
+          4,
+          7,
+          6,
+          8,
+          5
+        ],
+        [
+          4,
+          2,
+          1,
+          3,
+          8,
+          5,
+          7,
+          6
+        ],
+        [
+          5,
+          7,
+          8,
+          6,
+          1,
+          4,
+          2,
+          3
+        ],
+        [
+          6,
+          8,
+          7,
+          5,
+          2,
+          3,
+          1,
+          4
+        ],
+        [
+          7,
+          5,
+          6,
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        [
+          8,
+          6,
+          5,
+          7,
+          4,
+          1,
+          3,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        174,
+        196,
+        104,
+        2,
+        176,
+        218,
+        118,
+        28
+      ],
+      "hyperedge_ranks": [
+        844,
+        6608,
+        10095,
+        15859,
+        24460,
+        30224,
+        33711,
+        39475
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 844,
+      "normalizer_orbit_id": 17,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "TM->CM:order-1234:mask-6",
+      "first_label": "TM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          3,
+          4,
+          2,
+          5,
+          8,
+          6,
+          7
+        ],
+        [
+          2,
+          4,
+          3,
+          1,
+          6,
+          7,
+          5,
+          8
+        ],
+        [
+          3,
+          1,
+          2,
+          4,
+          7,
+          6,
+          8,
+          5
+        ],
+        [
+          4,
+          2,
+          1,
+          3,
+          8,
+          5,
+          7,
+          6
+        ],
+        [
+          5,
+          7,
+          8,
+          6,
+          1,
+          4,
+          2,
+          3
+        ],
+        [
+          6,
+          8,
+          7,
+          5,
+          2,
+          3,
+          1,
+          4
+        ],
+        [
+          7,
+          5,
+          6,
+          8,
+          3,
+          2,
+          4,
+          1
+        ],
+        [
+          8,
+          6,
+          5,
+          7,
+          4,
+          1,
+          3,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        174,
+        196,
+        104,
+        2,
+        79,
+        37,
+        137,
+        227
+      ],
+      "hyperedge_ranks": [
+        844,
+        6608,
+        10095,
+        15859,
+        24460,
+        30224,
+        33711,
+        39475
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 844,
+      "normalizer_orbit_id": 17,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "VM->CM:order-1234:mask-2",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          3,
+          2,
+          4,
+          5,
+          8,
+          6,
+          7
+        ],
+        [
+          2,
+          4,
+          1,
+          3,
+          6,
+          7,
+          5,
+          8
+        ],
+        [
+          3,
+          1,
+          4,
+          2,
+          7,
+          6,
+          8,
+          5
+        ],
+        [
+          4,
+          2,
+          3,
+          1,
+          8,
+          5,
+          7,
+          6
+        ],
+        [
+          5,
+          7,
+          6,
+          8,
+          1,
+          4,
+          2,
+          3
+        ],
+        [
+          6,
+          8,
+          5,
+          7,
+          2,
+          3,
+          1,
+          4
+        ],
+        [
+          7,
+          5,
+          8,
+          6,
+          3,
+          2,
+          4,
+          1
+        ],
+        [
+          8,
+          6,
+          7,
+          5,
+          4,
+          1,
+          3,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        172,
+        202,
+        102,
+        0,
+        178,
+        212,
+        120,
+        30
+      ],
+      "hyperedge_ranks": [
+        724,
+        6488,
+        10215,
+        15979,
+        24340,
+        30104,
+        33831,
+        39595
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 724,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "VM->CM:order-1234:mask-6",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          3,
+          2,
+          4,
+          5,
+          8,
+          6,
+          7
+        ],
+        [
+          2,
+          4,
+          1,
+          3,
+          6,
+          7,
+          5,
+          8
+        ],
+        [
+          3,
+          1,
+          4,
+          2,
+          7,
+          6,
+          8,
+          5
+        ],
+        [
+          4,
+          2,
+          3,
+          1,
+          8,
+          5,
+          7,
+          6
+        ],
+        [
+          5,
+          7,
+          6,
+          8,
+          1,
+          4,
+          2,
+          3
+        ],
+        [
+          6,
+          8,
+          5,
+          7,
+          2,
+          3,
+          1,
+          4
+        ],
+        [
+          7,
+          5,
+          8,
+          6,
+          3,
+          2,
+          4,
+          1
+        ],
+        [
+          8,
+          6,
+          7,
+          5,
+          4,
+          1,
+          3,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        172,
+        202,
+        102,
+        0,
+        77,
+        43,
+        135,
+        225
+      ],
+      "hyperedge_ranks": [
+        724,
+        6488,
+        10215,
+        15979,
+        24340,
+        30104,
+        33831,
+        39595
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 724,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "VM->CM:order-2143:mask-4",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          3,
+          2,
+          4,
+          6,
+          7,
+          5,
+          8
+        ],
+        [
+          2,
+          4,
+          1,
+          3,
+          5,
+          8,
+          6,
+          7
+        ],
+        [
+          3,
+          1,
+          4,
+          2,
+          8,
+          5,
+          7,
+          6
+        ],
+        [
+          4,
+          2,
+          3,
+          1,
+          7,
+          6,
+          8,
+          5
+        ],
+        [
+          5,
+          7,
+          6,
+          8,
+          2,
+          3,
+          1,
+          4
+        ],
+        [
+          6,
+          8,
+          5,
+          7,
+          1,
+          4,
+          2,
+          3
+        ],
+        [
+          7,
+          5,
+          8,
+          6,
+          4,
+          1,
+          3,
+          2
+        ],
+        [
+          8,
+          6,
+          7,
+          5,
+          3,
+          2,
+          4,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        204,
+        170,
+        6,
+        96,
+        180,
+        210,
+        126,
+        24
+      ],
+      "hyperedge_ranks": [
+        728,
+        6484,
+        10219,
+        15975,
+        24344,
+        30100,
+        33835,
+        39591
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 728,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "VM->CM:order-2143:mask-8",
+      "first_label": "VM",
+      "second_label": "CM",
+      "second_color_order_one_based": [
+        2,
+        1,
+        4,
+        3
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          3,
+          2,
+          4,
+          6,
+          7,
+          5,
+          8
+        ],
+        [
+          2,
+          4,
+          1,
+          3,
+          5,
+          8,
+          6,
+          7
+        ],
+        [
+          3,
+          1,
+          4,
+          2,
+          8,
+          5,
+          7,
+          6
+        ],
+        [
+          4,
+          2,
+          3,
+          1,
+          7,
+          6,
+          8,
+          5
+        ],
+        [
+          5,
+          7,
+          6,
+          8,
+          2,
+          3,
+          1,
+          4
+        ],
+        [
+          6,
+          8,
+          5,
+          7,
+          1,
+          4,
+          2,
+          3
+        ],
+        [
+          7,
+          5,
+          8,
+          6,
+          4,
+          1,
+          3,
+          2
+        ],
+        [
+          8,
+          6,
+          7,
+          5,
+          3,
+          2,
+          4,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        204,
+        170,
+        6,
+        96,
+        75,
+        45,
+        129,
+        231
+      ],
+      "hyperedge_ranks": [
+        728,
+        6484,
+        10219,
+        15975,
+        24344,
+        30100,
+        33835,
+        39591
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 728,
+      "normalizer_orbit_id": 7,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": true
+    },
+    {
+      "id": "VM1->VM2:order-1234:mask-2",
+      "first_label": "VM1",
+      "second_label": "VM2",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          3,
+          2,
+          5,
+          6,
+          8,
+          7
+        ],
+        [
+          2,
+          3,
+          4,
+          1,
+          6,
+          5,
+          7,
+          8
+        ],
+        [
+          3,
+          2,
+          1,
+          4,
+          7,
+          8,
+          6,
+          5
+        ],
+        [
+          4,
+          1,
+          2,
+          3,
+          8,
+          7,
+          5,
+          6
+        ],
+        [
+          5,
+          8,
+          7,
+          6,
+          1,
+          2,
+          4,
+          3
+        ],
+        [
+          6,
+          7,
+          8,
+          5,
+          2,
+          1,
+          3,
+          4
+        ],
+        [
+          7,
+          6,
+          5,
+          8,
+          3,
+          4,
+          2,
+          1
+        ],
+        [
+          8,
+          5,
+          6,
+          7,
+          4,
+          3,
+          1,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        198,
+        147,
+        10,
+        160,
+        216,
+        141,
+        20,
+        190
+      ],
+      "hyperedge_ranks": [
+        1561,
+        5886,
+        10817,
+        15142,
+        25177,
+        29502,
+        34433,
+        38758
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1561,
+      "normalizer_orbit_id": 5,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM1->VM2:order-1234:mask-6",
+      "first_label": "VM1",
+      "second_label": "VM2",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          3,
+          2,
+          5,
+          6,
+          8,
+          7
+        ],
+        [
+          2,
+          3,
+          4,
+          1,
+          6,
+          5,
+          7,
+          8
+        ],
+        [
+          3,
+          2,
+          1,
+          4,
+          7,
+          8,
+          6,
+          5
+        ],
+        [
+          4,
+          1,
+          2,
+          3,
+          8,
+          7,
+          5,
+          6
+        ],
+        [
+          5,
+          8,
+          7,
+          6,
+          1,
+          2,
+          4,
+          3
+        ],
+        [
+          6,
+          7,
+          8,
+          5,
+          2,
+          1,
+          3,
+          4
+        ],
+        [
+          7,
+          6,
+          5,
+          8,
+          3,
+          4,
+          2,
+          1
+        ],
+        [
+          8,
+          5,
+          6,
+          7,
+          4,
+          3,
+          1,
+          2
+        ]
+      ],
+      "boolean_factors": [
+        198,
+        147,
+        10,
+        160,
+        39,
+        114,
+        235,
+        65
+      ],
+      "hyperedge_ranks": [
+        1561,
+        5886,
+        10817,
+        15142,
+        25177,
+        29502,
+        34433,
+        38758
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1561,
+      "normalizer_orbit_id": 5,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM1->VM3:order-1234:mask-2",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          3,
+          2,
+          5,
+          6,
+          7,
+          8
+        ],
+        [
+          2,
+          3,
+          4,
+          1,
+          6,
+          5,
+          8,
+          7
+        ],
+        [
+          3,
+          2,
+          1,
+          4,
+          7,
+          8,
+          5,
+          6
+        ],
+        [
+          4,
+          1,
+          2,
+          3,
+          8,
+          7,
+          6,
+          5
+        ],
+        [
+          5,
+          8,
+          7,
+          6,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          6,
+          7,
+          8,
+          5,
+          2,
+          1,
+          4,
+          3
+        ],
+        [
+          7,
+          6,
+          5,
+          8,
+          3,
+          4,
+          1,
+          2
+        ],
+        [
+          8,
+          5,
+          6,
+          7,
+          4,
+          3,
+          2,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        198,
+        83,
+        10,
+        96,
+        216,
+        77,
+        20,
+        126
+      ],
+      "hyperedge_ranks": [
+        1560,
+        5887,
+        10816,
+        15143,
+        25176,
+        29503,
+        34432,
+        38759
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1560,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM1->VM3:order-1234:mask-6",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          3,
+          2,
+          5,
+          6,
+          7,
+          8
+        ],
+        [
+          2,
+          3,
+          4,
+          1,
+          6,
+          5,
+          8,
+          7
+        ],
+        [
+          3,
+          2,
+          1,
+          4,
+          7,
+          8,
+          5,
+          6
+        ],
+        [
+          4,
+          1,
+          2,
+          3,
+          8,
+          7,
+          6,
+          5
+        ],
+        [
+          5,
+          8,
+          7,
+          6,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          6,
+          7,
+          8,
+          5,
+          2,
+          1,
+          4,
+          3
+        ],
+        [
+          7,
+          6,
+          5,
+          8,
+          3,
+          4,
+          1,
+          2
+        ],
+        [
+          8,
+          5,
+          6,
+          7,
+          4,
+          3,
+          2,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        198,
+        83,
+        10,
+        96,
+        39,
+        178,
+        235,
+        129
+      ],
+      "hyperedge_ranks": [
+        1560,
+        5887,
+        10816,
+        15143,
+        25176,
+        29503,
+        34432,
+        38759
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1560,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM1->VM3:order-3412:mask-4",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          3,
+          2,
+          7,
+          8,
+          5,
+          6
+        ],
+        [
+          2,
+          3,
+          4,
+          1,
+          8,
+          7,
+          6,
+          5
+        ],
+        [
+          3,
+          2,
+          1,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        [
+          4,
+          1,
+          2,
+          3,
+          6,
+          5,
+          8,
+          7
+        ],
+        [
+          5,
+          8,
+          7,
+          6,
+          3,
+          4,
+          1,
+          2
+        ],
+        [
+          6,
+          7,
+          8,
+          5,
+          4,
+          3,
+          2,
+          1
+        ],
+        [
+          7,
+          6,
+          5,
+          8,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          8,
+          5,
+          6,
+          7,
+          2,
+          1,
+          4,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        6,
+        99,
+        202,
+        80,
+        126,
+        27,
+        178,
+        40
+      ],
+      "hyperedge_ranks": [
+        1576,
+        5903,
+        10800,
+        15127,
+        25192,
+        29519,
+        34416,
+        38743
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1576,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM1->VM3:order-3412:mask-8",
+      "first_label": "VM1",
+      "second_label": "VM3",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          4,
+          3,
+          2,
+          7,
+          8,
+          5,
+          6
+        ],
+        [
+          2,
+          3,
+          4,
+          1,
+          8,
+          7,
+          6,
+          5
+        ],
+        [
+          3,
+          2,
+          1,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        [
+          4,
+          1,
+          2,
+          3,
+          6,
+          5,
+          8,
+          7
+        ],
+        [
+          5,
+          8,
+          7,
+          6,
+          3,
+          4,
+          1,
+          2
+        ],
+        [
+          6,
+          7,
+          8,
+          5,
+          4,
+          3,
+          2,
+          1
+        ],
+        [
+          7,
+          6,
+          5,
+          8,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          8,
+          5,
+          6,
+          7,
+          2,
+          1,
+          4,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        6,
+        99,
+        202,
+        80,
+        129,
+        228,
+        77,
+        215
+      ],
+      "hyperedge_ranks": [
+        1576,
+        5903,
+        10800,
+        15127,
+        25192,
+        29519,
+        34416,
+        38743
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1576,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        -1,
+        1
+      ],
+      "ordered_maxwell_signature": [
+        true,
+        false
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM2->VM1:order-1234:mask-2",
+      "first_label": "VM2",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          2,
+          4,
+          3,
+          5,
+          8,
+          7,
+          6
+        ],
+        [
+          2,
+          1,
+          3,
+          4,
+          6,
+          7,
+          8,
+          5
+        ],
+        [
+          3,
+          4,
+          2,
+          1,
+          7,
+          6,
+          5,
+          8
+        ],
+        [
+          4,
+          3,
+          1,
+          2,
+          8,
+          5,
+          6,
+          7
+        ],
+        [
+          5,
+          6,
+          8,
+          7,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          6,
+          5,
+          7,
+          8,
+          2,
+          3,
+          4,
+          1
+        ],
+        [
+          7,
+          8,
+          6,
+          5,
+          3,
+          2,
+          1,
+          4
+        ],
+        [
+          8,
+          7,
+          5,
+          6,
+          4,
+          1,
+          2,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        108,
+        57,
+        160,
+        10,
+        114,
+        39,
+        190,
+        20
+      ],
+      "hyperedge_ranks": [
+        125,
+        5049,
+        11654,
+        16578,
+        23741,
+        28665,
+        35270,
+        40194
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 125,
+      "normalizer_orbit_id": 5,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM2->VM1:order-1234:mask-6",
+      "first_label": "VM2",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          2,
+          4,
+          3,
+          5,
+          8,
+          7,
+          6
+        ],
+        [
+          2,
+          1,
+          3,
+          4,
+          6,
+          7,
+          8,
+          5
+        ],
+        [
+          3,
+          4,
+          2,
+          1,
+          7,
+          6,
+          5,
+          8
+        ],
+        [
+          4,
+          3,
+          1,
+          2,
+          8,
+          5,
+          6,
+          7
+        ],
+        [
+          5,
+          6,
+          8,
+          7,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          6,
+          5,
+          7,
+          8,
+          2,
+          3,
+          4,
+          1
+        ],
+        [
+          7,
+          8,
+          6,
+          5,
+          3,
+          2,
+          1,
+          4
+        ],
+        [
+          8,
+          7,
+          5,
+          6,
+          4,
+          1,
+          2,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        108,
+        57,
+        160,
+        10,
+        141,
+        216,
+        65,
+        235
+      ],
+      "hyperedge_ranks": [
+        125,
+        5049,
+        11654,
+        16578,
+        23741,
+        28665,
+        35270,
+        40194
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 125,
+      "normalizer_orbit_id": 5,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM3->VM1:order-1234:mask-2",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 2,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          7,
+          6
+        ],
+        [
+          2,
+          1,
+          4,
+          3,
+          6,
+          7,
+          8,
+          5
+        ],
+        [
+          3,
+          4,
+          1,
+          2,
+          7,
+          6,
+          5,
+          8
+        ],
+        [
+          4,
+          3,
+          2,
+          1,
+          8,
+          5,
+          6,
+          7
+        ],
+        [
+          5,
+          6,
+          7,
+          8,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          6,
+          5,
+          8,
+          7,
+          2,
+          3,
+          4,
+          1
+        ],
+        [
+          7,
+          8,
+          5,
+          6,
+          3,
+          2,
+          1,
+          4
+        ],
+        [
+          8,
+          7,
+          6,
+          5,
+          4,
+          1,
+          2,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        108,
+        53,
+        160,
+        6,
+        114,
+        43,
+        190,
+        24
+      ],
+      "hyperedge_ranks": [
+        5,
+        5169,
+        11534,
+        16698,
+        23621,
+        28785,
+        35150,
+        40314
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 5,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM3->VM1:order-1234:mask-6",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_position_one_based": 6,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          7,
+          6
+        ],
+        [
+          2,
+          1,
+          4,
+          3,
+          6,
+          7,
+          8,
+          5
+        ],
+        [
+          3,
+          4,
+          1,
+          2,
+          7,
+          6,
+          5,
+          8
+        ],
+        [
+          4,
+          3,
+          2,
+          1,
+          8,
+          5,
+          6,
+          7
+        ],
+        [
+          5,
+          6,
+          7,
+          8,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          6,
+          5,
+          8,
+          7,
+          2,
+          3,
+          4,
+          1
+        ],
+        [
+          7,
+          8,
+          5,
+          6,
+          3,
+          2,
+          1,
+          4
+        ],
+        [
+          8,
+          7,
+          6,
+          5,
+          4,
+          1,
+          2,
+          3
+        ]
+      ],
+      "boolean_factors": [
+        108,
+        53,
+        160,
+        6,
+        141,
+        212,
+        65,
+        231
+      ],
+      "hyperedge_ranks": [
+        5,
+        5169,
+        11534,
+        16698,
+        23621,
+        28785,
+        35150,
+        40314
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 5,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM3->VM1:order-3412:mask-4",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 4,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          2,
+          3,
+          4,
+          7,
+          6,
+          5,
+          8
+        ],
+        [
+          2,
+          1,
+          4,
+          3,
+          8,
+          5,
+          6,
+          7
+        ],
+        [
+          3,
+          4,
+          1,
+          2,
+          5,
+          8,
+          7,
+          6
+        ],
+        [
+          4,
+          3,
+          2,
+          1,
+          6,
+          7,
+          8,
+          5
+        ],
+        [
+          5,
+          6,
+          7,
+          8,
+          3,
+          2,
+          1,
+          4
+        ],
+        [
+          6,
+          5,
+          8,
+          7,
+          4,
+          1,
+          2,
+          3
+        ],
+        [
+          7,
+          8,
+          5,
+          6,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          8,
+          7,
+          6,
+          5,
+          2,
+          3,
+          4,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        172,
+        5,
+        96,
+        54,
+        212,
+        125,
+        24,
+        78
+      ],
+      "hyperedge_ranks": [
+        14,
+        5178,
+        11525,
+        16689,
+        23630,
+        28794,
+        35141,
+        40305
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 14,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": false
+    },
+    {
+      "id": "VM3->VM1:order-3412:mask-8",
+      "first_label": "VM3",
+      "second_label": "VM1",
+      "second_color_order_one_based": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "start_position_one_based": 8,
+      "exact_published_system_match": null,
+      "permutations": [
+        [
+          1,
+          2,
+          3,
+          4,
+          7,
+          6,
+          5,
+          8
+        ],
+        [
+          2,
+          1,
+          4,
+          3,
+          8,
+          5,
+          6,
+          7
+        ],
+        [
+          3,
+          4,
+          1,
+          2,
+          5,
+          8,
+          7,
+          6
+        ],
+        [
+          4,
+          3,
+          2,
+          1,
+          6,
+          7,
+          8,
+          5
+        ],
+        [
+          5,
+          6,
+          7,
+          8,
+          3,
+          2,
+          1,
+          4
+        ],
+        [
+          6,
+          5,
+          8,
+          7,
+          4,
+          1,
+          2,
+          3
+        ],
+        [
+          7,
+          8,
+          5,
+          6,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          8,
+          7,
+          6,
+          5,
+          2,
+          3,
+          4,
+          1
+        ]
+      ],
+      "boolean_factors": [
+        172,
+        5,
+        96,
+        54,
+        43,
+        130,
+        231,
+        177
+      ],
+      "hyperedge_ranks": [
+        14,
+        5178,
+        11525,
+        16689,
+        23630,
+        28794,
+        35141,
+        40305
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 14,
+      "normalizer_orbit_id": 1,
+      "ordered_chi0_signature": [
+        1,
+        -1
+      ],
+      "ordered_maxwell_signature": [
+        false,
+        true
+      ],
+      "pair_has_two_named_parent_labels": false
+    }
+  ],
+  "validation": {
+    "recursive_candidates_checked": 5760,
+    "closing_candidates": 24,
+    "candidates_mapped_uniquely": 24,
+    "distinct_unsigned_supports": 12,
+    "support_multiplicity_histogram": {
+      "2": 12
+    },
+    "every_selected_support_has_two_closing_signings": true,
+    "discovered_families_occupied": 1,
+    "family_histogram": {
+      "0": 24
+    },
+    "all_closers_occupy_standard_family_zero": true,
+    "normalizer_orbits_occupied": 4,
+    "candidate_normalizer_orbit_histogram": {
+      "1": 8,
+      "5": 4,
+      "7": 8,
+      "17": 4
+    },
+    "support_normalizer_orbit_histogram": {
+      "1": 4,
+      "5": 2,
+      "7": 4,
+      "17": 2
+    },
+    "named_parent_pair_orbit_ids": [
+      7,
+      17
+    ],
+    "unstated_parent_pair_orbit_ids": [
+      1,
+      5
+    ],
+    "normalizer_orbit_separates_source_parentage_categories": true,
+    "every_occupied_orbit_mixes_ordered_maxwell_signatures": true,
+    "every_closer_contains_exactly_one_maxwell_passing_block": true,
+    "each_maxwell_signature_mixes_parentage_categories": true,
+    "published_ct_projection_matches_control_ledger": true,
+    "published_cv_projection_matches_control_ledger": true,
+    "ct_and_cv_share_embedded_maxwell_signature": true,
+    "ct_and_cv_have_distinct_unsigned_supports": true,
+    "ct_normalizer_orbit_id": 17,
+    "cv_normalizer_orbit_id": 7,
+    "ct_and_cv_have_distinct_normalizer_orbits": true,
+    "passed": true
+  },
+  "findings": [
+    "All 24 closing recursive candidates occupy the standard discovered family zero.",
+    "They use 12 distinct unsigned supports, with exactly two closing recursive signings per support.",
+    "The selected supports occupy a proper subset of the 20 normalizer-conjugacy orbits of family zero.",
+    "Within this finite recursion library, normalizer orbits 7 and 17 contain the named-parent source pairs while orbits 1 and 5 contain the unstated-parent source pairs.",
+    "Every occupied normalizer orbit contains both ordered embedded-Maxwell signatures.",
+    "Every closer contains exactly one four-color block passing the Maxwell gate, but this is exactly the chi0=-1 block.",
+    "Both ordered embedded-Maxwell signatures mix named-parent and unstated-parent source pairs.",
+    "CT and CV have distinct unsigned supports but the same embedded-Maxwell signature.",
+    "The bridge adds a consistency check but does not select a higher-dimensional parent or an R8 family."
+  ],
+  "boundary": "The Maxwell calculation applies to the two four-color blocks retained by colors one through four. The full eight-color representation is irreducible. This bridge does not promote a block-level Maxwell result to an N=8 enhancement theorem."
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": "adynkra-11d-source-fixed-curvature-scaffold-v1",
+  "source_locators": [
+    "arXiv:2007.05097 Eqs. (2.2)-(2.3), PDF p. 7: P_320 and K_tr",
+    "hep-th/0101037 Eqs. (24)-(29), PDF pp. 7-8: linearized frames and anholonomy",
+    "hep-th/0101037 Eqs. (39)-(40), PDF p. 11: X_[2], X_[5], and conventional hook constraints",
+    "hep-th/0101037 Eq. (44), PDF p. 14: W, X_[2], X_[5], and J definitions"
+  ],
+  "source_hashes": [
+    "3d40a1b32fa4491dee56b3e99802172d2c5039b2de198b987ce121a1bbb15cc3",
+    "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
+    "197604bc6b5c9e0dfb12044d981aae467920f46554ba9371f1eb9b6389d00a73"
+  ],
+  "p320_certificate": {
+    "ambient_dimension": 352,
+    "projector_rank": 320,
+    "gamma_trace_injection_rank": 32,
+    "clifford_residual_entries": 0,
+    "projector_idempotence_residual_entries": 0,
+    "projected_gamma_trace_residual_entries": 0,
+    "projector_times_trace_injection_residual_entries": 0,
+    "trace_left_inverse_residual_entries": 0,
+    "kernel_equals_trace_image": true,
+    "passed": true
+  },
+  "x2_certificate": {
+    "form_degree": 2,
+    "ambient_dimension": 605,
+    "trace_dimension": 11,
+    "exterior_dimension": 165,
+    "hook_dimension": 429,
+    "dynkin_label": "11000",
+    "idempotence_residual_entries": 0,
+    "trace_residual_entries": 0,
+    "total_antisymmetry_residual_entries": 0,
+    "operator_trace": "429",
+    "passed": true
+  },
+  "x5_certificate": {
+    "form_degree": 5,
+    "ambient_dimension": 5082,
+    "trace_dimension": 330,
+    "exterior_dimension": 462,
+    "hook_dimension": 4290,
+    "dynkin_label": "10002",
+    "idempotence_residual_entries": 0,
+    "trace_residual_entries": 0,
+    "total_antisymmetry_residual_entries": 0,
+    "operator_trace": "4290",
+    "passed": true
+  },
+  "transcribed_source_formulas": [
+    {
+      "rendered_equation": "(24)",
+      "source_tex_label": "eq:05",
+      "pdf_page": 7,
+      "formula_ascii": "E_alpha = D_alpha + (1/2)(Delta_alpha^gamma + Psi delta_alpha^gamma) D_gamma + H_alpha^c partial_c"
+    },
+    {
+      "rendered_equation": "(25)",
+      "source_tex_label": "eq:06",
+      "pdf_page": 7,
+      "formula_ascii": "E_a = partial_a + (i/32)[D_beta(gamma_a Delta)^(beta gamma) + (D_beta Psi)(gamma_a)^(beta gamma)]D_gamma + [(i/16)(gamma_a)^(alpha beta)D_alpha H_beta^c + delta_a^c Psi - Psi_a^c]partial_c"
+    },
+    {
+      "rendered_equation": "(26)",
+      "source_tex_label": "eq:13",
+      "pdf_page": 8,
+      "formula_ascii": "C_(alpha beta)^epsilon = (1/64)[(gamma^[2])_(alpha beta)(gamma_[2])^(gamma delta) - (1/60)(gamma^[5])_(alpha beta)(gamma_[5])^(gamma delta)][D_gamma Delta_delta^epsilon + delta_delta^epsilon D_gamma Psi]"
+    },
+    {
+      "rendered_equation": "(27)",
+      "source_tex_label": "eq:13A",
+      "pdf_page": 8,
+      "formula_ascii": "C_(alpha beta)^c = i(gamma^c)_(alpha beta) - (1/32)(gamma^de)_(alpha beta)[(gamma_de)^(gamma delta)D_gamma H_delta^c + 32 delta_d^c Psi_e - 16 Psi^c_de] + (i/1920)(gamma^[5])_(alpha beta)[i(gamma_[5])^(gamma delta)D_gamma H_delta^c + 40 delta_d1^c Psi_d2...d5 - (2/15)epsilon^c_d1...d5^[5] Psi_[5]]"
+    },
+    {
+      "rendered_equation": "(28)",
+      "source_tex_label": "eq:14",
+      "pdf_page": 8,
+      "formula_ascii": "C_alpha,b^gamma = (i/32)D_alpha D_delta(gamma_b Delta)^(delta gamma) - (1/2)partial_b Delta_alpha^gamma - (1/2)(partial_b Psi)delta_alpha^gamma + (i/32)(D_alpha D_delta Psi)(gamma_b)^(delta gamma); C_alpha,b^c = (i/16)(gamma_b)^(beta gamma)D_alpha D_beta H_gamma^c - partial_b H_alpha^c + (1/32)D_beta(gamma_b Delta gamma^c)^beta_alpha - D_alpha Psi_b^c + [(D_alpha Psi)delta_b^c - (1/32)(gamma^c gamma_b)_alpha^gamma D_gamma Psi]"
+    },
+    {
+      "rendered_equation": "(29)",
+      "source_tex_label": "eq:15",
+      "pdf_page": 8,
+      "formula_ascii": "C_ab^gamma = (i/32)[-D_beta(gamma_[a partial_b] Delta)^(beta gamma) + (D_beta partial_[a Psi)(gamma_b])^(beta gamma)]; C_ab^c = -(i/16)(gamma_[a)^(alpha beta)partial_b]D_alpha H_beta^c - partial_[a Psi_b]^c - delta_[a^c partial_b]Psi"
+    },
+    {
+      "rendered_equation": "(39)",
+      "source_tex_label": "X's",
+      "pdf_page": 11,
+      "formula_ascii": "X_ab^c = (1/16)[(gamma_ab)^(gamma delta)D_gamma H_delta^c + 16 delta_[a^c Psi_b] - 16 Psi_ab^c]; X_a1...a5^c = (1/16)[i(gamma_a1...a5)^(gamma delta)D_gamma H_delta^c + (1/3)delta_[a1^c Psi_a2...a5] - (2/15)epsilon^c_a1...a5^[5]Psi_[5]]"
+    },
+    {
+      "rendered_equation": "(40)",
+      "source_tex_label": "eq:043A",
+      "pdf_page": 11,
+      "formula_ascii": "X_ab^b = 0; X_[abc] = 0; X_a1...a4a5^a5 = 0; X_[a1...a5b] = 0"
+    },
+    {
+      "rendered_equation": "(44), linear part",
+      "source_tex_label": "eq:01Z",
+      "pdf_page": 14,
+      "formula_ascii": "W_abcd = (1/32)[i(gamma^e gamma_abcd)_gamma^alpha T_alpha,e^gamma - (1/3)(gamma_abcd)^(alpha beta)nabla_alpha T_beta,e^e]; X_ab^c = (1/32)(gamma_ab)^(alpha beta)T_alpha,beta^c; X_a1...a5^c = (i/32)(gamma_a1...a5)^(alpha beta)T_alpha,beta^c; J_alpha = (4/33)T_alpha,b^b"
+    }
+  ],
+  "equations_24_to_29_transcribed": true,
+  "equations_24_to_29_transcribed_as_operator": false,
+  "equations_39_to_40_hook_elimination_implemented": false,
+  "equations_39_to_40_hook_quotient_projection_implemented": true,
+  "equation_44_coefficients_implemented": false,
+  "equation_44_linear_w_j_coefficients_implemented": true,
+  "p1_p3_compensators_eliminated": false,
+  "p4_p5_compensators_eliminated": false,
+  "compensator_sectors_annihilated_by_hook_projection": true,
+  "p2_lorentz_compensator_treated_as_physical": false,
+  "typed_target_stream_join_available": false,
+  "typed_precontracted_target_stream_sink_available": true,
+  "target_weight_to_cartesian_clifford_join_implemented": false,
+  "full_h_hat_to_torsion_map_implemented": false,
+  "full_f_a_g_p_test_ready": false,
+  "passed": true,
+  "boundary": "The exact algebraic P_320 and K_tr certificates, X_[2] and X_[5] hook quotient projectors, and the linearized W and J coefficients are implemented. The hook projection annihilates the compensator representation sectors but does not explicitly solve the p=1,3,4,5 compensator fields. Eqs. (24)-(29) are transcribed but not implemented as a differential operator. The spin-connection solve, covariant-spinor/charge-conjugation alignment, B5-weight to Lorentz Cartesian join, and momentum-aware superspace derivative join remain open. This is not a complete F: H_hat -> curvature and does not establish F A G_p = 0."
+}

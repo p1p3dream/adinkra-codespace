@@ -1,0 +1,41 @@
+{
+  "schema_version": "adynkra-11d-candidate-four-form-exact-kernel-audit-v1",
+  "generated_at": "2026-08-24T19:00:00-06:00",
+  "input_certificate_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v4_col3_20260824.json",
+  "input_certificate_sha256": "f215e25920f5c0d21f7cc7a8d996efd89857fb397025fc523af4e81fda853c5a",
+  "input_operator_sha256": "efd3a848b64f073a2ab0a9f419bb9515322078dbae99a676576e22cd1b6a01d3",
+  "sector_kernel_certificate_path": "results/adynkra_11d_col3_sector11_candidate_f4_kernel_p0_20260824.json",
+  "sector_kernel_certificate_sha256": "e87fc14a57b928b2f401c5332e475dfd7eba5b6f7f653baf5e9ef470675be33f",
+  "sector_tag": 11,
+  "sector_name": "DirectCandidateFourForm",
+  "field": "Q(i)",
+  "source_columns": 321,
+  "h_hat_columns": 320,
+  "scale_column_ordinal": 320,
+  "scale_source_coordinate": "scale",
+  "scale_exact_sector_terms": 0,
+  "h_hat_exact_sector_terms_per_column": {
+    "minimum": 648,
+    "maximum": 648
+  },
+  "exact_sector_terms": 207360,
+  "modular_prime": 1073741783,
+  "modular_rank_full_matrix": 320,
+  "modular_rank_h_hat_submatrix": 320,
+  "denominators_invertible_mod_prime": true,
+  "exact_rank_over_q_i": 320,
+  "exact_nullity_over_q_i": 1,
+  "exact_kernel_basis": [
+    {
+      "coordinate_ordinal": 320,
+      "source_coordinate": "scale",
+      "coefficient": "1"
+    }
+  ],
+  "proof": [
+    "The persisted scale column has exactly zero tag-11 entries, so e_320 is an exact kernel vector and rank over Q(i) is at most 320.",
+    "The complete persisted tag-11 matrix has rank 320 modulo 1073741783, with all coefficient denominators invertible; because the scale column is zero, the 320 H-hat columns have modular rank 320.",
+    "Modular rank is a lower bound on characteristic-zero rank, so rank over Q(i) is at least 320. Together the bounds give exact rank 320 and exact kernel span{e_320}."
+  ],
+  "proof_boundary": "This certifies only the Eq. (40) DirectCandidateFourForm diagnostic sector. It does not identify the candidate with the physical eleven-dimensional three-form, establish the physical target K quotient, or complete physical F."
+}

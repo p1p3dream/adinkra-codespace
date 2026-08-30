@@ -1,0 +1,36 @@
+{
+  "schema_version": "adynkra-11d-second-momentum-20001-maps-v1",
+  "exterior_degree": 12,
+  "intermediate_dynkin_label": "20001",
+  "expected_source_irreps": 4,
+  "exact_abstract_intertwiners": 4,
+  "expected_source_copies": 9,
+  "exact_embedded_component_maps": 9,
+  "exact_embedded_maps_by_source": {
+    "10002": 2,
+    "20002": 2,
+    "20010": 3,
+    "20100": 2
+  },
+  "certified_intermediate_target_rank": 1760,
+  "every_exact_raising_residual_is_zero": true,
+  "every_source_copy_map_hash_is_distinct": true,
+  "checkpointed_runtime_milliseconds": 75464,
+  "maximum_observed_process_rss_bytes": 2115190784,
+  "maximum_csr_storage_lower_bound_bytes": 1448671600,
+  "mutation_control": {
+    "source_dynkin_label": "10002",
+    "source_copy": 1,
+    "mutated_primitive_coefficient": 0,
+    "exact_raising_residual_detected_mutation": true,
+    "passed": true
+  },
+  "remaining_jobs": [],
+  "source_to_20001_component_maps_complete": true,
+  "momentum_recoupling_20001_to_10001_complete": false,
+  "physical_target_gauge_quotient_complete": false,
+  "full_physical_f_complete": false,
+  "full_f_a_g_p_zero_proved": false,
+  "passed": true,
+  "boundary": "This certifies all nine exact level-12 source-times-spinor component maps into the (20001) intermediate channel when passed. The momentum recoupling from (20001) into Sym^2(V) tensor (10001), the physical target gauge quotient, complete F, and full F A G_p = 0 remain unproved."
+}

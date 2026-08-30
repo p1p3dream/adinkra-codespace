@@ -1,0 +1,711 @@
+warning: constant `SCHEMA_VERSION` is never used
+  --> src/permutahedron_s8_signed_recursion.rs:20:7
+   |
+20 | const SCHEMA_VERSION: &str = "permutahedron-s8-signed-recursion-v1";
+   |       ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `S4_RECURSION_SIGNED_WORDS` is never used
+  --> src/permutahedron_s8_signed_recursion.rs:39:11
+   |
+39 | pub const S4_RECURSION_SIGNED_WORDS: [[[i8; 4]; 4]; 6] = [
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `SourceRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:49:12
+   |
+49 | pub struct SourceRecord {
+   |            ^^^^^^^^^^^^
+
+warning: struct `ClosureRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:57:12
+   |
+57 | pub struct ClosureRecord {
+   |            ^^^^^^^^^^^^^
+
+warning: struct `HymnRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:66:12
+   |
+66 | pub struct HymnRecord {
+   |            ^^^^^^^^^^
+
+warning: struct `FlipCandidateRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:75:12
+   |
+75 | pub struct FlipCandidateRecord {
+   |            ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `OrderedPairRecord` is never constructed
+  --> src/permutahedron_s8_signed_recursion.rs:91:12
+   |
+91 | pub struct OrderedPairRecord {
+   |            ^^^^^^^^^^^^^^^^^
+
+warning: struct `ClosingCandidateKey` is never constructed
+   --> src/permutahedron_s8_signed_recursion.rs:106:12
+    |
+106 | pub struct ClosingCandidateKey {
+    |            ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `ValidationRecord` is never constructed
+   --> src/permutahedron_s8_signed_recursion.rs:112:12
+    |
+112 | pub struct ValidationRecord {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: struct `SignedRecursionArtifact` is never constructed
+   --> src/permutahedron_s8_signed_recursion.rs:133:12
+    |
+133 | pub struct SignedRecursionArtifact {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `s4_rep` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:153:4
+    |
+153 | fn s4_rep(index: usize) -> AdinkraRep {
+    |    ^^^^^^
+
+warning: function `source_signed_words_match_fixtures` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:165:4
+    |
+165 | fn source_signed_words_match_fixtures() -> bool {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `recursive_permutations` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:187:4
+    |
+187 | fn recursive_permutations(first: usize, second: usize) -> [[u8; 8]; 8] {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `recursive_boolean_factors` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:220:4
+    |
+220 | fn recursive_boolean_factors(first: usize, second: usize, mask: u8) -> [u8; 8] {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `multiply` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:255:4
+    |
+255 | fn multiply(left: &[Vec<i16>], right: &[Vec<i16>]) -> Vec<Vec<i16>> {
+    |    ^^^^^^^^
+
+warning: function `dense_l` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:271:4
+    |
+271 | fn dense_l(rep: &AdinkraRep, color: usize) -> Vec<Vec<i16>> {
+    |    ^^^^^^^
+
+warning: function `transpose` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:280:4
+    |
+280 | fn transpose(matrix: &[Vec<i16>]) -> Vec<Vec<i16>> {
+    |    ^^^^^^^^^
+
+warning: function `closure_record` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:287:15
+    |
+287 | pub(crate) fn closure_record(rep: &AdinkraRep) -> ClosureRecord {
+    |               ^^^^^^^^^^^^^^
+
+warning: function `hymn_record` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:328:15
+    |
+328 | pub(crate) fn hymn_record(rep: &AdinkraRep) -> HymnRecord {
+    |               ^^^^^^^^^^^
+
+warning: function `matrix_checksum` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:382:15
+    |
+382 | pub(crate) fn matrix_checksum(rep: &AdinkraRep) -> String {
+    |               ^^^^^^^^^^^^^^^
+
+warning: function `build` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:395:8
+    |
+395 | pub fn build() -> SignedRecursionArtifact {
+    |        ^^^^^
+
+warning: function `write_artifacts` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:596:8
+    |
+596 | pub fn write_artifacts(data_path: &Path, validation_path: &Path) -> ValidationRecord {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `labels_from_slices` is never used
+  --> src/permutahedron_spectral.rs:22:4
+   |
+22 | fn labels_from_slices(n_vertices: usize, slices: &[Vec<u32>]) -> Vec<usize> {
+   |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `quotient_adjacency_matrix` is never used
+  --> src/permutahedron_spectral.rs:43:8
+   |
+43 | pub fn quotient_adjacency_matrix(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `CosetInvarianceDiagnostic` is never constructed
+  --> src/permutahedron_spectral.rs:64:12
+   |
+64 | pub struct CosetInvarianceDiagnostic {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `InvarianceReport` is never constructed
+  --> src/permutahedron_spectral.rs:74:12
+   |
+74 | pub struct InvarianceReport {
+   |            ^^^^^^^^^^^^^^^^
+
+warning: function `coset_subspace_invariance` is never used
+  --> src/permutahedron_spectral.rs:89:8
+   |
+89 | pub fn coset_subspace_invariance(
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `RegularityReport` is never constructed
+   --> src/permutahedron_spectral.rs:169:12
+    |
+169 | pub struct RegularityReport {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: function `quotient_regularity` is never used
+   --> src/permutahedron_spectral.rs:186:8
+    |
+186 | pub fn quotient_regularity(quotient: &[Vec<u32>]) -> RegularityReport {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: struct `BaselineReport` is never constructed
+   --> src/permutahedron_spectral.rs:214:12
+    |
+214 | pub struct BaselineReport {
+    |            ^^^^^^^^^^^^^^
+
+warning: struct `Lcg` is never constructed
+   --> src/permutahedron_spectral.rs:233:8
+    |
+233 | struct Lcg {
+    |        ^^^
+
+warning: associated items `new`, `next`, and `shuffle` are never used
+   --> src/permutahedron_spectral.rs:238:8
+    |
+237 | impl Lcg {
+    | -------- associated items in this implementation
+238 |     fn new(seed: u64) -> Self {
+    |        ^^^
+...
+242 |     fn next(&mut self) -> u64 {
+    |        ^^^^
+...
+252 |     fn shuffle<T>(&mut self, slice: &mut [T]) {
+    |        ^^^^^^^
+
+warning: function `random_partition_baseline` is never used
+   --> src/permutahedron_spectral.rs:262:8
+    |
+262 | pub fn random_partition_baseline(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `S4ValidationReport` is never constructed
+   --> src/permutahedron_spectral.rs:328:12
+    |
+328 | pub struct S4ValidationReport {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: function `run_s4_validation` is never used
+   --> src/permutahedron_spectral.rs:342:8
+    |
+342 | pub fn run_s4_validation() -> S4ValidationReport {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: struct `S8ProbeReport` is never constructed
+   --> src/permutahedron_spectral.rs:407:12
+    |
+407 | pub struct S8ProbeReport {
+    |            ^^^^^^^^^^^^^
+
+warning: struct `SampledInvarianceReport` is never constructed
+   --> src/permutahedron_spectral.rs:423:12
+    |
+423 | pub struct SampledInvarianceReport {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `run_s8_probe` is never used
+   --> src/permutahedron_spectral.rs:439:8
+    |
+439 | pub fn run_s8_probe() -> S8ProbeReport {
+    |        ^^^^^^^^^^^^
+
+warning: function `sampled_coset_invariance` is never used
+   --> src/permutahedron_spectral.rs:493:4
+    |
+493 | fn sampled_coset_invariance(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `QuotientEigenFullReport` is never constructed
+  --> src/quotient_graph_analysis.rs:81:12
+   |
+81 | pub struct QuotientEigenFullReport {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `SpectralComparisonReport` is never constructed
+  --> src/quotient_graph_analysis.rs:92:12
+   |
+92 | pub struct SpectralComparisonReport {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LanczosFullResult` is never constructed
+   --> src/quotient_graph_analysis.rs:324:8
+    |
+324 | struct LanczosFullResult {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `adjacency_lanczos_full` is never used
+   --> src/quotient_graph_analysis.rs:338:4
+    |
+338 | fn adjacency_lanczos_full(matrix: &[Vec<u32>], m: usize) -> LanczosFullResult {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `quotient_eigen_full` is never used
+   --> src/quotient_graph_analysis.rs:601:8
+    |
+601 | pub fn quotient_eigen_full(quotient: &[Vec<u32>], max_vectors: usize) -> QuotientEigenFullReport {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `quotient_lift_embedding` is never used
+   --> src/quotient_graph_analysis.rs:664:8
+    |
+664 | pub fn quotient_lift_embedding(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `spectral_comparison` is never used
+   --> src/quotient_graph_analysis.rs:874:8
+    |
+874 | pub fn spectral_comparison(
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: `adinkra-codespace` (bin "adinkra-codespace") generated 46 warnings
+    Finished `release` profile [optimized] target(s) in 0.03s
+     Running `target/release/adinkra-codespace perm-spectral-probe s8 --baselines 1`
+[S8] Phase 1: building permutahedron graph ...
+[S8] graph: 40320 vertices, 141120 edges, degree 7 (6ms)
+=== S8 Permutahedron Spectral Probe ===
+
+Graph: |V|=40320, |E|=141120, degree=7
+[S8] Phase 2: computing R8 right-coset partition ...
+[S8] 5040 cosets of size 8 (1ms)
+R8 cosets: 5040 cosets x 8 elements = 40320 (complete=true)
+
+[S8] Phase 3: building 5040x5040 quotient adjacency matrix ...
+[S8] quotient matrix built (7ms)
+Quotient adjacency matrix Q  (5040x5040):
+  nonzeros:       35280
+  total weight:   282240
+  diagonal weight:0
+  symmetric:      true
+  row-sum range:  [56, 56]
+
+Regularity: PASS (row-sum range [56, 56], expected degree=56)
+
+[S8] Phase 4: testing coset-indicator subspace A-invariance ...
+[S8] invariance test complete (131ms)
+Subspace A-invariance: PASS (violations=0)
+
+[S8] Phase 5: Lanczos with m=200 ...
+[S8] Lanczos complete: 200 Ritz values (717ms)
+--- Lanczos eigendecomposition ---
+Distinct eigenspaces (185, from 200 Ritz values):
+  lambda =  -0.0000  x1
+  lambda =   0.1522  x3
+  lambda =   0.3213  x2
+  lambda =   0.5126  x2
+  lambda =   0.5858  x2
+  lambda =   0.7134  x2
+  lambda =   0.7365  x2
+  lambda =   0.8531  x1
+  lambda =   0.8650  x1
+  lambda =   0.8990  x1
+  lambda =   1.0868  x1
+  lambda =   1.1281  x2
+  lambda =   1.1591  x1
+  lambda =   1.2346  x1
+  lambda =   1.3049  x1
+  lambda =   1.3869  x1
+  lambda =   1.4030  x1
+  lambda =   1.4213  x1
+  lambda =   1.4996  x1
+  lambda =   1.5474  x1
+  ... (165 more)
+
+[S8] Phase 5b: coset spectral scan (20 cosets) ...
+[S8] coset scan complete (14.46s)
+Coset energy by eigenspace (top 20):
+   0. lambda=  7.2189  energy=  3.0985  mult=20
+   1. lambda=  6.7810  energy=  3.0937  mult=20
+   2. lambda=  8.5962  energy=  2.5307  mult=20
+   3. lambda=  7.7717  energy=  2.3552  mult=17
+   4. lambda=  6.2282  energy=  2.3530  mult=17
+   5. lambda=  8.0610  energy=  2.1525  mult=20
+   6. lambda=  5.9389  energy=  2.1520  mult=20
+   7. lambda=  6.9553  energy=  2.0616  mult=20
+   8. lambda=  7.0445  energy=  2.0613  mult=20
+   9. lambda=  8.4208  energy=  2.0562  mult=20
+  10. lambda=  5.5791  energy=  2.0555  mult=20
+  11. lambda=  5.4020  energy=  2.0351  mult=17
+  12. lambda=  9.3818  energy=  1.9415  mult=17
+  13. lambda=  4.6181  energy=  1.9410  mult=17
+  14. lambda=  7.8769  energy=  1.9188  mult=17
+  15. lambda= 10.7647  energy=  1.8416  mult=23
+  16. lambda=  6.4873  energy=  1.8414  mult=17
+  17. lambda=  3.2353  energy=  1.8413  mult=23
+  18. lambda=  7.5887  energy=  1.8407  mult=17
+  19. lambda=  7.5125  energy=  1.8388  mult=17
+
+[S8] Phase 6: character-theoretic prediction ...
+[S8] characters complete (0ms)
+--- S8 character-theoretic prediction ---
+       partition   dim   chi_tr chi_coset    m   l_cent
+             [8]     1        1        1    1   0.0000
+          [6, 2]    20       10        4    6   3.5000
+       [5, 2, 1]    64       16        0    8   5.2500
+    [5, 1, 1, 1]    35        5        3    7   6.0000
+          [4, 4]    14        4        6    7   5.0000
+       [4, 3, 1]    70       10       -2    7   6.0000
+       [4, 2, 2]    56        4        8   14   6.5000
+    [4, 2, 1, 1]    90        0       -6    6   7.0000
+ [4, 1, 1, 1, 1]    35       -5        3    7   8.0000
+    [3, 3, 1, 1]    56       -4        8   14   7.5000
+    [3, 2, 2, 1]    70      -10       -2    7   8.0000
+ [3, 2, 1, 1, 1]    64      -16        0    8   8.7500
+    [2, 2, 2, 2]    14       -4        6    7   9.0000
+[2, 2, 1, 1, 1, 1]    20      -10        4    6  10.5000
+[1, 1, 1, 1, 1, 1, 1, 1]     1       -1        1    1  14.0000
+Total m*d = 5040 (expect 5040)
+Irreps with m>0: 15/22
+
+[S8] Phase 7: quotient graph structure analysis ...
+=== Quotient Graph Analysis: S8 ===
+Quotient size: 5040x5040
+
+--- Eigendecomposition (2480 ms) ---
+  eigenvalues found:  300
+  distinct (tol=0.001): 250
+    lambda =   -56.0000  x1
+    lambda =   -53.4296  x5
+    lambda =   -50.2935  x3
+    lambda =   -50.1202  x4
+    lambda =   -48.8082  x4
+    lambda =   -47.3055  x2
+    lambda =   -46.9811  x3
+    lambda =   -45.5607  x2
+    lambda =   -44.7760  x2
+    lambda =   -44.7409  x1
+    lambda =   -44.6292  x2
+    lambda =   -44.0030  x2
+    lambda =   -43.6206  x1
+    lambda =   -43.4453  x1
+    lambda =   -42.1242  x2
+    lambda =   -41.8913  x2
+    lambda =   -41.6616  x2
+    lambda =   -41.0321  x2
+    lambda =   -40.5552  x2
+    lambda =   -40.4586  x1
+    lambda =   -40.2187  x2
+    lambda =   -39.5733  x1
+    lambda =   -39.4751  x1
+    lambda =   -39.2903  x1
+    lambda =   -39.0451  x1
+    lambda =   -38.3486  x1
+    lambda =   -37.7311  x1
+    lambda =   -37.6932  x1
+    lambda =   -37.6326  x1
+    lambda =   -37.2787  x1
+    lambda =   -37.2198  x1
+    lambda =   -36.6977  x1
+    lambda =   -36.6598  x1
+    lambda =   -36.3520  x1
+    lambda =   -36.2075  x1
+    lambda =   -35.4192  x1
+    lambda =   -35.0632  x1
+    lambda =   -34.9022  x1
+    lambda =   -33.6851  x1
+    lambda =   -33.6693  x1
+    lambda =   -33.5655  x1
+    lambda =   -32.9788  x1
+    lambda =   -32.6658  x1
+    lambda =   -32.0677  x1
+    lambda =   -31.9014  x1
+    lambda =   -31.2548  x1
+    lambda =   -31.0579  x1
+    lambda =   -30.9900  x1
+    lambda =   -30.1623  x1
+    lambda =   -30.0518  x1
+    lambda =   -29.1208  x1
+    lambda =   -28.9050  x1
+    lambda =   -28.2711  x1
+    lambda =   -27.9728  x1
+    lambda =   -27.7679  x1
+    lambda =   -27.7514  x1
+    lambda =   -27.5947  x1
+    lambda =   -27.0475  x1
+    lambda =   -26.5002  x1
+    lambda =   -25.9989  x1
+    lambda =   -25.8454  x1
+    lambda =   -25.7265  x1
+    lambda =   -25.6869  x1
+    lambda =   -24.8290  x1
+    lambda =   -24.7444  x1
+    lambda =   -24.4975  x1
+    lambda =   -24.2187  x1
+    lambda =   -23.1851  x1
+    lambda =   -22.8225  x1
+    lambda =   -21.9055  x1
+    lambda =   -21.7352  x1
+    lambda =   -21.5117  x1
+    lambda =   -21.0706  x1
+    lambda =   -20.9561  x1
+    lambda =   -20.7801  x1
+    lambda =   -20.3014  x1
+    lambda =   -20.1251  x1
+    lambda =   -19.3143  x1
+    lambda =   -18.9401  x1
+    lambda =   -18.8154  x1
+    lambda =   -18.4089  x1
+    lambda =   -18.2053  x1
+    lambda =   -17.8701  x1
+    lambda =   -17.6007  x1
+    lambda =   -17.0006  x1
+    lambda =   -16.6897  x1
+    lambda =   -16.3435  x1
+    lambda =   -16.0835  x1
+    lambda =   -15.7408  x1
+    lambda =   -15.2876  x1
+    lambda =   -15.1040  x1
+    lambda =   -13.9669  x1
+    lambda =   -13.7929  x1
+    lambda =   -13.6496  x1
+    lambda =   -12.8458  x1
+    lambda =   -12.6492  x1
+    lambda =   -12.2790  x1
+    lambda =   -11.9861  x1
+    lambda =   -11.4120  x1
+    lambda =   -11.0514  x1
+    lambda =   -10.6064  x1
+    lambda =   -10.0678  x1
+    lambda =    -9.8768  x1
+    lambda =    -9.3768  x1
+    lambda =    -8.7362  x1
+    lambda =    -8.4040  x1
+    lambda =    -7.9960  x1
+    lambda =    -7.6253  x1
+    lambda =    -7.2878  x1
+    lambda =    -6.9375  x1
+    lambda =    -6.1201  x1
+    lambda =    -5.7262  x1
+    lambda =    -5.3689  x1
+    lambda =    -5.0293  x1
+    lambda =    -4.6274  x1
+    lambda =    -4.2308  x1
+    lambda =    -3.7101  x1
+    lambda =    -3.3280  x1
+    lambda =    -2.9262  x1
+    lambda =    -2.4655  x1
+    lambda =    -2.0225  x1
+    lambda =    -1.6925  x1
+    lambda =    -1.3114  x1
+    lambda =    -0.6472  x1
+    lambda =    -0.3262  x1
+    lambda =     0.3262  x1
+    lambda =     0.6472  x1
+    lambda =     1.3114  x1
+    lambda =     1.6925  x1
+    lambda =     2.0225  x1
+    lambda =     2.4655  x1
+    lambda =     2.9262  x1
+    lambda =     3.3280  x1
+    lambda =     3.7101  x1
+    lambda =     4.2308  x1
+    lambda =     4.6274  x1
+    lambda =     5.0293  x1
+    lambda =     5.3689  x1
+    lambda =     5.7262  x1
+    lambda =     6.1201  x1
+    lambda =     6.9375  x1
+    lambda =     7.2878  x1
+    lambda =     7.6253  x1
+    lambda =     7.9960  x1
+    lambda =     8.4040  x1
+    lambda =     8.7362  x1
+    lambda =     9.3768  x1
+    lambda =     9.8768  x1
+    lambda =    10.0678  x1
+    lambda =    10.6064  x1
+    lambda =    11.0514  x1
+    lambda =    11.4120  x1
+    lambda =    11.9861  x1
+    lambda =    12.2790  x1
+    lambda =    12.6492  x1
+    lambda =    12.8458  x1
+    lambda =    13.6496  x1
+    lambda =    13.7929  x1
+    lambda =    13.9669  x1
+    lambda =    15.1040  x1
+    lambda =    15.2876  x1
+    lambda =    15.7408  x1
+    lambda =    16.0835  x1
+    lambda =    16.3435  x1
+    lambda =    16.6897  x1
+    lambda =    17.0006  x1
+    lambda =    17.6007  x1
+    lambda =    17.8701  x1
+    lambda =    18.2053  x1
+    lambda =    18.4089  x1
+    lambda =    18.8154  x1
+    lambda =    18.9401  x1
+    lambda =    19.3143  x1
+    lambda =    20.1251  x1
+    lambda =    20.3014  x1
+    lambda =    20.7801  x1
+    lambda =    20.9561  x1
+    lambda =    21.0706  x1
+    lambda =    21.5117  x1
+    lambda =    21.7352  x1
+    lambda =    21.9055  x1
+    lambda =    22.8225  x1
+    lambda =    23.1851  x1
+    lambda =    24.2187  x1
+    lambda =    24.4975  x1
+    lambda =    24.7444  x1
+    lambda =    24.8290  x1
+    lambda =    25.6869  x1
+    lambda =    25.7265  x1
+    lambda =    25.8454  x1
+    lambda =    25.9989  x1
+    lambda =    26.5002  x1
+    lambda =    27.0475  x1
+    lambda =    27.5947  x1
+    lambda =    27.7514  x1
+    lambda =    27.7679  x1
+    lambda =    27.9728  x1
+    lambda =    28.2711  x1
+    lambda =    28.9050  x1
+    lambda =    29.1208  x1
+    lambda =    30.0518  x1
+    lambda =    30.1623  x1
+    lambda =    30.9900  x1
+    lambda =    31.0579  x1
+    lambda =    31.2548  x1
+    lambda =    31.9014  x1
+    lambda =    32.0677  x1
+    lambda =    32.6658  x1
+    lambda =    32.9788  x1
+    lambda =    33.5655  x1
+    lambda =    33.6693  x1
+    lambda =    33.6851  x1
+    lambda =    34.9022  x1
+    lambda =    35.0632  x1
+    lambda =    35.4192  x1
+    lambda =    36.2075  x1
+    lambda =    36.3520  x1
+    lambda =    36.6598  x1
+    lambda =    36.6977  x1
+    lambda =    37.2198  x1
+    lambda =    37.2787  x1
+    lambda =    37.6326  x1
+    lambda =    37.6932  x1
+    lambda =    37.7311  x1
+    lambda =    38.3486  x1
+    lambda =    39.0451  x1
+    lambda =    39.2903  x1
+    lambda =    39.4751  x1
+    lambda =    39.5733  x1
+    lambda =    40.2187  x2
+    lambda =    40.4586  x1
+    lambda =    40.5552  x2
+    lambda =    41.0321  x2
+    lambda =    41.6616  x2
+    lambda =    41.8913  x2
+    lambda =    42.1242  x2
+    lambda =    43.4453  x1
+    lambda =    43.6206  x1
+    lambda =    44.0030  x2
+    lambda =    44.6292  x2
+    lambda =    44.7409  x1
+    lambda =    44.7760  x2
+    lambda =    45.5607  x2
+    lambda =    46.9811  x3
+    lambda =    47.3055  x2
+    lambda =    48.8082  x4
+    lambda =    50.1202  x4
+    lambda =    50.2935  x3
+    lambda =    53.4296  x5
+    lambda =    56.0000  x1
+  spectral gap:       2.5704
+  largest eigenvalue: 56.0000
+  smallest eigenvalue:-56.0000
+  bipartite:          true
+  row sum (degree):   56
+
+--- Distance Regularity (795 ms) ---
+  simple degree:      7
+  diameter:           14
+  distance-regular:   false
+  vertices sampled:   50
+  violations:         244427
+
+--- Orbit Structure (35 ms) ---
+  distinct profiles:  1
+  vertex-transitive:  true
+  profile sizes:      [5040]
+
+=== End Quotient Graph Analysis: S8 ===
+[S8] quotient analysis complete (3.31s)
+
+[S8] Phase 8a: naive Ritz vector clustering ...
+--- Phase 8a: Naive Ritz vector clustering ---
+Projected 10 Ritz vectors to 40320-dim full space
+Using eigenvalues:
+   0. lambda = 0.1522
+   1. lambda = 0.1522
+   2. lambda = 0.1522
+   3. lambda = 0.3213
+   4. lambda = 0.3213
+   5. lambda = 0.5126
+   6. lambda = 0.5126
+   7. lambda = 0.5858
+   8. lambda = 0.5858
+   9. lambda = 0.7133
+[S8] Phase 8a complete (62.5s)
+k-means k=5040 (d=10): ARI = 0.000553
+  (as expected: naive spectral clustering uses extremal eigenvectors,
+   but R8 coset structure lives in interior eigenspaces near lambda=6.5/7.5)
+
+[S8] Phase 8b: exact spectral identifiability audit ...
+--- Phase 8b: Exact spectral identifiability audit ---
+[S8] Phase 8b complete (0.2s)
+Equitable R8 partitions: 30/30
+One graph-automorphism orbit: true
+Graph-only standard-R8 selection identifiable: false
+
+--- S8 Spectral Conclusion ---
+  naive extremal clustering ARI: 0.000553 (62.5s)
+  targeted graph-only selection: NON-IDENTIFIABLE across 30 conjugate partitions (0.2s)
+
+[S8] Phase 9: running 1 random partition baselines (capped from 1) ...
+--- Random partition baselines (1 trials) ---
+[S8] invariant partitions:  0/1 (0.0%)
+[S8] regular partitions:    1/1 (100.0%)
+[S8] violation stats:       min=35280, max=35280, mean=35280.0
+[S8] coset partition (5040 x 8) is DISTINGUISHED against random baseline
+[S8] baselines complete (124ms)
+
+=== S8 Summary ===
+  graph:       40320 vertices, 141120 edges
+  cosets:      5040 x 8 (R8 right cosets)
+  quotient:    5040x5040, regular=true
+  invariance:  PASS
+  lanczos:     DONE
+  characters:  DONE
+  clustering:  naive ARI=0.000553
+  selection:   NON-IDENTIFIABLE across 30 automorphic R8 partitions
+  total time:  81.62s

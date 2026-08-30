@@ -1,0 +1,19 @@
+{
+  "columns_compared": 321,
+  "legacy_payload_sha256": "a49b0323885b42f8b0706a778bdee4fdf2554e67d834de38f41dc6f0efcae51d",
+  "legacy_projection_byte_identical": true,
+  "legacy_terms": 17719920,
+  "new_operator_sha256": "fec4195161bcd085d629c85bc2b0efc12bc2ea613266c4d3c12c49be37a41661",
+  "new_terms": 18931260,
+  "old_operator_sha256": "80acbad466e7b61a9693322e0178f46d586e252014841d486277d9a4d29a84c6",
+  "proof_boundary": "The new COL2 stream filtered to legacy tags 0,1,5,8 is byte-identical entry-for-entry to the old certified COL1 payload for all 321 columns.",
+  "riemann_terms": 1211340,
+  "schema_version": "adynkra-11d-invariant-supercurvature-v3-legacy-projection-validation-v1",
+  "sector_terms": {
+    "JMinus": 153168,
+    "LinearizedRiemann": 1211340,
+    "W2021Raw": 16069472,
+    "X2": 112960,
+    "X5": 1384320
+  }
+}

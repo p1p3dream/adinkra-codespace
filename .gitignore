@@ -1,6 +1,20 @@
 /target
+/target-csp
 /build/
 .DS_Store
 __pycache__/
 *.pyc
 *.f64bin
+
+# Generated runtime checkpoints and process state
+results/*.lock
+results/*.log
+results/**/status_*.jsonl
+results/**/*.rejected.*
+results/.level12-rust-staging/
+results/eleven_dimensional_first_momentum_fx_checkpoints/
+results/eleven_dimensional_first_momentum_fx_shared_checkpoints/
+
+# Call recordings and transcripts, never commit
+transcripts/
+plan-sources/

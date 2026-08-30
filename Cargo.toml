@@ -3,13 +3,18 @@ name = "adinkra-codespace"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+cuda = []
+
 [dependencies]
 matrixmultiply = { version = "0.3", features = ["threading"] }
 nauty-pet = "0.14"
 petgraph = "0.8"
 rayon = "1"
+rustc-hash = "2"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["raw_value"] }
 sha2 = "0.10"
 zstd = "0.13"
 num-complex = "0.4"

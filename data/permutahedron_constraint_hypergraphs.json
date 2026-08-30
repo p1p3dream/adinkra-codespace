@@ -1,0 +1,216 @@
+{
+  "schema_version": "permutahedron-constraint-hypergraph-v1",
+  "title": "Exact S4 and S8 unsigned Garden constraint hypergraphs",
+  "method": [
+    "Enumerate fixed-point-free involutions relative to the identity without loading V4 or R8 labels.",
+    "Connect two candidates exactly when their relative permutation is also a fixed-point-free involution.",
+    "Enumerate cliques of size n-1; adjoining the identity yields every compatible size-n hyperedge up to right translation.",
+    "Validate the discovered identity hyperedges as subgroups only after clique discovery, then generate and deduplicate all right translates.",
+    "Recover the identity subgroup from every translated hyperedge and audit parallel-class covers, incidence degrees, subgroup intersections, and hyperedge overlaps."
+  ],
+  "s4": {
+    "n": 4,
+    "vertex_count": 24,
+    "identity_compatible_candidates": 3,
+    "candidate_compatibility_edges": 3,
+    "candidate_degree_histogram": {
+      "2": 3
+    },
+    "clique_search_nodes": 4,
+    "identity_hyperedges": 1,
+    "hyperedge_size": 4,
+    "discovered_parallel_classes": 1,
+    "hyperedges_per_parallel_class": 6,
+    "distinct_hyperedges": 6,
+    "incidences": 24,
+    "vertex_degree_histogram": {
+      "1": 24
+    },
+    "all_identity_hyperedges_are_subgroups": true,
+    "every_parallel_class_is_complete": true,
+    "hyperedges_recover_source_family": true,
+    "duplicate_hyperedges_across_parallel_classes": 0,
+    "subgroup_intersection_order_histogram": {},
+    "positive_hyperedge_intersection_histogram": {},
+    "overlapping_hyperedges_per_hyperedge_histogram": {
+      "0": 6
+    },
+    "matches_reference_cosets": true,
+    "sample_hyperedges": [
+      [
+        0,
+        7,
+        16,
+        23
+      ],
+      [
+        1,
+        6,
+        17,
+        22
+      ],
+      [
+        2,
+        10,
+        13,
+        21
+      ],
+      [
+        3,
+        11,
+        12,
+        20
+      ],
+      [
+        4,
+        8,
+        15,
+        19
+      ],
+      [
+        5,
+        9,
+        14,
+        18
+      ]
+    ]
+  },
+  "s8": {
+    "n": 8,
+    "vertex_count": 40320,
+    "identity_compatible_candidates": 105,
+    "candidate_compatibility_edges": 630,
+    "candidate_degree_histogram": {
+      "12": 105
+    },
+    "clique_search_nodes": 490,
+    "identity_hyperedges": 30,
+    "hyperedge_size": 8,
+    "discovered_parallel_classes": 30,
+    "hyperedges_per_parallel_class": 5040,
+    "distinct_hyperedges": 151200,
+    "incidences": 1209600,
+    "vertex_degree_histogram": {
+      "30": 40320
+    },
+    "all_identity_hyperedges_are_subgroups": true,
+    "every_parallel_class_is_complete": true,
+    "hyperedges_recover_source_family": true,
+    "duplicate_hyperedges_across_parallel_classes": 0,
+    "subgroup_intersection_order_histogram": {
+      "1": 330,
+      "2": 105
+    },
+    "positive_hyperedge_intersection_histogram": {
+      "1": 13305600,
+      "2": 2116800
+    },
+    "overlapping_hyperedges_per_hyperedge_histogram": {
+      "204": 151200
+    },
+    "matches_reference_cosets": null,
+    "sample_hyperedges": [
+      [
+        0,
+        5167,
+        11536,
+        16703,
+        23616,
+        28783,
+        35152,
+        40319
+      ],
+      [
+        1,
+        5166,
+        11537,
+        16702,
+        23617,
+        28782,
+        35153,
+        40318
+      ],
+      [
+        2,
+        5170,
+        11533,
+        16701,
+        23618,
+        28786,
+        35149,
+        40317
+      ],
+      [
+        3,
+        5171,
+        11532,
+        16700,
+        23619,
+        28787,
+        35148,
+        40316
+      ],
+      [
+        4,
+        5168,
+        11535,
+        16699,
+        23620,
+        28784,
+        35151,
+        40315
+      ],
+      [
+        5,
+        5169,
+        11534,
+        16698,
+        23621,
+        28785,
+        35150,
+        40314
+      ],
+      [
+        6,
+        5161,
+        11542,
+        16697,
+        23622,
+        28777,
+        35158,
+        40313
+      ],
+      [
+        7,
+        5160,
+        11543,
+        16696,
+        23623,
+        28776,
+        35159,
+        40312
+      ]
+    ]
+  },
+  "validation": {
+    "s4_identity_candidates": 3,
+    "s4_identity_hyperedges": 1,
+    "s4_distinct_hyperedges": 6,
+    "s4_matches_reference_cosets": true,
+    "s8_identity_candidates": 105,
+    "s8_candidate_degree": 12,
+    "s8_identity_hyperedges": 30,
+    "s8_distinct_hyperedges": 151200,
+    "s8_vertex_degree": 30,
+    "s8_overlapping_hyperedges_per_hyperedge": 204,
+    "both_family_recovery_checks_pass": true,
+    "passed": true
+  },
+  "findings": [
+    "S4 has 3 identity-compatible candidates and 1 identity hyperedge; its 6 right translates exactly equal the six reference V4 cosets.",
+    "S8 has 105 fixed-point-free involutions. Their degree-12 compatibility graph has 30 size-seven cliques, discovering 30 order-eight identity blocks without R8 labels.",
+    "Right translation produces 151200 distinct S8 octet hyperedges in 30 parallel classes, with 1209600 incidences and uniform vertex degree 30.",
+    "Every S8 octet intersects 204 other octets. Positive intersections have size one for 13305600 pairs and size two for 2116800 pairs."
+  ],
+  "boundary": "The calculation discovers every unsigned size-n block satisfying the stated pairwise fixed-point-free-involution condition for n=4 and n=8. It recovers 30 subgroup-induced S8 parallel classes but does not prove those are the only exact-cover resolutions of the 151,200-edge hypergraph. It uses no Boolean factors and makes no signed Garden, HYMN, holoraumy, Gadget, or physical-parentage classification."
+}

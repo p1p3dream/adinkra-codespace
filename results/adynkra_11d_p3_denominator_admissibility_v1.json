@@ -1,0 +1,76 @@
+{
+  "schema_version": "adynkra-11d-p3-denominator-admissibility-v1",
+  "role": "exact denominator audit for the p3 modular static and flat-plan inputs",
+  "rational_input_scope": [
+    "nonzero gauge-form matrix coefficients",
+    "highest vector-spinor target-dual coefficients",
+    "exact physical F_X derivative-template coefficients"
+  ],
+  "integral_input_scope": [
+    "recoupled source-stream coefficients are i128 integers",
+    "translation-weight coefficients are i64 Gaussian integers",
+    "wedge, contraction, and functional-hash signs are integers"
+  ],
+  "exact_coefficient_record_count": 2877186,
+  "unique_denominators": [
+    "1",
+    "48",
+    "64",
+    "80",
+    "96",
+    "112",
+    "192",
+    "224",
+    "320",
+    "384",
+    "448",
+    "640"
+  ],
+  "common_denominator_lcm": "13440",
+  "exact_coefficient_stream_sha256": "22ff3a614d80ca576254c78c46a2429f3aaf684a5f9c044f51fa6f4b2bebb2f7",
+  "ordered_denominator_stream_sha256": "20928c0026fadf660e08d1a1b1b15d6cab903985231d6f62b4494bc7d1cb82c4",
+  "primes": [
+    {
+      "prime_slot": 0,
+      "prime": 1073741783,
+      "prime_verified": true,
+      "prime_mod_4": 3,
+      "gaussian_extension_is_field": true,
+      "common_denominator_mod_prime": 13440,
+      "gcd_with_common_denominator": "1",
+      "every_input_denominator_nonzero_mod_prime": true,
+      "modular_static_semantic_sha256": "eff2e32b1aa7ccb35d89acfe7887e6d3cf482c25dfea6243f73836637b99ed65",
+      "modular_flat_plan_sha256": "4a41374c48d1b9cab5ed976084659f080e6ceb6ad5dfc01326028491d813c2be",
+      "modular_static_build_passed": true
+    },
+    {
+      "prime_slot": 1,
+      "prime": 1073741723,
+      "prime_verified": true,
+      "prime_mod_4": 3,
+      "gaussian_extension_is_field": true,
+      "common_denominator_mod_prime": 13440,
+      "gcd_with_common_denominator": "1",
+      "every_input_denominator_nonzero_mod_prime": true,
+      "modular_static_semantic_sha256": "a1ee4f8acf55cd34a6b4497b57405f500a3f314fc5f7d3679100dcb6dde2c265",
+      "modular_flat_plan_sha256": "fa733946835acca40d3b7da92111b2576fc5a72f27f9de90bb160ac40a0f2282",
+      "modular_static_build_passed": true
+    },
+    {
+      "prime_slot": 2,
+      "prime": 1073741719,
+      "prime_verified": true,
+      "prime_mod_4": 3,
+      "gaussian_extension_is_field": true,
+      "common_denominator_mod_prime": 13440,
+      "gcd_with_common_denominator": "1",
+      "every_input_denominator_nonzero_mod_prime": true,
+      "modular_static_semantic_sha256": "2fa3a33158835d9ca6c5d34b6555675f9889597e5a61f00456f6338b19c2c5a6",
+      "modular_flat_plan_sha256": "8f3e42a5c00024035ddfbcb4f7c9f0e32282ead521c0bd33c81c9420f09a9fdd",
+      "modular_static_build_passed": true
+    }
+  ],
+  "proof_rule": "all subsequent p3 flat-plan and column operations use only integer addition and multiplication; nonzero reduction of every rational input denominator therefore defines the required Q(i) to F_p(i) reduction homomorphism",
+  "claim_boundary": "this certifies denominator admissibility of the bounded p3 diagnostic only; it does not promote the diagnostic to complete physical F or a target quotient",
+  "passed": true
+}

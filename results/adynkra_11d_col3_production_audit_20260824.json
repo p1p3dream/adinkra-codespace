@@ -1,0 +1,121 @@
+{
+  "schema_version": "adynkra-11d-col3-production-audit-v1",
+  "generated_at": "2026-08-24T19:03:00-06:00",
+  "generation_commit": "c480d183268dcd36c1a38645805677c9f59d4fe0",
+  "generation_started_at": "2026-08-24T17:55:53-06:00",
+  "generation_finished_at": "2026-08-24T18:51:40-06:00",
+  "generation_elapsed_seconds": 3346.82,
+  "generation_peak_rss_bytes": 12668960768,
+  "columns_generated": 321,
+  "temporary_shards_remaining": 0,
+  "total_exact_terms": 35611900,
+  "operator_sha256": "efd3a848b64f073a2ab0a9f419bb9515322078dbae99a676576e22cd1b6a01d3",
+  "generation_certificate_sha256": "e689cf242dbf6c99aeca76b98b027588afe1f5b1d2b5cd940d12a2c44f584256",
+  "fixed_adoption_started_at": "2026-08-24T18:55:18-06:00",
+  "fixed_adoption_finished_at": "2026-08-24T18:55:33-06:00",
+  "fixed_adoption_elapsed_seconds": 14.53,
+  "fixed_adoption_peak_rss_bytes": 421314560,
+  "columns_reused": 321,
+  "adoption_semantic_fields_compared": [
+    "ordinal",
+    "source_coordinate",
+    "nonzero_terms",
+    "raw_w_bianchi_residual_terms",
+    "raw_w_candidate_residual_terms",
+    "sha256",
+    "shard_path",
+    "shard_sha256",
+    "shard_byte_count"
+  ],
+  "adoption_semantic_mismatches": [],
+  "adoption_operator_matches_generation": true,
+  "exact_terms_by_sector_tag": {
+    "0": 112960,
+    "1": 1384320,
+    "5": 153168,
+    "8": 16069472,
+    "9": 1211340,
+    "10": 16473280,
+    "11": 207360
+  },
+  "legacy_projection": {
+    "passed": true,
+    "columns": 321,
+    "exact_entries": 18931260,
+    "payload_sha256": "8194ad73034c0450bddb6046841992bac73064cbe078b4d1252771ca6857bb9f"
+  },
+  "combined_kernel": {
+    "rank": 321,
+    "nullity": 0,
+    "full_column_rank": true,
+    "elapsed_seconds": 16.635304958
+  },
+  "sector_kernels": [
+    {
+      "tag": 9,
+      "name": "LinearizedRiemann",
+      "terms": 1211340,
+      "modular_rank": 321,
+      "exact_rank": 321,
+      "exact_nullity": 0
+    },
+    {
+      "tag": 10,
+      "name": "DirectGravitinoCurl",
+      "terms": 16473280,
+      "modular_rank": 321,
+      "exact_rank": 321,
+      "exact_nullity": 0
+    },
+    {
+      "tag": 11,
+      "name": "DirectCandidateFourForm",
+      "terms": 207360,
+      "modular_rank": 320,
+      "exact_rank": 320,
+      "exact_nullity": 1,
+      "exact_kernel": "span{e_320 scale}",
+      "exactness_reason": "Persisted scale column is exactly zero in tag 11, while the 320 H-hat columns have modular rank 320 with invertible denominators."
+    }
+  ],
+  "artifacts": {
+    "generation_certificate_stdout": {
+      "path": "results/adynkra_11d_col3_run_20260824T1756MDT/stdout.log",
+      "sha256": "e689cf242dbf6c99aeca76b98b027588afe1f5b1d2b5cd940d12a2c44f584256"
+    },
+    "fixed_adoption_certificate": {
+      "path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v4_col3_20260824.json",
+      "sha256": "f215e25920f5c0d21f7cc7a8d996efd89857fb397025fc523af4e81fda853c5a"
+    },
+    "legacy_projection_audit": {
+      "path": "results/adynkra_11d_col3_legacy_projection_audit_20260824.json",
+      "sha256": "f86f5bd8169d92923347b5b59f53bcb9459f85b0e103afe140b828d4be3e77c7"
+    },
+    "combined_kernel": {
+      "path": "results/adynkra_11d_col3_combined_kernel_p0_20260824.json",
+      "sha256": "69a68c500663c8ff3813b6cb83ee600237109b5c1e537c2daa1d9619b68340ef"
+    },
+    "sector9_kernel": {
+      "path": "results/adynkra_11d_col3_sector9_riemann_kernel_p0_20260824.json",
+      "sha256": "59256f3d3fa0ecec4cf9285e8d8920d62b140bd7488d269d0b5b437e6615c70c"
+    },
+    "sector10_kernel": {
+      "path": "results/adynkra_11d_col3_sector10_gravitino_kernel_p0_20260824.json",
+      "sha256": "491a5d347c000f7260ae7a740158a9187ef666f7a380091925662fb641fec47b"
+    },
+    "sector11_kernel": {
+      "path": "results/adynkra_11d_col3_sector11_candidate_f4_kernel_p0_20260824.json",
+      "sha256": "e87fc14a57b928b2f401c5332e475dfd7eba5b6f7f653baf5e9ef470675be33f"
+    },
+    "sector11_exact_kernel_audit": {
+      "path": "results/adynkra_11d_col3_sector11_candidate_f4_exact_kernel_audit_20260824.json",
+      "sha256": "4cb55bdf75171bbc15ed8ff87a8946341f35adedd0694d8ddca254b375ec13b6"
+    }
+  },
+  "validation": {
+    "all_321_shards_prevalidated_by_combined_and_each_sector_kernel": true,
+    "all_kernel_exit_codes_zero": true,
+    "legacy_projection_byte_identical": true
+  },
+  "scientific_boundary": "The 321 declared gauge-fixed source columns are exactly independent in the combined diagnostic and separately in direct Riemann and direct gravitino curl. The conditional Eq. (40) candidate four-form kills exactly the scale source. This does not establish physical A3 identification, complete physical F, or the physical K quotient."
+}

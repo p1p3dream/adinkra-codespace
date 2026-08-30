@@ -10,6 +10,8 @@ eight-color supersymmetry program described in Refs. [1-3]. It contains:
 - the complete `S8` permutahedron with 40,320 vertices and 141,120 edges;
 - the `R8` subgroup and its partition of `S8` into 5,040 right cosets of eight
   vertices each;
+- all 30 conjugate `R8` subgroups and the resulting 151,200 distinct unsigned
+  `GR(8,8)` supports proved in Ref. [5];
 - the corresponding left-coset partition and the 168 slices for which the left
   and right cosets agree as sets;
 - the six published `N=2` permutation octets `CC`, `CT`, `CV`, `TT`, `TV`, and
@@ -19,6 +21,12 @@ eight-color supersymmetry program described in Refs. [1-3]. It contains:
   quartets, and all 96 corresponding Adinkras;
 - the six published signed `S8` systems, all 51 height-sign branches, and their
   Garden, HYMN, graph, Bruhat, coset, chromocharacter, and gadget records;
+- a complete scan of the seven `R8`-invariant four-plus-four partitions,
+  identifying the 904 cosets that inherit paired four-color sector labels;
+- a test of the proposed relation between the 30 ordered distinct four-color
+  pairs and the 30 conjugate `R8` subgroups;
+- the 20 normalizer-conjugacy orbits that classify all 5,040 cosets in one
+  fixed `R8` family;
 - a Garden-sign feasibility calculation for every one of the 5,040 right
   `R8` cosets.
 
@@ -122,6 +130,56 @@ because `TV` is not left-right coincident but does not close. Full method and
 boundary details are in
 [`permutahedron-s8-supersymmetry.md`](permutahedron-s8-supersymmetry.md).
 
+## Paired four-color separation probe
+
+The seven `R8`-invariant partitions of eight labels into two blocks of four
+provide a direct test of the paired construction used for the published
+eight-color systems. Each partition contains 144 complete `R8` cosets. Those
+cosets divide into the 21 unordered pairs of the six four-color sectors.
+
+Across all seven partitions, 904 distinct cosets admit at least one such
+decomposition and 4,136 admit none. Every diagonal pair coincides with a
+left-right coincident coset for that partition. The 168 diagonal incidences
+therefore connect the paired-sector construction to the existing normalizer
+result.
+
+This is a single-family block-decomposition calculation, not the published
+ordered distinct-pair question. Under the distinct-pair restriction, 784
+unsigned noncoincident distinct-sector candidates remain and 4,256 do not
+satisfy this construction. Full results and boundaries are in
+[`permutahedron-s8-separation-probe.md`](permutahedron-s8-separation-probe.md).
+
+## All conjugate families and exact fixed-family classes
+
+The complete unsigned support theorem in Ref. [5] requires all 30 conjugates
+of `R8`. Exact enumeration reproduces 5,040 cosets per conjugate and 151,200
+distinct octet sets. Although the theorem is stated for left cosets, the
+implementation uses right cosets. The identities
+`(gH)^-1 = H g^-1`, `gH = (gHg^-1)g`, and
+`Hg = g(g^-1Hg)` give the inversion bridge and prove equality of the
+all-conjugate left- and right-coset support unions.
+
+Every conjugate family realizes every one of the 30
+ordered distinct four-color pairs, 28 times each. The unsigned incidence
+relation therefore has 900 edges, not the 30 edges required for a bijection.
+The separate deterministic unsigned recursion of Ref. [3], Eqs.
+(2.17)-(2.19), produces 30 distinct octets, but all belong to the standard
+`R8` right-coset family. Thus its pair-to-family map is constant, not
+bijective. These two unsigned tests do not settle a relation based on signed
+or higher-dimensional data.
+
+Within one fixed `R8` family, conjugation by `N_S8(R8)` partitions all 5,040
+cosets into 20 exact orbits. This supplies a complete finite classification
+under that stated action, including ten orbits covering the original 4,136
+block-incompatible cosets. These orbit identifiers are not physical
+supermultiplet types.
+
+Methods, counts, and boundaries are recorded in:
+
+- [`permutahedron-s8-conjugate-separation.md`](permutahedron-s8-conjugate-separation.md);
+- [`permutahedron-s8-normalizer-orbits.md`](permutahedron-s8-normalizer-orbits.md);
+- [`permutahedron-s8-hex-separation-source-audit.md`](permutahedron-s8-hex-separation-source-audit.md).
+
 ## Reproduction
 
 The atlas is generated in Rust. From the repository root, run:
@@ -132,6 +190,12 @@ cargo run --release -- perm-atlas-verify
 cargo run --release -- perm-garden-scan
 cargo run --release -- perm-s4-susy-build
 cargo run --release -- perm-s4-susy-verify
+cargo run --release -- perm-s8-conjugates-build
+cargo run --release -- perm-s8-conjugates-verify
+cargo run --release -- perm-s8-orbits-build
+cargo run --release -- perm-s8-orbits-verify
+cargo run --release -- perm-s8-separation-build
+cargo run --release -- perm-s8-separation-verify
 cargo run --release -- perm-s8-susy-build
 cargo run --release -- perm-s8-susy-verify
 ```
@@ -142,9 +206,15 @@ Generated data:
 - `data/permutahedron_s8_atlas.json`
 - `data/permutahedron_s8_garden.json`
 - `data/permutahedron_s4_supersymmetry.json`
+- `data/permutahedron_s8_conjugate_separation.json`
+- `data/permutahedron_s8_normalizer_orbits.json`
+- `data/permutahedron_s8_separation_probe.json`
 - `data/permutahedron_s8_supersymmetry.json`
 - `results/permutahedron_validation.json`
 - `results/permutahedron_s4_supersymmetry_validation.json`
+- `results/permutahedron_s8_conjugate_separation_validation.json`
+- `results/permutahedron_s8_normalizer_orbits_validation.json`
+- `results/permutahedron_s8_separation_probe_validation.json`
 - `results/permutahedron_s8_supersymmetry_validation.json`
 
 Validated artifact hashes:
@@ -154,8 +224,14 @@ Validated artifact hashes:
 | `data/permutahedron_s4_atlas.json` | `0738927f723ffd16b310ff7a7bcbafa8629b791583524a165a9c1635c008be2c` |
 | `data/permutahedron_s8_atlas.json` | `b178d1642d05f1b7e0b9b5b5befdf3fb3c412717b80202c9836fe1bf061f4ba3` |
 | `data/permutahedron_s8_garden.json` | `9e0d983f678ee89704809008ea5fdeea993fbb5d535f53564477b9a313056a67` |
+| `data/permutahedron_s8_conjugate_separation.json` | `300a4ef9934a641c39bda92cb63c3c9661ca30d68e189e323fc87e9447404245` |
+| `data/permutahedron_s8_normalizer_orbits.json` | `f25f85cfe8f01ac4767817a9a020c798605c219231a1090adf777ef927ae4a85` |
+| `data/permutahedron_s8_separation_probe.json` | `a4ad22c1cefb1df44b474d59d7d7d2ec9fc928773d975223e870989efa714c4d` |
 | `data/permutahedron_s8_supersymmetry.json` | `3df539d4d82472566cc4ab90dc5dbf5f8ab1035ee9708cd1d7c26a51a550d241` |
 | `results/permutahedron_validation.json` | `feb3d95a19a525dd538e53baa2b56018988629fe8576ce6cbc29d39174973cc1` |
+| `results/permutahedron_s8_conjugate_separation_validation.json` | `7a6aa57b204744b78e346676cb72165c3a0a00e455a8eb76003d656e949073bd` |
+| `results/permutahedron_s8_normalizer_orbits_validation.json` | `0d4981e9f7800aa5431c1fa1d287c32b09b86f45224522994524455e5528c055` |
+| `results/permutahedron_s8_separation_probe_validation.json` | `9411560dab54dfbd2cc3e5ee3dbd8d3c42cfb9074efe87d667470b3ab01c11b4` |
 | `results/permutahedron_s8_supersymmetry_validation.json` | `a6fb4d1ec4e6571d55d9780db81906f589aa1fc354bc9c6b19d00048f41002b4` |
 
 The validation report records zero mismatches in the 576 entries determined by
@@ -184,6 +260,7 @@ Validate the browser datasets and their Garden-scan join with:
 ```sh
 node scripts/test_permutahedron_atlas.mjs
 node scripts/test_permutahedron_s4_supersymmetry.mjs
+node scripts/test_permutahedron_s8_separation.mjs
 node scripts/test_permutahedron_s8_supersymmetry.mjs
 ```
 
@@ -215,3 +292,6 @@ node scripts/test_permutahedron_s8_supersymmetry.mjs
 4. A. J. Cianciara, S. J. Gates Jr., Y. Lee, E. T. Levy, T. O. Razzaz, and J.
    Richardson, "Unfolded Adinkra Properties of Supermultiplets (I),"
    [arXiv:2311.06842v1](https://arxiv.org/abs/2311.06842).
+5. S. J. Gates Jr., T. Hübsch, K. Iga, and S. Mendez-Diez, "N=4 and N=8 SUSY
+   Quantum Mechanics and Klein's Vierergruppe,"
+   [arXiv:1608.07864v1](https://arxiv.org/abs/1608.07864).

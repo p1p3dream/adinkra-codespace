@@ -1,0 +1,55 @@
+{
+  "normalizer_order": 1344,
+  "normalizer_quotient_order": 168,
+  "conjugacy_orbits": 20,
+  "orbit_size_histogram": {
+    "1": 1,
+    "21": 1,
+    "24": 2,
+    "28": 1,
+    "42": 1,
+    "56": 3,
+    "84": 1,
+    "112": 1,
+    "168": 1,
+    "224": 1,
+    "336": 3,
+    "448": 1,
+    "672": 2,
+    "1344": 1
+  },
+  "cosets_covered_once": 5040,
+  "compatible_orbits": 10,
+  "compatible_cosets": 904,
+  "incompatible_orbits": 10,
+  "incompatible_cosets": 4136,
+  "unsigned_noncoincident_distinct_sector_candidate_orbits": 6,
+  "unsigned_noncoincident_distinct_sector_candidate_cosets": 784,
+  "unsigned_noncoincident_distinct_sector_candidate_complement_orbits": 14,
+  "unsigned_noncoincident_distinct_sector_candidate_complement_cosets": 4256,
+  "abnormal_orbits": 6,
+  "abnormal_cosets": 168,
+  "intersection_order_histogram_by_orbit": {
+    "1": 9,
+    "2": 5,
+    "8": 6
+  },
+  "intersection_order_histogram_by_coset": {
+    "1": 3696,
+    "2": 1176,
+    "8": 168
+  },
+  "invariants_constant_on_every_orbit": true,
+  "exact_signature_classes": 20,
+  "order_seven_gl3_classes": 2,
+  "order_seven_trace_values": [
+    0,
+    1
+  ],
+  "order_seven_characteristic_polynomials": [
+    "x^3+x+1",
+    "x^3+x^2+1"
+  ],
+  "twenty_not_thirty": true,
+  "passed": true
+}

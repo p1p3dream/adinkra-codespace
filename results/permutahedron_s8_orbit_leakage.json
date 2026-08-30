@@ -1,0 +1,83 @@
+{
+  "schema_version": "permutahedron-s8-orbit-leakage-v1",
+  "title": "Node-basis leakage audit for S8 normalizer-orbit labels",
+  "method": [
+    "Select one exact unrestricted-recursion closer in family zero.",
+    "Postcompose every color permutation by each of the 40,320 common S8 node relabelings.",
+    "Map every transformed support back into the complete constraint hypergraph.",
+    "Measure support and normalizer-orbit reachability without treating repeated group elements as independent supports."
+  ],
+  "validation": {
+    "unrestricted_closing_supports": 32,
+    "selected_source_family_id": 0,
+    "selected_source_slice_id": 5,
+    "selected_source_normalizer_orbit_id": 1,
+    "common_node_relabelings_checked": 40320,
+    "transformed_supports_mapped": 40320,
+    "distinct_family_zero_supports_reached": 5040,
+    "target_support_multiplicity_histogram": {
+      "8": 5040
+    },
+    "normalizer_orbits_reached": 20,
+    "distinct_support_orbit_histogram": {
+      "0": 1,
+      "1": 28,
+      "2": 112,
+      "3": 21,
+      "4": 84,
+      "5": 168,
+      "6": 448,
+      "7": 336,
+      "8": 336,
+      "9": 1344,
+      "10": 42,
+      "11": 672,
+      "12": 224,
+      "13": 672,
+      "14": 56,
+      "15": 56,
+      "16": 336,
+      "17": 56,
+      "18": 24,
+      "19": 24
+    },
+    "relabeling_orbit_histogram": {
+      "0": 8,
+      "1": 224,
+      "2": 896,
+      "3": 168,
+      "4": 672,
+      "5": 1344,
+      "6": 3584,
+      "7": 2688,
+      "8": 2688,
+      "9": 10752,
+      "10": 336,
+      "11": 5376,
+      "12": 1792,
+      "13": 5376,
+      "14": 448,
+      "15": 448,
+      "16": 2688,
+      "17": 448,
+      "18": 192,
+      "19": 192
+    },
+    "every_relabeling_stays_in_family_zero": true,
+    "every_family_zero_support_is_reached": true,
+    "every_target_support_is_reached_eight_times": true,
+    "color_relabeling_preserves_support_set": true,
+    "supercharge_signs_preserve_support_set": true,
+    "normalizer_orbit_is_invariant_under_common_node_relabeling": false,
+    "source_parentage_orbit_correlation_is_node_basis_independent": false,
+    "audit_passed": true
+  },
+  "findings": [
+    "A common relabeling of one node level reaches all 5,040 supports in family zero from one selected closer.",
+    "Each target support is reached exactly eight times, the order of R8.",
+    "The relabeling reaches all 20 normalizer-conjugacy orbits.",
+    "Color relabeling and supercharge signs preserve the unsigned support, but common node relabeling does not preserve its normalizer-orbit ID."
+  ],
+  "consequence": "The orbit-to-source-category correlation is exact in the fixed published component basis, but normalizer-orbit ID is not an invariant of the unlabeled worldline representation. It cannot serve as an intrinsic physical parentage selector without an independently fixed component basis.",
+  "boundary": "This audit changes the common basis of one node level and keeps the R8 family fixed. It does not claim that source-basis coordinates are useless when a higher-dimensional component basis is supplied independently; it shows only that the orbit label is not intrinsic to the unlabeled valise."
+}

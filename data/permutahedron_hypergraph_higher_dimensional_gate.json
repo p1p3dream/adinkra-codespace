@@ -1,0 +1,149 @@
+{
+  "schema_version": "permutahedron-hypergraph-higher-dimensional-gate-v2",
+  "title": "Bounded higher-dimensional gate for published S8 controls",
+  "method": [
+    "Require one-dimensional Garden closure before applying any higher-dimensional test to a published sign assignment.",
+    "Verify the sourced chiral-vector and chiral-tensor component algebras exactly, including their gauge residues.",
+    "Reduce each sourced four-dimensional system and compare all 512 matrix entries with its committed S8 anchor.",
+    "Compare the retained spatial-linkage and gauge-residue fingerprints without treating source-basis hashes as physical invariants.",
+    "Refuse broader scanning when a control lacks sourced Lorentz, spatial-linkage, gauge, and reduction data."
+  ],
+  "controls": [
+    {
+      "id": "CC",
+      "discovered_family_id": 0,
+      "family_slice_id": 1444,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": false,
+      "exact_four_dimensional_fixture_available": false,
+      "exact_four_dimensional_closure_passed": null,
+      "exact_worldline_anchor_recovered": null,
+      "spatial_linkage_fingerprint_available": false,
+      "gauge_residue_fingerprint_available": false,
+      "disposition": "published assignment rejected by one-dimensional closure prerequisite"
+    },
+    {
+      "id": "CT",
+      "discovered_family_id": 0,
+      "family_slice_id": 1443,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": true,
+      "exact_four_dimensional_fixture_available": true,
+      "exact_four_dimensional_closure_passed": true,
+      "exact_worldline_anchor_recovered": true,
+      "spatial_linkage_fingerprint_available": true,
+      "gauge_residue_fingerprint_available": true,
+      "disposition": "exact four-dimensional positive control passed"
+    },
+    {
+      "id": "CV",
+      "discovered_family_id": 0,
+      "family_slice_id": 1450,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": true,
+      "exact_four_dimensional_fixture_available": true,
+      "exact_four_dimensional_closure_passed": true,
+      "exact_worldline_anchor_recovered": true,
+      "spatial_linkage_fingerprint_available": true,
+      "gauge_residue_fingerprint_available": true,
+      "disposition": "exact four-dimensional positive control passed"
+    },
+    {
+      "id": "O",
+      "discovered_family_id": 0,
+      "family_slice_id": 0,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": true,
+      "exact_four_dimensional_fixture_available": false,
+      "exact_four_dimensional_closure_passed": null,
+      "exact_worldline_anchor_recovered": null,
+      "spatial_linkage_fingerprint_available": false,
+      "gauge_residue_fingerprint_available": false,
+      "disposition": "original one-dimensional Garden control with no claimed four-dimensional component parent"
+    },
+    {
+      "id": "TT",
+      "discovered_family_id": 0,
+      "family_slice_id": 843,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": false,
+      "exact_four_dimensional_fixture_available": false,
+      "exact_four_dimensional_closure_passed": null,
+      "exact_worldline_anchor_recovered": null,
+      "spatial_linkage_fingerprint_available": false,
+      "gauge_residue_fingerprint_available": false,
+      "disposition": "published assignment rejected by one-dimensional closure prerequisite"
+    },
+    {
+      "id": "TV",
+      "discovered_family_id": 0,
+      "family_slice_id": 850,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": false,
+      "exact_four_dimensional_fixture_available": false,
+      "exact_four_dimensional_closure_passed": null,
+      "exact_worldline_anchor_recovered": null,
+      "spatial_linkage_fingerprint_available": false,
+      "gauge_residue_fingerprint_available": false,
+      "disposition": "published assignment rejected by one-dimensional closure prerequisite"
+    },
+    {
+      "id": "VV",
+      "discovered_family_id": 0,
+      "family_slice_id": 722,
+      "unsigned_support_signable": true,
+      "published_assignment_closes_in_one_dimension": false,
+      "exact_four_dimensional_fixture_available": false,
+      "exact_four_dimensional_closure_passed": null,
+      "exact_worldline_anchor_recovered": null,
+      "spatial_linkage_fingerprint_available": false,
+      "gauge_residue_fingerprint_available": false,
+      "disposition": "published assignment rejected by one-dimensional closure prerequisite"
+    }
+  ],
+  "validation": {
+    "controls": 7,
+    "controls_sharing_one_unsigned_family": 7,
+    "controls_sharing_one_valid_worldline_signing_class": 7,
+    "published_assignments_rejected_by_worldline_nonclosure": 4,
+    "exact_four_dimensional_positive_controls": 2,
+    "exact_four_dimensional_component_relations_checked": 1296,
+    "exact_reduced_matrix_entries_checked": 1024,
+    "cv_component_closure_passed": true,
+    "ct_component_closure_passed": true,
+    "cv_anchor_recovered": true,
+    "ct_anchor_recovered": true,
+    "cv_ct_spatial_operators_distinct": true,
+    "cv_ct_gauge_residues_distinct": true,
+    "garden_positive_controls_without_claimed_four_dimensional_parent": [
+      "O"
+    ],
+    "printed_nonclosing_controls_without_target_specification": [
+      "CC",
+      "TT",
+      "TV",
+      "VV"
+    ],
+    "stated_parent_positive_control_gate_complete": true,
+    "full_seven_control_higher_dimensional_gate_applicable": false,
+    "broader_s8_scan_authorized": false,
+    "audit_passed": true
+  },
+  "findings": [
+    "CV passes 612 exact four-dimensional component relations and reproduces all 512 anchor entries.",
+    "CT passes 684 exact four-dimensional component relations and reproduces all 512 anchor entries.",
+    "CV and CT share the same unsigned family and valid worldline signed class, but retain different spatial operators and gauge residues in their sourced four-dimensional bases.",
+    "CC, TT, TV, and VV are rejected as printed assignments by Garden nonclosure, but their signable supports still lack higher-dimensional target specifications.",
+    "O is a Garden-positive one-dimensional diadem construction, but the audited sources do not claim a four-dimensional component parent for it.",
+    "The stated-parent positive-control gate is complete for CV and CT. A seven-control higher-dimensional gate is not applicable, and a broader S8 scan remains unauthorized without a new physical target."
+  ],
+  "next_required_input": [
+    "an independently sourced higher-dimensional component realization for O, VM1, VM2, or VM3 before treating it as a physical positive control",
+    "a Lorentz representation for every field in any candidate support",
+    "complete spatial-derivative linkage coefficients",
+    "gauge potential, field strength, gauge transformation, and Bianchi data",
+    "temporal gauge and the exact field-to-node reduction map",
+    "component closure including every gauge residue"
+  ],
+  "boundary": "This audit completes all sourced higher-dimensional positive controls in the current corpus, CV and CT, and deliberately stops before unsourced inference. O remains a valid one-dimensional Garden control, not a missing fixture for an asserted parent. Garden failure rejects the four printed negative assignments, but it does not reject every valid re-signing of their unsigned supports. No higher-dimensional parent can be assigned or excluded for those supports without additional target data."
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "adynkra-11d-second-momentum-gpu-flat-plan-benchmark-v1",
+  "captured_at": "2026-08-19T12:54:00Z",
+  "host": "stonkbot",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "cuda_toolkit": "12.6",
+  "tranche": "30001",
+  "local_column_ordinal": 12,
+  "global_column_ordinal": 74,
+  "raw_terms": 131072,
+  "functional_rows": 101376,
+  "all_rows_equal_to_legacy": true,
+  "expanded_counts_equal_to_legacy": true,
+  "results": [
+    {
+      "prime": 1073741783,
+      "legacy_milliseconds": 13695.476,
+      "flat_plan_milliseconds": 243.6393,
+      "speedup": 56.212
+    },
+    {
+      "prime": 1073741723,
+      "legacy_milliseconds": 13624.787,
+      "flat_plan_milliseconds": 243.82092,
+      "speedup": 55.880
+    },
+    {
+      "prime": 1073741719,
+      "legacy_milliseconds": 13642.633,
+      "flat_plan_milliseconds": 243.65569,
+      "speedup": 55.991
+    }
+  ],
+  "test_seconds": 53.54,
+  "remote_log": "/tmp/fx_real_bench.log",
+  "conclusion": "The flattened cooperative contraction removes the measured dominant kernel while preserving every canonical modular output row for all pinned primes."
+}

@@ -1,0 +1,127 @@
+{
+ "a4_orbits": {
+  "1": 9,
+  "4": 48,
+  "6": 14,
+  "12": 45
+ },
+ "blocks": 3,
+ "engine": "gmatrix_csp.v2-ac3",
+ "fixed_blocks": [
+  {
+   "count": 1152,
+   "item": 21,
+   "nnz": 16
+  },
+  {
+   "count": 268416,
+   "item": 80,
+   "nnz": 4
+  },
+  {
+   "count": 0,
+   "item": 132,
+   "nnz": 16
+  },
+  {
+   "count": 0,
+   "item": 135,
+   "nnz": 12
+  },
+  {
+   "count": 7430976,
+   "item": 204,
+   "nnz": 0
+  },
+  {
+   "count": 0,
+   "item": 285,
+   "nnz": 12
+  },
+  {
+   "count": 0,
+   "item": 290,
+   "nnz": 16
+  },
+  {
+   "count": 268416,
+   "item": 336,
+   "nnz": 4
+  },
+  {
+   "count": 1152,
+   "item": 401,
+   "nnz": 16
+  }
+ ],
+ "n_items": 825,
+ "negation_duality": {
+  "paired_orbits": 106,
+  "self_negative_orbits": 10,
+  "singleton_pairing": {
+   "132": 290,
+   "135": 285,
+   "204": 204,
+   "21": 401,
+   "285": 135,
+   "290": 132,
+   "336": 80,
+   "401": 21,
+   "80": 336
+  }
+ },
+ "size4_fixed_point_types": {
+  "1 + 2 + 3 + 4": 48
+ },
+ "size6_tau_patterns": {
+  "2143 + 3412 + 4321": 14
+ },
+ "source": "scripts/lever_a/v4_permutahedron_bridge_check.py",
+ "stabilizer_strata": {
+  "A4": {
+   "blocks": 9,
+   "mass": 7970112
+  },
+  "C2_2143": {
+   "blocks": 28,
+   "mass": 5963904
+  },
+  "C2_3412": {
+   "blocks": 28,
+   "mass": 5963904
+  },
+  "C2_4321": {
+   "blocks": 28,
+   "mass": 5963904
+  },
+  "C3_fix1": {
+   "blocks": 48,
+   "mass": 3313152
+  },
+  "C3_fix2": {
+   "blocks": 48,
+   "mass": 3313152
+  },
+  "C3_fix3": {
+   "blocks": 48,
+   "mass": 3313152
+  },
+  "C3_fix4": {
+   "blocks": 48,
+   "mass": 3313152
+  },
+  "e": {
+   "blocks": 540,
+   "mass": 84870432
+  }
+ },
+ "total_mass": 123984864,
+ "v4_orbits": {
+  "count": 234,
+  "sizes": {
+   "1": 9,
+   "2": 42,
+   "4": 183
+  }
+ }
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": "adynkra.11d.j1-lorentz-residual.v3",
+  "physical_schema_audited": "adynkra-11d-physical-curvature-operator-v10",
+  "role": "exact representation-map audit of the 1760-column derivative-Lorentz J^(1) response after the source-indexed Eq. (28) fix",
+  "source_references": [
+    "hep-th/0101037 Eq. (24): p=2 Lorentz compensator in Delta",
+    "hep-th/0101037 Eq. (28): Delta and explicit Lorentz-compensator contributions",
+    "hep-th/0101037 Table 3: spinorial Lorentz connection",
+    "hep-th/0107155 Eqs. (2)-(5): anholonomy, connection, and torsion conventions"
+  ],
+  "domain": "D Psi_[de] in (00001) tensor (01000), dimension 32*55=1760",
+  "codomain": "J_alpha^(1) in (00001), dimension 32",
+  "matrix_rows": 32,
+  "matrix_columns": 1760,
+  "matrix_rank": 32,
+  "matrix_nullity": 1728,
+  "matrix_nonzero_entries": 1760,
+  "nonzero_entries_per_column": 1,
+  "nonzero_entries_per_row": 55,
+  "signed_permutation_gamma_blocks": 55,
+  "signed_permutation_residual_blocks": 0,
+  "boost_columns": 320,
+  "spatial_columns": 1440,
+  "boost_coefficient": "109/1056",
+  "spatial_coefficient": "109/1056",
+  "coefficient_formula": "R_(alpha;delta,de)=(109/1056)(Gamma^d Gamma^e)_alpha,delta",
+  "row_gram_is_diagonal": true,
+  "row_gram_diagonal": "59405/101376",
+  "residual_is_proportional_to_identity_gamma_trace": true,
+  "physical_columns_sampled_directly": 119,
+  "sample_formula_residuals": 0,
+  "anholonomy_coefficient": "23/264",
+  "delta_connection_spatial_coefficient": "49/1056",
+  "delta_connection_boost_coefficient": "49/1056",
+  "explicit_connection_spatial_coefficient": "-1/33",
+  "explicit_connection_boost_coefficient": "-1/33",
+  "domain_irreducible_decomposition": [
+    {
+      "dynkin_label": "00001",
+      "dimension": 32,
+      "multiplicity": 1,
+      "maps_to_j_one": true
+    },
+    {
+      "dynkin_label": "10001",
+      "dimension": 320,
+      "multiplicity": 1,
+      "maps_to_j_one": false
+    },
+    {
+      "dynkin_label": "01001",
+      "dimension": 1408,
+      "multiplicity": 1,
+      "maps_to_j_one": false
+    }
+  ],
+  "target_multiplicity_in_domain": 1,
+  "lorentz_equivariant_hom_dimension": 1,
+  "source_allowed_invariant_maps": [
+    {
+      "name": "Gamma^[de] contraction",
+      "independent": true,
+      "relation": "the unique copy of (00001) in (00001) tensor (01000)",
+      "cancels_current_residual": true
+    },
+    {
+      "name": "epsilon Gamma_[9] contraction",
+      "independent": false,
+      "relation": "11D Clifford duality makes Gamma_[9] proportional to epsilon Gamma^[2]",
+      "cancels_current_residual": false
+    },
+    {
+      "name": "metric-only contraction",
+      "independent": false,
+      "relation": "no metric contraction removes one antisymmetric vector pair without gamma matrices",
+      "cancels_current_residual": false
+    },
+    {
+      "name": "charge-conjugated Gamma^[2] contraction",
+      "independent": false,
+      "relation": "charge conjugation only changes spinor index variance in the fixed Majorana representation",
+      "cancels_current_residual": false
+    }
+  ],
+  "current_residual_is_lorentz_equivariant": true,
+  "no_equivariant_correction_cancels_current_residual": false,
+  "historical_v8_boost_coefficient": "1847/11616",
+  "historical_v8_spatial_coefficient": "59/3872",
+  "variance_fix_directly_reaudited": true,
+  "variance_fix_sufficient": true,
+  "connection_trace_uses_wrong_vector_variance": false,
+  "raised_connection_trace_correction": "applied: Gamma^de now contracts the stored lower omega_[de] coordinate",
+  "residual_after_variance_fix": "boost=109/1056; spatial=109/1056",
+  "unique_invariant_correction_after_variance_fix": "algebraically unique: -(109/1056) Gamma^[de], but no audited source authorizes adding it",
+  "corrected_residual_entries": 1760,
+  "unique_missing_correction_identified_algebraically": true,
+  "extra_term_explicitly_printed_in_primary_source": false,
+  "passed": true,
+  "boundary": "The source-indexed Eq. (28) correction removes the former boost/spatial split. All 1,760 columns now form the unique Lorentz-equivariant Gamma^[2] map with coefficient 109/1056 and exact rank 32. This resolves the covariance defect but does not prove that the p=2 semi-prepotential column is a complete gauge orbit. An algebraic subtraction is unique, but no audited source prints it, so no fitted term is added. Induced J, T, W, full F A G_p, and off-shell closure remain fail closed."
+}

@@ -4497,6 +4497,273 @@ pub fn verify() -> ElevenDimensionalBridgeReport {
     }
 }
 
+/// One exact state in the gamma-traceless `(10001)` target, expressed in the
+/// 11 by 32 vector-weight times spinor-weight basis used by the bridge code.
+///
+/// The ten nonzero vector weights are ordered `(+e_i,-e_i)`, followed by the
+/// zero weight.  This is not the Cartesian Clifford basis.  The PBW word is a
+/// one-based list of B5 simple-root lowering operators.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct VectorSpinorTargetBasisState {
+    pub ordinal: usize,
+    pub doubled_weight: Weight,
+    pub weight_multiplicity_index: usize,
+    pub pbw_word_simple_roots: Vec<u8>,
+    pub raw_terms: Vec<VectorSpinorTargetBasisTerm>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct VectorSpinorTargetBasisTerm {
+    pub vector_weight_index: usize,
+    pub spinor_weight_index: usize,
+    pub numerator: i64,
+    pub denominator: i64,
+}
+
+/// Return a deterministic exact basis of all 320 target states.
+///
+/// This exposes the target half of the same lowering construction used by the
+/// level-16 coupling certificates.  It deliberately returns the raw target
+/// support as well as the lowering word, so a source descendant can be paired
+/// with its actual 11 by 32 target state rather than only with a highest-weight
+/// coefficient.
+pub fn vector_spinor_target_basis_states() -> Vec<VectorSpinorTargetBasisState> {
+    let spinors = spinor_weights();
+    let states = generate_layer_adapted_vector_spinor_target_states_with_words(&spinors);
+    let vectors = vector_weights();
+    let mut output = Vec::new();
+    for (weight, mut weight_states) in states {
+        weight_states.sort_by(|left, right| {
+            left.pbw_word
+                .cmp(&right.pbw_word)
+                .then_with(|| left.target.len().cmp(&right.target.len()))
+        });
+        for (weight_multiplicity_index, state) in weight_states.into_iter().enumerate() {
+            let raw_terms = state
+                .target
+                .into_iter()
+                .map(|(raw_index, coefficient)| {
+                    let vector_weight_index = raw_index / 32;
+                    let spinor_weight_index = raw_index % 32;
+                    assert_eq!(
+                        add(vectors[vector_weight_index], spinors[spinor_weight_index]),
+                        weight
+                    );
+                    VectorSpinorTargetBasisTerm {
+                        vector_weight_index,
+                        spinor_weight_index,
+                        numerator: *coefficient.numer(),
+                        denominator: *coefficient.denom(),
+                    }
+                })
+                .collect();
+            output.push(VectorSpinorTargetBasisState {
+                ordinal: output.len(),
+                doubled_weight: weight,
+                weight_multiplicity_index,
+                pbw_word_simple_roots: state.pbw_word,
+                raw_terms,
+            });
+        }
+    }
+    assert_eq!(output.len(), 320);
+    output
+}
+
+fn solve_small_rational_system(
+    matrix: &[Vec<Ratio<i64>>],
+    right_hand_side: &[Ratio<i64>],
+) -> Vec<Ratio<i64>> {
+    let dimension = matrix.len();
+    assert_eq!(right_hand_side.len(), dimension);
+    let zero = Ratio::from_integer(0);
+    let mut augmented = matrix
+        .iter()
+        .zip(right_hand_side)
+        .map(|(row, right)| {
+            let mut row = row.clone();
+            row.push(right.clone());
+            row
+        })
+        .collect::<Vec<_>>();
+    for column in 0..dimension {
+        let pivot = (column..dimension)
+            .find(|row| augmented[*row][column] != zero)
+            .expect("target Gram matrix is singular");
+        augmented.swap(column, pivot);
+        let normalization = augmented[column][column].clone();
+        for entry in &mut augmented[column][column..=dimension] {
+            *entry /= normalization.clone();
+        }
+        let pivot_row = augmented[column].clone();
+        for row in 0..dimension {
+            if row == column || augmented[row][column] == zero {
+                continue;
+            }
+            let factor = augmented[row][column].clone();
+            for index in column..=dimension {
+                augmented[row][index] -= factor.clone() * pivot_row[index].clone();
+            }
+        }
+    }
+    augmented
+        .into_iter()
+        .map(|row| row[dimension].clone())
+        .collect()
+}
+
+fn raw_target_state(state: &VectorSpinorTargetBasisState) -> TensorVector {
+    state
+        .raw_terms
+        .iter()
+        .map(|term| {
+            (
+                term.vector_weight_index * 32 + term.spinor_weight_index,
+                Ratio::new(term.numerator, term.denominator),
+            )
+        })
+        .collect()
+}
+
+fn target_invariant_dot(left: &TensorVector, right: &TensorVector) -> Ratio<i64> {
+    left.iter()
+        .filter_map(|(raw_index, coefficient)| {
+            right.get(raw_index).map(|other| {
+                // In the Chevalley vector-weight convention used here the
+                // zero-weight state has norm 2 and the ten nonzero weights
+                // have norm 1.  The spinor weight basis has unit norm.
+                let vector_weight_index = raw_index / 32;
+                let norm = if vector_weight_index == 10 { 2 } else { 1 };
+                coefficient.clone() * other.clone() * Ratio::from_integer(norm)
+            })
+        })
+        .sum()
+}
+
+/// Return the invariant-metric dual of the deterministic 320-state target
+/// basis. Pairing a source descendant with these states turns the certified
+/// target embedding into the adjoint target projection, up to the one global
+/// normalization left free by the homogeneous bridge equations.
+pub fn vector_spinor_target_dual_basis_states() -> Vec<VectorSpinorTargetBasisState> {
+    let basis = vector_spinor_target_basis_states();
+    let mut grouped = BTreeMap::<Weight, Vec<usize>>::new();
+    for state in &basis {
+        grouped
+            .entry(state.doubled_weight)
+            .or_default()
+            .push(state.ordinal);
+    }
+    let raw = basis.iter().map(raw_target_state).collect::<Vec<_>>();
+    let mut dual_raw = vec![TensorVector::new(); basis.len()];
+    for ordinals in grouped.values() {
+        let gram = ordinals
+            .iter()
+            .map(|left| {
+                ordinals
+                    .iter()
+                    .map(|right| target_invariant_dot(&raw[*left], &raw[*right]))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        for (local_target, target_ordinal) in ordinals.iter().copied().enumerate() {
+            let rhs = (0..ordinals.len())
+                .map(|index| Ratio::from_integer(if index == local_target { 1 } else { 0 }))
+                .collect::<Vec<_>>();
+            let coefficients = solve_small_rational_system(&gram, &rhs);
+            let mut state = TensorVector::new();
+            for (coefficient, source_ordinal) in coefficients.iter().zip(ordinals) {
+                for (raw_index, value) in &raw[*source_ordinal] {
+                    *state.entry(*raw_index).or_default() += coefficient.clone() * value.clone();
+                }
+            }
+            state.retain(|_, value| *value != Ratio::from_integer(0));
+            dual_raw[target_ordinal] = state;
+        }
+    }
+    basis
+        .into_iter()
+        .zip(dual_raw)
+        .map(|(mut state, raw)| {
+            state.raw_terms = raw
+                .into_iter()
+                .map(|(raw_index, coefficient)| VectorSpinorTargetBasisTerm {
+                    vector_weight_index: raw_index / 32,
+                    spinor_weight_index: raw_index % 32,
+                    numerator: *coefficient.numer(),
+                    denominator: *coefficient.denom(),
+                })
+                .collect();
+            state
+        })
+        .collect()
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct VectorSpinorTargetDualCertificate {
+    pub basis_states: usize,
+    pub dual_states: usize,
+    pub kronecker_pairings_checked: usize,
+    pub kronecker_pairing_residuals: usize,
+    pub chevalley_invariance_entries_checked: usize,
+    pub chevalley_invariance_residuals: usize,
+    pub passed: bool,
+}
+
+/// Certify that the deterministic target dual is exactly Kronecker-dual to
+/// the 320-state target basis and that its ambient metric is invariant under
+/// all five B5 Chevalley raising/lowering pairs.
+pub fn vector_spinor_target_dual_certificate() -> VectorSpinorTargetDualCertificate {
+    let basis = vector_spinor_target_basis_states();
+    let dual = vector_spinor_target_dual_basis_states();
+    let raw = basis.iter().map(raw_target_state).collect::<Vec<_>>();
+    let dual_raw = dual.iter().map(raw_target_state).collect::<Vec<_>>();
+    let mut kronecker_pairings_checked = 0_usize;
+    let mut kronecker_pairing_residuals = 0_usize;
+    for left in 0..basis.len() {
+        for right in 0..basis.len() {
+            kronecker_pairings_checked += 1;
+            let expected = Ratio::from_integer(if left == right { 1 } else { 0 });
+            if target_invariant_dot(&raw[left], &dual_raw[right]) != expected {
+                kronecker_pairing_residuals += 1;
+            }
+        }
+    }
+
+    let spinors = spinor_weights();
+    let vectors = vector_weights();
+    let mut chevalley_invariance_entries_checked = 0_usize;
+    let mut chevalley_invariance_residuals = 0_usize;
+    for source in 0..11 * 32 {
+        let source_state = TensorVector::from([(source, Ratio::from_integer(1))]);
+        for root in 0..5 {
+            let lowered = lower_target_tensor(&source_state, root, &vectors, &spinors);
+            for target in 0..11 * 32 {
+                let target_state = TensorVector::from([(target, Ratio::from_integer(1))]);
+                let raised = raise_target_tensor(&target_state, root, &vectors, &spinors);
+                chevalley_invariance_entries_checked += 1;
+                if target_invariant_dot(&lowered, &target_state)
+                    != target_invariant_dot(&source_state, &raised)
+                {
+                    chevalley_invariance_residuals += 1;
+                }
+            }
+        }
+    }
+    let passed = basis.len() == 320
+        && dual.len() == 320
+        && kronecker_pairing_residuals == 0
+        && chevalley_invariance_residuals == 0;
+    VectorSpinorTargetDualCertificate {
+        basis_states: basis.len(),
+        dual_states: dual.len(),
+        kronecker_pairings_checked,
+        kronecker_pairing_residuals,
+        chevalley_invariance_entries_checked,
+        chevalley_invariance_residuals,
+        passed,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -4891,5 +5158,75 @@ mod tests {
                 .all(|audit| audit.highest_weight_kernel_dimension == 1)
         );
         assert!(audits.iter().all(|audit| audit.raising_residual_terms == 0));
+    }
+
+    #[test]
+    fn target_basis_api_resolves_all_320_states_into_11_by_32_support() {
+        let states = vector_spinor_target_basis_states();
+        assert_eq!(states.len(), 320);
+        assert_eq!(states[0].ordinal, 0);
+        assert!(states.iter().all(|state| !state.raw_terms.is_empty()));
+        assert!(
+            states
+                .iter()
+                .flat_map(|state| &state.raw_terms)
+                .all(|term| {
+                    term.vector_weight_index < 11
+                        && term.spinor_weight_index < 32
+                        && term.denominator > 0
+                })
+        );
+        assert_eq!(
+            states
+                .iter()
+                .map(|state| state.doubled_weight)
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            192
+        );
+        assert_eq!(
+            states
+                .iter()
+                .filter(|state| state.pbw_word_simple_roots.is_empty())
+                .count(),
+            1
+        );
+
+        let dual = vector_spinor_target_dual_basis_states();
+        assert_eq!(dual.len(), states.len());
+        let raw = states.iter().map(raw_target_state).collect::<Vec<_>>();
+        let dual_raw = dual.iter().map(raw_target_state).collect::<Vec<_>>();
+        for left in 0..states.len() {
+            for right in 0..states.len() {
+                if states[left].doubled_weight != states[right].doubled_weight {
+                    continue;
+                }
+                assert_eq!(
+                    target_invariant_dot(&raw[left], &dual_raw[right]),
+                    Ratio::from_integer(if left == right { 1 } else { 0 })
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn target_dual_metric_is_chevalley_invariant() {
+        let spinors = spinor_weights();
+        let vectors = vector_weights();
+        for source in 0..11 * 32 {
+            let source_state = TensorVector::from([(source, Ratio::from_integer(1))]);
+            for root in 0..5 {
+                let lowered = lower_target_tensor(&source_state, root, &vectors, &spinors);
+                for target in 0..11 * 32 {
+                    let target_state = TensorVector::from([(target, Ratio::from_integer(1))]);
+                    let raised = raise_target_tensor(&target_state, root, &vectors, &spinors);
+                    assert_eq!(
+                        target_invariant_dot(&lowered, &target_state),
+                        target_invariant_dot(&source_state, &raised),
+                        "metric mismatch at source={source}, target={target}, root={root}"
+                    );
+                }
+            }
+        }
     }
 }

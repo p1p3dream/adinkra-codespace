@@ -20,26 +20,86 @@ mod bbbm_sixteen_source_audit;
 mod bbbm_source_audit;
 mod bbbm_worldline;
 mod canonical;
+mod central_hypermultiplet_4d;
+mod checkpointable_sha256;
+mod chiral_tensor_4d;
+mod chiral_vector_4d;
 mod chromochar;
 mod chromotopology;
 mod code;
-mod four_color;
+mod coset_primed_lanczos;
 mod dashing;
 mod decompose;
+mod eleven_dimensional_abstract_clifford_join;
+mod eleven_dimensional_b5_majorana_target_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
+mod eleven_dimensional_complete_f;
+mod eleven_dimensional_complete_f_kernel;
+mod eleven_dimensional_constrained_geometry_jet;
+mod eleven_dimensional_covariant_cohomology_gate;
+mod eleven_dimensional_direct_local_lorentz;
+mod eleven_dimensional_eq40_frame_composition;
+mod eleven_dimensional_first_superspace_jet;
+mod eleven_dimensional_free_complex;
 mod eleven_dimensional_gauge;
+mod eleven_dimensional_h_hat_jet;
+mod eleven_dimensional_hook_bianchi;
+mod eleven_dimensional_j1_lorentz_residual;
+mod eleven_dimensional_k_fag_solver;
 mod eleven_dimensional_level16_couplings;
+mod eleven_dimensional_level18_embedded;
+mod eleven_dimensional_level18_momentum;
+mod eleven_dimensional_level18_target_quotient;
+mod eleven_dimensional_linear_susy;
+mod eleven_dimensional_lorentz_holonomy_compensator_audit;
+mod eleven_dimensional_majorana;
+mod eleven_dimensional_physical_adapter_audit;
+mod eleven_dimensional_physical_curvature;
+mod eleven_dimensional_physical_k;
 mod eleven_dimensional_prepotential;
+mod eleven_dimensional_prepotential_gate;
+mod eleven_dimensional_relaxed_spinorial_cohomology;
+mod eleven_dimensional_second_momentum;
+mod eleven_dimensional_second_momentum_10001_fx;
+mod eleven_dimensional_second_momentum_10001_maps;
+mod eleven_dimensional_second_momentum_20001_fx;
+mod eleven_dimensional_second_momentum_20001_maps;
+mod eleven_dimensional_second_momentum_30001_fx;
+mod eleven_dimensional_second_momentum_30001_maps;
+mod eleven_dimensional_second_momentum_full_fx;
+mod eleven_dimensional_second_momentum_full_inventory;
+mod eleven_dimensional_second_momentum_full_maps;
+mod eleven_dimensional_second_momentum_fx;
+mod eleven_dimensional_second_momentum_gpu;
+mod eleven_dimensional_second_momentum_recoupling;
+mod eleven_dimensional_second_momentum_remaining_recouplings;
+mod eleven_dimensional_source_fixed_curvature;
 mod eleven_dimensional_spinor_bridge;
 mod eleven_dimensional_spinor_bridge_kernels;
+mod eleven_dimensional_spinorial_differential;
+mod eleven_dimensional_superderivative_normal_form;
+mod eleven_dimensional_target_equation_complex;
+mod eleven_dimensional_target_stream;
+mod eleven_dimensional_top_down;
 mod enhance;
 mod eval;
+mod exact_component_algebra;
 mod filters;
+mod four_color;
+#[allow(dead_code)]
+mod higher_dimensional_canonical;
+mod higher_dimensional_fingerprint;
+mod higher_dimensional_fixture_adapters;
+mod higher_dimensional_parentage;
 mod holoraumy;
 mod lorentz;
 mod lorentz_intertwiners;
 mod lr_matrix;
+mod maxwell_phantom;
+mod maxwell_s4_atlas_scan;
+mod maxwell_s8_subalgebra_scan;
+mod maxwell_worldline_search;
 mod minimal_supergravity_action;
 mod minimal_supergravity_curvatures;
 mod nauty_canonical;
@@ -48,20 +108,64 @@ mod permutahedron;
 mod permutahedron_atlas;
 mod permutahedron_fixtures;
 mod permutahedron_garden;
+mod permutahedron_hypergraph;
+mod permutahedron_hypergraph_controls;
+mod permutahedron_hypergraph_higher_dimensional_gate;
+mod permutahedron_hypergraph_recursion_maxwell_bridge;
+mod permutahedron_hypergraph_resolution;
+mod permutahedron_hypergraph_signed;
+mod permutahedron_hypergraph_signed_equivalence;
 mod permutahedron_s4_supersymmetry;
+mod permutahedron_s8_conjugate_separation;
+mod permutahedron_s8_orbit_leakage;
+mod permutahedron_s8_orbits;
+mod permutahedron_s8_separation;
+mod permutahedron_s8_signed_recursion;
+mod permutahedron_s8_source_fixture_audit;
+mod permutahedron_s8_spectral_identifiability;
 mod permutahedron_s8_supersymmetry;
+mod permutahedron_s8_unrestricted_recursion;
+mod permutahedron_spectral;
+mod permutahedron_spectral_cli;
 mod pipeline;
 mod prepotential_curvature;
 mod prepotential_gauge;
+mod quotient_graph_analysis;
+mod r8_block_invariants;
 mod ranking;
+mod s8_characters;
+mod scalar_tensor_tangent;
 mod search;
+mod second_momentum_cpu_progress;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_full_gpu_jobs;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_checkpoint;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_group;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_jobs;
+mod second_momentum_gpu_multi_prime_checkpoint;
+#[cfg_attr(not(any(feature = "cuda", test)), allow(dead_code))]
+mod second_momentum_gpu_progress;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_gpu_word_hash;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_p3_gpu_jobs;
+#[cfg_attr(not(test), allow(dead_code))]
+mod second_momentum_p3_gpu_production;
 mod signed_perm;
+mod spectral_lanczos;
 mod sr_hole;
 mod streamed_gadget;
 mod supercovariant_derivative;
 mod tendim_data;
 mod tendim_generate;
 mod vector_spinor_intertwiners;
+mod vector_tensor_4d;
+mod vector_tensor_central_atlas;
+mod vector_tensor_central_charge;
+mod vector_tensor_central_equivalence;
 mod viz_export;
 
 use std::time::Instant;
@@ -111,10 +215,86 @@ fn main() {
         "perm-atlas-build" => cmd_perm_atlas_build(&args),
         "perm-atlas-verify" => cmd_perm_atlas_verify(),
         "perm-garden-scan" => cmd_perm_garden_scan(&args),
+        "perm-hypergraph-build" => cmd_perm_hypergraph_build(&args),
+        "perm-hypergraph-verify" => cmd_perm_hypergraph_verify(),
+        "perm-hypergraph-controls-build" => cmd_perm_hypergraph_controls_build(&args),
+        "perm-hypergraph-controls-verify" => cmd_perm_hypergraph_controls_verify(),
+        "perm-hypergraph-higher-dimensional-build" => {
+            cmd_perm_hypergraph_higher_dimensional_build(&args)
+        }
+        "perm-hypergraph-higher-dimensional-verify" => {
+            cmd_perm_hypergraph_higher_dimensional_verify()
+        }
+        "perm-hypergraph-resolution-build" => cmd_perm_hypergraph_resolution_build(&args),
+        "perm-hypergraph-resolution-verify" => cmd_perm_hypergraph_resolution_verify(),
+        "perm-hypergraph-signed-build" => cmd_perm_hypergraph_signed_build(&args),
+        "perm-hypergraph-signed-verify" => cmd_perm_hypergraph_signed_verify(),
+        "perm-hypergraph-signed-equivalence-build" => {
+            cmd_perm_hypergraph_signed_equivalence_build(&args)
+        }
+        "perm-hypergraph-signed-equivalence-verify" => {
+            cmd_perm_hypergraph_signed_equivalence_verify()
+        }
         "perm-s4-susy-build" => cmd_perm_s4_susy_build(&args),
         "perm-s4-susy-verify" => cmd_perm_s4_susy_verify(),
+        "perm-s8-conjugates-build" => cmd_perm_s8_conjugates_build(&args),
+        "perm-s8-conjugates-verify" => cmd_perm_s8_conjugates_verify(),
+        "perm-s8-orbits-build" => cmd_perm_s8_orbits_build(&args),
+        "perm-s8-orbits-verify" => cmd_perm_s8_orbits_verify(),
+        "perm-s8-separation-build" => cmd_perm_s8_separation_build(&args),
+        "perm-s8-separation-verify" => cmd_perm_s8_separation_verify(),
         "perm-s8-susy-build" => cmd_perm_s8_susy_build(&args),
         "perm-s8-susy-verify" => cmd_perm_s8_susy_verify(),
+        "vector-tensor-central-charge-build" => cmd_vector_tensor_central_charge_build(&args),
+        "vector-tensor-central-charge-verify" => cmd_vector_tensor_central_charge_verify(),
+        "vector-tensor-central-equivalence-build" => {
+            cmd_vector_tensor_central_equivalence_build(&args)
+        }
+        "vector-tensor-central-equivalence-verify" => {
+            cmd_vector_tensor_central_equivalence_verify()
+        }
+        "vector-tensor-central-atlas-build" => cmd_vector_tensor_central_atlas_build(&args),
+        "vector-tensor-central-atlas-verify" => cmd_vector_tensor_central_atlas_verify(),
+        "vector-tensor-4d-build" => cmd_vector_tensor_4d_build(&args),
+        "vector-tensor-4d-verify" => cmd_vector_tensor_4d_verify(),
+        "central-hypermultiplet-4d-build" => cmd_central_hypermultiplet_4d_build(&args),
+        "central-hypermultiplet-4d-verify" => cmd_central_hypermultiplet_4d_verify(),
+        "scalar-tensor-tangent-build" => cmd_scalar_tensor_tangent_build(&args),
+        "scalar-tensor-tangent-verify" => cmd_scalar_tensor_tangent_verify(),
+        "chiral-vector-4d-build" => cmd_chiral_vector_4d_build(&args),
+        "chiral-vector-4d-verify" => cmd_chiral_vector_4d_verify(),
+        "chiral-tensor-4d-build" => cmd_chiral_tensor_4d_build(&args),
+        "chiral-tensor-4d-verify" => cmd_chiral_tensor_4d_verify(),
+        "higher-dimensional-fingerprint-build" => cmd_higher_dimensional_fingerprint_build(&args),
+        "higher-dimensional-fingerprint-verify" => cmd_higher_dimensional_fingerprint_verify(),
+        "higher-dimensional-parentage-build" => cmd_higher_dimensional_parentage_build(&args),
+        "higher-dimensional-parentage-verify" => cmd_higher_dimensional_parentage_verify(),
+        "higher-dimensional-parentage-query" => cmd_higher_dimensional_parentage_query(&args),
+        "maxwell-phantom-build" => cmd_maxwell_phantom_build(&args),
+        "maxwell-phantom-verify" => cmd_maxwell_phantom_verify(),
+        "maxwell-worldline-search-build" => cmd_maxwell_worldline_search_build(&args),
+        "maxwell-worldline-search-verify" => cmd_maxwell_worldline_search_verify(),
+        "maxwell-s4-atlas-build" => cmd_maxwell_s4_atlas_build(&args),
+        "maxwell-s4-atlas-verify" => cmd_maxwell_s4_atlas_verify(),
+        "maxwell-s8-subalgebra-build" => cmd_maxwell_s8_subalgebra_build(&args),
+        "maxwell-s8-subalgebra-verify" => cmd_maxwell_s8_subalgebra_verify(),
+        "perm-hypergraph-recursion-maxwell-build" => {
+            cmd_perm_hypergraph_recursion_maxwell_build(&args)
+        }
+        "perm-hypergraph-recursion-maxwell-verify" => {
+            cmd_perm_hypergraph_recursion_maxwell_verify()
+        }
+        "perm-s8-unrestricted-recursion-build" => cmd_perm_s8_unrestricted_recursion_build(&args),
+        "perm-s8-unrestricted-recursion-verify" => cmd_perm_s8_unrestricted_recursion_verify(),
+        "perm-s8-orbit-leakage-build" => cmd_perm_s8_orbit_leakage_build(&args),
+        "perm-s8-orbit-leakage-verify" => cmd_perm_s8_orbit_leakage_verify(),
+        "perm-s8-source-fixture-audit-build" => cmd_perm_s8_source_fixture_audit_build(&args),
+        "perm-s8-source-fixture-audit-verify" => cmd_perm_s8_source_fixture_audit_verify(),
+        "perm-s8-spectral-identifiability-build" => {
+            cmd_perm_s8_spectral_identifiability_build(&args)
+        }
+        "perm-s8-spectral-identifiability-verify" => cmd_perm_s8_spectral_identifiability_verify(),
+        "perm-spectral-probe" => permutahedron_spectral_cli::cmd_perm_spectral_probe(&args),
         "adynkra-genome-build" => cmd_adynkra_genome_build(&args),
         "adynkra-genome-verify" => cmd_adynkra_genome_verify(),
         "adynkra-derivative-verify" => cmd_adynkra_derivative_verify(),
@@ -127,6 +307,102 @@ fn main() {
         "adynkra-minimal-action-verify" => cmd_adynkra_minimal_action_verify(),
         "adynkrafield-operator-verify" => cmd_adynkrafield_operator_verify(),
         "adynkra-11d-prepotential-verify" => cmd_adynkra_11d_prepotential_verify(),
+        "adynkra-11d-free-complex-build" => cmd_adynkra_11d_free_complex_build(&args),
+        "adynkra-11d-hook-bianchi-build" => cmd_adynkra_11d_hook_bianchi_build(&args),
+        "adynkra-11d-level18-momentum-build" => cmd_adynkra_11d_level18_momentum_build(&args),
+        "adynkra-11d-prepotential-gate-build" => cmd_adynkra_11d_prepotential_gate_build(&args),
+        "adynkra-11d-complete-f-build" => cmd_adynkra_11d_complete_f_build(&args),
+        "adynkra-11d-superfield-curvature-hash" => cmd_adynkra_11d_superfield_curvature_hash(&args),
+        "adynkra-11d-superfield-curvature-kernel" => {
+            cmd_adynkra_11d_superfield_curvature_kernel(&args)
+        }
+        "adynkra-11d-superfield-curvature-sector-kernel" => {
+            cmd_adynkra_11d_superfield_curvature_sector_kernel(&args)
+        }
+        "adynkra-11d-superderivative-normal-form-build" => {
+            cmd_adynkra_11d_superderivative_normal_form_build(&args)
+        }
+        "adynkra-11d-h-hat-jet-build" => cmd_adynkra_11d_h_hat_jet_build(&args),
+        "adynkra-11d-eq40-frame-composition-build" => {
+            cmd_adynkra_11d_eq40_frame_composition_build(&args)
+        }
+        "adynkra-11d-constrained-geometry-jet-build" => {
+            cmd_adynkra_11d_constrained_geometry_jet_build(&args)
+        }
+        "adynkra-11d-physical-k-audit" => cmd_adynkra_11d_physical_k_audit(&args),
+        "adynkra-11d-physical-k-validate" => cmd_adynkra_11d_physical_k_validate(&args),
+        "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
+        "adynkra-11d-second-momentum-build" => cmd_adynkra_11d_second_momentum_build(&args),
+        "adynkra-11d-second-momentum-recoupling-build" => {
+            cmd_adynkra_11d_second_momentum_recoupling_build(&args)
+        }
+        "adynkra-11d-second-momentum-component-build" => {
+            cmd_adynkra_11d_second_momentum_component_build(&args)
+        }
+        "adynkra-11d-second-momentum-10001-fx" => cmd_adynkra_11d_second_momentum_10001_fx(&args),
+        "adynkra-11d-second-momentum-full-map-plan" => {
+            cmd_adynkra_11d_second_momentum_full_map_plan(&args)
+        }
+        "adynkra-11d-second-momentum-full-map-worker" => {
+            cmd_adynkra_11d_second_momentum_full_map_worker(&args)
+        }
+        "adynkra-11d-second-momentum-full-map-status" => {
+            cmd_adynkra_11d_second_momentum_full_map_status(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-plan" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_plan(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-status" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_status(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-worker" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_worker(&args)
+        }
+        "adynkra-11d-second-momentum-full-gpu-rank" => {
+            cmd_adynkra_11d_second_momentum_full_gpu_rank(&args)
+        }
+        "adynkra-11d-second-momentum-p3-gpu-plan" => {
+            cmd_adynkra_11d_second_momentum_p3_gpu_plan(&args)
+        }
+        "adynkra-11d-second-momentum-p3-gpu-status" => {
+            cmd_adynkra_11d_second_momentum_p3_gpu_status(&args)
+        }
+        "adynkra-11d-second-momentum-p3-gpu-worker" => {
+            cmd_adynkra_11d_second_momentum_p3_gpu_worker(&args)
+        }
+        "adynkra-11d-second-momentum-p3-gpu-three-prime-worker" => {
+            cmd_adynkra_11d_second_momentum_p3_gpu_three_prime_worker(&args)
+        }
+        "adynkra-11d-second-momentum-p3-gpu-rank" => {
+            cmd_adynkra_11d_second_momentum_p3_gpu_rank(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-rank-28" => {
+            cmd_adynkra_11d_second_momentum_gpu_rank_28(&args)
+        }
+        "adynkra-11d-second-momentum-cpu-fx" => cmd_adynkra_11d_second_momentum_cpu_fx(&args),
+        "adynkra-11d-second-momentum-gpu-fx" => cmd_adynkra_11d_second_momentum_gpu_fx(&args),
+        "adynkra-11d-second-momentum-gpu-fx-plan" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_plan(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-worker" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_worker(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-multi-prime-worker" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_multi_prime_worker(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-status" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_status(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-fx-import" => {
+            cmd_adynkra_11d_second_momentum_gpu_fx_import(&args)
+        }
+        "adynkra-11d-second-momentum-gpu-status-reconcile" => {
+            cmd_adynkra_11d_second_momentum_gpu_status_reconcile(&args)
+        }
+        "adynkra-11d-top-down-build" => cmd_adynkra_11d_top_down_build(&args),
+        "adynkra-11d-first-momentum-fx-aggregate" => {
+            cmd_adynkra_11d_first_momentum_fx_aggregate(&args)
+        }
         "adynkra-11d-clifford-verify" => cmd_adynkra_11d_clifford_verify(),
         "adynkra-11d-gauge-intertwiner-verify" => cmd_adynkra_11d_gauge_intertwiner_verify(),
         "adynkra-11d-gauge-composition-manifest" => cmd_adynkra_11d_gauge_composition_manifest(),
@@ -173,6 +449,12 @@ fn main() {
         "export-3d-assets" => cmd_export_3d_assets(&args),
         "decompose-audit" => cmd_decompose_audit(&args),
         "decompose-probe" => cmd_decompose_probe(&args),
+        "cls-g-full-build" => cmd_cls_g_full_build(&args),
+        "cls-g-full-verify" => cmd_cls_g_full_verify(&args),
+        "cls-g-csp-build" => cmd_cls_g_csp_build(&args),
+        "cls-g-csp-shard" => cmd_cls_g_csp_shard(&args),
+        "cls-g-csp-status" => cmd_cls_g_csp_status(&args),
+        "cls-g-csp-merge" => cmd_cls_g_csp_merge(&args),
         "help" | "--help" | "-h" => print_usage(&args[0]),
         other => {
             eprintln!("Unknown command: {}", other);
@@ -224,6 +506,31 @@ fn print_usage(prog: &str) {
     eprintln!("                          scales to k<=3 where the dense path cannot reach)");
     eprintln!("  decompose-audit <k> <sample_reps> [json]");
     eprintln!("                          f32 error audit: dense f64 vs GEMM f64 vs GEMM f32");
+    eprintln!("  cls-g-full-build [side] [blocks] [threads] [cap] [json]");
+    eprintln!("                          Full {{-1,0,1}} CLS G-matrix enumeration via the");
+    eprintln!(
+        "                          K=Q(sqrt(-3)) commutant reduction (side L|R, blocks 1..3)"
+    );
+    eprintln!("  cls-g-full-verify [side] [blocks] [json]");
+    eprintln!(
+        "                          Re-verify the ladder and every stored sample of an artifact"
+    );
+    eprintln!("  cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]");
+    eprintln!("                          v2 slot-level CSP engine: correlated product boxes,");
+    eprintln!(
+        "                          residual arc-consistency, MRV order (stride>1 = stratified sample)"
+    );
+    eprintln!("  cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]");
+    eprintln!("                          Durable sharded enumeration: one immutable shard per");
+    eprintln!(
+        "                          slot-0 prefix, atomic writes, skips existing valid shards"
+    );
+    eprintln!("  cls-g-csp-status [dir]");
+    eprintln!("                          Live dashboard over a shard dir: coverage, checksum,");
+    eprintln!("                          per-pod heartbeats, per-worker progress, ETA (read-only)");
+    eprintln!("  cls-g-csp-merge [side] [blocks] [dir] [json]");
+    eprintln!("                          Verify full shard coverage and merge commutatively;");
+    eprintln!("                          refuses an incomplete or inconsistent census");
     eprintln!("  sr-investigation [json] Analyze the minimal unpaired Siegel-Rocek case");
     eprintln!("                          (default: adinkra_codes_n16.json)");
     eprintln!("  bbbm                    Verify the generic minimal N=9 valise scaffold");
@@ -239,12 +546,100 @@ fn print_usage(prog: &str) {
     eprintln!("  perm-atlas-verify       Verify graphs, paper correlators, cosets, and embeddings");
     eprintln!("  perm-garden-scan [json]");
     eprintln!("                          Solve Garden signs for all 5,040 R8 cosets");
+    eprintln!("  perm-hypergraph-build [data-json] [validation-json]");
+    eprintln!("                          Discover exact S4/S8 unsigned constraint hypergraphs");
+    eprintln!("  perm-hypergraph-verify Verify the unlabeled clique and incidence calculation");
+    eprintln!("  perm-hypergraph-controls-build [data-json] [validation-json]");
+    eprintln!("                          Project published controls onto hypergraph families");
+    eprintln!("  perm-hypergraph-controls-verify Verify control membership and closure");
+    eprintln!("  perm-hypergraph-higher-dimensional-build [data-json] [validation-json]");
+    eprintln!("                          Run the sourced CV/CT control gate and stop audit");
+    eprintln!("  perm-hypergraph-higher-dimensional-verify Verify the bounded control gate");
+    eprintln!("  perm-hypergraph-resolution-build [data-json] [validation-json]");
+    eprintln!("                          Find and certify a minimum mixed-cover trade");
+    eprintln!("  perm-hypergraph-resolution-verify Verify the exact mixed-cover certificate");
+    eprintln!("  perm-hypergraph-signed-build [data-json] [validation-json]");
+    eprintln!("                          Transport Garden signs across all 151,200 octets");
+    eprintln!("  perm-hypergraph-signed-verify Verify all signed transports and affine ranks");
+    eprintln!("  perm-hypergraph-signed-equivalence-build [data-json] [validation-json]");
+    eprintln!("                          Classify the 30 signed identity representatives");
+    eprintln!("  perm-hypergraph-signed-equivalence-verify Verify every ledger witness");
     eprintln!("  perm-s4-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six signed S4 sectors and their Adinkras");
     eprintln!("  perm-s4-susy-verify     Verify all 96 published fiducial signings");
+    eprintln!("  perm-s8-conjugates-build [data-json] [validation-json]");
+    eprintln!("                          Scan all 30 conjugate R8 coset families");
+    eprintln!("  perm-s8-conjugates-verify");
+    eprintln!("                          Verify all 151,200 unsigned GR(8,8) supports");
+    eprintln!("  perm-s8-orbits-build [data-json] [validation-json]");
+    eprintln!("                          Classify one R8 coset atlas under its normalizer");
+    eprintln!("  perm-s8-orbits-verify   Verify the 20 exact normalizer orbits");
+    eprintln!("  perm-s8-separation-build [data-json] [validation-json]");
+    eprintln!("                          Classify R8 cosets that split into paired S4 sectors");
+    eprintln!("  perm-s8-separation-verify");
+    eprintln!("                          Verify all invariant 4+4 splits and pair classes");
     eprintln!("  perm-s8-susy-build [data-json] [validation-json]");
     eprintln!("                          Build the six published signed S8 representations");
     eprintln!("  perm-s8-susy-verify     Verify closure, nonclosure, HYMN, and all m/n branches");
+    eprintln!("  vector-tensor-central-charge-build [data-json] [validation-json]");
+    eprintln!("                          Factor S8 residuals and certify central extensions");
+    eprintln!("  vector-tensor-central-charge-verify Verify the one-Z vector-tensor completion");
+    eprintln!("  vector-tensor-central-equivalence-build [json]");
+    eprintln!("                          Classify all 25 printed one-Z branches");
+    eprintln!("  vector-tensor-central-equivalence-verify Verify every enriched witness");
+    eprintln!("  vector-tensor-central-atlas-build [json]");
+    eprintln!("                          Transport one-Z closure to all 151,200 supports");
+    eprintln!("  vector-tensor-central-atlas-verify Verify complete one-Z support coverage");
+    eprintln!("  vector-tensor-4d-build [data-json] [validation-json]");
+    eprintln!("                          Build the corrected Eq. 78 component fixture");
+    eprintln!("  vector-tensor-4d-verify Verify the corrected Eq. 78 component closure");
+    eprintln!("  central-hypermultiplet-4d-build [data-json] [validation-json]");
+    eprintln!("                          Build the exact Wess-Fayet one-Z holdout");
+    eprintln!("  central-hypermultiplet-4d-verify Verify its 4D closure and CC bridge");
+    eprintln!("  scalar-tensor-tangent-build [json]");
+    eprintln!("                          Derive the regular rigid tangent preflight");
+    eprintln!("  scalar-tensor-tangent-verify Verify composites, gauges, and 8+8 count");
+    eprintln!("  chiral-vector-4d-build [data-json] [validation-json]");
+    eprintln!("                          Reproduce 4D chiral-vector closure and reduction");
+    eprintln!("  chiral-vector-4d-verify Verify Eqs. 32-41 of arXiv:1405.0048 exactly");
+    eprintln!("  chiral-tensor-4d-build [data-json] [validation-json]");
+    eprintln!("                          Reproduce 4D chiral-tensor closure and reduction");
+    eprintln!("  chiral-tensor-4d-verify Verify Eqs. 44-53 of arXiv:1405.0048 exactly");
+    eprintln!("  higher-dimensional-fingerprint-build [json]");
+    eprintln!("                          Compare CV and CT spatial and gauge data");
+    eprintln!("  higher-dimensional-fingerprint-verify Verify the CV/CT comparison gates");
+    eprintln!("  higher-dimensional-parentage-build [json]");
+    eprintln!("                          Build the invariant catalog and inference audit");
+    eprintln!("  higher-dimensional-parentage-verify Verify classification and mutations");
+    eprintln!("  higher-dimensional-parentage-query <query-json>");
+    eprintln!("                          Classify supplied physical decorations");
+    eprintln!("  maxwell-phantom-build [json]");
+    eprintln!("                          Verify Maxwell phantom and Bianchi linkage data");
+    eprintln!("  maxwell-phantom-verify Verify the complete Maxwell Eq. 5.11 gate");
+    eprintln!("  maxwell-worldline-search-build [json]");
+    eprintln!("                          Recover Maxwell from four-color worldline data");
+    eprintln!("  maxwell-worldline-search-verify Verify recovery and negative controls");
+    eprintln!("  maxwell-s4-atlas-build [json]");
+    eprintln!("                          Scan all 96 published four-color signings");
+    eprintln!("  maxwell-s4-atlas-verify Verify the complete four-color scan");
+    eprintln!("  maxwell-s8-subalgebra-build [json]");
+    eprintln!("                          Scan both embedded four-color blocks of S8 closers");
+    eprintln!("  maxwell-s8-subalgebra-verify Verify the embedded-block classification");
+    eprintln!("  perm-hypergraph-recursion-maxwell-build [json]");
+    eprintln!("                          Map S8 recursion closers and Maxwell classes");
+    eprintln!("  perm-hypergraph-recursion-maxwell-verify Verify the exact bridge");
+    eprintln!("  perm-s8-unrestricted-recursion-build [json]");
+    eprintln!("                          Exhaust all 256 masks and same-source controls");
+    eprintln!("  perm-s8-unrestricted-recursion-verify Verify the unrestricted census");
+    eprintln!("  perm-s8-orbit-leakage-build [json]");
+    eprintln!("                          Audit normalizer-orbit basis dependence");
+    eprintln!("  perm-s8-orbit-leakage-verify Verify node-relabeling reachability");
+    eprintln!("  perm-s8-source-fixture-audit-build [json]");
+    eprintln!("                          Classify physical controls by source provenance");
+    eprintln!("  perm-s8-source-fixture-audit-verify Verify source eligibility and stop gate");
+    eprintln!("  perm-s8-spectral-identifiability-build [json]");
+    eprintln!("                          Audit all 30 equitable R8 partitions");
+    eprintln!("  perm-s8-spectral-identifiability-verify Verify the spectral no-go result");
     eprintln!("  adynkra-genome-build [data-json] [validation-json]");
     eprintln!("                          Build the six published 4D N=1 Adynkra genomes");
     eprintln!("  adynkra-genome-verify Verify Eqs. 3.6-3.11 term by term");
@@ -264,6 +659,121 @@ fn print_usage(prog: &str) {
     eprintln!(
         "  adynkra-11d-prepotential-verify Verify the 11D prepotential-candidate inventories"
     );
+    eprintln!("  adynkra-11d-top-down-build [json] Build the bounded top-down gate report");
+    eprintln!("  adynkra-11d-first-momentum-fx-aggregate [json] [checkpoint-root]");
+    eprintln!("                          Merge 336 complete F_X checkpoints without recomputing");
+    eprintln!("  adynkra-11d-free-complex-build [data-json] [validation-json]");
+    eprintln!(
+        "                          Build the exact complexified 44+84|128 free target complex"
+    );
+    eprintln!("  adynkra-11d-hook-bianchi-build [data-json] [validation-json]");
+    eprintln!("                          Build the bounded level-17 hook continuation gate");
+    eprintln!("  adynkra-11d-level18-momentum-build [data-json] [validation-json]");
+    eprintln!("                          Build exact level-18 lifts and momentum source audit");
+    eprintln!("  adynkra-11d-prepotential-gate-build [json]");
+    eprintln!("                          Build the exact 336-job source-side kill-gate work list");
+    eprintln!("  adynkra-11d-complete-f-build [json]");
+    eprintln!(
+        "                          Join exact geometry sectors and gate the route to F and K"
+    );
+    eprintln!("  adynkra-11d-superfield-curvature-hash [json]");
+    eprintln!("  adynkra-11d-superfield-curvature-kernel [certificate-json] [output-json]");
+    eprintln!(
+        "  adynkra-11d-superfield-curvature-sector-kernel [certificate-json] [sector-tag] [output-json]"
+    );
+    eprintln!(
+        "                          Hash all 321 exact gauge-fixed X2/X5/J-/raw-W/direct-Riemann diagnostic columns"
+    );
+    eprintln!("  adynkra-11d-superderivative-normal-form-build [json]");
+    eprintln!("                          Certify the exact ordered-D and formal-momentum algebra");
+    eprintln!("  adynkra-11d-h-hat-jet-build [json]");
+    eprintln!("                          Build the bounded H/scale/Lorentz polynomial jet stream");
+    eprintln!("  adynkra-11d-eq40-frame-composition-build [json]");
+    eprintln!(
+        "                          Compose the frame jet through the differentiated Eq. (40) solve"
+    );
+    eprintln!("  adynkra-11d-constrained-geometry-jet-build [json]");
+    eprintln!("                          Assemble Eqs. (13)/(14) and their exact first spinor jet");
+    eprintln!("  adynkra-11d-physical-k-audit [json]");
+    eprintln!("                          Audit and bind the physical K input boundary");
+    eprintln!("  adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
+    eprintln!("                          Validate a physical K and open the exact quotient gate");
+    eprintln!("  adynkra-11d-target-stream-build [data-json] [validation-json]");
+    eprintln!("                          Build the target-resolved exact 11 by 32 stream");
+    eprintln!("  adynkra-11d-second-momentum-build [json]");
+    eprintln!("                          Build the bounded p^2 D^12 inventory and stream report");
+    eprintln!("  adynkra-11d-second-momentum-recoupling-build [json]");
+    eprintln!("                          Certify the trace/STT rank-two momentum recoupling");
+    eprintln!("  adynkra-11d-second-momentum-component-build [results-dir]");
+    eprintln!("                          Build bounded 10001/30001 component-map certificates");
+    eprintln!("  adynkra-11d-second-momentum-10001-fx [json]");
+    eprintln!("                          Publish the exact four-column original 10001 slice");
+    eprintln!("  adynkra-11d-second-momentum-full-map-plan");
+    eprintln!("                          Print the canonical portable 47-job map inventory");
+    eprintln!(
+        "  adynkra-11d-second-momentum-full-map-worker <job-list> [checkpoint-dir] [status-file]"
+    );
+    eprintln!(
+        "                          Build a portable map list such as 0-3,8 with JSONL progress"
+    );
+    eprintln!("  adynkra-11d-second-momentum-full-map-status [checkpoint-dir]");
+    eprintln!("                          Validate durable missing-map coverage and proof gates");
+    eprintln!("  adynkra-11d-second-momentum-full-gpu-plan [output-dir]");
+    eprintln!(
+        "                          Print the 96-job manifest for all 53 non-large-tranche columns"
+    );
+    eprintln!("  adynkra-11d-second-momentum-full-gpu-status <job-list> [output-dir]");
+    eprintln!("                          Summarize portable full-inventory GPU assignments");
+    eprintln!(
+        "  adynkra-11d-second-momentum-full-gpu-worker <job-list> <map-dir> [output-dir] [device] [cpu-parity-terms]"
+    );
+    eprintln!("                          Run resumable missing-column groups with 5-second status");
+    eprintln!(
+        "  adynkra-11d-second-momentum-full-gpu-rank <prime> <output-json> <artifact-dir> [artifact-dir ...]"
+    );
+    eprintln!("                          Verify and rank all 77 same-prime modular columns");
+    eprintln!("  adynkra-11d-second-momentum-p3-gpu-plan [output-dir]");
+    eprintln!("                          Print the group x prime p3 D11 production inventory");
+    eprintln!("  adynkra-11d-second-momentum-p3-gpu-status <job-list> [output-dir]");
+    eprintln!("                          Validate portable p3 job coverage and artifacts");
+    eprintln!(
+        "  adynkra-11d-second-momentum-p3-gpu-worker <job-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]"
+    );
+    eprintln!(
+        "  adynkra-11d-second-momentum-p3-gpu-three-prime-worker <group-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]"
+    );
+    eprintln!("                          Run bounded word-resumable p3 jobs with 5-second status");
+    eprintln!(
+        "  adynkra-11d-second-momentum-p3-gpu-rank <prime> <output-json> <artifact-dir> [artifact-dir ...]"
+    );
+    eprintln!("                          Verify exact all-77 coverage and publish the p3 rank");
+    eprintln!("  adynkra-11d-second-momentum-cpu-fx <20001|30001> [output-file] [status-file]");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx <20001|30001> <local-column> [prime] [output-dir] [cpu-parity-terms] [device] [status-file]"
+    );
+    eprintln!("                          Run one exact GPU F_X column with JSONL/status telemetry");
+    eprintln!("  adynkra-11d-second-momentum-gpu-fx-plan [output-dir]");
+    eprintln!(
+        "                          Print or publish the canonical 36-job, three-prime inventory"
+    );
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx-worker <job-list> [output-dir] [device] [cpu-parity-terms]"
+    );
+    eprintln!("                          Run a portable list such as 20001@0 or 30001-g7-p0");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx-multi-prime-worker <same-group-job-list> [output-dir] [device] [cpu-parity-terms]"
+    );
+    eprintln!("                          Traverse exact sources once for 2-3 prime jobs");
+    eprintln!("  adynkra-11d-second-momentum-gpu-fx-status <job-list> [output-dir]");
+    eprintln!("                          Validate coverage and live/stale worker status");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-fx-import <job-list> <source-dir> [destination-dir]"
+    );
+    eprintln!("                          Verify and import portable completed jobs");
+    eprintln!(
+        "  adynkra-11d-second-momentum-gpu-status-reconcile <status-file> <child-pid> <exit:N|signal:N|unknown>"
+    );
+    eprintln!("                          Reconcile a status snapshot after waiting for its child");
     eprintln!("  adynkra-11d-clifford-verify Verify the 11D Clifford and vector-spinor projectors");
     eprintln!(
         "  adynkra-11d-gauge-intertwiner-verify Construct the six candidate 11D spinor gauge maps"
@@ -432,6 +942,519 @@ fn cmd_perm_garden_scan(args: &[String]) {
     );
 }
 
+fn cmd_perm_hypergraph_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_constraint_hypergraphs.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_constraint_hypergraphs_validation.json");
+    let report = permutahedron_hypergraph::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_verify() {
+    let artifact = permutahedron_hypergraph::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_controls_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_physical_controls.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_physical_controls_validation.json");
+    let report = permutahedron_hypergraph_controls::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_controls_verify() {
+    let artifact = permutahedron_hypergraph_controls::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_higher_dimensional_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_higher_dimensional_gate.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_higher_dimensional_gate_validation.json");
+    let report = permutahedron_hypergraph_higher_dimensional_gate::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_higher_dimensional_verify() {
+    let artifact = permutahedron_hypergraph_higher_dimensional_gate::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_vector_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/chiral_vector_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/chiral_vector_4d_validation.json");
+    let report = chiral_vector_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_vector_4d_verify() {
+    let report = chiral_vector_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_tensor_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/chiral_tensor_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/chiral_tensor_4d_validation.json");
+    let report = chiral_tensor_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_chiral_tensor_4d_verify() {
+    let report = chiral_tensor_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_fingerprint_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/higher_dimensional_fingerprint.json");
+    let artifact = higher_dimensional_fingerprint::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_fingerprint_verify() {
+    let artifact = higher_dimensional_fingerprint::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_parentage_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/higher_dimensional_parentage.json");
+    let artifact = higher_dimensional_parentage::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_parentage_verify() {
+    let artifact = higher_dimensional_parentage::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_higher_dimensional_parentage_query(args: &[String]) {
+    let Some(path) = args.get(2) else {
+        eprintln!("higher-dimensional-parentage-query requires a query JSON path");
+        std::process::exit(1);
+    };
+    let reader = std::io::BufReader::new(
+        std::fs::File::open(path).expect("open higher-dimensional parentage query"),
+    );
+    let query: higher_dimensional_parentage::ParentageQuery =
+        serde_json::from_reader(reader).expect("parse higher-dimensional parentage query");
+    let result =
+        higher_dimensional_parentage::infer(&query, &higher_dimensional_parentage::known_catalog());
+    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+}
+
+fn cmd_maxwell_phantom_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_phantom.json");
+    let artifact = maxwell_phantom::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_phantom_verify() {
+    let artifact = maxwell_phantom::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_worldline_search_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_worldline_search.json");
+    let artifact = maxwell_worldline_search::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_worldline_search_verify() {
+    let artifact = maxwell_worldline_search::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s4_atlas_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_s4_atlas_scan.json");
+    let artifact = maxwell_s4_atlas_scan::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s4_atlas_verify() {
+    let artifact = maxwell_s4_atlas_scan::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s8_subalgebra_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/maxwell_s8_subalgebra_scan.json");
+    let artifact = maxwell_s8_subalgebra_scan::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_maxwell_s8_subalgebra_verify() {
+    let artifact = maxwell_s8_subalgebra_scan::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_recursion_maxwell_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_recursion_maxwell_bridge.json");
+    let validation = permutahedron_hypergraph_recursion_maxwell_bridge::write_artifact(
+        std::path::Path::new(path),
+    );
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_recursion_maxwell_verify() {
+    let artifact = permutahedron_hypergraph_recursion_maxwell_bridge::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_unrestricted_recursion_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_unrestricted_recursion.json");
+    let validation =
+        permutahedron_s8_unrestricted_recursion::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_unrestricted_recursion_verify() {
+    let artifact = permutahedron_s8_unrestricted_recursion::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbit_leakage_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_orbit_leakage.json");
+    let validation = permutahedron_s8_orbit_leakage::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbit_leakage_verify() {
+    let artifact = permutahedron_s8_orbit_leakage::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_source_fixture_audit_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_source_fixture_audit.json");
+    let validation =
+        permutahedron_s8_source_fixture_audit::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_source_fixture_audit_verify() {
+    let artifact = permutahedron_s8_source_fixture_audit::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_spectral_identifiability_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_spectral_identifiability.json");
+    let validation =
+        permutahedron_s8_spectral_identifiability::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+    if !validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_spectral_identifiability_verify() {
+    let artifact = permutahedron_s8_spectral_identifiability::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.audit_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_resolution_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_resolution.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_resolution_validation.json");
+    let report = permutahedron_hypergraph_resolution::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_resolution_verify() {
+    let artifact = permutahedron_hypergraph_resolution::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_signed_transport.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_signed_transport_validation.json");
+    let report = permutahedron_hypergraph_signed::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_verify() {
+    let artifact = permutahedron_hypergraph_signed::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_equivalence_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_hypergraph_signed_equivalence.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_hypergraph_signed_equivalence_validation.json");
+    let report = permutahedron_hypergraph_signed_equivalence::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_hypergraph_signed_equivalence_verify() {
+    let artifact = permutahedron_hypergraph_signed_equivalence::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
 fn cmd_perm_s4_susy_build(args: &[String]) {
     let data_path = args
         .get(2)
@@ -456,6 +1479,108 @@ fn cmd_perm_s4_susy_verify() {
     println!(
         "{}",
         serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_conjugates_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_conjugate_separation.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_conjugate_separation_validation.json");
+    let report = permutahedron_s8_conjugate_separation::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_conjugates_verify() {
+    let artifact = permutahedron_s8_conjugate_separation::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.ordered_pair_correspondence).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.recursive_construction_audit).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbits_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_normalizer_orbits.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_normalizer_orbits_validation.json");
+    let report = permutahedron_s8_orbits::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_orbits_verify() {
+    let artifact = permutahedron_s8_orbits::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_separation_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/permutahedron_s8_separation_probe.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/permutahedron_s8_separation_probe_validation.json");
+    let report = permutahedron_s8_separation::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_perm_s8_separation_verify() {
+    let artifact = permutahedron_s8_separation::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.findings).unwrap()
     );
     if !artifact.validation.passed {
         std::process::exit(2);
@@ -491,6 +1616,154 @@ fn cmd_perm_s8_susy_verify() {
         "{}",
         serde_json::to_string_pretty(&artifact.separation).unwrap()
     );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_charge_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/vector_tensor_central_charge.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_central_charge_validation.json");
+    let report = vector_tensor_central_charge::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_charge_verify() {
+    let artifact = vector_tensor_central_charge::build();
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.validation).unwrap()
+    );
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&artifact.vector_tensor).unwrap()
+    );
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_equivalence_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_central_equivalence.json");
+    let report = vector_tensor_central_equivalence::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_equivalence_verify() {
+    let report = vector_tensor_central_equivalence::build();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_atlas_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_central_atlas.json");
+    let report = vector_tensor_central_atlas::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_central_atlas_verify() {
+    let report = vector_tensor_central_atlas::build();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_4d_verify() {
+    let report = vector_tensor_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_vector_tensor_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/vector_tensor_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/vector_tensor_4d_validation.json");
+    let report = vector_tensor_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_central_hypermultiplet_4d_verify() {
+    let report = central_hypermultiplet_4d::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_central_hypermultiplet_4d_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/central_hypermultiplet_4d.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/central_hypermultiplet_4d_validation.json");
+    let report = central_hypermultiplet_4d::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_scalar_tensor_tangent_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/scalar_tensor_tangent.json");
+    let artifact = scalar_tensor_tangent::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
+    if !artifact.validation.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_scalar_tensor_tangent_verify() {
+    let artifact = scalar_tensor_tangent::build();
+    println!("{}", serde_json::to_string_pretty(&artifact).unwrap());
     if !artifact.validation.passed {
         std::process::exit(2);
     }
@@ -601,6 +1874,2049 @@ fn cmd_adynkra_11d_prepotential_verify() {
     if !report.passed {
         std::process::exit(2);
     }
+}
+
+fn cmd_adynkra_11d_top_down_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_top_down.json");
+    let report = eleven_dimensional_top_down::write_artifact(std::path::Path::new(path));
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.bounded_gates_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_second_momentum_validation.json");
+    match eleven_dimensional_second_momentum::write_artifact(std::path::Path::new(path)) {
+        Ok(report) => {
+            println!("{}", serde_json::to_string_pretty(&report).unwrap());
+            if !report.passed {
+                std::process::exit(2);
+            }
+        }
+        Err(error) => {
+            eprintln!("second-momentum artifact build failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_recoupling_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_second_momentum_recoupling.json");
+    match eleven_dimensional_second_momentum_recoupling::write_artifact(std::path::Path::new(path))
+    {
+        Ok(report) => {
+            println!("{}", serde_json::to_string_pretty(&report).unwrap());
+            if !report.passed {
+                std::process::exit(2);
+            }
+        }
+        Err(error) => {
+            eprintln!("second-momentum recoupling build failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_component_build(args: &[String]) {
+    let directory = std::path::Path::new(args.get(2).map(String::as_str).unwrap_or("results"));
+    let checkpoint_directory = directory.join("adynkra_11d_second_momentum_30001_checkpoints");
+    let map_10001 = directory.join("adynkra_11d_second_momentum_10001_maps.json");
+    let map_30001 = directory.join("adynkra_11d_second_momentum_30001_maps.json");
+    let remaining = directory.join("adynkra_11d_second_momentum_remaining_recouplings.json");
+    let result = (|| -> std::io::Result<()> {
+        eleven_dimensional_second_momentum_10001_maps::write_second_momentum_10001_map_artifact(
+            &map_10001,
+        )?;
+        eleven_dimensional_second_momentum_30001_maps::write_artifact(
+            &checkpoint_directory,
+            &map_30001,
+        )?;
+        eleven_dimensional_second_momentum_remaining_recouplings::write_artifact(&remaining)?;
+        Ok(())
+    })();
+    if let Err(error) = result {
+        eprintln!("second-momentum component build failed: {error}");
+        std::process::exit(2);
+    }
+    println!(
+        "wrote {}, {}, and {}",
+        map_10001.display(),
+        map_30001.display(),
+        remaining.display()
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_10001_fx(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-10001-fx [json]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let path = std::path::Path::new(
+        args.get(2)
+            .map(String::as_str)
+            .unwrap_or("results/adynkra_11d_second_momentum_10001_fx.json"),
+    );
+    match eleven_dimensional_second_momentum_10001_fx::write_second_momentum_10001_fx_artifact(path)
+    {
+        Ok(report) => println!("{}", serde_json::to_string_pretty(&report).unwrap()),
+        Err(error) => {
+            eprintln!("second-momentum 10001 F_X build failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_full_map_plan(args: &[String]) {
+    if args.len() != 2 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-map-plan",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = eleven_dimensional_second_momentum_full_maps::worklist();
+    let unique_gpu_groups =
+        eleven_dimensional_second_momentum_full_inventory::missing_unique_gpu_groups();
+    let gpu_groups = eleven_dimensional_second_momentum_full_inventory::missing_gpu_groups();
+    let payload = serde_json::json!({
+        "schema_version": "adynkra-11d-second-momentum-missing-map-plan-v1",
+        "role": "portable exact source-to-intermediate map jobs enabling the 49 columns outside the original 28-column slice",
+        "full_column_layout_sha256": eleven_dimensional_second_momentum_full_inventory::layout_sha256(),
+        "jobs_total": jobs.len(),
+        "columns_enabled": eleven_dimensional_second_momentum_full_inventory::missing_49_column_specs().len(),
+        "unique_path_gpu_columns": unique_gpu_groups.iter().map(Vec::len).sum::<usize>(),
+        "gpu_columns_total": gpu_groups.iter().map(Vec::len).sum::<usize>(),
+        "gpu_groups": gpu_groups.iter().enumerate().map(|(group_index, ordinals)| serde_json::json!({
+            "group_index": group_index,
+            "global_ordinals": ordinals,
+            "width": ordinals.len()
+        })).collect::<Vec<_>>(),
+        "two_path_10001_columns": [15, 16, 17, 18],
+        "jobs": jobs.iter().enumerate().map(|(ordinal, job)| serde_json::json!({
+            "job_ordinal": ordinal,
+            "job_key": job.key(),
+            "target_dynkin_label": job.target_dynkin_label,
+            "source_dynkin_label": job.source_dynkin_label,
+            "source_copy": job.source_copy
+        })).collect::<Vec<_>>()
+    });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&payload).expect("serialize full map plan")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_full_map_worker(args: &[String]) {
+    if args.len() < 3 || args.len() > 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-map-worker <job-list> [checkpoint-dir] [status-file]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = eleven_dimensional_second_momentum_full_maps::parse_job_list(&args[2])
+        .unwrap_or_else(|error| {
+            eprintln!("invalid full-map job list: {error}");
+            std::process::exit(2);
+        });
+    let directory = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/adynkra_11d_second_momentum_full_maps"),
+    );
+    let default_status = directory.join(format!("worker-status-{}.json", std::process::id()));
+    let status_path = args
+        .get(4)
+        .map(std::path::PathBuf::from)
+        .unwrap_or(default_status);
+    let reporter = eleven_dimensional_second_momentum_full_maps::MissingMapProgressReporter::start(
+        status_path,
+        jobs.len(),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("full-map worker status initialization failed: {error}");
+        std::process::exit(2);
+    });
+    match eleven_dimensional_second_momentum_full_maps::run_jobs(directory, &jobs, |event| {
+        reporter.observe(event)
+    }) {
+        Ok(summary) => {
+            reporter.finish(&summary).unwrap_or_else(|error| {
+                eprintln!("full-map worker terminal status failed: {error}");
+                std::process::exit(2);
+            });
+        }
+        Err(error) => {
+            let _ = reporter.fail(&error);
+            eprintln!("full-map worker failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_full_map_status(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-map-status [checkpoint-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let directory = std::path::Path::new(
+        args.get(2)
+            .map(String::as_str)
+            .unwrap_or("results/adynkra_11d_second_momentum_full_maps"),
+    );
+    let summary = eleven_dimensional_second_momentum_full_maps::summarize(directory);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize full-map status")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_full_gpu_plan(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-plan [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let manifest = second_momentum_full_gpu_jobs::build_manifest().unwrap_or_else(|error| {
+        eprintln!("cannot build full GPU work manifest: {error}");
+        std::process::exit(2);
+    });
+    if let Some(directory) = args.get(2) {
+        let path = second_momentum_full_gpu_jobs::write_or_validate_manifest(std::path::Path::new(
+            directory,
+        ))
+        .unwrap_or_else(|error| {
+            eprintln!("cannot publish full GPU work manifest: {error}");
+            std::process::exit(2);
+        });
+        eprintln!("published {}", path.display());
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&manifest).expect("serialize full GPU work manifest")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_full_gpu_status(args: &[String]) {
+    if args.len() < 3 || args.len() > 4 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-status <job-list> [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_full_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid full GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let output_directory = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_full_gpu_fx"),
+    );
+    let summary = second_momentum_full_gpu_jobs::summarize(output_directory, &jobs);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize full GPU status")
+    );
+    if summary
+        .get("failed_count")
+        .and_then(serde_json::Value::as_u64)
+        != Some(0)
+    {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_full_gpu_rank(args: &[String]) {
+    if args.len() < 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-rank <prime> <output-json> <artifact-dir> [artifact-dir ...]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let prime = args[2].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("prime must be a pinned unsigned 32-bit prime");
+        std::process::exit(2);
+    });
+    let output_path = std::path::Path::new(&args[3]);
+    let input_directories = args[4..]
+        .iter()
+        .map(std::path::PathBuf::from)
+        .collect::<Vec<_>>();
+    let report =
+        second_momentum_full_gpu_jobs::publish_full_rank(prime, &input_directories, output_path)
+            .unwrap_or_else(|error| {
+                eprintln!("full 77-column rank aggregation failed: {error}");
+                std::process::exit(2);
+            });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).expect("serialize full rank report")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_p3_gpu_plan(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-p3-gpu-plan [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let manifest = second_momentum_p3_gpu_production::build_manifest().unwrap_or_else(|error| {
+        eprintln!("cannot build p3 production manifest: {error}");
+        std::process::exit(2);
+    });
+    if let Some(directory) = args.get(2) {
+        let path = second_momentum_p3_gpu_production::write_or_validate_manifest(
+            std::path::Path::new(directory),
+        )
+        .unwrap_or_else(|error| {
+            eprintln!("cannot publish p3 production manifest: {error}");
+            std::process::exit(2);
+        });
+        eprintln!("published {}", path.display());
+    }
+    println!("{}", serde_json::to_string_pretty(&manifest).unwrap());
+}
+
+fn cmd_adynkra_11d_second_momentum_p3_gpu_status(args: &[String]) {
+    if args.len() < 3 || args.len() > 4 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-p3-gpu-status <job-list> [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs =
+        second_momentum_p3_gpu_production::parse_job_list(&args[2]).unwrap_or_else(|error| {
+            eprintln!("invalid p3 production job list: {error}");
+            std::process::exit(2);
+        });
+    let output = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_p3_gpu"),
+    );
+    let status = second_momentum_p3_gpu_production::summarize(output, &jobs);
+    println!("{}", serde_json::to_string_pretty(&status).unwrap());
+    if status["invalid_count"].as_u64() != Some(0) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_p3_gpu_rank(args: &[String]) {
+    if args.len() < 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-p3-gpu-rank <prime> <output-json> <artifact-dir> [artifact-dir ...]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let prime = args[2].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("prime must be a pinned unsigned 32-bit prime");
+        std::process::exit(2);
+    });
+    let directories = args[4..]
+        .iter()
+        .map(std::path::PathBuf::from)
+        .collect::<Vec<_>>();
+    let certificate = second_momentum_p3_gpu_production::publish_all_77_rank(
+        prime,
+        &directories,
+        std::path::Path::new(&args[3]),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("p3 all-77 rank aggregation failed: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&certificate).unwrap());
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_p3_gpu_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 4 || args.len() > 7 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-p3-gpu-worker <job-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs =
+        second_momentum_p3_gpu_production::parse_job_list(&args[2]).unwrap_or_else(|error| {
+            eprintln!("invalid p3 production job list: {error}");
+            std::process::exit(2);
+        });
+    let map_directory = std::path::PathBuf::from(&args[3]);
+    let output = std::path::PathBuf::from(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_p3_gpu"),
+    );
+    let device = args
+        .get(5)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let total_cap = args
+        .get(6)
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("total device cap must be an unsigned integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(20 * 1024 * 1024 * 1024);
+    if device < 0 || total_cap == 0 {
+        eprintln!("device and total device cap must be nonnegative and nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_p3_gpu_production::write_or_validate_manifest(&output).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish p3 production manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+    let columns = eleven_dimensional_second_momentum_full_inventory::full_column_specs();
+    for job in &jobs {
+        let ordinals = job.global_ordinals().unwrap_or_else(|error| {
+            eprintln!("cannot resolve {}: {error}", job.id());
+            std::process::exit(2);
+        });
+        let first = &columns[ordinals[0]];
+        let directory = output.join("jobs").join(job.id());
+        let report_path = second_momentum_p3_gpu_production::report_path(&output, job);
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-p3-gpu-worker".to_string(),
+            tranche: first.intermediate_dynkin_label.clone(),
+            local_ordinal: ordinals[0],
+            global_ordinal: ordinals[0],
+            tranche_columns_total: columns
+                .iter()
+                .filter(|column| {
+                    column.intermediate_dynkin_label == first.intermediate_dynkin_label
+                })
+                .count(),
+            prime: job.prime(),
+            device,
+            cpu_parity_terms: 0,
+            output_directory: output.clone(),
+            binary_output_path: report_path.clone(),
+            report_output_path: report_path,
+            status_snapshot_path: directory.join("status.json"),
+            group: Some(GroupProgressConfig {
+                job_id: job.id(),
+                group_id: format!("pending-preflight:{}", job.id()),
+                active_columns: ordinals.len(),
+                ordered_local_ordinals: ordinals.clone(),
+                ordered_global_ordinals: ordinals.clone(),
+                ordered_source_copies: ordinals
+                    .iter()
+                    .map(|ordinal| columns[*ordinal].source_copy)
+                    .collect(),
+                checkpoint_path: second_momentum_p3_gpu_production::checkpoint_path(&output, job),
+                event_log_path: directory.join("events.jsonl"),
+                resumable: true,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {} progress reporter: {error}", job.id());
+            std::process::exit(2);
+        });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            second_momentum_p3_gpu_production::run_production_job(
+                job,
+                &map_directory,
+                &output,
+                device,
+                total_cap,
+                &live,
+            )
+            .and_then(|report| serde_json::to_value(report).map_err(|error| error.to_string()))
+        }));
+        match outcome {
+            Ok(Ok(result)) => reporter.finish_success(result).unwrap_or_else(|error| {
+                eprintln!("{} terminal status failed: {error}", job.id());
+                std::process::exit(2);
+            }),
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{} failed: {error}", job.id());
+                std::process::exit(2);
+            }
+            Err(_) => {
+                let _ = reporter.finish_failure("p3 production worker panicked");
+                eprintln!("{} panicked", job.id());
+                std::process::exit(101);
+            }
+        }
+    }
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_p3_gpu_worker(_args: &[String]) {
+    eprintln!("p3 GPU worker requires a CUDA-enabled build");
+    std::process::exit(2);
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_p3_gpu_three_prime_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 4 || args.len() > 7 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-p3-gpu-three-prime-worker <group-list> <map-dir> [output-dir] [device] [total-device-cap-bytes]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let groups =
+        second_momentum_p3_gpu_production::parse_group_list(&args[2]).unwrap_or_else(|error| {
+            eprintln!("invalid p3 fused group list: {error}");
+            std::process::exit(2);
+        });
+    let map_directory = std::path::PathBuf::from(&args[3]);
+    let output = std::path::PathBuf::from(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_p3_gpu"),
+    );
+    let device = args
+        .get(5)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let total_cap = args
+        .get(6)
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("total device cap must be unsigned");
+            std::process::exit(2);
+        })
+        .unwrap_or(20 * 1024 * 1024 * 1024);
+    if device < 0 || total_cap == 0 {
+        eprintln!("device and total device cap must be nonnegative and nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_p3_gpu_production::write_or_validate_manifest(&output).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish p3 production manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+    let columns = eleven_dimensional_second_momentum_full_inventory::full_column_specs();
+    for group_index in groups {
+        let job = second_momentum_p3_gpu_production::P3ProductionJobKey::new(group_index, 0)
+            .unwrap_or_else(|error| {
+                eprintln!("cannot resolve fused group {group_index}: {error}");
+                std::process::exit(2);
+            });
+        let ordinals = job.global_ordinals().unwrap_or_else(|error| {
+            eprintln!("cannot resolve fused group {group_index}: {error}");
+            std::process::exit(2);
+        });
+        let first = &columns[ordinals[0]];
+        let bundle_id = format!("p3-g{group_index}-mp012");
+        let directory = output.join("jobs").join(&bundle_id);
+        let result_path = directory.join("bundle-result.json");
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-p3-gpu-three-prime-worker".to_string(),
+            tranche: first.intermediate_dynkin_label.clone(),
+            local_ordinal: ordinals[0],
+            global_ordinal: ordinals[0],
+            tranche_columns_total: columns
+                .iter()
+                .filter(|column| {
+                    column.intermediate_dynkin_label == first.intermediate_dynkin_label
+                })
+                .count(),
+            prime: eleven_dimensional_second_momentum_gpu::GPU_FX_PRIMES[0],
+            device,
+            cpu_parity_terms: 0,
+            output_directory: output.clone(),
+            binary_output_path: result_path.clone(),
+            report_output_path: result_path,
+            status_snapshot_path: directory.join("status.json"),
+            group: Some(GroupProgressConfig {
+                job_id: bundle_id.clone(),
+                group_id: format!("pending-preflight:{bundle_id}"),
+                active_columns: ordinals.len(),
+                ordered_local_ordinals: ordinals.clone(),
+                ordered_global_ordinals: ordinals.clone(),
+                ordered_source_copies: ordinals
+                    .iter()
+                    .map(|ordinal| columns[*ordinal].source_copy)
+                    .collect(),
+                checkpoint_path: directory.join("checkpoint.json"),
+                event_log_path: directory.join("events.jsonl"),
+                resumable: true,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {bundle_id} progress reporter: {error}");
+            std::process::exit(2);
+        });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            second_momentum_p3_gpu_production::run_three_prime_bundle(
+                group_index,
+                &map_directory,
+                &output,
+                device,
+                total_cap,
+                &live,
+            )
+            .and_then(|reports| serde_json::to_value(reports).map_err(|error| error.to_string()))
+        }));
+        match outcome {
+            Ok(Ok(result)) => reporter.finish_success(result).unwrap_or_else(|error| {
+                eprintln!("{bundle_id} terminal status failed: {error}");
+                std::process::exit(2);
+            }),
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{bundle_id} failed: {error}");
+                std::process::exit(2);
+            }
+            Err(_) => {
+                let _ = reporter.finish_failure("p3 fused production worker panicked");
+                eprintln!("{bundle_id} panicked");
+                std::process::exit(101);
+            }
+        }
+    }
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_p3_gpu_three_prime_worker(_args: &[String]) {
+    eprintln!("p3 fused GPU worker requires a CUDA-enabled build");
+    std::process::exit(2);
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_rank_28(args: &[String]) {
+    if args.len() < 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-rank-28 <prime> <output-json> <artifact-dir> [artifact-dir ...]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let prime = args[2].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("prime must be a pinned unsigned 32-bit prime");
+        std::process::exit(2);
+    });
+    let input_directories = args[4..]
+        .iter()
+        .map(std::path::PathBuf::from)
+        .collect::<Vec<_>>();
+    let report = second_momentum_full_gpu_jobs::publish_declared_28_rank(
+        prime,
+        &input_directories,
+        std::path::Path::new(&args[3]),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("declared-28 rank aggregation failed: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_full_gpu_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 4 || args.len() > 7 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-full-gpu-worker <job-list> <map-dir> [output-dir] [device] [cpu-parity-terms]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_full_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid full GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let map_directory = std::path::PathBuf::from(&args[3]);
+    let selected_ordinals = jobs
+        .iter()
+        .flat_map(second_momentum_full_gpu_jobs::FullGpuJobKey::global_ordinals)
+        .collect::<Vec<_>>();
+    if selected_ordinals
+        .iter()
+        .any(|ordinal| !(19..=22).contains(ordinal))
+    {
+        let map_summary = eleven_dimensional_second_momentum_full_maps::summarize(&map_directory);
+        if !map_summary.passed {
+            eprintln!(
+                "selected full GPU jobs require all 47 verified maps; found {}/47",
+                map_summary.completed_jobs
+            );
+            std::process::exit(2);
+        }
+    }
+    let output_directory = std::path::PathBuf::from(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_full_gpu_fx"),
+    );
+    let device = args
+        .get(5)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let cpu_parity_terms = args
+        .get(6)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("CPU parity terms must be a positive integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(128);
+    if device < 0 || cpu_parity_terms == 0 {
+        eprintln!("device must be nonnegative and CPU parity terms must be nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_full_gpu_jobs::write_or_validate_manifest(&output_directory).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish full GPU work manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+    let columns = eleven_dimensional_second_momentum_full_inventory::full_column_specs();
+    for (job_ordinal, job) in jobs.iter().enumerate() {
+        match second_momentum_full_gpu_jobs::validate_completed_job(&output_directory, job) {
+            Ok(true) => {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "schema_version": second_momentum_full_gpu_jobs::FULL_GPU_RUN_SCHEMA,
+                        "event": "job_adopted",
+                        "job_id": job.id(),
+                        "job_ordinal": job_ordinal,
+                        "jobs_total": jobs.len()
+                    })
+                );
+                continue;
+            }
+            Ok(false) => {}
+            Err(error) => {
+                eprintln!("cannot adopt {}: {error}", job.id());
+                std::process::exit(2);
+            }
+        }
+        let global_ordinals = job.global_ordinals();
+        let tranche = job.tranche();
+        let source_copies = global_ordinals
+            .iter()
+            .map(|ordinal| columns[*ordinal].source_copy)
+            .collect::<Vec<_>>();
+        let tranche_columns_total = columns
+            .iter()
+            .filter(|column| column.intermediate_dynkin_label == tranche)
+            .count();
+        let job_directory = output_directory.join("jobs").join(job.id());
+        let report_path = second_momentum_full_gpu_jobs::report_path(&output_directory, job);
+        let checkpoint_path = job_directory.join("checkpoint.json");
+        let event_log_path = job_directory.join("events.jsonl");
+        let status_path = job_directory.join("status.json");
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-full-gpu-worker".to_string(),
+            tranche: tranche.clone(),
+            local_ordinal: global_ordinals[0],
+            global_ordinal: global_ordinals[0],
+            tranche_columns_total,
+            prime: job.prime(),
+            device,
+            cpu_parity_terms,
+            output_directory: output_directory.clone(),
+            binary_output_path: report_path.clone(),
+            report_output_path: report_path,
+            status_snapshot_path: status_path,
+            group: Some(GroupProgressConfig {
+                job_id: job.id(),
+                group_id: format!("pending-preflight:{}", job.id()),
+                active_columns: global_ordinals.len(),
+                ordered_local_ordinals: global_ordinals.clone(),
+                ordered_global_ordinals: global_ordinals,
+                ordered_source_copies: source_copies,
+                checkpoint_path,
+                event_log_path,
+                resumable: true,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {} progress reporter: {error}", job.id());
+            std::process::exit(2);
+        });
+        reporter
+            .phase_start("group_execution")
+            .unwrap_or_else(|error| {
+                eprintln!("cannot mark {} started: {error}", job.id());
+                std::process::exit(2);
+            });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            second_momentum_gpu_jobs::run_full_group_job(
+                job,
+                &map_directory,
+                &output_directory,
+                device,
+                cpu_parity_terms,
+                &live,
+            )
+            .and_then(|report| serde_json::to_value(report).map_err(|error| error.to_string()))
+        }));
+        match outcome {
+            Ok(Ok(result)) => {
+                if let Err(error) = reporter.finish_success(result) {
+                    eprintln!("{} terminal status failed: {error}", job.id());
+                    std::process::exit(2);
+                }
+            }
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{} failed: {error}", job.id());
+                std::process::exit(2);
+            }
+            Err(payload) => {
+                let message = payload
+                    .downcast_ref::<&str>()
+                    .copied()
+                    .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                    .unwrap_or("unknown panic");
+                let _ = reporter.finish_failure(format!("panic: {message}"));
+                eprintln!("{} panicked: {message}", job.id());
+                std::process::exit(101);
+            }
+        }
+    }
+    let summary = second_momentum_full_gpu_jobs::summarize(&output_directory, &jobs);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize full GPU worker summary")
+    );
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_full_gpu_worker(_args: &[String]) {
+    eprintln!("full second-momentum GPU worker requires a --features cuda build");
+    std::process::exit(2);
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_status_reconcile(args: &[String]) {
+    if args.len() != 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-status-reconcile <status-file> <child-pid> <exit:N|signal:N|unknown>",
+            args.first().map(String::as_str).unwrap_or("adinkra")
+        );
+        std::process::exit(2);
+    }
+    let status_path = std::path::Path::new(&args[2]);
+    let child_pid = args[3].parse::<u32>().unwrap_or_else(|_| {
+        eprintln!("invalid supervised child PID {}", args[3]);
+        std::process::exit(2);
+    });
+    let (exit_code, signal) = if args[4] == "unknown" {
+        (None, None)
+    } else if let Some(value) = args[4].strip_prefix("exit:") {
+        let code = value.parse::<i32>().unwrap_or_else(|_| {
+            eprintln!("invalid supervised exit observation {}", args[4]);
+            std::process::exit(2);
+        });
+        (Some(code), None)
+    } else if let Some(value) = args[4].strip_prefix("signal:") {
+        let number = value.parse::<i32>().unwrap_or_else(|_| {
+            eprintln!("invalid supervised signal observation {}", args[4]);
+            std::process::exit(2);
+        });
+        if number <= 0 {
+            eprintln!("supervised signal number must be positive");
+            std::process::exit(2);
+        }
+        (None, Some(number))
+    } else {
+        eprintln!("observation must be exit:N, signal:N, or unknown");
+        std::process::exit(2);
+    };
+
+    match second_momentum_gpu_progress::reconcile_status_snapshot(
+        status_path,
+        child_pid,
+        exit_code,
+        signal,
+    ) {
+        Ok(result) => println!(
+            "{}",
+            serde_json::json!({
+                "status_snapshot_path": status_path.display().to_string(),
+                "resumable": false,
+                "reconciled": result.reconciled,
+                "state": result.state
+            })
+        ),
+        Err(error) => {
+            eprintln!("status snapshot reconciliation failed: {error}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_cpu_fx(args: &[String]) {
+    use second_momentum_cpu_progress::{CpuProgressConfig, CpuProgressReporter};
+
+    if args.len() > 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-cpu-fx <20001|30001> [output-file] [status-file]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let tranche = args.get(2).map(String::as_str).unwrap_or_else(|| {
+        eprintln!("missing tranche 20001 or 30001");
+        std::process::exit(2);
+    });
+    let columns_total = match tranche {
+        "20001" => 9,
+        "30001" => 15,
+        _ => {
+            eprintln!("tranche must be 20001 or 30001");
+            std::process::exit(2);
+        }
+    };
+    let output_path = args
+        .get(3)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            std::path::PathBuf::from(format!(
+                "results/adynkra_11d_second_momentum_{tranche}_fx.json"
+            ))
+        });
+    let status_path = args
+        .get(4)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| output_path.with_extension("status.json"));
+    let reporter = CpuProgressReporter::start(CpuProgressConfig {
+        tranche: tranche.to_owned(),
+        columns_total,
+        output_path: output_path.clone(),
+        status_path,
+    })
+    .unwrap_or_else(|error| {
+        eprintln!("CPU progress initialization failed: {error}");
+        std::process::exit(2);
+    });
+
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match tranche {
+        "20001" => eleven_dimensional_second_momentum_20001_fx::write_artifact_with_progress(
+            &output_path,
+            |event| reporter.observe(event),
+        )
+        .and_then(|report| serde_json::to_value(report).map_err(std::io::Error::other)),
+        "30001" => eleven_dimensional_second_momentum_30001_fx::write_artifact_with_progress(
+            &output_path,
+            |event| reporter.observe(event),
+        )
+        .and_then(|report| serde_json::to_value(report).map_err(std::io::Error::other)),
+        _ => unreachable!(),
+    }));
+    match outcome {
+        Ok(Ok(result)) => {
+            if let Err(error) = reporter.finish_success(&result) {
+                eprintln!("CPU terminal status publication failed: {error}");
+                std::process::exit(2);
+            }
+        }
+        Ok(Err(error)) => {
+            let _ = reporter.finish_failure(error.to_string());
+            eprintln!("CPU tranche failed: {error}");
+            std::process::exit(2);
+        }
+        Err(payload) => {
+            let message = payload
+                .downcast_ref::<&str>()
+                .copied()
+                .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                .unwrap_or("unknown panic");
+            let _ = reporter.finish_failure(format!("panic: {message}"));
+            eprintln!("CPU tranche panicked: {message}");
+            std::process::exit(101);
+        }
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_fx_plan(args: &[String]) {
+    if args.len() > 3 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-plan [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let manifest = second_momentum_gpu_jobs::build_job_manifest().unwrap_or_else(|error| {
+        eprintln!("cannot build GPU work manifest: {error}");
+        std::process::exit(2);
+    });
+    if let Some(directory) = args.get(2) {
+        let path =
+            second_momentum_gpu_jobs::write_or_validate_manifest(std::path::Path::new(directory))
+                .unwrap_or_else(|error| {
+                    eprintln!("cannot publish GPU work manifest: {error}");
+                    std::process::exit(2);
+                });
+        eprintln!("published {}", path.display());
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&manifest).expect("serialize GPU work manifest")
+    );
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_fx_status(args: &[String]) {
+    if args.len() < 3 || args.len() > 4 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-status <job-list> [output-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let output_directory = std::path::Path::new(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let summary = second_momentum_gpu_jobs::summarize_jobs(output_directory, &jobs);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&summary).expect("serialize GPU work status")
+    );
+    if summary
+        .get("failed_count")
+        .and_then(serde_json::Value::as_u64)
+        != Some(0)
+    {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_second_momentum_gpu_fx_import(args: &[String]) {
+    if args.len() < 4 || args.len() > 5 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-import <job-list> <source-dir> [destination-dir]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let source = std::path::Path::new(&args[3]);
+    let destination = std::path::Path::new(
+        args.get(4)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let result = second_momentum_gpu_jobs::import_completed_jobs(source, destination, &jobs)
+        .unwrap_or_else(|error| {
+            eprintln!("GPU job import failed: {error}");
+            std::process::exit(2);
+        });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&result).expect("serialize GPU import report")
+    );
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 3 || args.len() > 6 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-worker <job-list> [output-dir] [device] [cpu-parity-terms]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid GPU job list: {error}");
+        std::process::exit(2);
+    });
+    let output_directory = std::path::PathBuf::from(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let device = args
+        .get(4)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let cpu_parity_terms = args
+        .get(5)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("CPU parity terms must be a positive integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(128);
+    if device < 0 || cpu_parity_terms == 0 {
+        eprintln!("device must be nonnegative and CPU parity terms must be nonzero");
+        std::process::exit(2);
+    }
+    second_momentum_gpu_jobs::write_or_validate_manifest(&output_directory).unwrap_or_else(
+        |error| {
+            eprintln!("cannot establish GPU work manifest: {error}");
+            std::process::exit(2);
+        },
+    );
+
+    for (job_ordinal, job) in jobs.iter().enumerate() {
+        match second_momentum_gpu_jobs::validate_completed_job(&output_directory, job) {
+            Ok(true) => {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "schema_version": second_momentum_gpu_jobs::GPU_GROUP_RUN_SCHEMA,
+                        "event": "job_adopted",
+                        "job_id": job.id(),
+                        "job_ordinal": job_ordinal,
+                        "jobs_total": jobs.len()
+                    })
+                );
+                continue;
+            }
+            Ok(false) => {}
+            Err(error) => {
+                eprintln!("cannot adopt {}: {error}", job.id());
+                std::process::exit(2);
+            }
+        }
+        let tranche = job.tranche().unwrap_or_else(|error| {
+            eprintln!("invalid job tranche: {error}");
+            std::process::exit(2);
+        });
+        let local_ordinals = job.local_ordinals().unwrap_or_else(|error| {
+            eprintln!("invalid job group: {error}");
+            std::process::exit(2);
+        });
+        let first_global = if tranche.as_str() == "20001" { 53 } else { 62 };
+        let global_ordinals = local_ordinals
+            .iter()
+            .map(|ordinal| first_global + ordinal)
+            .collect::<Vec<_>>();
+        let job_directory = output_directory.join("jobs").join(job.id());
+        let report_path =
+            second_momentum_gpu_jobs::completed_job_report_path(&output_directory, job);
+        let checkpoint_path = job_directory.join("checkpoint.json");
+        let event_log_path = job_directory.join("events.jsonl");
+        let status_path = job_directory.join("status.json");
+        let reporter = ProgressReporter::start(ProgressConfig {
+            command: "adynkra-11d-second-momentum-gpu-fx-worker".to_string(),
+            tranche: tranche.as_str().to_string(),
+            local_ordinal: local_ordinals[0],
+            global_ordinal: global_ordinals[0],
+            tranche_columns_total: if tranche.as_str() == "20001" { 9 } else { 15 },
+            prime: job.prime().unwrap_or_else(|error| {
+                eprintln!("invalid job prime: {error}");
+                std::process::exit(2);
+            }),
+            device,
+            cpu_parity_terms,
+            output_directory: output_directory.clone(),
+            binary_output_path: report_path.clone(),
+            report_output_path: report_path,
+            status_snapshot_path: status_path,
+            group: Some(GroupProgressConfig {
+                job_id: job.id(),
+                group_id: format!("pending-preflight:{}", job.id()),
+                active_columns: local_ordinals.len(),
+                ordered_local_ordinals: local_ordinals.clone(),
+                ordered_global_ordinals: global_ordinals,
+                ordered_source_copies: (1..=local_ordinals.len()).collect(),
+                checkpoint_path,
+                event_log_path,
+                resumable: local_ordinals.len() > 1,
+            }),
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("cannot start {} progress reporter: {error}", job.id());
+            std::process::exit(2);
+        });
+        reporter
+            .phase_start("group_execution")
+            .unwrap_or_else(|error| {
+                eprintln!("cannot mark {} started: {error}", job.id());
+                std::process::exit(2);
+            });
+        let live = reporter.live_progress();
+        let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            if local_ordinals.len() == 1 {
+                second_momentum_gpu_jobs::run_singleton_job(
+                    &output_directory,
+                    job,
+                    device,
+                    cpu_parity_terms,
+                    &live,
+                )
+            } else {
+                second_momentum_gpu_jobs::run_group_job(
+                    job,
+                    &output_directory,
+                    device,
+                    cpu_parity_terms,
+                    &live,
+                )
+                .and_then(|report| serde_json::to_value(report).map_err(|error| error.to_string()))
+            }
+        }));
+        match outcome {
+            Ok(Ok(result)) => {
+                if let Err(error) = reporter.finish_success(result) {
+                    eprintln!("{} terminal status failed: {error}", job.id());
+                    std::process::exit(2);
+                }
+            }
+            Ok(Err(error)) => {
+                let _ = reporter.finish_failure(&error);
+                eprintln!("{} failed: {error}", job.id());
+                std::process::exit(2);
+            }
+            Err(payload) => {
+                let message = payload
+                    .downcast_ref::<&str>()
+                    .copied()
+                    .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                    .unwrap_or("unknown panic");
+                let _ = reporter.finish_failure(format!("panic: {message}"));
+                eprintln!("{} panicked: {message}", job.id());
+                std::process::exit(101);
+            }
+        }
+    }
+    println!(
+        "{}",
+        second_momentum_gpu_jobs::summarize_jobs(&output_directory, &jobs)
+    );
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_worker(_args: &[String]) {
+    eprintln!("GPU group worker requires a Linux build with --features cuda");
+    std::process::exit(2);
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_multi_prime_worker(args: &[String]) {
+    use second_momentum_gpu_progress::{GroupProgressConfig, ProgressConfig, ProgressReporter};
+
+    if args.len() < 3 || args.len() > 6 {
+        eprintln!(
+            "usage: {} adynkra-11d-second-momentum-gpu-fx-multi-prime-worker <same-group-job-list> [output-dir] [device] [cpu-parity-terms]",
+            args[0]
+        );
+        std::process::exit(2);
+    }
+    let jobs = second_momentum_gpu_jobs::parse_job_list(&args[2]).unwrap_or_else(|error| {
+        eprintln!("invalid multi-prime GPU job list: {error}");
+        std::process::exit(2);
+    });
+    if !(2..=3).contains(&jobs.len()) {
+        eprintln!("multi-prime worker requires exactly 2 or 3 jobs");
+        std::process::exit(2);
+    }
+    let first = &jobs[0];
+    if jobs
+        .iter()
+        .any(|job| job.tranche != first.tranche || job.group_index != first.group_index)
+    {
+        eprintln!("multi-prime worker jobs must belong to one tranche/group");
+        std::process::exit(2);
+    }
+    let output_directory = std::path::PathBuf::from(
+        args.get(3)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let device = args
+        .get(4)
+        .map(|value| value.parse::<i32>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("device must be a nonnegative integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(0);
+    let cpu_parity_terms = args
+        .get(5)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|_| {
+            eprintln!("CPU parity terms must be a positive integer");
+            std::process::exit(2);
+        })
+        .unwrap_or(128);
+    let tranche = first.tranche().unwrap_or_else(|error| {
+        eprintln!("invalid multi-prime tranche: {error}");
+        std::process::exit(2);
+    });
+    let local_ordinals = first.local_ordinals().unwrap_or_else(|error| {
+        eprintln!("invalid multi-prime group: {error}");
+        std::process::exit(2);
+    });
+    if local_ordinals.len() < 2 {
+        eprintln!("multi-prime worker currently requires a width-2/3 group");
+        std::process::exit(2);
+    }
+    let first_global = if tranche.as_str() == "20001" { 53 } else { 62 };
+    let global_ordinals = local_ordinals
+        .iter()
+        .map(|ordinal| first_global + ordinal)
+        .collect::<Vec<_>>();
+    let bundle_id = format!(
+        "{}-g{}-mp{}",
+        first.tranche,
+        first.group_index,
+        jobs.iter()
+            .map(|job| job.prime_index.to_string())
+            .collect::<String>()
+    );
+    let bundle_directory = output_directory.join("jobs").join(&bundle_id);
+    let report_path = bundle_directory.join("bundle-result.json");
+    let reporter = ProgressReporter::start(ProgressConfig {
+        command: "adynkra-11d-second-momentum-gpu-fx-multi-prime-worker".to_string(),
+        tranche: tranche.as_str().to_string(),
+        local_ordinal: local_ordinals[0],
+        global_ordinal: global_ordinals[0],
+        tranche_columns_total: if tranche.as_str() == "20001" { 9 } else { 15 },
+        prime: jobs[0].prime().unwrap_or_else(|error| {
+            eprintln!("invalid first bundle prime: {error}");
+            std::process::exit(2);
+        }),
+        device,
+        cpu_parity_terms,
+        output_directory: output_directory.clone(),
+        binary_output_path: report_path.clone(),
+        report_output_path: report_path,
+        status_snapshot_path: bundle_directory.join("status.json"),
+        group: Some(GroupProgressConfig {
+            job_id: bundle_id.clone(),
+            group_id: format!("pending-preflight:{bundle_id}"),
+            active_columns: local_ordinals.len(),
+            ordered_local_ordinals: local_ordinals.clone(),
+            ordered_global_ordinals: global_ordinals,
+            ordered_source_copies: (1..=local_ordinals.len()).collect(),
+            checkpoint_path: bundle_directory.join("checkpoint.json"),
+            event_log_path: bundle_directory.join("events.jsonl"),
+            resumable: true,
+        }),
+    })
+    .unwrap_or_else(|error| {
+        eprintln!("cannot start {bundle_id} progress reporter: {error}");
+        std::process::exit(2);
+    });
+    reporter
+        .phase_start("multi_prime_group_execution")
+        .unwrap_or_else(|error| {
+            eprintln!("cannot mark {bundle_id} started: {error}");
+            std::process::exit(2);
+        });
+    let live = reporter.live_progress();
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        second_momentum_gpu_jobs::run_multi_prime_group_jobs(
+            &jobs,
+            &output_directory,
+            device,
+            cpu_parity_terms,
+            &live,
+        )
+        .and_then(|reports| serde_json::to_value(reports).map_err(|error| error.to_string()))
+    }));
+    match outcome {
+        Ok(Ok(result)) => {
+            if let Err(error) = reporter.finish_success(result) {
+                eprintln!("{bundle_id} terminal status failed: {error}");
+                std::process::exit(2);
+            }
+        }
+        Ok(Err(error)) => {
+            let _ = reporter.finish_failure(&error);
+            eprintln!("{bundle_id} failed: {error}");
+            std::process::exit(2);
+        }
+        Err(payload) => {
+            let message = payload
+                .downcast_ref::<&str>()
+                .copied()
+                .or_else(|| payload.downcast_ref::<String>().map(String::as_str))
+                .unwrap_or("unknown panic");
+            let _ = reporter.finish_failure(format!("panic: {message}"));
+            eprintln!("{bundle_id} panicked: {message}");
+            std::process::exit(101);
+        }
+    }
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_gpu_fx_multi_prime_worker(_args: &[String]) {
+    eprintln!("GPU multi-prime worker requires a Linux build with --features cuda");
+    std::process::exit(2);
+}
+
+#[cfg(feature = "cuda")]
+fn cmd_adynkra_11d_second_momentum_gpu_fx(args: &[String]) {
+    use second_momentum_gpu_progress::{ProgressConfig, ProgressReporter, emit_fallback_error};
+
+    if args.len() > 9 {
+        second_momentum_gpu_argument_failure(
+            "too many arguments for second-momentum GPU F_X".to_owned(),
+        );
+    }
+    let tranche = args
+        .get(2)
+        .map(String::as_str)
+        .ok_or_else(|| "missing tranche 20001 or 30001".to_owned())
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error));
+    let (first_global_ordinal, tranche_columns_total) = match tranche {
+        "20001" => (53, 9),
+        "30001" => (62, 15),
+        _ => second_momentum_gpu_argument_failure("tranche must be 20001 or 30001".to_owned()),
+    };
+    let local_ordinal = args
+        .get(3)
+        .ok_or_else(|| "missing local column ordinal".to_owned())
+        .and_then(|value| {
+            value
+                .parse::<usize>()
+                .map_err(|_| format!("invalid local column ordinal {value}"))
+        })
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error));
+    if local_ordinal >= tranche_columns_total {
+        second_momentum_gpu_argument_failure(format!(
+            "{tranche} local column ordinal must lie in 0..{tranche_columns_total}"
+        ));
+    }
+    let prime = args
+        .get(4)
+        .map(|value| {
+            value
+                .parse::<u32>()
+                .map_err(|_| format!("invalid finite-field prime {value}"))
+        })
+        .transpose()
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error))
+        .unwrap_or(eleven_dimensional_second_momentum_gpu::GPU_FX_PRIMES[0]);
+    let output_directory = std::path::PathBuf::from(
+        args.get(5)
+            .map(String::as_str)
+            .unwrap_or("results/second_momentum_gpu_fx"),
+    );
+    let cpu_parity_terms = args
+        .get(6)
+        .map(|value| {
+            value
+                .parse::<usize>()
+                .map_err(|_| format!("invalid CPU parity term count {value}"))
+        })
+        .transpose()
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error))
+        .unwrap_or(128);
+    let device = args
+        .get(7)
+        .map(|value| {
+            value
+                .parse::<i32>()
+                .map_err(|_| format!("invalid CUDA device {value}"))
+        })
+        .transpose()
+        .unwrap_or_else(|error| second_momentum_gpu_argument_failure(error))
+        .unwrap_or(0);
+    if device < 0 {
+        second_momentum_gpu_argument_failure("CUDA device must be nonnegative".to_owned());
+    }
+
+    let global_ordinal = first_global_ordinal + local_ordinal;
+    let stem = format!("second_momentum_{tranche}_column_{global_ordinal:02}_p{prime}");
+    let binary_output_path = output_directory.join(format!("{stem}.bin"));
+    let report_output_path = output_directory.join(format!("{stem}.json"));
+    let status_path = args
+        .get(8)
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| output_directory.join(format!("{stem}.status.json")));
+    let config = ProgressConfig {
+        command: "adynkra-11d-second-momentum-gpu-fx".to_owned(),
+        tranche: tranche.to_owned(),
+        local_ordinal,
+        global_ordinal,
+        tranche_columns_total,
+        prime,
+        device,
+        cpu_parity_terms,
+        output_directory: output_directory.clone(),
+        binary_output_path,
+        report_output_path,
+        status_snapshot_path: status_path,
+        group: None,
+    };
+    let reporter = ProgressReporter::start(config).unwrap_or_else(|error| {
+        emit_fallback_error("progress_initialization_error", &error.to_string());
+        std::process::exit(2);
+    });
+    if let Err(error) = reporter.phase_start("column_execution") {
+        let message = format!("failed to start progress phase: {error}");
+        let _ = reporter.finish_failure(&message);
+        emit_fallback_error("progress_error", &message);
+        std::process::exit(2);
+    }
+
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let live_progress = reporter.live_progress();
+        eleven_dimensional_second_momentum_gpu::run_cuda_column(
+            tranche,
+            local_ordinal,
+            prime,
+            device,
+            &output_directory,
+            cpu_parity_terms,
+            Some(&live_progress),
+        )
+    }));
+    if let Some(signal) = reporter.observed_termination_signal() {
+        let _ = reporter.finish_terminated(signal);
+        std::process::exit(128 + signal);
+    }
+    match outcome {
+        Ok(Ok(report)) => {
+            if let Err(error) = reporter.phase_end(format!(
+                "column execution completed: {} source terms and {} expanded contributions",
+                report.source_terms, report.expanded_contributions
+            )) {
+                let message = format!("failed to finish progress phase: {error}");
+                let _ = reporter.finish_failure(&message);
+                emit_fallback_error("progress_error", &message);
+                std::process::exit(2);
+            }
+            let result = match serde_json::to_value(&report) {
+                Ok(result) => result,
+                Err(error) => {
+                    let message = format!("failed to serialize CUDA column report: {error}");
+                    let _ = reporter.finish_failure(&message);
+                    emit_fallback_error("serialization_error", &message);
+                    std::process::exit(2);
+                }
+            };
+            if let Err(error) = reporter.finish_success(result) {
+                emit_fallback_error("terminal_status_snapshot_error", &error.to_string());
+                std::process::exit(2);
+            }
+        }
+        Ok(Err(error)) => {
+            let _ = reporter.phase_end("column execution failed");
+            if let Err(status_error) = reporter.finish_failure(&error) {
+                emit_fallback_error("terminal_status_snapshot_error", &status_error.to_string());
+            }
+            std::process::exit(2);
+        }
+        Err(payload) => {
+            let panic_message = if let Some(message) = payload.downcast_ref::<&str>() {
+                (*message).to_owned()
+            } else if let Some(message) = payload.downcast_ref::<String>() {
+                message.clone()
+            } else {
+                "non-string panic payload".to_owned()
+            };
+            let error = format!("GPU column command panicked: {panic_message}");
+            let _ = reporter.phase_end("column execution panicked");
+            if let Err(status_error) = reporter.finish_failure(&error) {
+                emit_fallback_error("terminal_status_snapshot_error", &status_error.to_string());
+            }
+            std::process::exit(2);
+        }
+    }
+}
+
+#[cfg(feature = "cuda")]
+fn second_momentum_gpu_argument_failure(message: String) -> ! {
+    second_momentum_gpu_progress::emit_fallback_error("argument_error", &message);
+    std::process::exit(2);
+}
+
+#[cfg(not(feature = "cuda"))]
+fn cmd_adynkra_11d_second_momentum_gpu_fx(_args: &[String]) {
+    println!(
+        "{}",
+        serde_json::json!({
+            "schema_version": second_momentum_gpu_progress::PROGRESS_SCHEMA,
+            "event": "terminal",
+            "state": "failed",
+            "phase": "terminal",
+            "pid": std::process::id(),
+            "resources": {
+                "gpu": {
+                    "available": false,
+                    "reason": "binary was compiled without the cuda feature"
+                }
+            },
+            "error": "second-momentum CUDA F_X requires a Linux build with --features cuda"
+        })
+    );
+    std::process::exit(2);
+}
+
+fn cmd_adynkra_11d_first_momentum_fx_aggregate(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_first_momentum_physical_fx_functional.json");
+    let checkpoint_root = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/eleven_dimensional_first_momentum_fx_checkpoints");
+    if let Err(error) = eleven_dimensional_physical_curvature::
+        merge_first_momentum_fx_functional_artifact_from_complete_checkpoints(
+            std::path::Path::new(path),
+            std::path::Path::new(checkpoint_root),
+        )
+    {
+        eprintln!("first-momentum F_X checkpoint merge failed: {error}");
+        std::process::exit(2);
+    }
+    println!("wrote {path} from 336 validated checkpoints in {checkpoint_root}");
+}
+
+fn cmd_adynkra_11d_free_complex_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_free_complex.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_free_complex_validation.json");
+    let report = eleven_dimensional_free_complex::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_hook_bianchi_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_hook_bianchi.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_hook_bianchi_validation.json");
+    let report = eleven_dimensional_hook_bianchi::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_level18_momentum_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_level18_momentum.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_level18_momentum_validation.json");
+    let report = eleven_dimensional_level18_momentum::write_artifacts(
+        std::path::Path::new("data/eleven_dimensional_spinor_bridge"),
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    );
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.bounded_program_passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_target_stream_build(args: &[String]) {
+    let data_path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("data/eleven_dimensional_target_stream.json");
+    let validation_path = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_target_stream_validation.json");
+    eleven_dimensional_target_stream::write_artifacts(
+        std::path::Path::new(data_path),
+        std::path::Path::new(validation_path),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write target stream artifacts: {error}");
+        std::process::exit(2);
+    });
+    let report = eleven_dimensional_target_stream::verify();
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_prepotential_gate_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_prepotential_gate.json");
+    let report = eleven_dimensional_prepotential_gate::write_json(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.worklist_consistent_with_current_exact_engine {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_complete_f_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_complete_physical_f_construction.json");
+    let report = eleven_dimensional_complete_f::write_artifact(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_superfield_curvature_hash(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json");
+    let started = std::time::Instant::now();
+    let completed = std::cell::Cell::new(0_usize);
+    let certificate =
+        eleven_dimensional_complete_f::write_gauge_fixed_superfield_operator_certificate(
+            std::path::Path::new(path),
+            |column| {
+                let count = completed.get() + 1;
+                completed.set(count);
+                let unix_milliseconds = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_millis())
+                    .unwrap_or_default();
+                eprintln!(
+                    "{{\"event\":\"column_complete\",\"unix_milliseconds\":{unix_milliseconds},\"elapsed_seconds\":{:.3},\"completed\":{count},\"total\":321,\"ordinal\":{},\"source_coordinate\":{},\"nonzero_terms\":{},\"sha256\":{},\"shard_path\":{},\"shard_sha256\":{},\"shard_byte_count\":{},\"shard_reused\":{}}}",
+                    started.elapsed().as_secs_f64(),
+                    column.ordinal,
+                    serde_json::to_string(&column.source_coordinate).unwrap(),
+                    column.nonzero_terms,
+                    serde_json::to_string(&column.sha256).unwrap(),
+                    serde_json::to_string(&column.shard_path).unwrap(),
+                    serde_json::to_string(&column.shard_sha256).unwrap(),
+                    serde_json::to_string(&column.shard_byte_count).unwrap(),
+                    column.shard_reused,
+                );
+            },
+        )
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&certificate).unwrap());
+}
+
+fn cmd_adynkra_11d_superfield_curvature_kernel(args: &[String]) {
+    if args.len() > 4 {
+        eprintln!(
+            "Usage: adinkra-codespace adynkra-11d-superfield-curvature-kernel [certificate-json] [output-json]"
+        );
+        std::process::exit(2);
+    }
+    let input = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator.json");
+    let output = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_kernel_p0.json");
+    let certificate = eleven_dimensional_complete_f_kernel::derive_streamed_kernel(
+        std::path::Path::new(input),
+        eleven_dimensional_complete_f_kernel::DEFAULT_PRIME,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Kernel extraction failed: {error}");
+        std::process::exit(2);
+    });
+    let encoded = serde_json::to_vec_pretty(&certificate).unwrap();
+    let output_path = std::path::Path::new(output);
+    let temporary = output_path.with_extension(format!("json.{}.tmp", std::process::id()));
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", parent.display());
+            std::process::exit(2);
+        });
+    }
+    {
+        use std::io::Write;
+        let mut file = std::fs::File::create(&temporary).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(&encoded).unwrap_or_else(|error| {
+            eprintln!("Failed to write {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(b"\n").unwrap();
+        file.sync_all().unwrap_or_else(|error| {
+            eprintln!("Failed to sync {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+    }
+    std::fs::rename(&temporary, output_path).unwrap_or_else(|error| {
+        eprintln!(
+            "Failed to publish {} as {}: {error}",
+            temporary.display(),
+            output_path.display()
+        );
+        std::process::exit(2);
+    });
+    println!("{}", String::from_utf8(encoded).unwrap());
+}
+
+fn cmd_adynkra_11d_superfield_curvature_sector_kernel(args: &[String]) {
+    if args.len() > 5 {
+        eprintln!(
+            "Usage: adinkra-codespace adynkra-11d-superfield-curvature-sector-kernel [certificate-json] [sector-tag] [output-json]"
+        );
+        std::process::exit(2);
+    }
+    let input = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v3_riemann_20260824.json");
+    let sector = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("9")
+        .parse::<u8>()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid sector tag: {error}");
+            std::process::exit(2);
+        });
+    let output = args.get(4).map(String::as_str).unwrap_or(
+        "results/adynkra_11d_gauge_fixed_invariant_supercurvature_riemann_kernel_p0.json",
+    );
+    let certificate = eleven_dimensional_complete_f_kernel::derive_streamed_sector_kernel(
+        std::path::Path::new(input),
+        eleven_dimensional_complete_f_kernel::DEFAULT_PRIME,
+        sector,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Sector-kernel extraction failed: {error}");
+        std::process::exit(2);
+    });
+    let encoded = serde_json::to_vec_pretty(&certificate).unwrap();
+    let output_path = std::path::Path::new(output);
+    let temporary = output_path.with_extension(format!("json.{}.tmp", std::process::id()));
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", parent.display());
+            std::process::exit(2);
+        });
+    }
+    {
+        use std::io::Write;
+        let mut file = std::fs::File::create(&temporary).unwrap_or_else(|error| {
+            eprintln!("Failed to create {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(&encoded).unwrap_or_else(|error| {
+            eprintln!("Failed to write {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+        file.write_all(b"\n").unwrap();
+        file.sync_all().unwrap_or_else(|error| {
+            eprintln!("Failed to sync {}: {error}", temporary.display());
+            std::process::exit(2);
+        });
+    }
+    std::fs::rename(&temporary, output_path).unwrap_or_else(|error| {
+        eprintln!(
+            "Failed to publish {} as {}: {error}",
+            temporary.display(),
+            output_path.display()
+        );
+        std::process::exit(2);
+    });
+    println!("{}", String::from_utf8(encoded).unwrap());
+}
+
+fn cmd_adynkra_11d_superderivative_normal_form_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_superderivative_normal_form.json");
+    let report =
+        eleven_dimensional_superderivative_normal_form::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_h_hat_jet_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_linearized_frame_jet.json");
+    let report = eleven_dimensional_h_hat_jet::write_artifact(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_eq40_frame_composition_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_eq40_frame_composition.json");
+    let report =
+        eleven_dimensional_eq40_frame_composition::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_constrained_geometry_jet_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_constrained_geometry_jet.json");
+    let report =
+        eleven_dimensional_constrained_geometry_jet::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_physical_k_audit(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_physical_k_determination_audit.json");
+    let report = eleven_dimensional_physical_k::write_audit(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_physical_k_validate(args: &[String]) {
+    let specification = args.get(2).unwrap_or_else(|| {
+        eprintln!(
+            "Usage: adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]"
+        );
+        std::process::exit(2);
+    });
+    let checkpoint_directory = args
+        .get(3)
+        .map(String::as_str)
+        .unwrap_or("results/eleven_dimensional_level18_embedded");
+    let output = args
+        .get(4)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_physical_k_validated.json");
+    let summary = eleven_dimensional_physical_k::validate_specification_file(
+        std::path::Path::new(specification),
+        std::path::Path::new(checkpoint_directory),
+        std::path::Path::new(output),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Physical K validation failed: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&summary).unwrap());
 }
 
 fn cmd_adynkra_11d_clifford_verify() {
@@ -2141,6 +5457,201 @@ fn cmd_decompose_probe(args: &[String]) {
     pipeline::run_decompose_probe(json_path, k, num);
 }
 
+fn cmd_cls_g_full_build(args: &[String]) {
+    use four_color::gmatrix_full::{Side, run_build};
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-full-build [side] [blocks] [threads] [cap] [json]",
+                args[0]
+            );
+            std::process::exit(1);
+        }
+    };
+    let m = args
+        .get(3)
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let threads = args
+        .get(4)
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or_else(|| {
+            std::thread::available_parallelism()
+                .map(|n| n.get())
+                .unwrap_or(4)
+        });
+    let cap = args.get(5).and_then(|s| s.parse::<u64>().ok());
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_full_{}_{}blocks.json",
+        side.name(),
+        m
+    );
+    let path = args.get(6).map(String::as_str).unwrap_or(&default_path);
+    run_build(side, m, threads, cap, path);
+}
+
+fn cmd_cls_g_full_verify(args: &[String]) {
+    use four_color::gmatrix_full::{Side, run_verify};
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-full-verify [side] [blocks] [json]",
+                args[0]
+            );
+            std::process::exit(1);
+        }
+    };
+    let m = args
+        .get(3)
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(3);
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_full_{}_{}blocks.json",
+        side.name(),
+        m
+    );
+    let path = args.get(4).map(String::as_str).unwrap_or(&default_path);
+    if !run_verify(side, m, path) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_cls_g_csp_build(args: &[String]) {
+    use four_color::gmatrix_csp::run_build;
+    use four_color::gmatrix_full::Side;
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-csp-build [side] [blocks] [threads] [cap] [stride] [json]",
+                args[0]
+            );
+            std::process::exit(1);
+        }
+    };
+    let m = parse_opt_num(args.get(3), "blocks").unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let threads = parse_opt_num(args.get(4), "threads").unwrap_or_else(|| {
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4)
+    });
+    if threads == 0 {
+        eprintln!("threads must be >= 1");
+        std::process::exit(1);
+    }
+    let cap: Option<u64> = parse_opt_num(args.get(5).filter(|s| s.as_str() != "-"), "cap");
+    let stride = parse_opt_num(args.get(6), "stride").unwrap_or(1);
+    if stride == 0 {
+        eprintln!("stride must be >= 1");
+        std::process::exit(1);
+    }
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_csp_{}_{}blocks.json",
+        side.name(),
+        m
+    );
+    let path = args.get(7).map(String::as_str).unwrap_or(&default_path);
+    run_build(side, m, threads, cap, stride, path);
+}
+
+fn cmd_cls_g_csp_shard(args: &[String]) {
+    use four_color::gmatrix_csp::run_shards;
+    use four_color::gmatrix_full::Side;
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-csp-shard [side] [blocks] [start] [count] [threads] [dir] [stride]",
+                args[0]
+            );
+            std::process::exit(1);
+        }
+    };
+    let m = parse_opt_num(args.get(3), "blocks").unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let start = parse_opt_num(args.get(4), "start").unwrap_or(0);
+    let count = parse_opt_num(args.get(5), "count").unwrap_or(1);
+    let threads = parse_opt_num(args.get(6), "threads").unwrap_or_else(|| {
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4)
+    });
+    if threads == 0 {
+        eprintln!("threads must be >= 1");
+        std::process::exit(1);
+    }
+    let default_dir = format!("results/cls_g_csp_shards_{}_{}blocks", side.name(), m);
+    let dir = args.get(7).map(String::as_str).unwrap_or(&default_dir);
+    let stride = parse_opt_num(args.get(8), "stride").unwrap_or(1);
+    if stride == 0 {
+        eprintln!("stride must be >= 1");
+        std::process::exit(1);
+    }
+    if !run_shards(side, m, start, count, threads, dir, stride) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_cls_g_csp_status(args: &[String]) {
+    use four_color::gmatrix_csp::run_status;
+    let dir = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/cls_g_csp_shards_L_3blocks");
+    if !run_status(dir) {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_cls_g_csp_merge(args: &[String]) {
+    use four_color::gmatrix_csp::run_merge;
+    use four_color::gmatrix_full::Side;
+    let side = match args.get(2).map(String::as_str).unwrap_or("L") {
+        "L" | "l" => Side::L,
+        "R" | "r" => Side::R,
+        other => {
+            eprintln!(
+                "side must be L or R, got '{other}'. Usage: {} cls-g-csp-merge [side] [blocks] [dir] [json]",
+                args[0]
+            );
+            std::process::exit(1);
+        }
+    };
+    let m = parse_opt_num(args.get(3), "blocks").unwrap_or(3);
+    if !(1..=3).contains(&m) {
+        eprintln!("blocks must be 1..=3, got {m}");
+        std::process::exit(1);
+    }
+    let default_dir = format!("results/cls_g_csp_shards_{}_{}blocks", side.name(), m);
+    let dir = args.get(4).map(String::as_str).unwrap_or(&default_dir);
+    let default_path = format!(
+        "results/four_color_cls_gmatrix_csp_{}_{}blocks_merged.json",
+        side.name(),
+        m
+    );
+    let path = args.get(5).map(String::as_str).unwrap_or(&default_path);
+    if !run_merge(side, m, dir, path) {
+        std::process::exit(2);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Argument parsing helpers
 // ---------------------------------------------------------------------------
@@ -2160,4 +5671,17 @@ fn parse_usize_arg(args: &[String], index: usize, usage_hint: &str) -> usize {
             std::process::exit(1);
         }
     }
+}
+
+/// Optional numeric argument: absent -> None; present but unparseable ->
+/// exit 1. Silently defaulting a typo can quietly convert a stratified
+/// sample into a full census run (or vice versa), so present-but-invalid
+/// is a launch error, never a default.
+fn parse_opt_num<T: std::str::FromStr>(arg: Option<&String>, name: &str) -> Option<T> {
+    arg.map(|s| {
+        s.parse::<T>().unwrap_or_else(|_| {
+            eprintln!("{name} must be a number, got '{s}'");
+            std::process::exit(1);
+        })
+    })
 }

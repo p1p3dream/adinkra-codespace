@@ -1,0 +1,53 @@
+{
+  "schema_version": "adynkra-11d-level18-embedded-maps-v1-artifact-v1",
+  "title": "Exact level-18 embedded source-target map census",
+  "report": {
+    "schema_version": "adynkra-11d-level18-embedded-maps-v1",
+    "inventory_source": "S. J. Gates Jr., Y. Hu, and S.-N. H. Mak, arXiv:2002.08502, Appendix F",
+    "source_scope": "The paper fixes the representation inventory. The exact Clebsch-Gordan coefficients here are computationally derived under the committed B5 exterior-basis conventions.",
+    "target_labels": [
+      "01001",
+      "10001",
+      "11001",
+      "20001"
+    ],
+    "expected_abstract_source_target_pairs": 34,
+    "exact_abstract_source_target_pairs": 34,
+    "reused_level14_abstract_source_target_pairs": 20,
+    "direct_level18_abstract_source_target_pairs": 14,
+    "expected_embedded_maps": 77,
+    "exact_embedded_maps": 77,
+    "exact_embedded_maps_by_target": {
+      "01001": 18,
+      "10001": 8,
+      "11001": 38,
+      "20001": 13
+    },
+    "remaining_jobs": [],
+    "every_completed_residual_is_zero": true,
+    "every_completed_map_hash_is_unique_within_source_copy": true,
+    "mutation_control": {
+      "source_dynkin_label": "12000",
+      "target_dynkin_label": "11001",
+      "source_copy": 1,
+      "mutated_primitive_coefficient": 0,
+      "mutation_detected_by_exact_raising_residual": true,
+      "passed": true
+    },
+    "quotient_api": {
+      "exact_sparse_rank_api_available": true,
+      "six_channel_positive_control_passed": true,
+      "six_channel_negative_control_rejected": true,
+      "provenance_fields_required": true,
+      "physical_curvature_maps_supplied": false,
+      "physical_target_gauge_maps_supplied": false,
+      "actual_target_gauge_quotient_computed": false,
+      "passed": true,
+      "boundary": "The controls certify exact sparse image containment and rejection under content hashes of the committed target-stream and source-fixed-curvature validation artifacts. No physical map is supplied or claimed."
+    },
+    "all_77_embedded_maps_complete": true,
+    "physical_target_gauge_quotient_complete": false,
+    "passed": true,
+    "boundary": "Representation-map completion is independent of the physical K/F problem. Even after all seventy-seven maps pass, the physical quotient remains false until convention-fixed curvature variations and target gauge images are supplied."
+  }
+}

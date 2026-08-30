@@ -247,7 +247,11 @@ pub fn report() -> String {
             gs.len(),
             if gs.len() == 12 { "MATCH" } else { "MISMATCH" },
             all_square,
-            if any_sp { "some" } else { "none (general {-1,0,1})" },
+            if any_sp {
+                "some"
+            } else {
+                "none (general {-1,0,1})"
+            },
             if name == "TM" {
                 "n/a".to_string()
             } else {
@@ -279,7 +283,11 @@ mod tests {
     fn cm_has_twelve_g_matrices_including_eq_8_3() {
         let a = a_of(&cm_l());
         let gs = brute_g_matrices(&a, 2);
-        assert_eq!(gs.len(), 12, "paper claims 12 G-matrices per multiplet (CM)");
+        assert_eq!(
+            gs.len(),
+            12,
+            "paper claims 12 G-matrices per multiplet (CM)"
+        );
         assert!(
             gs.iter().all(|g| pth_power_eq(g, &a, 2)),
             "every returned G must square to A"
@@ -302,7 +310,11 @@ mod tests {
     fn vm_has_twelve_g_matrices() {
         let a = a_of(&vm_l());
         let gs = brute_g_matrices(&a, 2);
-        assert_eq!(gs.len(), 12, "paper claims 12 G-matrices per multiplet (VM)");
+        assert_eq!(
+            gs.len(),
+            12,
+            "paper claims 12 G-matrices per multiplet (VM)"
+        );
         assert!(gs.iter().all(|g| pth_power_eq(g, &a, 2)));
         assert!(gs.iter().all(|g| !is_signed_permutation(g)));
     }
@@ -312,7 +324,11 @@ mod tests {
     fn tm_has_twelve_g_matrices() {
         let a = a_of(&tm_l());
         let gs = brute_g_matrices(&a, 2);
-        assert_eq!(gs.len(), 12, "paper claims 12 G-matrices per multiplet (TM)");
+        assert_eq!(
+            gs.len(),
+            12,
+            "paper claims 12 G-matrices per multiplet (TM)"
+        );
         assert!(gs.iter().all(|g| pth_power_eq(g, &a, 2)));
         assert!(gs.iter().all(|g| !is_signed_permutation(g)));
     }

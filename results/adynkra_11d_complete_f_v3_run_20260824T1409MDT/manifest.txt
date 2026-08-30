@@ -1,0 +1,10 @@
+started_at=2026-08-24T14:09:43-06:00
+git_head=586862e19c8c0e433ec451b0ad15deefe503f000
+git_diff_sha256=1684d34b28b28d14f6b7ac66fec0066a99d5f6f9aa2b516d2a56d565f78a37ec
+rustc=rustc 1.94.1 (e408947bf 2026-03-25)
+binary_sha256=f5cebf2e2ba4e009cc2fb6efc5f4c240a3f65aab651ab4671f6bc85b162ff9cb
+threads=4
+output=results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v3_riemann_20260824.json
+
+exit_code=0
+finished_at=2026-08-24T14:45:08-06:00

@@ -1,0 +1,3939 @@
+{
+  "schema_version": "adynkra-11d-level18-target-quotient-basis-v1-artifact-v1",
+  "title": "Parameterized level-18 target gauge-image quotient basis",
+  "report": {
+    "schema_version": "adynkra-11d-level18-target-quotient-basis-v1",
+    "checkpoint_directory": "results/eleven_dimensional_level18_embedded",
+    "exact_checkpoint_blocks": 77,
+    "target_counts": {
+      "01001": 18,
+      "10001": 8,
+      "11001": 38,
+      "20001": 13
+    },
+    "target_dimensions": {
+      "01001": 1408,
+      "10001": 320,
+      "11001": 10240,
+      "20001": 1760
+    },
+    "certified_incidence_domain_dimension": 439904,
+    "certified_incidence_codomain_dimension": 439904,
+    "typed_basis_sha256": "150711903df210b9b32e95e83620cb0705c278f5792ba5320179c5f1305e11aa",
+    "channel_labels": [
+      "k_0_scalar_00000",
+      "k_1_vector_10000",
+      "k_2_two_form_01000",
+      "k_3_three_form_00100",
+      "k_4_four_form_00010",
+      "k_5_five_form_00002"
+    ],
+    "channel_parameter_dimensions": [
+      1,
+      11,
+      55,
+      165,
+      330,
+      462
+    ],
+    "physical_block_channel_routing_available": false,
+    "physical_channel_coefficients_available": false,
+    "parameterized_operator_ready_for_specialization": true,
+    "exact_rank_api_available": true,
+    "exact_kernel_api_available": true,
+    "exact_image_containment_api_available": true,
+    "exact_quotient_dimension_api_available": true,
+    "controls": {
+      "generic_rank": 439904,
+      "generic_kernel_dimension": 0,
+      "generic_quotient_dimension": 0,
+      "special_rank": 372160,
+      "special_kernel_dimension": 67744,
+      "special_quotient_dimension": 67744,
+      "special_inactive_blocks": 11,
+      "zero_rank": 0,
+      "zero_kernel_dimension": 439904,
+      "zero_quotient_dimension": 439904,
+      "positive_image_containment_passed": true,
+      "negative_image_containment_rejected": true,
+      "exact_cancellation_detected": true,
+      "passed": true
+    },
+    "physical_target_gauge_quotient_complete": false,
+    "passed": true,
+    "result": "The seventy-seven exact checkpoint maps form a typed 439,904-dimensional direct sum of certified irreducible incidence blocks. Exact six-parameter specialization and quotient APIs are executable.",
+    "boundary": "This is an exact quotient on the direct sum of certified source-target incidence blocks. The checkpoints do not determine how a convention-fixed physical K routes its six channel coefficients into those blocks, nor do the cited sources fix those coefficients. The supplied generic and special routings are synthetic controls. No physical target gauge quotient is claimed."
+  },
+  "basis": {
+    "blocks": [
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "00010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "543993dc658c68214c13edbc3936f6c139bd099e95491e1935fcd0a37f71c323",
+        "checkpoint_content_sha256": "ba9058e917a3c9f6698b76838e645b6ecdd2bf485fd6af9e46975978345d9cca",
+        "source_fixture_sha256": "0f44032a1a0b21effcfa7de72e00b79892dbbbbb80fdda16cc431db5d1ccfa90",
+        "abstract_certificate_sha256": "f9d64254359f8d0afb445fddd3ff5436a0adbfa91040527c9248fd46e39f72b1",
+        "domain_offset": 0,
+        "codomain_offset": 0,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "00010",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "146daf797cd3e82f59b0324bfee9411664b272a431f1bac10591e0b070a0ea6e",
+        "checkpoint_content_sha256": "04bdc9b8358d8d5729b0f6cff7f86b3324f699e5521174538a42145b35e3e3b2",
+        "source_fixture_sha256": "3b7c0b9504726d6b91a3d4346d91312be041efb9343c10fce28303871430fde6",
+        "abstract_certificate_sha256": "f9d64254359f8d0afb445fddd3ff5436a0adbfa91040527c9248fd46e39f72b1",
+        "domain_offset": 1408,
+        "codomain_offset": 1408,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "00100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "53293dc0b12c5cc2c7d634cc8a8f738c82ff867643153e8ed038d85054f79218",
+        "checkpoint_content_sha256": "46b431bfd3ec30fd4008c620d7e2551cacf7698c2d230d20424508f4f2676c84",
+        "source_fixture_sha256": "4cda9f551ddad96d56a2d707b6bae9876cc318e02c1610cbe72c5e6b835859b5",
+        "abstract_certificate_sha256": "a70463e19f24fc4ddc8e2b777e285ce70c85305b8dc5e21828eba34667873b23",
+        "domain_offset": 2816,
+        "codomain_offset": 2816,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "00100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "6a55e3d20400a43f89168485464b7a3e891e5e4542befb26809b8894f04cdee9",
+        "checkpoint_content_sha256": "fbe39ae2c530451a048ac73006a5082436d5b7ccad29e780f9b2ade0509e856f",
+        "source_fixture_sha256": "d85dd3017f64d142dcb81a317204cec77cba85e251357bb0e3d0de292127e317",
+        "abstract_certificate_sha256": "a70463e19f24fc4ddc8e2b777e285ce70c85305b8dc5e21828eba34667873b23",
+        "domain_offset": 4224,
+        "codomain_offset": 4224,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "3f3ea9661fdc07e0f732fb41607b8ee8f74ad49cd25451c8ce5dad52aa9cd1f8",
+        "checkpoint_content_sha256": "978c50a4e6c94d93e7cd1abf84edbfccca229b68bf7137eff300adf4357e8fd7",
+        "source_fixture_sha256": "e2da23c23f1e7dfbfa969401e4feeda57526eca304e627db55177b43a7bccb0b",
+        "abstract_certificate_sha256": "ffd3a703e8320a22f63302e031bca0806d3f062eb0f4ed4f9287989c05a9d4a7",
+        "domain_offset": 5632,
+        "codomain_offset": 5632,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "28cabf9f51e0d7e88b4a5319b43074fcc95514124ff356dd90b7c73f0167b7fd",
+        "checkpoint_content_sha256": "76a4337e7fb5dcff6eeef5e67dca65b66f0f4d234b1fc9d6b5fbb7b348831d5c",
+        "source_fixture_sha256": "838529d070be2b095700159b0df0ea8bb58f531580b71b9ac073e90ad4465b4e",
+        "abstract_certificate_sha256": "ffd3a703e8320a22f63302e031bca0806d3f062eb0f4ed4f9287989c05a9d4a7",
+        "domain_offset": 7040,
+        "codomain_offset": 7040,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01002",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "79f9bb0db4e406388e2e015a65ad21ec77f67c726dde8386b63ac37baca3540f",
+        "checkpoint_content_sha256": "aada0fe32809b49bd9ce727563a61e68e169f306b8ec8136be54d988775e28b0",
+        "source_fixture_sha256": "446b11cfa011fd688f8fea6dbe821840869e1b16a8897c908a8c018f6a9ba3b4",
+        "abstract_certificate_sha256": "ffd3a703e8320a22f63302e031bca0806d3f062eb0f4ed4f9287989c05a9d4a7",
+        "domain_offset": 8448,
+        "codomain_offset": 8448,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01002",
+          "source_copy": 4
+        },
+        "canonical_map_sha256": "498ff7fa19683ae5ba2393ab831e317ea4e0fa1e3ad6477b181b0dabe0dbf0b2",
+        "checkpoint_content_sha256": "9e9c149365f659803d771aa82ae11d5377e35fc927860517199d7a21c0044f20",
+        "source_fixture_sha256": "5ecc7cee1218dd8bf8808661a66d244ea99687d5aa460f9f4aca5c67d1471453",
+        "abstract_certificate_sha256": "ffd3a703e8320a22f63302e031bca0806d3f062eb0f4ed4f9287989c05a9d4a7",
+        "domain_offset": 9856,
+        "codomain_offset": 9856,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01002",
+          "source_copy": 5
+        },
+        "canonical_map_sha256": "8cc753a6b68e85ff614a66e60c4b5931afdf115dde13363d541b240a5ad73805",
+        "checkpoint_content_sha256": "a863bec4b29edabb7f8e31b16722dba37ca996296b70dda3cf54bf582c7528c1",
+        "source_fixture_sha256": "6185dd3321c9f2e1fb1ac15d05bfc966fcaa9c6e9647402155273586d86134ba",
+        "abstract_certificate_sha256": "ffd3a703e8320a22f63302e031bca0806d3f062eb0f4ed4f9287989c05a9d4a7",
+        "domain_offset": 11264,
+        "codomain_offset": 11264,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "97cc2acfb6161631c102e507babb33daece4453fb249b6cb5435a21cbc24fbba",
+        "checkpoint_content_sha256": "a854f9228b948766839aa3e0836d3251a0099a82ef939a1bd11a128acc79d1e3",
+        "source_fixture_sha256": "83812531db1d7a0bc1765a1b908d4647323fd98d70754709c70940c5ef6f4a3e",
+        "abstract_certificate_sha256": "5ff5c8b9433ea7aeea67d72e55258f3dc3d84ad3e54c4fae115f86db6e4a8aea",
+        "domain_offset": 12672,
+        "codomain_offset": 12672,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "ce841ede91097dc68f4d2ce8db0c00ae8815e429db0ea5f0f6a8a4e2ea56accf",
+        "checkpoint_content_sha256": "5035d7eddb9d3e9f7f4120c4b6a8803a9dfcb88d9b2f09b9d92112b7e7431e6f",
+        "source_fixture_sha256": "a4038a1bd5332bf5500ea74df72bac99ce1256189926af518fe2812601f91725",
+        "abstract_certificate_sha256": "0b2801a655a13486c6379221cd5c4185988b2f38fb61d70df1d30f2793f54a37",
+        "domain_offset": 14080,
+        "codomain_offset": 14080,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "01100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "35362100446d4ebd360d2eaf4e03f89f97c83a3761ad96d505fba953d77ab9e7",
+        "checkpoint_content_sha256": "ec84ac0f7fcf787d083225873f3722919a49c6ba5d1ae62ced8c044e9afaf4a5",
+        "source_fixture_sha256": "6d737c04fdfbf6a46948c8c117faa7476cf7485aac9709a1b49db0ae05ad0dcf",
+        "abstract_certificate_sha256": "0b2801a655a13486c6379221cd5c4185988b2f38fb61d70df1d30f2793f54a37",
+        "domain_offset": 15488,
+        "codomain_offset": 15488,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "02000",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "24b9dc1fbcc822392f1f47b92a9483de80d4d732ceec7dd46a3fbde1e9c10ff9",
+        "checkpoint_content_sha256": "1e76778cf6a510053d784e2fc4fe03df1504af6a0033e52b8060197090ce6394",
+        "source_fixture_sha256": "207557b6a4be077db42d8b6658e9009feafef7a73bace91fb1aad7ff4754ffb2",
+        "abstract_certificate_sha256": "0eed4eca0e58b319b3701936f235c65aedfc603d0e9cca6cecbf47d42720e870",
+        "domain_offset": 16896,
+        "codomain_offset": 16896,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "02000",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "58f710ae608cde83e3c78ec3badfccf259f3425a625a8501246f1dd660eb105a",
+        "checkpoint_content_sha256": "f9140e3b2ab29d2cfe4dc5167b38be4566a8d62f68b615361e5d8049200f750f",
+        "source_fixture_sha256": "c542b368e46fe53d7992fd9cbd27317e796510d56022e4e6759e8cb04295506a",
+        "abstract_certificate_sha256": "0eed4eca0e58b319b3701936f235c65aedfc603d0e9cca6cecbf47d42720e870",
+        "domain_offset": 18304,
+        "codomain_offset": 18304,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "10002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "26bc6aad7b13bc900a1b1246dccbdbbc266b9083729c2b0fde8483aa9f3b31d6",
+        "checkpoint_content_sha256": "79e6411213b2ef40494c75c20afafce7b5f90acf583b48f4460317ec8cdb0302",
+        "source_fixture_sha256": "d3b2bf84cd74c04505f85a9dc4cbe669ea4f6cce854e5ea2ee68e9e9dd860213",
+        "abstract_certificate_sha256": "b84a8eda79215f1310985397ad21ec5b00efb536cfdb659dc2d52d8bdc637e3c",
+        "domain_offset": 19712,
+        "codomain_offset": 19712,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "10002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "2db88ee24ca016c9ec9c11ad0baa213a6c1dae37248b765fd82286046e0437e0",
+        "checkpoint_content_sha256": "2ab66118ed6efec4dd18c4a0f3a2e51f92cf8e67b808956ebe8af9949b1de026",
+        "source_fixture_sha256": "5e17ebbb14f25d6ff1dd10bd566c72c24787fab59d2d56dc983809dae21a185f",
+        "abstract_certificate_sha256": "b84a8eda79215f1310985397ad21ec5b00efb536cfdb659dc2d52d8bdc637e3c",
+        "domain_offset": 21120,
+        "codomain_offset": 21120,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "10010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "864d68d8d9afa54f26da2a9aa0ce6ccd66394ff2ad354152807297835964b3e0",
+        "checkpoint_content_sha256": "66983185c0b7a9dbd55854ff7c79881254a67b770a2c8754dd632e6020bbce63",
+        "source_fixture_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05",
+        "abstract_certificate_sha256": "7439e4165095692edadcb394454daf3667fcec0c547d03e7019b936731400c95",
+        "domain_offset": 22528,
+        "codomain_offset": 22528,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "01001",
+          "source_dynkin_label": "10100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "b154bcd85b8652b8d8373a8c521f782e1baa9b9bc3d6598b8edc72e158ee93f2",
+        "checkpoint_content_sha256": "14bc38c7e2b3f3dfbb5a7b3a190d367e5685f78572b4c7c6446365429a566b1f",
+        "source_fixture_sha256": "1ba1482e16f7a8a5c4d1ff477d03e44fba2a9719f5d88a447940bcb51b447331",
+        "abstract_certificate_sha256": "29975a2fc7d3f71da69ba26e8c1e5d9d1186506abde9418a0e4f5aadc92a67c6",
+        "domain_offset": 23936,
+        "codomain_offset": 23936,
+        "certified_irrep_domain_dimension": 1408,
+        "target_codomain_dimension": 1408,
+        "certified_rank": 1408,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "00010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "5bd29fec1ae44367a53e60986c2e8aa0a21ecae663cd7abad53732032e4c8764",
+        "checkpoint_content_sha256": "59ee028e0f5ff87a7d594ff8c669af145896fc8d025528b163317a446c5fc256",
+        "source_fixture_sha256": "0f44032a1a0b21effcfa7de72e00b79892dbbbbb80fdda16cc431db5d1ccfa90",
+        "abstract_certificate_sha256": "299e323d5ef46de1718c278a2e78e449e6ad78d26163b3ea2b01cc4bf40f97b8",
+        "domain_offset": 25344,
+        "codomain_offset": 25344,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "00010",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "c18767e714f65402efc6cf01c9134b1211ddadc419668f4965ca491a11b7924e",
+        "checkpoint_content_sha256": "6ced96418a64b60225cc78e974abdb1249f733db7e45e5a0cbaa690c3496458e",
+        "source_fixture_sha256": "3b7c0b9504726d6b91a3d4346d91312be041efb9343c10fce28303871430fde6",
+        "abstract_certificate_sha256": "299e323d5ef46de1718c278a2e78e449e6ad78d26163b3ea2b01cc4bf40f97b8",
+        "domain_offset": 25664,
+        "codomain_offset": 25664,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "00100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "ffb14b67a2973e18c52752e330905ce567476e64eaa45838c0b6b41bd2f3e8b4",
+        "checkpoint_content_sha256": "b0a855bccadf4dff9da70c92c263684c73d9427025f6a5441d36c1710ddf99b1",
+        "source_fixture_sha256": "4cda9f551ddad96d56a2d707b6bae9876cc318e02c1610cbe72c5e6b835859b5",
+        "abstract_certificate_sha256": "b292c1de0760d91850f622c3ce7e4b3de9c81758435703f5fa9040ac02f66ac5",
+        "domain_offset": 25984,
+        "codomain_offset": 25984,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "00100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "1abdb82d72ca1bdfe639a734399a2302d3b3f2876d4cda7d6a25c6d1e871c456",
+        "checkpoint_content_sha256": "927d24f5a0e882ecc155325dcba0ccccb2df21fe5fd4bb0df32e4dba56bcbb3c",
+        "source_fixture_sha256": "d85dd3017f64d142dcb81a317204cec77cba85e251357bb0e3d0de292127e317",
+        "abstract_certificate_sha256": "b292c1de0760d91850f622c3ce7e4b3de9c81758435703f5fa9040ac02f66ac5",
+        "domain_offset": 26304,
+        "codomain_offset": 26304,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "10002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "fabab76c05dd246c3d5e449265c5d0dc62a97db69d202222659b40425bb9fe8b",
+        "checkpoint_content_sha256": "6c14f2ef5f6fb6484e688ed28375cba45ff6619b14ca8e1c93575290c616a806",
+        "source_fixture_sha256": "d3b2bf84cd74c04505f85a9dc4cbe669ea4f6cce854e5ea2ee68e9e9dd860213",
+        "abstract_certificate_sha256": "de7418341123cc4ea43bc9c742375eb849ceb07183ea701a45594c71227d145c",
+        "domain_offset": 26624,
+        "codomain_offset": 26624,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "10002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "41b777379dd6ebe6afc8610f75846224e988416e5eedddba1d836e6d3103562c",
+        "checkpoint_content_sha256": "b679535ec4cb7e472dc271beceff7b54d1c5c8d71e27f471b3588b3d326f0763",
+        "source_fixture_sha256": "5e17ebbb14f25d6ff1dd10bd566c72c24787fab59d2d56dc983809dae21a185f",
+        "abstract_certificate_sha256": "de7418341123cc4ea43bc9c742375eb849ceb07183ea701a45594c71227d145c",
+        "domain_offset": 26944,
+        "codomain_offset": 26944,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "10010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "637c87dd8a8fa17c82198b6772f396d901d302437eb56180e285b79142af8190",
+        "checkpoint_content_sha256": "89c6790cc05f3b75097ce7e81716c21ba25d13099046e44be7250e4408f68a18",
+        "source_fixture_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05",
+        "abstract_certificate_sha256": "aa367cc0d0c0f928c8fdc8914d49adbc4098a095db3c6633c0bb404e9ff20345",
+        "domain_offset": 27264,
+        "codomain_offset": 27264,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "10001",
+          "source_dynkin_label": "10100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "49dfbed68a50a1a91b2bccee38ab6444e7ad8db9fbb6789253003b6bf735c890",
+        "checkpoint_content_sha256": "7e08ba8d618c6bcb2479c204bda5eb77c94c7185b0ba1596db7bf9edf6c09c4e",
+        "source_fixture_sha256": "1ba1482e16f7a8a5c4d1ff477d03e44fba2a9719f5d88a447940bcb51b447331",
+        "abstract_certificate_sha256": "fa65e89a3877532cb30a70eaa30d6df5d856c4f881f7b7a9dc599a01579d4373",
+        "domain_offset": 27584,
+        "codomain_offset": 27584,
+        "certified_irrep_domain_dimension": 320,
+        "target_codomain_dimension": 320,
+        "certified_rank": 320,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "b0724cde599e2957d60f73ec0879f1832dc955f4f8462c4d489f5e556627739e",
+        "checkpoint_content_sha256": "ddc7c456ca8760ad038ed814dbaa3d779dcfa236b2b68d821d0655c56d85347b",
+        "source_fixture_sha256": "e2da23c23f1e7dfbfa969401e4feeda57526eca304e627db55177b43a7bccb0b",
+        "abstract_certificate_sha256": "a2c0afe6ad726e0f73b68459573e5f503ee56356e964addcf6798f26f8647ff0",
+        "domain_offset": 27904,
+        "codomain_offset": 27904,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "4528adfb84fc5fdf52acbf56e0bd275166ad60b60c0b1080f90be934d4b964e1",
+        "checkpoint_content_sha256": "adbaf38435bd23ebb7b489e1e07f532937ef00f5d3fef8cc5924a8953a29e18c",
+        "source_fixture_sha256": "838529d070be2b095700159b0df0ea8bb58f531580b71b9ac073e90ad4465b4e",
+        "abstract_certificate_sha256": "a2c0afe6ad726e0f73b68459573e5f503ee56356e964addcf6798f26f8647ff0",
+        "domain_offset": 38144,
+        "codomain_offset": 38144,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01002",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "c408cb6bda5b3afe75c867a5f74a445a81d4adf148ba04dc05f4f5aaf1f7c7b2",
+        "checkpoint_content_sha256": "b95771a5e86bea3ca6cf7425db4af96ca6cd41e2fc72a0125083a4256bfbaa81",
+        "source_fixture_sha256": "446b11cfa011fd688f8fea6dbe821840869e1b16a8897c908a8c018f6a9ba3b4",
+        "abstract_certificate_sha256": "a2c0afe6ad726e0f73b68459573e5f503ee56356e964addcf6798f26f8647ff0",
+        "domain_offset": 48384,
+        "codomain_offset": 48384,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01002",
+          "source_copy": 4
+        },
+        "canonical_map_sha256": "cf1d9e35df08408faf48b608547a54b76c40e1726619cdfd44bbb76f5e571fae",
+        "checkpoint_content_sha256": "080e34c463d53e5bc108e2edca00cb3574740ba3b3b68b608b83a11bbef333c0",
+        "source_fixture_sha256": "5ecc7cee1218dd8bf8808661a66d244ea99687d5aa460f9f4aca5c67d1471453",
+        "abstract_certificate_sha256": "a2c0afe6ad726e0f73b68459573e5f503ee56356e964addcf6798f26f8647ff0",
+        "domain_offset": 58624,
+        "codomain_offset": 58624,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01002",
+          "source_copy": 5
+        },
+        "canonical_map_sha256": "a3d1aef8bedb118a828c5fa268cff8e1b30ea486a46828116aff8733c1d3062e",
+        "checkpoint_content_sha256": "510a7ee4a45e90c1d37042012025c2050dfbf7437593130fb9fcaeb252da9273",
+        "source_fixture_sha256": "6185dd3321c9f2e1fb1ac15d05bfc966fcaa9c6e9647402155273586d86134ba",
+        "abstract_certificate_sha256": "a2c0afe6ad726e0f73b68459573e5f503ee56356e964addcf6798f26f8647ff0",
+        "domain_offset": 68864,
+        "codomain_offset": 68864,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "65c178c14e2ea3155311e08b1a56720d1ea8429d91a4520aefdfb555d2d548f6",
+        "checkpoint_content_sha256": "d32b779797685278038dcefd252dd6653ca53cbcddd38251b16b4f608f06fb8a",
+        "source_fixture_sha256": "83812531db1d7a0bc1765a1b908d4647323fd98d70754709c70940c5ef6f4a3e",
+        "abstract_certificate_sha256": "e441d88c6c9cf14889b60cc1fd252775cf665362ffb2ca1b953d273557d0227d",
+        "domain_offset": 79104,
+        "codomain_offset": 79104,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "3d91e90c772c2f0a9e9934fbf51d0b8c2d45bad747fa88b8a1ea9ce6f8f2f75b",
+        "checkpoint_content_sha256": "b8db970313295502e7a8b3ef40b8460ad82b03a275532ea1379f2b8d7c9d038f",
+        "source_fixture_sha256": "a4038a1bd5332bf5500ea74df72bac99ce1256189926af518fe2812601f91725",
+        "abstract_certificate_sha256": "6ffccc16286c9d8d712bb39595f4172cf1a9681ff35c9649afec225626688751",
+        "domain_offset": 89344,
+        "codomain_offset": 89344,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "01100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "e8e40fa9a517a0e18da0ec1de70eac1c252ede56f979254b3b7c9f2c39fc93fe",
+        "checkpoint_content_sha256": "9be7b6b5af5a2e8e8fbdeafd2c395b1f413bb26c4937602b75e7ec7b28ee2160",
+        "source_fixture_sha256": "6d737c04fdfbf6a46948c8c117faa7476cf7485aac9709a1b49db0ae05ad0dcf",
+        "abstract_certificate_sha256": "6ffccc16286c9d8d712bb39595f4172cf1a9681ff35c9649afec225626688751",
+        "domain_offset": 99584,
+        "codomain_offset": 99584,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "02000",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "77f2b0c2e32cf59897d7fe350b510cbc7b15596b31edc8211796863348a5ebc1",
+        "checkpoint_content_sha256": "bd462d135150282e0ae7b726f995a7395b8ae604d1ac9a25518012c2f692ac77",
+        "source_fixture_sha256": "207557b6a4be077db42d8b6658e9009feafef7a73bace91fb1aad7ff4754ffb2",
+        "abstract_certificate_sha256": "7cd5da5e7f4cebea2b417912756693253194c57d28594aea91c27289eef2bb3d",
+        "domain_offset": 109824,
+        "codomain_offset": 109824,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "02000",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "51e9f1652754f71b894ba69be05eaaf6d013a484ed95a2d29c13b3990f534eab",
+        "checkpoint_content_sha256": "7283702510889f896e53ccd1066d709e8f016e8ed33022b761ae137ebc7800e1",
+        "source_fixture_sha256": "c542b368e46fe53d7992fd9cbd27317e796510d56022e4e6759e8cb04295506a",
+        "abstract_certificate_sha256": "7cd5da5e7f4cebea2b417912756693253194c57d28594aea91c27289eef2bb3d",
+        "domain_offset": 120064,
+        "codomain_offset": 120064,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "10002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "bb9a5c77bfd5d40b0b8def55a8b184de712e9fe08bc4b55b2ea2e3b666a30b42",
+        "checkpoint_content_sha256": "b4a2925de77798639678b427e916e5443fe5498e26aff497bbf691d88eff299d",
+        "source_fixture_sha256": "d3b2bf84cd74c04505f85a9dc4cbe669ea4f6cce854e5ea2ee68e9e9dd860213",
+        "abstract_certificate_sha256": "5127910d94982988581ca8385ea87c935151d1321c483eb574bc17e849fcf8aa",
+        "domain_offset": 130304,
+        "codomain_offset": 130304,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "10002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "69ad775848951bf4922d12bc937470ae7d730b1c661478ab49be1bf1460d080e",
+        "checkpoint_content_sha256": "bc6b16f3ed4aa842885fbeb391e5aa3125cd31858fc7ea46e94dcffaa5b2ce68",
+        "source_fixture_sha256": "5e17ebbb14f25d6ff1dd10bd566c72c24787fab59d2d56dc983809dae21a185f",
+        "abstract_certificate_sha256": "5127910d94982988581ca8385ea87c935151d1321c483eb574bc17e849fcf8aa",
+        "domain_offset": 140544,
+        "codomain_offset": 140544,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "10010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "e3b5d9f6d974f00f483f5e407c99d12373fac7077e68e66c9ca9fbb8b6181bc3",
+        "checkpoint_content_sha256": "cc0568509044150f00571744f466968ef82b8ceb86762be12f8f39fcb131efd0",
+        "source_fixture_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05",
+        "abstract_certificate_sha256": "6d1e23b34729d51cc44c0ea6caebaccb5023df29ea10b4903e2111d609bedb5f",
+        "domain_offset": 150784,
+        "codomain_offset": 150784,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "10100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "184634fb7e30a9e845d03543556592ab82a268f08ed5d8e79569c0916e2b997f",
+        "checkpoint_content_sha256": "e69ee5fea856723f2e49e10769fd6eae57bd98fd5d11e308556beed023367fd9",
+        "source_fixture_sha256": "1ba1482e16f7a8a5c4d1ff477d03e44fba2a9719f5d88a447940bcb51b447331",
+        "abstract_certificate_sha256": "dfd676030f5ce547fe550c955241d58ec9eb34b9265b8b2f46a69db0cf5b7464",
+        "domain_offset": 161024,
+        "codomain_offset": 161024,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "a79d6b63c931b2a2e23cefa279a3e17dbad560c4894b28d737394970f4e4f7fd",
+        "checkpoint_content_sha256": "9a220d88a81d8cde26fa1fbb844dc4bc1f387c264ac8d7b31a43755a39b4aba7",
+        "source_fixture_sha256": "5d72043fe8e15b2720b40144d4897c893464895eb19cee7c38087901dc64d023",
+        "abstract_certificate_sha256": "75d4a2ac1cb4f9777f2d7197c0e549ef68c8e2cf0f28be302a91fd1356387058",
+        "domain_offset": 171264,
+        "codomain_offset": 171264,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "054ee771ec688351db7a1f612b36aae46d1fccef9b4fdacc5b4751f01186f342",
+        "checkpoint_content_sha256": "af2a8e36aa71726a10ba8baa464a23f6a3c6a77c14fba8a31f0b0346a80ad329",
+        "source_fixture_sha256": "d2daf9cd43e0d28f8c6b177dd3f0d8441903ea49842f66b86edf2a67abc416d2",
+        "abstract_certificate_sha256": "75d4a2ac1cb4f9777f2d7197c0e549ef68c8e2cf0f28be302a91fd1356387058",
+        "domain_offset": 181504,
+        "codomain_offset": 181504,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11002",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "e619700f524476191342a9570f5856652d99876f0a799ee4ef43cef4dbb013f0",
+        "checkpoint_content_sha256": "6b330db5ebe39aa2f76ab9a1b8b5ae69be7bdcc2091743e06bfdcdccec27fc86",
+        "source_fixture_sha256": "b589f552322ce1f7e60bed6681549c84f5427eddae3cd1bf40cd4df13505a238",
+        "abstract_certificate_sha256": "75d4a2ac1cb4f9777f2d7197c0e549ef68c8e2cf0f28be302a91fd1356387058",
+        "domain_offset": 191744,
+        "codomain_offset": 191744,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11002",
+          "source_copy": 4
+        },
+        "canonical_map_sha256": "676d93c2364c62e02e5d3bac775d9f0f6d4291a477b356b8e48b0d923a564d86",
+        "checkpoint_content_sha256": "2f96800702f46efde3ae9a905557ef4705b0e27ba803179b6737015aa0995496",
+        "source_fixture_sha256": "6b93c0d65a32f4539ecdbf7269893c76dcde8581a7a9c0709ffcd488529f2a77",
+        "abstract_certificate_sha256": "75d4a2ac1cb4f9777f2d7197c0e549ef68c8e2cf0f28be302a91fd1356387058",
+        "domain_offset": 201984,
+        "codomain_offset": 201984,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11002",
+          "source_copy": 5
+        },
+        "canonical_map_sha256": "4d0febf0f175f660ffb0685a852c4aab5e5bd69dfb7988c5279f9061c3f32076",
+        "checkpoint_content_sha256": "6ba7681bb7dfa2b47c2b96c00687281079fa5e6e986ec25adc82b6bf471bb9f3",
+        "source_fixture_sha256": "976bf2df0d77368dd846cde90ca76c9df6ee7adc37007040ac4867c65792b4cb",
+        "abstract_certificate_sha256": "75d4a2ac1cb4f9777f2d7197c0e549ef68c8e2cf0f28be302a91fd1356387058",
+        "domain_offset": 212224,
+        "codomain_offset": 212224,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11002",
+          "source_copy": 6
+        },
+        "canonical_map_sha256": "c09e8e28ca04f57c8c064a430da847a4fbc07f40ae838821400815206903dc5a",
+        "checkpoint_content_sha256": "b893ca8d7d9ce0254cb9710dce9772f7804958161064e0363af02cbc02791781",
+        "source_fixture_sha256": "a3a66e8c6711b4a031d72aaf7296293f65e3ad35e0cb8558471245bbf09b80cd",
+        "abstract_certificate_sha256": "75d4a2ac1cb4f9777f2d7197c0e549ef68c8e2cf0f28be302a91fd1356387058",
+        "domain_offset": 222464,
+        "codomain_offset": 222464,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "862f18bfa68af90896ab616e5f47103a6a9a8aad2a8f5e989948697b10a7b537",
+        "checkpoint_content_sha256": "d5e08d497990a5bf2d8214e9467452c70364ab2211a33926a053f309c200aabd",
+        "source_fixture_sha256": "860a04976cf0c4d52453a029582c18d6675ed1447a98801a91018133bd443764",
+        "abstract_certificate_sha256": "70d7297eb80268579833c03d591a14aa81aabe3508685d2b9710b42a90b4596a",
+        "domain_offset": 232704,
+        "codomain_offset": 232704,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11010",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "c0aa3296ae1fa77a0a3220a878d0b9247d2d7b21b1414d2319d3940409a5beea",
+        "checkpoint_content_sha256": "8e391435a6afbddcb91b994dfefb7c3304248c37d533369d9af084b28f8f089a",
+        "source_fixture_sha256": "fc9780fc9d16f9dd7a490f09807a14792c9cd94cd5e8fb64f776ebeb63559198",
+        "abstract_certificate_sha256": "70d7297eb80268579833c03d591a14aa81aabe3508685d2b9710b42a90b4596a",
+        "domain_offset": 242944,
+        "codomain_offset": 242944,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11010",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "4b7b307aa7de4ad5df8fa4c043b9b5883bb63a67786a847b2802a9a99bdc0cce",
+        "checkpoint_content_sha256": "b7e8e82051a3603c206b95ef8ce6b0ae4909fbaa1794c5956f19ba95962c5e1d",
+        "source_fixture_sha256": "ae942cc32b7917fb2a4acd7d2f71a7ab6c5e21464efc9c7cd2c1a4a78308f534",
+        "abstract_certificate_sha256": "70d7297eb80268579833c03d591a14aa81aabe3508685d2b9710b42a90b4596a",
+        "domain_offset": 253184,
+        "codomain_offset": 253184,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11010",
+          "source_copy": 4
+        },
+        "canonical_map_sha256": "9758d6dfc08713f5026d84ef5af96a2bd5c4eebdf41440e7c5ae4af8b5d9f0ca",
+        "checkpoint_content_sha256": "8e3d6f283c17161eb5e13bdff332164bae560df5393c6623eaeca60f3a87144c",
+        "source_fixture_sha256": "2806238bcf7a7e5e7d1fa1ed873cbe7cfa65446a674d255f88761d61e832c0dd",
+        "abstract_certificate_sha256": "70d7297eb80268579833c03d591a14aa81aabe3508685d2b9710b42a90b4596a",
+        "domain_offset": 263424,
+        "codomain_offset": 263424,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11010",
+          "source_copy": 5
+        },
+        "canonical_map_sha256": "74d69852a43a6be30219c641c5bbb797768dce01b24329adea6783d53dd9903a",
+        "checkpoint_content_sha256": "661943ef4541cfd38d76741e7c9daf9af412a7a4323767e96a608bec184f4e0c",
+        "source_fixture_sha256": "796e81a445de59259bc46cc6227b7ba6b7fbcdfad39c1ed8bde747a83d15675a",
+        "abstract_certificate_sha256": "70d7297eb80268579833c03d591a14aa81aabe3508685d2b9710b42a90b4596a",
+        "domain_offset": 273664,
+        "codomain_offset": 273664,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "1d9c9b746dfa98bcb9e71ff8081e575103e22814ba340095f1cfddc8cac7745d",
+        "checkpoint_content_sha256": "97c209a35a19e6ddb0ee8324af2d5b9eeb770a8ca2330f03a4edaea1dc81b254",
+        "source_fixture_sha256": "ce87f8348c8659e33d3f3c1e66ae4102771973b78944a16a42f87b11fbd0fd9f",
+        "abstract_certificate_sha256": "c6e4b9528bab0f5effeaf572b7a2d83de9c74d394e34afdd2faaf8f9c2253fa9",
+        "domain_offset": 283904,
+        "codomain_offset": 283904,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "a01d55482093711417db299e03171a92042bc4338d7cca8c27ac0629477d87ea",
+        "checkpoint_content_sha256": "928e3b6c92839a064b41273cb4475e0db63937a9c302d2181c05cef2a72783ce",
+        "source_fixture_sha256": "4b58c1bcd3362faebdbc069923ef0f1312061c6d4dafed301540425b0762a63c",
+        "abstract_certificate_sha256": "c6e4b9528bab0f5effeaf572b7a2d83de9c74d394e34afdd2faaf8f9c2253fa9",
+        "domain_offset": 294144,
+        "codomain_offset": 294144,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "11100",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "a7645c7f419644f1b4674f08a921d2a1a9e57272a3e574cb7e667c0dd554e406",
+        "checkpoint_content_sha256": "d1f542f58c434a74b78d06839edf6e0a26bae271afa4f17653219c88e79eaa47",
+        "source_fixture_sha256": "18dc26bf3141203cc39a02cd16335f410c739e2f31ee05feade1478c173d33b7",
+        "abstract_certificate_sha256": "c6e4b9528bab0f5effeaf572b7a2d83de9c74d394e34afdd2faaf8f9c2253fa9",
+        "domain_offset": 304384,
+        "codomain_offset": 304384,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "12000",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "2cca4daa8bc16f6ce14ac1ef30426baaeec372400d6d0d638cff384f3ac8ae67",
+        "checkpoint_content_sha256": "f18bced3b2c320b3751b43115c76b3aaf5c9a6f141483be51c7a8d13390d6b51",
+        "source_fixture_sha256": "6d434fe451799fbe52897cc5c0ea333f3de5909b4198f8be844a521fab3b0f87",
+        "abstract_certificate_sha256": "dfcc7d083137c276a08c4c7ec6bdb131412638cf0f882856edcf8904f2cae4b7",
+        "domain_offset": 314624,
+        "codomain_offset": 314624,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "44c13a2f77a3955f7f092da9665b8f36671cfcc78388d0eda85037216c4f00fd",
+        "checkpoint_content_sha256": "2b5b97c93a39514cfcc8217188190168968d70284c18f15a12e6c783ed47305d",
+        "source_fixture_sha256": "7fbb2ea3a56ecab6c3288ed6b2080109304a1e62bb517c9c102906baa5595ea8",
+        "abstract_certificate_sha256": "b3deb91f83504d25b1e2ea23cb0538e1680c0126f73d5bae620863f8b512f73f",
+        "domain_offset": 324864,
+        "codomain_offset": 324864,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "3b0a9564dca12dbd36ffba4bf3059ba446f0734a289e91122a6f93b2635fbcb5",
+        "checkpoint_content_sha256": "87986187b57b3448a78de60390f826db7c0fe5058679cf4965dd28876228abe1",
+        "source_fixture_sha256": "2c3c262f1a0d68abb59b3af48b73dad78393b72fca33199d6ad2471a42ede68d",
+        "abstract_certificate_sha256": "b3deb91f83504d25b1e2ea23cb0538e1680c0126f73d5bae620863f8b512f73f",
+        "domain_offset": 335104,
+        "codomain_offset": 335104,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "6fe7b2ecefbf924d67d9f0e9262edd83aa7937884ac05cdb05c1fa361223b393",
+        "checkpoint_content_sha256": "4adba0edfa454a29627e88751f7221ce07552be46f6fde1082ff5362dfc07828",
+        "source_fixture_sha256": "6cf887f519484fb0e26c6a6cadd2f46ddaddbbc7e9f7d8d659b310be4f0adad5",
+        "abstract_certificate_sha256": "da995451724fa71bd95b2d6da3fcbaa50e8e2cc3c257875d28eade1029b2ea56",
+        "domain_offset": 345344,
+        "codomain_offset": 345344,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20010",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "045dd704dd483599ff0cd73be0628a16e0cb3113413a6803cc3607793cc23796",
+        "checkpoint_content_sha256": "3185a5ca6389d9362d242832054fc3f3861a8b3915a3ff4579b6d9a10be856ee",
+        "source_fixture_sha256": "bca943b65f13f60f372813b3c19c26bc4d9eb3567326e7419bec5749c9e117fe",
+        "abstract_certificate_sha256": "da995451724fa71bd95b2d6da3fcbaa50e8e2cc3c257875d28eade1029b2ea56",
+        "domain_offset": 355584,
+        "codomain_offset": 355584,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20010",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "f724bdb0ef61d07ab42c70032b0e8e3e4a51aa0811f8e16b9547ed18eb24e297",
+        "checkpoint_content_sha256": "fe0a8c66539ce5a9c983544527afdc8967c40bad60fe1b63811c2bb2a4d7b6dc",
+        "source_fixture_sha256": "4aa8521805e558da435b5cacf813b69a53153675df8a04cebc20f78d1a4074b6",
+        "abstract_certificate_sha256": "da995451724fa71bd95b2d6da3fcbaa50e8e2cc3c257875d28eade1029b2ea56",
+        "domain_offset": 365824,
+        "codomain_offset": 365824,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20010",
+          "source_copy": 4
+        },
+        "canonical_map_sha256": "68c2546d4281568792ac61adbaf3b7309418f06b2091f07a54bf90d98603b9e3",
+        "checkpoint_content_sha256": "c6887a0a349499f93c6dd5eeed150084b755d703fade4dfae72c24fecdbac910",
+        "source_fixture_sha256": "5bc2967e91510f252b2785903d80cfc1661b4ff63860e6f66f37e0a47d6b9b50",
+        "abstract_certificate_sha256": "da995451724fa71bd95b2d6da3fcbaa50e8e2cc3c257875d28eade1029b2ea56",
+        "domain_offset": 376064,
+        "codomain_offset": 376064,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "02e754ba3e274d1fb685ae74d6838d2dbca8bd04e3bd2acbc1ddfc64f5a83464",
+        "checkpoint_content_sha256": "128f4901e0e1ad8dd4c6daed53f04bda9738b30c753937268b9fd266e78cc4db",
+        "source_fixture_sha256": "812d533789c72068226a7b2507de002bce1da1c1e4aa420c845cd058d96fa5c4",
+        "abstract_certificate_sha256": "d4939ce33c515323f8ce1c9933470369c027edf02c0a838a691e4f6ef6c4d0c2",
+        "domain_offset": 386304,
+        "codomain_offset": 386304,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "be0cddf7162b0542614adcdf38f2c64f9eaf5860c0b1a8eec4be767e043708d6",
+        "checkpoint_content_sha256": "02b71733a59e3fc1a41959b215eb3e11d044479ddc53ce0d8671ff54dbc43925",
+        "source_fixture_sha256": "f32eacfb6b48a6de051a7bd6da4d7884ab16be8388630c0b30a6ee3f583b9f10",
+        "abstract_certificate_sha256": "d4939ce33c515323f8ce1c9933470369c027edf02c0a838a691e4f6ef6c4d0c2",
+        "domain_offset": 396544,
+        "codomain_offset": 396544,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "11001",
+          "source_dynkin_label": "20100",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "63c2eaaad493b3f97292a3ca2988b704083844fb0813e6c410bd913e5908e128",
+        "checkpoint_content_sha256": "96600fa75447ef43747c3c83346524adb6a206ebb33c7c514f160367e2178b1e",
+        "source_fixture_sha256": "b025e0a5e80cedbffd3a89ad5c9c075b7e05b0f8e0d588fd61ae918c88d67d54",
+        "abstract_certificate_sha256": "d4939ce33c515323f8ce1c9933470369c027edf02c0a838a691e4f6ef6c4d0c2",
+        "domain_offset": 406784,
+        "codomain_offset": 406784,
+        "certified_irrep_domain_dimension": 10240,
+        "target_codomain_dimension": 10240,
+        "certified_rank": 10240,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "10002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "6da50a0eb0306c8c3c1ab4ff2beef22a5897979cb01d16e402274eff12d87ad9",
+        "checkpoint_content_sha256": "335833fd21234149f5ffbe8c9e2b8061aae138742093689df909da0173453d41",
+        "source_fixture_sha256": "d3b2bf84cd74c04505f85a9dc4cbe669ea4f6cce854e5ea2ee68e9e9dd860213",
+        "abstract_certificate_sha256": "9504d9fa4512598065e9c7c80ae1aec64860def2358d9dd2de40863474f595c8",
+        "domain_offset": 417024,
+        "codomain_offset": 417024,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "10002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "fa6ef87007cfe4e2b50d99885682db37f76344eb2c6c2027010683943cda5d97",
+        "checkpoint_content_sha256": "a70161c542e54ff96f9f9c45db05b57ddd6799dceb4dd3d3415f4cfcd8599c2f",
+        "source_fixture_sha256": "5e17ebbb14f25d6ff1dd10bd566c72c24787fab59d2d56dc983809dae21a185f",
+        "abstract_certificate_sha256": "9504d9fa4512598065e9c7c80ae1aec64860def2358d9dd2de40863474f595c8",
+        "domain_offset": 418784,
+        "codomain_offset": 418784,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "10010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "98f0b6d504c903e54e7f95cfd856bcd0f78392edf4ee248736270e357e8dd32d",
+        "checkpoint_content_sha256": "3c7e2450c1462c46217c29f27f04f8ea7de0a524dd47b0abf561dd25d775272f",
+        "source_fixture_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05",
+        "abstract_certificate_sha256": "02d2302fb1847e1619889ecf74a8901334aecb252cd558519d3971bad56009df",
+        "domain_offset": 420544,
+        "codomain_offset": 420544,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "10100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "053bf3fac481b12dc28f4711b66798c7cfe1f4af076dd44cdc15fcc040327cd7",
+        "checkpoint_content_sha256": "791037f54cc9b92b93b9b2de1858696d7d0fddba920dbcc90b64b90ca8ad7f0f",
+        "source_fixture_sha256": "1ba1482e16f7a8a5c4d1ff477d03e44fba2a9719f5d88a447940bcb51b447331",
+        "abstract_certificate_sha256": "2e84236025ad2368ccd8ad529a9273ae5d1a9f18c79612b5203cfbfac1c4d622",
+        "domain_offset": 422304,
+        "codomain_offset": 422304,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20002",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "373419e454ef74c1423d8eef1fb88a1f6abc580c363c1c1d9d507a01f2b7a596",
+        "checkpoint_content_sha256": "7cc0c1594321c27ce593cef49135dadcea064f27fd439c7d1c972b45d6c80521",
+        "source_fixture_sha256": "7fbb2ea3a56ecab6c3288ed6b2080109304a1e62bb517c9c102906baa5595ea8",
+        "abstract_certificate_sha256": "6b92f1643de1d87a28d2df2ea73c5352d8180e081ae9d1e9e8c9526e1a04cd25",
+        "domain_offset": 424064,
+        "codomain_offset": 424064,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20002",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "41ad98184780855746bd4774edb67342f0c2047cf4d10880a98435a79db36553",
+        "checkpoint_content_sha256": "a542af7293446be8a739960e3a51063e886fc2dbf3f2bfb3c418e7d729c625d0",
+        "source_fixture_sha256": "2c3c262f1a0d68abb59b3af48b73dad78393b72fca33199d6ad2471a42ede68d",
+        "abstract_certificate_sha256": "6b92f1643de1d87a28d2df2ea73c5352d8180e081ae9d1e9e8c9526e1a04cd25",
+        "domain_offset": 425824,
+        "codomain_offset": 425824,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20010",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "8cffb2c59e7a2303909b7b9e11dd8e815c71643ca373cbd5f58607e2312d7553",
+        "checkpoint_content_sha256": "89d139d2a09a0590628c1a172026fe5e4813903b33440d2bb4f7790980ffdb19",
+        "source_fixture_sha256": "6cf887f519484fb0e26c6a6cadd2f46ddaddbbc7e9f7d8d659b310be4f0adad5",
+        "abstract_certificate_sha256": "9f9541031a47115e638c03626f9e194f05dce87d468136158e8649288990705c",
+        "domain_offset": 427584,
+        "codomain_offset": 427584,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20010",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "a7f1f0d57d36f0bfe986192682b4badfe22fc7dc8095968bd6e5fb7fa23e4e13",
+        "checkpoint_content_sha256": "5e85f53708d88339cfa073fa4bbfe692c9fa948ca70f090b432c28add40ca4cb",
+        "source_fixture_sha256": "bca943b65f13f60f372813b3c19c26bc4d9eb3567326e7419bec5749c9e117fe",
+        "abstract_certificate_sha256": "9f9541031a47115e638c03626f9e194f05dce87d468136158e8649288990705c",
+        "domain_offset": 429344,
+        "codomain_offset": 429344,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20010",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "83cfa6aa65a488afbef49446a09fa0b55f48778138dc7d4c973d64847cda4ad5",
+        "checkpoint_content_sha256": "71d16794b2b246bd402460cce7b4064b10ac26428cbddd6b554a121b0d285555",
+        "source_fixture_sha256": "4aa8521805e558da435b5cacf813b69a53153675df8a04cebc20f78d1a4074b6",
+        "abstract_certificate_sha256": "9f9541031a47115e638c03626f9e194f05dce87d468136158e8649288990705c",
+        "domain_offset": 431104,
+        "codomain_offset": 431104,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20010",
+          "source_copy": 4
+        },
+        "canonical_map_sha256": "a519002931887623e36f75770abc24d8839b9107c8067120253cc5cad6a3d163",
+        "checkpoint_content_sha256": "c81cee94a84294e3f90a55b598762494c68702ef21ac63653fa39b32202a7cd6",
+        "source_fixture_sha256": "5bc2967e91510f252b2785903d80cfc1661b4ff63860e6f66f37e0a47d6b9b50",
+        "abstract_certificate_sha256": "9f9541031a47115e638c03626f9e194f05dce87d468136158e8649288990705c",
+        "domain_offset": 432864,
+        "codomain_offset": 432864,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20100",
+          "source_copy": 1
+        },
+        "canonical_map_sha256": "9f1a28bc748c7e97ef607d61a386693c7fed0d9dc9d279e3c9846a932585c2c3",
+        "checkpoint_content_sha256": "d0ec62c8f77d03fdbfe0dbe6dd019c43336e61eb091aabdd97fd68d0c8cbb7f7",
+        "source_fixture_sha256": "812d533789c72068226a7b2507de002bce1da1c1e4aa420c845cd058d96fa5c4",
+        "abstract_certificate_sha256": "c56428f97896ba004705346e25fc3244522c9d020557cd8bb6642bad509cc4c3",
+        "domain_offset": 434624,
+        "codomain_offset": 434624,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20100",
+          "source_copy": 2
+        },
+        "canonical_map_sha256": "0b6826012afa576d1ec56df939c73f2745a86d2fd081c43a969e378643bf2663",
+        "checkpoint_content_sha256": "29f5c6686f2d78ce8a91718d9919e3262ae08100eca75976e037ca40e288e276",
+        "source_fixture_sha256": "f32eacfb6b48a6de051a7bd6da4d7884ab16be8388630c0b30a6ee3f583b9f10",
+        "abstract_certificate_sha256": "c56428f97896ba004705346e25fc3244522c9d020557cd8bb6642bad509cc4c3",
+        "domain_offset": 436384,
+        "codomain_offset": 436384,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      },
+      {
+        "key": {
+          "target_dynkin_label": "20001",
+          "source_dynkin_label": "20100",
+          "source_copy": 3
+        },
+        "canonical_map_sha256": "5b5facb61d53b1c231fd632a61403b25f837faa0f43147a849903135b269059f",
+        "checkpoint_content_sha256": "90928d8587c4164f65cf995ad210b97154862a2eee7083d623e1d7ccfd7c2924",
+        "source_fixture_sha256": "b025e0a5e80cedbffd3a89ad5c9c075b7e05b0f8e0d588fd61ae918c88d67d54",
+        "abstract_certificate_sha256": "c56428f97896ba004705346e25fc3244522c9d020557cd8bb6642bad509cc4c3",
+        "domain_offset": 438144,
+        "codomain_offset": 438144,
+        "certified_irrep_domain_dimension": 1760,
+        "target_codomain_dimension": 1760,
+        "certified_rank": 1760,
+        "restricted_map_is_isomorphism": true
+      }
+    ],
+    "block_count": 77,
+    "target_counts": {
+      "01001": 18,
+      "10001": 8,
+      "11001": 38,
+      "20001": 13
+    },
+    "target_dimensions": {
+      "01001": 1408,
+      "10001": 320,
+      "11001": 10240,
+      "20001": 1760
+    },
+    "certified_domain_dimension": 439904,
+    "target_codomain_dimension": 439904,
+    "every_checkpoint_exact": true
+  },
+  "synthetic_control_routing": [
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "00010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "00010",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "00100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "00100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01002",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01002",
+        "source_copy": 4
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01002",
+        "source_copy": 5
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "01100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "02000",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "02000",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "10002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "10002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "10010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "01001",
+        "source_dynkin_label": "10100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "00010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "00010",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "00100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "00100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "10002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "10002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "10010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "10001",
+        "source_dynkin_label": "10100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01002",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01002",
+        "source_copy": 4
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01002",
+        "source_copy": 5
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "01100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "02000",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "02000",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "10002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "10002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "10010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "10100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11002",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11002",
+        "source_copy": 4
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11002",
+        "source_copy": 5
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11002",
+        "source_copy": 6
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11010",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11010",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11010",
+        "source_copy": 4
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11010",
+        "source_copy": 5
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "11100",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "12000",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20010",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20010",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20010",
+        "source_copy": 4
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "11001",
+        "source_dynkin_label": "20100",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "10002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "10002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "10010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "10100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20002",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20002",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20010",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "-1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20010",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20010",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20010",
+        "source_copy": 4
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20100",
+        "source_copy": 1
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20100",
+        "source_copy": 2
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    },
+    {
+      "block_key": {
+        "target_dynkin_label": "20001",
+        "source_dynkin_label": "20100",
+        "source_copy": 3
+      },
+      "channel_weights": [
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        {
+          "numerator": "0",
+          "denominator": "1"
+        }
+      ]
+    }
+  ]
+}

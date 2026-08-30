@@ -29,7 +29,7 @@
 //! handling below). Completeness at n=4 is proven by an inline test that compares
 //! the search output against a full 3^16 brute force.
 
-use super::{imm, IntMat};
+use super::{IntMat, imm};
 use std::io::Write;
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ struct Search<'a> {
     n: usize,
     a: &'a IntMat,
     g: Vec<Vec<i32>>,
-    set: Vec<Vec<bool>>, // set[i][j] true once G[i][j] is fixed
+    set: Vec<Vec<bool>>,        // set[i][j] true once G[i][j] is fixed
     order: Vec<(usize, usize)>, // assignment order (leading-principal-submatrix spiral)
     out: Vec<IntMat>,
     cap: Option<usize>, // stop once `out` reaches this many solutions (None = all)
@@ -535,7 +535,10 @@ fn analyze_cls_side(ls: &[IntMat]) -> ClsSide {
         .into_iter()
         .take(64)
         .collect::<Vec<_>>();
-    assert!(all_square_to(&sample, &a), "every CLS sample G must square to A");
+    assert!(
+        all_square_to(&sample, &a),
+        "every CLS sample G must square to A"
+    );
 
     // Cross-block existence: construct a concrete non block-diagonal solution.
     let cross_block_example = find_cross_block_solution(&a, &comps);
@@ -557,8 +560,9 @@ fn analyze_cls_side(ls: &[IntMat]) -> ClsSide {
 /// All {-1, 0, 1} matrices X with X * C == D * X (intertwiners from C to D), in a
 /// deterministic order. Same backtracking engine as g_matrices but with a linear
 /// (not quadratic) constraint, so it is fast at these sizes. When C == D this is
-/// the commutant of C.
-fn intertwiners(d: &IntMat, c: &IntMat) -> Vec<IntMat> {
+/// the commutant of C. pub(super) so gmatrix_full can reuse it for the exact
+/// entry alphabets of the full CLS enumeration.
+pub(super) fn intertwiners(d: &IntMat, c: &IntMat) -> Vec<IntMat> {
     // We reuse the entry-backtracking idea specialized to the single linear
     // bracket (X*C - D*X)[i][j] = 0.
     let n = d.len();
@@ -776,10 +780,7 @@ pub fn report() -> String {
          (each = 12^3, every solution verified G^2=A). Cross-block solutions \
          also exist (L={}, R={}) and dominate, so the full 12x12 count is \
          combinatorially large and not enumerated in full.",
-        l.block_diagonal_count,
-        r.block_diagonal_count,
-        l.cross_block_exists,
-        r.cross_block_exists,
+        l.block_diagonal_count, r.block_diagonal_count, l.cross_block_exists, r.cross_block_exists,
     )
 }
 
@@ -813,7 +814,11 @@ mod tests {
     fn cm_l_has_exactly_twelve_g_matrices() {
         let a = a_of(&cm_l());
         let gs = g_matrices(&a);
-        assert_eq!(gs.len(), 12, "paper states 12 G-matrices per supermultiplet");
+        assert_eq!(
+            gs.len(),
+            12,
+            "paper states 12 G-matrices per supermultiplet"
+        );
         for g in &gs {
             assert!(squares_to(g, &a), "each CM-L G must square to A");
         }
@@ -931,7 +936,10 @@ mod tests {
         for ls in [cls_l_dense(), cls_r_dense()] {
             let a = a_of(&ls);
             let comps = support_components(&a);
-            assert!(is_block_diagonal(&a, &comps), "CLS A must be block diagonal");
+            assert!(
+                is_block_diagonal(&a, &comps),
+                "CLS A must be block diagonal"
+            );
             assert_eq!(comps.len(), 3, "CLS A has three diagonal blocks");
             for c in &comps {
                 assert_eq!(c.len(), 4, "each CLS block is 4x4");
@@ -950,8 +958,15 @@ mod tests {
             let comps = support_components(&a);
             let gs = block_diagonal_g_matrices(&a, &comps);
             assert!(!gs.is_empty(), "CLS must yield at least one G");
-            assert_eq!(gs.len(), 12usize.pow(3), "block-diagonal count = 12^3 = 1728");
-            assert!(all_square_to(&gs, &a), "every CLS block-diagonal G squares to A");
+            assert_eq!(
+                gs.len(),
+                12usize.pow(3),
+                "block-diagonal count = 12^3 = 1728"
+            );
+            assert!(
+                all_square_to(&gs, &a),
+                "every CLS block-diagonal G squares to A"
+            );
         }
     }
 
@@ -972,9 +987,8 @@ mod tests {
                     of[x] = ci;
                 }
             }
-            let has_off = (0..a.len()).any(|i| {
-                (0..a.len()).any(|j| g[i][j] != 0 && of[i] != of[j])
-            });
+            let has_off =
+                (0..a.len()).any(|i| (0..a.len()).any(|j| g[i][j] != 0 && of[i] != of[j]));
             assert!(has_off, "the constructed G must have cross-block entries");
         }
     }

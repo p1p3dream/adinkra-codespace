@@ -1,0 +1,94 @@
+{
+  "schema_version": "adynkra-11d-abstract-b5-clifford-join-v1",
+  "source_references": [
+    "arXiv:2007.05097 Eqs. (2.2)-(2.3): gamma-traceless (10001) semi-prepotential and gamma-trace representative redundancy",
+    "hep-th/0101037 Eq. (39): the (1/16) Gamma_[2] D H leading term in X_[2]"
+  ],
+  "basis_convention": "B5 Chevalley weight bases: V=(+e1,-e1,...,+e5,-e5,0), S lexicographic sign weights, with simple-root string coefficients fixed intrinsically",
+  "gamma_weight_allowed_variables": 192,
+  "gamma_intertwining_equations": 736,
+  "raising_equations_by_simple_root": [
+    64,
+    64,
+    64,
+    64,
+    112
+  ],
+  "lowering_equations_by_simple_root": [
+    64,
+    64,
+    64,
+    64,
+    112
+  ],
+  "gamma_intertwining_rank": 191,
+  "gamma_intertwiner_dimension": 1,
+  "gamma_intertwining_residual_equations": 0,
+  "gamma_nonzero_coefficients": 192,
+  "gamma_nonintegral_coefficients": 0,
+  "gamma_trace_rank": 32,
+  "gamma_traceless_kernel_dimension": 320,
+  "target_basis_states_checked": 320,
+  "target_basis_terms_checked": 560,
+  "target_gamma_trace_residual_entries": 0,
+  "clifford_metric_rank": 11,
+  "clifford_residual_entries": 0,
+  "clifford_metric_nonzero_upper_triangle": [
+    {
+      "left_vector_weight_index": 0,
+      "right_vector_weight_index": 1,
+      "numerator": -1,
+      "denominator": 2
+    },
+    {
+      "left_vector_weight_index": 2,
+      "right_vector_weight_index": 3,
+      "numerator": 1,
+      "denominator": 2
+    },
+    {
+      "left_vector_weight_index": 4,
+      "right_vector_weight_index": 5,
+      "numerator": -1,
+      "denominator": 2
+    },
+    {
+      "left_vector_weight_index": 6,
+      "right_vector_weight_index": 7,
+      "numerator": 1,
+      "denominator": 2
+    },
+    {
+      "left_vector_weight_index": 8,
+      "right_vector_weight_index": 9,
+      "numerator": -1,
+      "denominator": 2
+    },
+    {
+      "left_vector_weight_index": 10,
+      "right_vector_weight_index": 10,
+      "numerator": 1,
+      "denominator": 1
+    }
+  ],
+  "invariant_spinor_bilinear_variables": 32,
+  "invariant_spinor_bilinear_equations": 96,
+  "invariant_spinor_bilinear_rank": 31,
+  "invariant_spinor_bilinear_dimension": 1,
+  "invariant_spinor_bilinear_antisymmetry_residuals": 0,
+  "gamma_two_matrices": 55,
+  "gamma_two_independent_matrices": 55,
+  "gamma_two_intertwining_entries_checked": 563200,
+  "gamma_two_intertwining_residual_entries": 0,
+  "gamma_two_raised_symmetry_residual_entries": 0,
+  "typed_gamma_two_d_h_contraction_available": true,
+  "typed_target_stream_derivative_visitor_available": true,
+  "abstract_x2_hook_projector_complete": true,
+  "abstract_x2_hook_projector_rank": 429,
+  "abstract_x2_hook_chevalley_commutator_residual_entries": 0,
+  "cartesian_hook_projector_join_complete": false,
+  "complete_typed_target_stream_application": false,
+  "physical_f_a_g_p_established": false,
+  "passed": true,
+  "boundary": "The unique abstract B5 gamma trace and invariant spinor bilinear are solved without a Cartesian basis conversion. All 320 deterministic (10001) target states are in the exact kernel. A typed visitor consumes target-resolved stream entries, appends one exterior derivative, applies the exact Gamma_[2] contraction, and joins the result to the exact Spin(11)-equivariant rank-429 abstract hook projector. The separate leading-X2 artifact applies this abstract pipeline to a bounded zero-momentum stream. The abstract weight output is not converted into the repository's Cartesian curvature and compensator pipeline, momentum and lower-symbol terms are absent, and no complete F A G_p identity is claimed."
+}

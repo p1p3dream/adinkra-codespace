@@ -1,0 +1,19 @@
+{
+  "source": "arXiv:2408.09342 Eq 8.2, CLS Appendix C basis; full enumeration via K=Q(sqrt(-3)) commutant reduction, v2 slot-level CSP engine (src/four_color/gmatrix_csp.rs)",
+  "engine": "gmatrix_csp",
+  "side": "R",
+  "blocks": 1,
+  "dim": 4,
+  "count": 12,
+  "checksum_splitmix64_sum": "a73befc7db6ab0e9",
+  "nodes": 12,
+  "seconds": 0.001,
+  "complete": true,
+  "stride": 1,
+  "work_items": 12,
+  "shared_product_table": true,
+  "table_bytes": 43560000,
+  "note": "All G in {-1,0,1}^(4m x 4m) with G^2 = A. Slot-level CSP: correlated product boxes (outward-widened f64), exact residual arc-consistency, MRV order. Every counted solution mapped back to an integer G and verified G^2 = A exactly. Checksum identical in construction to gmatrix_full. items_detail is the per-prefix immutable record (item, count, checksum, nodes, seconds); totals are commutative sums over it.",
+  "items_detail": [{"item":85,"count":1,"checksum":"b047f710a3d01bb9","nodes":1,"seconds":0.000},{"item":97,"count":1,"checksum":"30231246c4a2f629","nodes":1,"seconds":0.000},{"item":321,"count":1,"checksum":"9b30840cfe81bea8","nodes":1,"seconds":0.000},{"item":333,"count":1,"checksum":"90554cfb2d37e9b9","nodes":1,"seconds":0.000},{"item":441,"count":1,"checksum":"1540fd99c174a2bf","nodes":1,"seconds":0.000},{"item":497,"count":1,"checksum":"672b5dbe0262d594","nodes":1,"seconds":0.000},{"item":509,"count":1,"checksum":"488fc87fb4265cfa","nodes":1,"seconds":0.000},{"item":624,"count":1,"checksum":"9f38e8d809b04e93","nodes":1,"seconds":0.000},{"item":631,"count":1,"checksum":"20cb12387084bbaf","nodes":1,"seconds":0.000},{"item":746,"count":1,"checksum":"ded0776a8abe75f5","nodes":1,"seconds":0.000},{"item":758,"count":1,"checksum":"659db20e256d46f8","nodes":1,"seconds":0.000},{"item":814,"count":1,"checksum":"d1dccd07a4df5a2a","nodes":1,"seconds":0.000}],
+  "samples": [[[1,-1,0,0],[0,0,1,1],[0,0,-1,1],[1,1,0,0]],[[0,0,-1,1],[1,1,0,0],[-1,1,0,0],[0,0,-1,-1]],[[-1,0,1,0],[-1,0,-1,0],[0,-1,0,-1],[0,-1,0,1]],[[1,0,0,-1],[0,-1,1,0],[1,0,0,1],[0,1,1,0]],[[0,1,0,-1],[0,-1,0,-1],[1,0,1,0],[-1,0,1,0]],[[0,1,-1,0],[1,0,0,-1],[0,1,1,0],[-1,0,0,-1]],[[0,0,1,-1],[-1,-1,0,0],[1,-1,0,0],[0,0,1,1]],[[-1,1,0,0],[0,0,-1,-1],[0,0,1,-1],[-1,-1,0,0]]]
+}

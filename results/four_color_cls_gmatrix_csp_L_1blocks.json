@@ -1,0 +1,21 @@
+{
+  "source": "arXiv:2408.09342 Eq 8.2, CLS Appendix C basis; full enumeration via K=Q(sqrt(-3)) commutant reduction, v2 slot-level CSP engine (src/four_color/gmatrix_csp.rs)",
+  "engine": "gmatrix_csp",
+  "side": "L",
+  "blocks": 1,
+  "dim": 4,
+  "count": 12,
+  "checksum_splitmix64_sum": "4b3aa9ef562965aa",
+  "nodes": 12,
+  "seconds": 0.001,
+  "complete": true,
+  "stride": 1,
+  "work_items": 12,
+  "shared_product_table": true,
+  "table_bytes": 43560000,
+  "tight_box_computes": 12,
+  "note": "All G in {-1,0,1}^(4m x 4m) with G^2 = A. Slot-level CSP: correlated product boxes (outward-widened f64), exact residual arc-consistency, MRV order. Every counted solution mapped back to an integer G and verified G^2 = A exactly. Checksum identical in construction to gmatrix_full. items_detail is the per-prefix immutable record (item, count, checksum, nodes, seconds); totals are commutative sums over it.",
+  "items_detail": [{"item":52,"count":1,"checksum":"554bfd809e8d986c","nodes":1,"seconds":0.000},{"item":64,"count":1,"checksum":"4eee6e6a5b1edc6f","nodes":1,"seconds":0.000},{"item":354,"count":1,"checksum":"8b65537c669857fc","nodes":1,"seconds":0.000},{"item":366,"count":1,"checksum":"1aad2c697e74bb9a","nodes":1,"seconds":0.000},{"item":444,"count":1,"checksum":"ddcdc2a8e9a529a3","nodes":1,"seconds":0.000},{"item":530,"count":1,"checksum":"19367dffb90407ed","nodes":1,"seconds":0.000},{"item":542,"count":1,"checksum":"0d238d4c59bcd369","nodes":1,"seconds":0.000},{"item":559,"count":1,"checksum":"5e5c89ea94cec829","nodes":1,"seconds":0.000},{"item":696,"count":1,"checksum":"35465950328e5536","nodes":1,"seconds":0.000},{"item":713,"count":1,"checksum":"f20e6b1af49a408b","nodes":1,"seconds":0.000},{"item":725,"count":1,"checksum":"8c57f48f4aba7a8b","nodes":1,"seconds":0.000},{"item":811,"count":1,"checksum":"eabcad447457ffcb","nodes":1,"seconds":0.000}],
+  "classes": [{"nnz":8,"support":1,"ranks":[4],"count":12,"checksum":"4b3aa9ef562965aa","rep_hash":"0d238d4c59bcd369","rep":[[0,-1,1,0],[0,-1,-1,0],[1,0,0,1],[-1,0,0,1]]}],
+  "samples": [[[1,1,0,0],[0,0,1,1],[-1,1,0,0],[0,0,1,-1]],[[0,-1,0,1],[-1,0,-1,0],[1,0,-1,0],[0,1,0,1]],[[-1,0,-1,0],[0,1,0,-1],[0,-1,0,-1],[1,0,-1,0]],[[-1,0,0,-1],[1,0,0,-1],[0,-1,1,0],[0,-1,-1,0]],[[0,0,-1,1],[-1,1,0,0],[0,0,-1,-1],[1,1,0,0]],[[1,0,0,1],[-1,0,0,1],[0,1,-1,0],[0,1,1,0]],[[1,0,1,0],[0,-1,0,1],[0,1,0,1],[-1,0,1,0]],[[0,1,0,-1],[1,0,1,0],[-1,0,1,0],[0,-1,0,-1]]]
+}

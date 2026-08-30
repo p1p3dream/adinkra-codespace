@@ -1,0 +1,28 @@
+{
+  "representatives": 30,
+  "all_representatives_close": true,
+  "equivalence_class_counts_by_layer": [
+    30,
+    30,
+    1,
+    1
+  ],
+  "every_serialized_witness_verified": true,
+  "mutated_witness_rejected": true,
+  "one_unlabeled_color_signed_class": true,
+  "one_unlabeled_color_signed_class_with_duality": true,
+  "garden_nullity_histogram": {
+    "19": 30
+  },
+  "gauge_action_rank_histogram": {
+    "19": 30
+  },
+  "all_gauge_generators_verified": true,
+  "gauge_action_spans_every_garden_signing_space": true,
+  "identity_support_labeled_signings_classified": 15728640,
+  "all_hyperedge_labeled_signings_classified": 79272345600,
+  "all_labeled_signings_share_one_unlabeled_color_signed_class": true,
+  "canonical_sign_mask_used_as_invariant": false,
+  "one_dimensional_signed_data_break_the_thirty_fold_symmetry": false,
+  "passed": true
+}

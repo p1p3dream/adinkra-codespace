@@ -1,0 +1,24 @@
+{
+  "schema_version": "adynkra-11d-col3-legacy-projection-audit-v1",
+  "generated_at": "2026-08-24T19:02:00-06:00",
+  "legacy_certificate_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v3_riemann_20260824.json",
+  "legacy_certificate_sha256": "3f75b3fbf3ae30b494d6918e091c3244e7c304b338e598b20ba2a7cbb8e9598c",
+  "successor_certificate_path": "results/adynkra_11d_gauge_fixed_invariant_supercurvature_operator_v4_col3_20260824.json",
+  "successor_certificate_sha256": "f215e25920f5c0d21f7cc7a8d996efd89857fb397025fc523af4e81fda853c5a",
+  "successor_operator_sha256": "efd3a848b64f073a2ab0a9f419bb9515322078dbae99a676576e22cd1b6a01d3",
+  "legacy_sector_tags": [
+    0,
+    1,
+    5,
+    8,
+    9
+  ],
+  "columns_compared": 321,
+  "columns_byte_identical": 321,
+  "legacy_entries": 18931260,
+  "projected_successor_entries": 18931260,
+  "projected_payload_sha256": "8194ad73034c0450bddb6046841992bac73064cbe078b4d1252771ca6857bb9f",
+  "passed": true,
+  "method": "For every ordinal, decode the persisted 67-byte COL2/COL3 entry records after each source-name header; filter COL3 records to legacy tags {0,1,5,8,9}; require exact ordered byte equality with the complete COL2 payload.",
+  "proof_boundary": "This proves backward semantic parity of the frozen legacy sectors only. It does not identify the new candidate four-form physically or complete the physical target K quotient."
+}

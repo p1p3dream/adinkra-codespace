@@ -1,0 +1,145 @@
+{
+  "schema_version": "adynkra-11d-target-equation-complex-v1",
+  "role": "exact target-side free curvature, Bianchi, Euler-Lagrange, and Noether complex",
+  "signature": "Spin(1,10), mostly-plus eta=(-,+,...,+)",
+  "formal_momentum_variables": 11,
+  "graviton": {
+    "sector": "Pauli-Fierz graviton",
+    "gauge_dimensions": [
+      66,
+      11
+    ],
+    "curvature_dimensions": [
+      3025,
+      66
+    ],
+    "bianchi_dimensions": [
+      9075,
+      3025
+    ],
+    "curvature_to_euler_dimensions": [
+      66,
+      3025
+    ],
+    "euler_dimensions": [
+      66,
+      66
+    ],
+    "noether_dimensions": [
+      11,
+      66
+    ],
+    "reducibility_compositions_residual_terms": 0,
+    "curvature_after_gauge_residual_terms": 0,
+    "bianchi_after_curvature_residual_terms": 0,
+    "euler_factorization_residual_terms": 0,
+    "reference_euler_symbol_compared": true,
+    "reference_euler_agreement_residual_terms": 0,
+    "euler_after_gauge_residual_terms": 0,
+    "noether_after_euler_residual_terms": 0,
+    "mutation_residual_terms": 3,
+    "passed": true
+  },
+  "four_form": {
+    "sector": "four-form curvature of the Abelian three-form",
+    "gauge_dimensions": [
+      165,
+      55
+    ],
+    "curvature_dimensions": [
+      330,
+      165
+    ],
+    "bianchi_dimensions": [
+      462,
+      330
+    ],
+    "curvature_to_euler_dimensions": [
+      165,
+      330
+    ],
+    "euler_dimensions": [
+      165,
+      165
+    ],
+    "noether_dimensions": [
+      55,
+      165
+    ],
+    "reducibility_compositions_residual_terms": 0,
+    "curvature_after_gauge_residual_terms": 0,
+    "bianchi_after_curvature_residual_terms": 0,
+    "euler_factorization_residual_terms": 0,
+    "reference_euler_symbol_compared": true,
+    "reference_euler_agreement_residual_terms": 0,
+    "euler_after_gauge_residual_terms": 0,
+    "noether_after_euler_residual_terms": 0,
+    "mutation_residual_terms": 4,
+    "passed": true
+  },
+  "rarita_schwinger": {
+    "sector": "Rarita-Schwinger vector-spinor",
+    "gauge_dimensions": [
+      352,
+      32
+    ],
+    "curvature_dimensions": [
+      1760,
+      352
+    ],
+    "bianchi_dimensions": [
+      5280,
+      1760
+    ],
+    "curvature_to_euler_dimensions": [
+      352,
+      1760
+    ],
+    "euler_dimensions": [
+      352,
+      352
+    ],
+    "noether_dimensions": [
+      32,
+      352
+    ],
+    "reducibility_compositions_residual_terms": 0,
+    "curvature_after_gauge_residual_terms": 0,
+    "bianchi_after_curvature_residual_terms": 0,
+    "euler_factorization_residual_terms": 0,
+    "reference_euler_symbol_compared": false,
+    "reference_euler_agreement_residual_terms": 0,
+    "euler_after_gauge_residual_terms": 0,
+    "noether_after_euler_residual_terms": 0,
+    "mutation_residual_terms": 2,
+    "passed": true
+  },
+  "generic_formal_compositions_certified": true,
+  "null_momentum": [
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "null_graviton_physical_dimension": 44,
+  "null_three_form_physical_dimension": 84,
+  "null_rarita_schwinger_physical_dimension": 128,
+  "null_bosonic_dimension": 128,
+  "null_fermionic_dimension": 128,
+  "majorana_real_form_certified": true,
+  "light_cone_susy_maps_certified": true,
+  "light_cone_susy_closure_residual_entries": 0,
+  "physical_f_adapter_api_available": true,
+  "physical_source_to_target_f_constructed": false,
+  "source_to_field_equation_operator_constructed": false,
+  "off_shell_closure_established": false,
+  "passed": true,
+  "boundary": "This certifies the free on-shell target complex over all eleven formal momenta and its 44+84|128 null fiber. It provides an adapter boundary for a future physical F, but no source-to-curvature map is supplied. It does not establish a superfield equation operator, finite auxiliary fields, interactions, or covariant off-shell closure."
+}

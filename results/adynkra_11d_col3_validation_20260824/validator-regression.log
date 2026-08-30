@@ -1,0 +1,463 @@
+   Compiling adinkra-codespace v0.1.0 (/private/tmp/adynkra-validator-a3831b5)
+warning: unused variable: `n_lanczos`
+   --> src/coset_primed_lanczos.rs:452:13
+    |
+452 |         let n_lanczos = lr.q_vectors.len();
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_n_lanczos`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src/r8_block_invariants.rs:698:13
+    |
+698 |         let mut original_sorted: Vec<Vec<i16>> = original.sorted_diagonal_tensor.clone();
+    |             ----^^^^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> src/r8_block_invariants.rs:699:13
+    |
+699 |         let mut permuted_per_color: Vec<Vec<i16>> = original
+    |             ----^^^^^^^^^^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> src/second_momentum_gpu_group.rs:1113:5
+     |
+1113 |     mut consume_union: C,
+     |     ----^^^^^^^^^^^^^
+     |     |
+     |     help: remove this `mut`
+
+warning: variable does not need to be mutable
+    --> src/second_momentum_gpu_group.rs:1114:5
+     |
+1114 |     mut complete_word: W,
+     |     ----^^^^^^^^^^^^^
+     |     |
+     |     help: remove this `mut`
+
+warning: function `extract_ritz_candidates` is never used
+   --> src/coset_primed_lanczos.rs:111:4
+    |
+111 | fn extract_ritz_candidates(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `coordinate_label` is never used
+   --> src/eleven_dimensional_complete_f.rs:421:12
+    |
+420 | impl FrameComposedPhysicalFEntry {
+    | -------------------------------- method in this implementation
+421 |     pub fn coordinate_label(&self) -> FrameComposedPhysicalFCoordinate {
+    |            ^^^^^^^^^^^^^^^^
+
+warning: function `build_gauge_fixed_superfield_operator_certificate` is never used
+    --> src/eleven_dimensional_complete_f.rs:2236:8
+     |
+2236 | pub fn build_gauge_fixed_superfield_operator_certificate<F>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `coefficient` is never used
+   --> src/eleven_dimensional_free_complex.rs:115:12
+    |
+ 90 | impl SparseExactMatrix {
+    | ---------------------- method in this implementation
+...
+115 |     pub fn coefficient(&self, row: usize, column: usize) -> ExactCoefficient {
+    |            ^^^^^^^^^^^
+
+warning: fields `particular_solution` and `homogeneous_kernel_basis` are never read
+   --> src/eleven_dimensional_k_fag_solver.rs:337:9
+    |
+330 | pub struct ExactCoefficientSolution {
+    |            ------------------------ fields in this struct
+...
+337 |     pub particular_solution: Vec<ExactGaussian>,
+    |         ^^^^^^^^^^^^^^^^^^^
+338 |     pub homogeneous_kernel_basis: Vec<Vec<ExactGaussian>>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `ExactCoefficientSolution` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: method `add_raw_target_resolved_stream_term` is never used
+   --> src/eleven_dimensional_k_fag_solver.rs:454:12
+    |
+450 | impl PolynomialTargetOperatorFamily {
+    | ----------------------------------- method in this implementation
+...
+454 |     pub fn add_raw_target_resolved_stream_term(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `visit_independent_sparse_coupled_words` is never used
+    --> src/eleven_dimensional_level16_couplings.rs:2889:4
+     |
+2889 | fn visit_independent_sparse_coupled_words<F>(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `visit_independent_sparse_coupled_word_events_from` is never used
+    --> src/eleven_dimensional_level16_couplings.rs:2907:4
+     |
+2907 | fn visit_independent_sparse_coupled_word_events_from<F>(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `verify_level18_embedding_with_abstract` is never used
+    --> src/eleven_dimensional_level16_couplings.rs:6873:8
+     |
+6873 | pub fn verify_level18_embedding_with_abstract(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `visit_second_momentum_20001_descendant_handles_from` is never used
+    --> src/eleven_dimensional_level16_couplings.rs:7220:15
+     |
+7220 | pub(crate) fn visit_second_momentum_20001_descendant_handles_from<H, U, L, F>(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `visit_second_momentum_30001_descendant_handles_from` is never used
+    --> src/eleven_dimensional_level16_couplings.rs:7604:15
+     |
+7604 | pub(crate) fn visit_second_momentum_30001_descendant_handles_from<H, U, L, F>(
+     |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build` is never used
+    --> src/eleven_dimensional_level18_momentum.rs:1219:8
+     |
+1219 | pub fn build() -> Level18MomentumArtifact {
+     |        ^^^^^
+
+warning: method `block` is never used
+   --> src/eleven_dimensional_level18_target_quotient.rs:243:12
+    |
+115 | impl CheckpointGaugeImageBasis {
+    | ------------------------------ method in this implementation
+...
+243 |     pub fn block(&self, key: &EmbeddedBlockKey) -> Option<&TypedCertifiedBlock> {
+    |            ^^^^^
+
+warning: method `translation_bilinear` is never used
+   --> src/eleven_dimensional_linear_susy.rs:621:12
+    |
+600 | impl ElevenDimensionalLinearSusyMapSet {
+    | -------------------------------------- method in this implementation
+...
+621 |     pub fn translation_bilinear(&self) -> &[Vec<i8>] {
+    |            ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FERMIONIC_FRAME_DIMENSION` is never used
+  --> src/eleven_dimensional_physical_curvature.rs:59:11
+   |
+59 | pub const FERMIONIC_FRAME_DIMENSION: usize = VECTOR_DIMENSION * SPINOR_DIMENSION;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `apply_j_one_from_d_delta` is never used
+    --> src/eleven_dimensional_physical_curvature.rs:1926:8
+     |
+1926 | pub fn apply_j_one_from_d_delta(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `apply_induced_j_one_on_derivative_lorentz_quotient` is never used
+    --> src/eleven_dimensional_physical_curvature.rs:1940:8
+     |
+1940 | pub fn apply_induced_j_one_on_derivative_lorentz_quotient(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `functional_hash_key` is never used
+    --> src/eleven_dimensional_physical_curvature.rs:4711:4
+     |
+4711 | fn functional_hash_key(key: &crate::eleven_dimensional_k_fag_solver::CurvatureVariationKey) -> u64 {
+     |    ^^^^^^^^^^^^^^^^^^^
+
+warning: function `add_fx_functional_value` is never used
+    --> src/eleven_dimensional_physical_curvature.rs:4981:4
+     |
+4981 | fn add_fx_functional_value(
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_first_momentum_fx_functional_report` is never used
+    --> src/eleven_dimensional_physical_curvature.rs:6049:8
+     |
+6049 | pub fn build_first_momentum_fx_functional_report() -> io::Result<FirstMomentumFxFunctionalReport> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `quotient` is never read
+   --> src/eleven_dimensional_physical_k.rs:141:9
+    |
+139 | pub struct ValidatedPhysicalK {
+    |            ------------------ field in this struct
+140 |     pub summary: ValidatedPhysicalKSummary,
+141 |     pub quotient: SpecializedTargetGaugeImage,
+    |         ^^^^^^^^
+    |
+    = note: `ValidatedPhysicalK` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `representative_second_momentum_operator_specs` is never used
+   --> src/eleven_dimensional_second_momentum.rs:384:8
+    |
+384 | pub fn representative_second_momentum_operator_specs() -> Vec<SecondMomentumOperatorSpec> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_terms_for_spec` is never used
+   --> src/eleven_dimensional_second_momentum_10001_fx.rs:693:4
+    |
+693 | fn build_terms_for_spec(
+    |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_terms_for_specs_parallel` is never used
+   --> src/eleven_dimensional_second_momentum_10001_fx.rs:787:4
+    |
+787 | fn build_terms_for_specs_parallel(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `visit_gpu_column_contributions` is never used
+   --> src/eleven_dimensional_second_momentum_20001_fx.rs:911:15
+    |
+911 | pub(crate) fn visit_gpu_column_contributions<F>(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_gpu_column_input` is never used
+    --> src/eleven_dimensional_second_momentum_20001_fx.rs:1349:15
+     |
+1349 | pub(crate) fn build_gpu_column_input(
+     |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `construct` is never used
+    --> src/eleven_dimensional_second_momentum_20001_fx.rs:1361:8
+     |
+1361 | pub fn construct() -> io::Result<SecondMomentum20001FxReport> {
+     |        ^^^^^^^^^
+
+warning: function `visit_gpu_column_contributions` is never used
+   --> src/eleven_dimensional_second_momentum_30001_fx.rs:916:15
+    |
+916 | pub(crate) fn visit_gpu_column_contributions<F>(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_gpu_column_input` is never used
+    --> src/eleven_dimensional_second_momentum_30001_fx.rs:1354:15
+     |
+1354 | pub(crate) fn build_gpu_column_input(
+     |               ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `construct` is never used
+    --> src/eleven_dimensional_second_momentum_30001_fx.rs:1366:8
+     |
+1366 | pub fn construct() -> io::Result<SecondMomentum30001FxReport> {
+     |        ^^^^^^^^^
+
+warning: function `write_second_momentum_fx_checkpoint` is never used
+    --> src/eleven_dimensional_second_momentum_fx.rs:1725:8
+     |
+1725 | pub fn write_second_momentum_fx_checkpoint(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `read_second_momentum_fx_checkpoint` is never used
+    --> src/eleven_dimensional_second_momentum_fx.rs:1747:8
+     |
+1747 | pub fn read_second_momentum_fx_checkpoint(path: &Path) -> io::Result<SecondMomentumFxCheckpoint> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `source_label` and `source_copy` are never read
+   --> src/eleven_dimensional_second_momentum_gpu.rs:106:9
+    |
+104 | pub(crate) struct GpuFxColumnInput {
+    |                   ---------------- fields in this struct
+105 |     pub global_ordinal: usize,
+106 |     pub source_label: String,
+    |         ^^^^^^^^^^^^
+107 |     pub source_copy: usize,
+    |         ^^^^^^^^^^^
+    |
+    = note: `GpuFxColumnInput` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `GpuFxColumnMetadata` is never constructed
+   --> src/eleven_dimensional_second_momentum_gpu.rs:113:19
+    |
+113 | pub(crate) struct GpuFxColumnMetadata {
+    |                   ^^^^^^^^^^^^^^^^^^^
+
+warning: field `expanded_contributions` is never read
+   --> src/eleven_dimensional_second_momentum_gpu.rs:168:9
+    |
+164 | pub(crate) struct ModularFunctionalColumn {
+    |                   ----------------------- field in this struct
+...
+168 |     pub expanded_contributions: u64,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `ModularFunctionalColumn` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: method `prime` is never used
+   --> src/eleven_dimensional_second_momentum_gpu.rs:499:19
+    |
+392 | impl ModularFxStaticData {
+    | ------------------------ method in this implementation
+...
+499 |     pub(crate) fn prime(&self) -> u32 {
+    |                   ^^^^^
+
+warning: methods `nonzero_entry_count` and `entries` are never used
+  --> src/eleven_dimensional_spinorial_differential.rs:74:12
+   |
+43 | impl ExactSparseMap {
+   | ------------------- methods in this implementation
+...
+74 |     pub fn nonzero_entry_count(&self) -> usize {
+   |            ^^^^^^^^^^^^^^^^^^^
+...
+78 |     pub fn entries(&self) -> &[(usize, usize, ExactRational)] {
+   |            ^^^^^^^
+
+warning: method `coefficient_terms` is never used
+   --> src/eleven_dimensional_target_equation_complex.rs:183:12
+    |
+158 | impl ExactPolynomialMatrix {
+    | -------------------------- method in this implementation
+...
+183 |     pub fn coefficient_terms(&self, row: usize, column: usize) -> Vec<ExactPolynomialCoefficient> {
+    |            ^^^^^^^^^^^^^^^^^
+
+warning: variant `LinearizedRiemann` is never constructed
+   --> src/eleven_dimensional_target_equation_complex.rs:682:5
+    |
+681 | pub enum TargetCurvatureSector {
+    |          --------------------- variant in this enum
+682 |     LinearizedRiemann,
+    |     ^^^^^^^^^^^^^^^^^
+    |
+    = note: `TargetCurvatureSector` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: struct `PhysicalFAdapterDescriptor` is never constructed
+   --> src/eleven_dimensional_target_equation_complex.rs:688:12
+    |
+688 | pub struct PhysicalFAdapterDescriptor {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `descriptor` is never used
+   --> src/eleven_dimensional_target_equation_complex.rs:703:8
+    |
+699 | pub trait PhysicalFTargetAdapter {
+    |           ---------------------- method in this trait
+...
+703 |     fn descriptor(&self) -> PhysicalFAdapterDescriptor;
+    |        ^^^^^^^^^^
+
+warning: function `write_artifacts` is never used
+   --> src/permutahedron_s8_signed_recursion.rs:596:8
+    |
+596 | pub fn write_artifacts(data_path: &Path, validation_path: &Path) -> ValidationRecord {
+    |        ^^^^^^^^^^^^^^^
+
+warning: method `tranche` is never used
+  --> src/second_momentum_full_gpu_jobs.rs:52:19
+   |
+29 | impl FullGpuJobKey {
+   | ------------------ method in this implementation
+...
+52 |     pub(crate) fn tranche(&self) -> String {
+   |                   ^^^^^^^
+
+warning: function `prepare_cuda_column_group` is never used
+   --> src/second_momentum_gpu_group.rs:210:15
+    |
+210 | pub(crate) fn prepare_cuda_column_group(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `prepare_full_cuda_column_group` is never used
+   --> src/second_momentum_gpu_group.rs:270:15
+    |
+270 | pub(crate) fn prepare_full_cuda_column_group(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `GroupCudaBatchTelemetry` is never constructed
+   --> src/second_momentum_gpu_group.rs:643:19
+    |
+643 | pub(crate) struct GroupCudaBatchTelemetry {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `GroupBatchObservation` is never constructed
+   --> src/second_momentum_gpu_group.rs:658:19
+    |
+658 | pub(crate) struct GroupBatchObservation {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `group_id` is never read
+   --> src/second_momentum_gpu_group.rs:901:5
+    |
+900 | pub(crate) struct GroupRowAccumulator {
+    |                   ------------------- field in this struct
+901 |     group_id: String,
+    |     ^^^^^^^^
+
+warning: methods `restore` and `batches_folded` are never used
+   --> src/second_momentum_gpu_group.rs:966:19
+    |
+909 | impl GroupRowAccumulator {
+    | ------------------------ methods in this implementation
+...
+966 |     pub(crate) fn restore(
+    |                   ^^^^^^^
+...
+988 |     pub(crate) const fn batches_folded(&self) -> u64 {
+    |                         ^^^^^^^^^^^^^^
+
+warning: methods `tranche`, `prime`, and `local_ordinals` are never used
+  --> src/second_momentum_gpu_jobs.rs:49:19
+   |
+32 | impl GpuGroupJobKey {
+   | ------------------- methods in this implementation
+...
+49 |     pub(crate) fn tranche(&self) -> Result<GpuFxTranche, String> {
+   |                   ^^^^^^^
+...
+53 |     pub(crate) fn prime(&self) -> Result<u32, String> {
+   |                   ^^^^^
+...
+60 |     pub(crate) fn local_ordinals(&self) -> Result<Vec<usize>, String> {
+   |                   ^^^^^^^^^^^^^^
+
+warning: struct `PublishedColumnArtifact` is never constructed
+   --> src/second_momentum_gpu_jobs.rs:125:8
+    |
+125 | struct PublishedColumnArtifact {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `serializable_checkpoint_state` is never used
+   --> src/second_momentum_gpu_jobs.rs:292:4
+    |
+292 | fn serializable_checkpoint_state(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `serializable_from_checkpoint_state` is never used
+   --> src/second_momentum_gpu_jobs.rs:303:4
+    |
+303 | fn serializable_from_checkpoint_state(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `observed_termination_signal` is never used
+   --> src/second_momentum_gpu_progress.rs:428:19
+    |
+327 | impl ProgressReporter {
+    | --------------------- method in this implementation
+...
+428 |     pub(crate) fn observed_termination_signal(&self) -> Option<i32> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `chebyshev_filter_apply` is never used
+    --> src/spectral_lanczos.rs:1025:8
+     |
+1025 | pub fn chebyshev_filter_apply(
+     |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `adinkra-codespace` (bin "adinkra-codespace" test) generated 60 warnings (run `cargo fix --bin "adinkra-codespace" -p adinkra-codespace --tests` to apply 5 suggestions)
+    Finished `release` profile [optimized] target(s) in 41.37s
+     Running unittests src/main.rs (/tmp/adynkra-validator-target/release/deps/adinkra_codespace-f20915765e7aaa11)
+
+running 1 test
+test eleven_dimensional_complete_f::tests::source_w_and_eq40_candidate_have_exact_relationship_on_nonzero_h_canary ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1022 filtered out; finished in 20.04s

@@ -679,7 +679,7 @@ pub fn verify() -> ElevenDimensionalScalarReport {
         spinor_parity_dimensions_match,
         spinor_table_5_checks_pass,
         semi_prepotential_source_arxiv: "2007.05097",
-        semi_prepotential_source_statement: "the discussion after Eq. (2.7) requires H_beta^c(V) to involve fifteen spinor derivatives",
+        semi_prepotential_source_statement: "the 10D Weyl/prepotential paper reviews the conjectured 11D scalar route; its discussion after Eq. (2.7) requires H_beta^c(V) to involve fifteen spinor derivatives",
         scalar_to_vector_spinor_derivative_order: 15,
         formal_spinor_to_vector_spinor_composite_derivative_order: 16,
         vector_spinor_dimension: 352,
@@ -687,7 +687,7 @@ pub fn verify() -> ElevenDimensionalScalarReport {
         semi_prepotential_equivariant_symbol_dimension,
         semi_prepotential_target_content_present,
         gauge_rule_source_arxiv: "2007.05097",
-        gauge_rule_source_statement: "the introduction states that a supergravity prepotential transforms as a first spinor derivative of a Lorentz-compatible parameter superfield and identifies this as a conjectural rule in the high-dimensional cases",
+        gauge_rule_source_statement: "the 10D Weyl/prepotential paper states in its introduction that a supergravity prepotential transforms as a first spinor derivative of a Lorentz-compatible parameter superfield and identifies this as a conjectural high-dimensional rule; it is not an 11D cohomology source",
         spinor_gauge_parameter_channels,
         spinor_gauge_parameter_channel_count,
         spinor_gauge_parameter_dimensions_sum,
@@ -696,7 +696,7 @@ pub fn verify() -> ElevenDimensionalScalarReport {
         aggregate_counts_match_publication,
         parity_dimensions_match,
         distinguished_representation_checks_pass,
-        boundary: "the source-defined fifteen-derivative bridge has three Lorentz-equivariant leading-symbol channels, and six Lorentz-compatible first-derivative gauge-parameter channels are possible; the two cited sources do not select their coefficients or print a gauge complex, so no eleven-dimensional curvature, action, or field equation is derived",
+        boundary: "the source-motivated fifteen-derivative bridge has three Lorentz-equivariant leading-symbol channels, and six Lorentz-compatible first-derivative gauge-parameter channels are possible; arXiv:2007.05097 is a 10D Weyl/prepotential paper that reviews the conjectured 11D route, and neither cited source selects the coefficients or prints an 11D gauge complex, curvature, action, or field equation",
         passed,
     }
 }

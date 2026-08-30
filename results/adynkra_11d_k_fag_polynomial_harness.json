@@ -1,0 +1,206 @@
+{
+  "schema_version": "adynkra-11d-k-fag-polynomial-harness-v1",
+  "role": "generic-polynomial K coefficient solver and exact channel-separated physical-curvature composition contract",
+  "gauge_form_degrees": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "gauge_dynkin_labels": [
+    "00000",
+    "10000",
+    "01000",
+    "00100",
+    "00010",
+    "00002"
+  ],
+  "formal_momentum_variables": 11,
+  "recorded_leading_coefficients": 12,
+  "recorded_first_momentum_coefficients": 44,
+  "recorded_ansatz_coefficients": 56,
+  "recorded_ansatz_generic_polynomial_complete": false,
+  "coefficient_outcomes_supported": [
+    "unique_ray",
+    "family",
+    "zero",
+    "no_solution"
+  ],
+  "unique_ray_control_passed": true,
+  "family_control_passed": true,
+  "zero_control_passed": true,
+  "no_solution_control_passed": true,
+  "monomial_multiplication_control_passed": true,
+  "channel_separation_enforced": true,
+  "quotient_aware_verdicts_implemented": true,
+  "current_physical_curvature_schema": "adynkra-11d-physical-curvature-operator-v10",
+  "current_physical_curvature_envelope_sha256": "c811ede71330388c3e932fb145234365277304b39d97efe45c74e88b1f390908",
+  "current_physical_curvature_envelope_provenance_validated": true,
+  "current_physical_curvature_complete_f": false,
+  "current_physical_curvature_fag_ready": false,
+  "current_physical_curvature_covariant_off_shell_closure_established": false,
+  "historical_first_momentum_negative_controls": [
+    {
+      "gauge_form_degree": 1,
+      "local_locator": "results/adynkra_11d_first_momentum_gauge_functional_p1.json",
+      "artifact_sha256": "f183def003a71cd08b7516ad5a666e589eff20629706bdda64bb5d0eb4e3b62c",
+      "expected_sha256": "f183def003a71cd08b7516ad5a666e589eff20629706bdda64bb5d0eb4e3b62c",
+      "schema_version": "adynkra-11d-first-momentum-gauge-functional-merge-v1",
+      "artifact_passed": true,
+      "parameter_components": 11,
+      "evaluated_parameter_components": 11,
+      "parameter_projection_complete": true,
+      "exact_functional_rank": 42,
+      "exact_functional_nullity": 3,
+      "leading_projection_rank": 0,
+      "excludes_nonzero_extension_of_recorded_leading_kernel": true,
+      "functional_kernel_residuals_exactly_zero": true,
+      "local_provenance_hash_verified": true,
+      "accepted_as_generic_fag_proof": false
+    },
+    {
+      "gauge_form_degree": 2,
+      "local_locator": "results/adynkra_11d_first_momentum_gauge_functional_p2.json",
+      "artifact_sha256": "9177fe087728bced2df21a984020a1d7d5c485a59e01f9ac1094673ccc32a7cd",
+      "expected_sha256": "9177fe087728bced2df21a984020a1d7d5c485a59e01f9ac1094673ccc32a7cd",
+      "schema_version": "adynkra-11d-first-momentum-gauge-functional-merge-v1",
+      "artifact_passed": true,
+      "parameter_components": 55,
+      "evaluated_parameter_components": 55,
+      "parameter_projection_complete": true,
+      "exact_functional_rank": 42,
+      "exact_functional_nullity": 3,
+      "leading_projection_rank": 0,
+      "excludes_nonzero_extension_of_recorded_leading_kernel": true,
+      "functional_kernel_residuals_exactly_zero": true,
+      "local_provenance_hash_verified": true,
+      "accepted_as_generic_fag_proof": false
+    },
+    {
+      "gauge_form_degree": 5,
+      "local_locator": "results/adynkra_11d_first_momentum_gauge_functional_p5.json",
+      "artifact_sha256": "281999a56b85ab59b7fa50a40c4b2f6afa645f4c2cb24fc6563d60c621b272c2",
+      "expected_sha256": "281999a56b85ab59b7fa50a40c4b2f6afa645f4c2cb24fc6563d60c621b272c2",
+      "schema_version": "adynkra-11d-first-momentum-gauge-functional-merge-v1",
+      "artifact_passed": true,
+      "parameter_components": 462,
+      "evaluated_parameter_components": 462,
+      "parameter_projection_complete": true,
+      "exact_functional_rank": 42,
+      "exact_functional_nullity": 3,
+      "leading_projection_rank": 0,
+      "excludes_nonzero_extension_of_recorded_leading_kernel": true,
+      "functional_kernel_residuals_exactly_zero": true,
+      "local_provenance_hash_verified": true,
+      "accepted_as_generic_fag_proof": false
+    }
+  ],
+  "final_physical_fx_bounded_negative_control": {
+    "local_locator": "results/adynkra_11d_first_momentum_physical_fx_functional.json",
+    "artifact_sha256": "5a9a6e13ff57789817689a6d1791ec3d4e94b5731af02a1ed618bedd1a30f4f9",
+    "expected_sha256": "5a9a6e13ff57789817689a6d1791ec3d4e94b5731af02a1ed618bedd1a30f4f9",
+    "schema_version": "adynkra-11d-first-momentum-partial-fx-functional-v3",
+    "fx_report_curvature_input_sha256": "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f",
+    "expected_fx_report_curvature_input_sha256": "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f",
+    "fx_input_snapshot": {
+      "local_locator": "results/adynkra_11d_physical_curvature_fx_input_v10.json",
+      "artifact_sha256": "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f",
+      "expected_sha256": "c308ed82072b835776aa4451751434e500daab922926d12a0dc67735c923083f",
+      "schema_version": "adynkra-11d-physical-curvature-operator-v10",
+      "complete_physical_f": false,
+      "physical_fag_ready": false,
+      "covariant_off_shell_closure_established": false,
+      "strict_contract_validated": true
+    },
+    "gauge_form_degrees": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "channel_count": 6,
+    "operator_columns_per_channel": 56,
+    "coefficient_variables": 49,
+    "leading_kernel_variables": 5,
+    "first_momentum_correction_variables": 44,
+    "parameter_components_selected_per_channel": [
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ],
+      [
+        0
+      ]
+    ],
+    "target_basis_ordinals_selected_per_channel": [
+      [
+        319
+      ],
+      [
+        319
+      ],
+      [
+        319
+      ],
+      [
+        319
+      ],
+      [
+        319
+      ],
+      [
+        319
+      ]
+    ],
+    "global_joint_rank": 49,
+    "global_joint_nullity": 0,
+    "global_rank_exact_by_dimension_saturation": true,
+    "surviving_leading_projection_rank_upper_bound": 0,
+    "all_six_bounded_fx_channels_checked": true,
+    "full_parameter_projection_complete": false,
+    "full_target_projection_complete": false,
+    "partial_fx_only": true,
+    "artifact_full_f_a_g_p_established": false,
+    "kills_recorded_five_plus_forty_four_coefficient_space": true,
+    "checkpoint_promotion": {
+      "local_locator": "results/adynkra_11d_first_momentum_physical_fx_checkpoint_promotion.json",
+      "artifact_sha256": "98941c4cfa46462d519bbe823489622bbad56cc7a6bb3a01596cc3fdf6b8aec4",
+      "expected_sha256": "98941c4cfa46462d519bbe823489622bbad56cc7a6bb3a01596cc3fdf6b8aec4",
+      "schema_version": "adynkra-11d-fx-shared-promotion-report-v1",
+      "promotion_id": "20260817T205240Z-3355777",
+      "checkpoint_hashes": 336,
+      "verified_existing": 164,
+      "copied_missing": 172,
+      "replaced_partial": 0,
+      "passed": true,
+      "strict_contract_validated": true,
+      "accepted_as_full_physical_fag_proof": false
+    },
+    "local_provenance_hash_verified": true,
+    "strict_contract_validated": true,
+    "accepted_as_generic_k_proof": false,
+    "accepted_as_full_physical_fag_proof": false,
+    "boundary": "Each reported rank is exact for the deterministic functional slice and is a rigorous lower bound on the full partial-F_X composition. The slice sums exterior-spinor masks before applying coordinate/sector/momentum hash functionals, which preserves lower-bound validity but can lower detected rank. Dimension saturation at rank 49 proves that the recorded leading-plus-first-momentum coefficient space has zero kernel. Without saturation, functional survivors are inconclusive. The selected slice is not a complete parameter or target projection, F_X omits J/W, and the 12+44 ansatz omits higher momentum descendants; full F A G_p remains false."
+  },
+  "generic_k_solved": false,
+  "all_six_physical_fag_channels_checked": false,
+  "physical_fag_established": false,
+  "passed": true,
+  "result": "The exact all-six physical F_X bounded slice has rank 49 and nullity zero, so it kills the recorded five-leading-kernel-plus-forty-four-first-momentum coefficient space. Generic K and complete physical F A G_p remain open.",
+  "boundary": "The exact rank-49 result is a negative control for the declared one-parameter, one-target, partial-F_X slice only. It does not prove a generic-polynomial identity. No physical verdict is accepted without a source-selected K, all formal momentum monomials and lower symbols required by a proved degree bound, complete parameter projection in each of six inequivalent channels, a convention-fixed target-basis join, complete F including J and W, and its declared curvature quotient."
+}

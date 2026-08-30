@@ -1,0 +1,19 @@
+{
+  "source": "arXiv:2408.09342 Eq 8.2, CLS Appendix C basis; full enumeration via K=Q(sqrt(-3)) commutant reduction, v2 slot-level CSP engine (src/four_color/gmatrix_csp.rs)",
+  "engine": "gmatrix_csp",
+  "side": "L",
+  "blocks": 3,
+  "dim": 12,
+  "count": 0,
+  "checksum_splitmix64_sum": "0000000000000000",
+  "nodes": 0,
+  "seconds": 0.092,
+  "complete": false,
+  "stride": 100,
+  "work_items": 9,
+  "shared_product_table": false,
+  "table_bytes": 1176120000,
+  "note": "All G in {-1,0,1}^(4m x 4m) with G^2 = A. Slot-level CSP: correlated product boxes (outward-widened f64), exact residual arc-consistency, MRV order. Every counted solution mapped back to an integer G and verified G^2 = A exactly. Checksum identical in construction to gmatrix_full. items_detail is the per-prefix immutable record (item, count, checksum, nodes, seconds); totals are commutative sums over it.",
+  "items_detail": [{"item":0,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.021},{"item":100,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.012},{"item":200,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.022},{"item":300,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.021},{"item":400,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.020},{"item":500,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.013},{"item":600,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.013},{"item":700,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.012},{"item":800,"count":0,"checksum":"0000000000000000","nodes":0,"seconds":0.012}],
+  "samples": []
+}

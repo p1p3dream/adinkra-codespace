@@ -1,0 +1,188 @@
+{
+  "schema_version": "adynkra-11d-second-momentum-bounded-verification-v1",
+  "role": "exact representation inventory, pinned available level-12 source fixtures, and synthetic target-resolved p^2 D^13 Lambda control streams",
+  "representation_inventory": {
+    "schema_version": "adynkra-11d-second-momentum-representation-inventory-v1",
+    "symmetric_square_times_target_channels": [
+      {
+        "dynkin_label": "00001",
+        "multiplicity": 1
+      },
+      {
+        "dynkin_label": "01001",
+        "multiplicity": 1
+      },
+      {
+        "dynkin_label": "10001",
+        "multiplicity": 2
+      },
+      {
+        "dynkin_label": "11001",
+        "multiplicity": 1
+      },
+      {
+        "dynkin_label": "20001",
+        "multiplicity": 1
+      },
+      {
+        "dynkin_label": "30001",
+        "multiplicity": 1
+      }
+    ],
+    "source_labels": 19,
+    "source_intermediate_pairs": 35,
+    "source_copy_incidences": 73,
+    "new_operator_variables": 77,
+    "independent_symmetric_momentum_paths_for_10001": 2,
+    "inherited_old_coefficient_variables": 49,
+    "new_variables_independent_of_inherited_old_variables": true,
+    "representation_inventory_complete": true,
+    "component_clebsch_gordan_maps_complete": false,
+    "inventory_sha256": "83698bf554699aa54c1f576366ca0945424675e9698a4203aadb787f232cff57"
+  },
+  "available_level12_source_fixture_pins": [
+    {
+      "dynkin_label": "30002",
+      "copy": 1,
+      "representative_role": "symmetric-traceless second-momentum source representative",
+      "source_columns": 2892,
+      "binary_sha256": "bef24d4ebe642c0b6507dee9706fea06742d6ed708d14adc9dd599a8061c28c6",
+      "nonzero_coefficients": 1858,
+      "maximum_absolute_coefficient": 56,
+      "exact_raising_residuals_zero": true,
+      "component_momentum_clebsch_gordan_map_available": false
+    },
+    {
+      "dynkin_label": "30002",
+      "copy": 2,
+      "representative_role": "symmetric-traceless second-momentum source representative",
+      "source_columns": 2892,
+      "binary_sha256": "0e42717e2cb9449f92257a60b7a35e3c8a501dea176db02aa2d0a714b8904908",
+      "nonzero_coefficients": 1120,
+      "maximum_absolute_coefficient": 2,
+      "exact_raising_residuals_zero": true,
+      "component_momentum_clebsch_gordan_map_available": false
+    },
+    {
+      "dynkin_label": "30002",
+      "copy": 3,
+      "representative_role": "symmetric-traceless second-momentum source representative",
+      "source_columns": 2892,
+      "binary_sha256": "d3321a53f37acea6d3d8e4efc11022c037e0339a5e9a7cda87bdb003ca3b2945",
+      "nonzero_coefficients": 2738,
+      "maximum_absolute_coefficient": 1760,
+      "exact_raising_residuals_zero": true,
+      "component_momentum_clebsch_gordan_map_available": false
+    },
+    {
+      "dynkin_label": "10002",
+      "copy": 1,
+      "representative_role": "trace/STT second-momentum source representative",
+      "source_columns": 56758,
+      "binary_sha256": "c3eb687d6d868cd08fcd90a0c741815681b3c68ca4cf3157ddd929df0aa42e28",
+      "nonzero_coefficients": 52670,
+      "maximum_absolute_coefficient": 15840,
+      "exact_raising_residuals_zero": true,
+      "component_momentum_clebsch_gordan_map_available": false
+    },
+    {
+      "dynkin_label": "10002",
+      "copy": 2,
+      "representative_role": "trace/STT second-momentum source representative",
+      "source_columns": 56758,
+      "binary_sha256": "ec51e06970fcff1b7b719d7ee5c3d9a69775fdf6558334c400d1540dbd81c7a1",
+      "nonzero_coefficients": 3465,
+      "maximum_absolute_coefficient": 3,
+      "exact_raising_residuals_zero": true,
+      "component_momentum_clebsch_gordan_map_available": false
+    },
+    {
+      "dynkin_label": "40000",
+      "copy": 1,
+      "representative_role": "highest-weight symmetric-tensor second-momentum source representative",
+      "source_columns": 9376,
+      "binary_sha256": "8d53deee4109315fec26ff5e928822fa18a4ca5cf687ec5a918daf44560d5518",
+      "nonzero_coefficients": 5544,
+      "maximum_absolute_coefficient": 7,
+      "exact_raising_residuals_zero": true,
+      "component_momentum_clebsch_gordan_map_available": false
+    }
+  ],
+  "available_level12_source_labels": [
+    "10002",
+    "30002",
+    "40000"
+  ],
+  "available_level12_kernel_copies": 6,
+  "expected_level12_source_labels": 19,
+  "expected_level12_kernel_copies": 41,
+  "level12_component_fixture_corpus_complete": false,
+  "representative_stream_pins": [
+    {
+      "operator_ordinal": 0,
+      "fixture_sha256": "e9116f42b5de4cd73c4704bd10afac4067eb1afe40c08daa72df96be86a83ee0",
+      "symmetric_momentum_channel_dynkin_label": "00001",
+      "symmetric_momentum_channel_copy": 1,
+      "gauge_form_degree": 0,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        0
+      ],
+      "emitted_entries": 1,
+      "stream_sha256": "0a2cc1ed9ad5040032f42da90eee84d31677343c1749c16b3921bce4c8c5f6d0",
+      "exact_normal_order_checked": true,
+      "synthetic_control_column": true,
+      "component_clebsch_gordan_map": false
+    },
+    {
+      "operator_ordinal": 1,
+      "fixture_sha256": "067dbd24ff691d3b00ca88370db95ced55972faa445d5953952f8362aa59c31f",
+      "symmetric_momentum_channel_dynkin_label": "10001",
+      "symmetric_momentum_channel_copy": 1,
+      "gauge_form_degree": 0,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        1
+      ],
+      "emitted_entries": 1,
+      "stream_sha256": "650d14710082aad75cca5f75d24e50fff7e1126342183c2104dc19035703f894",
+      "exact_normal_order_checked": true,
+      "synthetic_control_column": true,
+      "component_clebsch_gordan_map": false
+    },
+    {
+      "operator_ordinal": 2,
+      "fixture_sha256": "b77022e0ef184c1642b990454de7b43dddec0237726f517e6453454d3902b410",
+      "symmetric_momentum_channel_dynkin_label": "10001",
+      "symmetric_momentum_channel_copy": 2,
+      "gauge_form_degree": 0,
+      "parameter_components_selected": [
+        0
+      ],
+      "target_basis_ordinals_selected": [
+        319
+      ],
+      "emitted_entries": 2,
+      "stream_sha256": "1a2d274c02b3d37de4aac47850e1339aae8c16d1bbb86fa63fb9e72df65c369b",
+      "exact_normal_order_checked": true,
+      "synthetic_control_column": true,
+      "component_clebsch_gordan_map": false
+    }
+  ],
+  "representative_stream_benchmark_workload": "three degree-0, parameter-0, single-target synthetic control columns; observed debug test time is intentionally excluded from the deterministic artifact",
+  "wall_clock_benchmark_in_artifact": false,
+  "p2_d13_wedge_control_stream_complete": true,
+  "p3_d11_contraction_stream_complete": false,
+  "component_clebsch_gordan_maps_complete": false,
+  "inherited_old_column_p2_contractions_kept_separate": true,
+  "generic_k_solved": false,
+  "all_six_physical_fag_channels_checked": false,
+  "physical_fag_established": false,
+  "passed": true,
+  "result": "The 77-variable second-momentum representation inventory is exact. Six available level-12 source kernels are pinned and have zero exact raising residuals. Three synthetic p^2 D^13 target-stream controls are deterministic, but they are not component Clebsch-Gordan maps.",
+  "boundary": "The component fixture corpus is incomplete, and the synthetic control columns are not physical operator columns. The p^3 D^11 contraction stream, physical K, complete F, full parameter and target projections, and generic polynomial F A G_p remain open."
+}

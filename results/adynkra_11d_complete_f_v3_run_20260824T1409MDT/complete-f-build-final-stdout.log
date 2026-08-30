@@ -1,0 +1,92 @@
+{
+  "schema_version": "adynkra-11d-complete-physical-f-construction-v6",
+  "role": "exact geometry-level physical-F assembly and fail-closed route to a target-kernel-derived K",
+  "source_hashes": [
+    "9405ca44a0036567cf86bfbc89de097d8b064612c314b28f31d614e4553a4453",
+    "3a6e81c2c677cf3b68455615145510a4d8bce7db967c77c4afd3b85423535df7",
+    "71ccd43c2dea3df8fb9708c016595463cca2674bccad1872c955fc2c8647f25e"
+  ],
+  "sectors": [
+    {
+      "sector": "X_[2]",
+      "domain": "D H",
+      "codomain": "(11000), rank 429 conventional quotient",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Eqs. (39)-(40), (44)"
+    },
+    {
+      "sector": "X_[5]",
+      "domain": "D H",
+      "codomain": "(10002), rank 4290 conventional quotient",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Eqs. (39)-(40), (44)"
+    },
+    {
+      "sector": "J^(1), J^(2), J^(+), J^(-)",
+      "domain": "spinor and mixed anholonomy plus spinorial connection",
+      "codomain": "spinor geometry",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Eq. (44), Table 3; arXiv:2007.05097 Eqs. (2.19)-(2.22)"
+    },
+    {
+      "sector": "T and omega",
+      "domain": "geometry anholonomy and first jet",
+      "codomain": "mixed torsion and Lorentz connections",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Table 3; hep-th/0107155 Eqs. (3.2c)-(3.2e)"
+    },
+    {
+      "sector": "W",
+      "domain": "T and D J",
+      "codomain": "linearized four-form Weyl curvature",
+      "exact_operator_available": true,
+      "composed_from_h_hat": true,
+      "source": "hep-th/0101037 Eq. (44); arXiv:2007.05097 Eqs. (2.22)-(2.23)"
+    },
+    {
+      "sector": "physical target curvature complex",
+      "domain": "completed H_hat curvature data",
+      "codomain": "Riemann, four-form, gravitino curl, Bianchi, Euler, Noether",
+      "exact_operator_available": true,
+      "composed_from_h_hat": false,
+      "source": "repository exact 44+84|128 target equation complex"
+    }
+  ],
+  "geometry_level_join_implemented": true,
+  "probe_x_two_entries": 13,
+  "probe_x_five_entries": 182,
+  "probe_j_one_entries": 1,
+  "probe_j_two_entries": 1,
+  "probe_j_plus_entries": 1,
+  "probe_j_minus_entries": 1,
+  "probe_t_entries": 265,
+  "probe_w_2001_entries": 30,
+  "probe_w_2021_entries": 44,
+  "h_hat_to_consistent_geometry_jet_implemented": true,
+  "ordered_superderivative_normal_form_complete": true,
+  "bounded_linearized_frame_jet_stream_implemented": true,
+  "gamma_traceless_h_hat_input_projected": true,
+  "local_lorentz_orbit_raw_response_is_nonzero": true,
+  "local_lorentz_gauge_fixed_at_input": true,
+  "local_lorentz_orbit_descends_through_j_t_w": false,
+  "linearized_invariant_supercurvature_basis_fixed": true,
+  "target_four_form_lowest_component_adapter_implemented": true,
+  "direct_off_shell_frame_to_riemann_adapter_implemented": true,
+  "direct_riemann_integrated_into_321_column_operator": true,
+  "direct_riemann_bianchi_certified": true,
+  "theta_two_w_gravity_double_emitted": false,
+  "target_curvature_adapter_implemented": false,
+  "target_bianchi_euler_noether_composition_certified": false,
+  "complete_physical_f_implemented": false,
+  "complete_f_operator_sha256": null,
+  "exact_polynomial_target_kernel_derived": false,
+  "pointwise_or_bounded_kernel_is_accepted_as_physical_k": false,
+  "next_executable_step": "integrate the conditional first-descendant gravitino-curl adapter, add the remaining target identities and physical target gauge quotient, then derive the exact physical K kernel",
+  "passed": true,
+  "result": "The exact ordered-superderivative frame composes H_hat and scale through Delta, both Eqs. (13)-(14) anholonomies, D C, both Lorentz connections, J, mixed torsion, and both W conventions. P_320 and the p=2 gauge choice are enforced at the typed input boundary. The versioned 321-column invariant output now merges X_[2], X_[5], J^(-), raw W_2021, and the independent direct off-shell Riemann stream in strict exterior-D/momentum/sector/coordinate order. Raw two-D W terms retain their W tag and are never double-emitted as gravity. The direct Riemann branch satisfies the target differential Bianchi identity exactly. Full physical F remains incomplete until the conditional gravitino adapter and remaining target identities are integrated.",
+  "boundary": "Passing this report certifies the exact gauge-fixed H_hat-to-X/J/T/W differential stream, the direct full off-shell Riemann branch, and their versioned unified 321-column output contract. The raw p=2 lift has a nonzero J/T/W response in the current convention, so this is explicitly a canonical local-Lorentz gauge section rather than a proof that raw coordinates descend unchanged. D^2 W is retained only as a future conditional Weyl cross-check and is not used to define or emit Riemann. The v2 shard schema is consumed only by the fail-closed reader that binds every shard byte, footer, coefficient, row key, and digest before rank extraction. Physical K remains the future exact polynomial kernel after the conditional gravitino adapter, remaining target identities, and physical target gauge quotient are integrated; neither the combined diagnostic rank nor the Riemann-only rank is labeled as physical K."
+}

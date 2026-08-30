@@ -1,0 +1,54 @@
+{
+  "schema_version": "adynkra-11d-spinorial-differential-v1",
+  "role": "exact lowest scalar-symbol d_F nilpotence gate modulo the tau_0 Bianchi quotient",
+  "primary_sources": [
+    {
+      "source": "Cederwall, Nilsson, Tsimpis, arXiv:hep-th/0110069",
+      "source_archive_sha256": "5d232edd240298530f8216a351e282f4261a0cfe3ec4cfa02c1eaa055f8e43ea",
+      "source_statement": "the projected spinorial derivative is a complex in undeformed 11D supergravity after the dimension-one torsion Bianchi identities remove the projected curvature terms",
+      "use_in_gate": "fixes the interpretation of the lowest projected differential; this gate does not implement the curved dimension-one cancellation"
+    },
+    {
+      "source": "Tsimpis, arXiv:hep-th/0407271, equations (3.3), (3.10), and (3.11)",
+      "source_archive_sha256": "013049a4da503cdee37a67447ab5adc17a30678e07430ecd43905fb0bdc47ee3",
+      "source_statement": "tau_0 is the algebraic dimension-zero torsion differential, H_tau is its quotient, and d_F[omega]=[d_1 omega] is nilpotent because d squared vanishes",
+      "use_in_gate": "implemented coefficientwise on the scalar bidegree-(0,2) identity d_1 squared plus tau_0 d_0 equals zero"
+    },
+    {
+      "source": "Howe, arXiv:hep-th/9707184",
+      "source_archive_sha256": "2aa95c8072e75c6d6b2592f4880a8dbbd843a0036f7805613d911b99608e9482",
+      "source_statement": "the standard 11D dimension-zero torsion constraint together with Bianchi identities has on-shell consequences",
+      "use_in_gate": "prevents the standard torsion background used here from being reported as finite-auxiliary off-shell closure"
+    }
+  ],
+  "lorentzian_structure_group": "Spin(1,10); fermions are in the real 32-component Majorana module",
+  "coefficient_basis": "exact real Majorana basis; symmetric bispinors use one matrix coordinate for alpha<=beta",
+  "tested_superform_slice": "Omega^(0,0) through H_tau^(0,2), testing d_1^2 + tau_0 d_0 coefficientwise on a scalar",
+  "tau_zero_domain_dimension": 11,
+  "tau_zero_codomain_dimension": 528,
+  "tau_zero_nonzero_entries": 208,
+  "tau_zero_rank": 11,
+  "tau_zero_quotient_dimension": 517,
+  "quotient_nonzero_entries": 682,
+  "quotient_free_coordinate_unit_pivots": 517,
+  "quotient_tau_zero_residual_entries": 0,
+  "tau_zero_image_equals_quotient_kernel": true,
+  "formal_momentum_coefficients_checked": 11,
+  "d_one_square_nonzero_entries": 208,
+  "bidegree_zero_two_bianchi_residual_entries": 0,
+  "d_f_square_quotient_residual_entries": 0,
+  "mutation_residual_entries": 1,
+  "mutation_rejected": true,
+  "lowest_d_f_composition_symbol_constructed": true,
+  "d_f_well_defined_on_lowest_scalar_symbol_slice": true,
+  "d_f_nilpotent_on_lowest_scalar_symbol_slice": true,
+  "first_order_d_one_on_arbitrary_superfield_coefficients_computed": false,
+  "tau_zero_squared_computed": false,
+  "full_relaxed_torsion_differential_computed": false,
+  "h_f_zero_four_phys_computed": false,
+  "complete_superspace_bianchi_tower_computed": false,
+  "finite_auxiliary_off_shell_closure_computed": false,
+  "passed": true,
+  "result": "The generic scalar-symbol identity d_1^2 + tau_0 d_0 = 0 holds exactly in all eleven momentum coefficients, and d_F^2 vanishes in the explicit 517-dimensional H_tau quotient.",
+  "boundary": "This is the lowest universal scalar composition symbol, not a first-order d_1 matrix on arbitrary superfield coefficients, the (11000)+(10002) relaxed-torsion differential, or H_F^(0,4)(phys). The outgoing tau_0 map from Omega^(0,2) vanishes by bidegree, so its H_tau quotient is the computed cokernel. The gate uses the standard on-shell 11D torsion background and does not establish ordinary finite-auxiliary off-shell closure."
+}

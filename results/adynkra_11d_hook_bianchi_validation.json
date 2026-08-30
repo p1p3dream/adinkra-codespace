@@ -1,0 +1,307 @@
+{
+  "schema_version": "adynkra-11d-hook-bianchi-v1",
+  "source_hook_dynkin_label": "11000",
+  "source_hook_dimension": 429,
+  "spinor_dimension": 32,
+  "tensor_product_dimension": 13728,
+  "target_dimension_sum": 13728,
+  "target_dimension_sum_matches": true,
+  "target_candidates": [
+    {
+      "target_dynkin_label": "01001",
+      "target_dimension": 1408,
+      "multiplicity_in_hook_tensor_spinor": 1,
+      "level18_source_channels": [
+        {
+          "source_dynkin_label": "00100",
+          "source_dimension": 165,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "00010",
+          "source_dimension": 330,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "02000",
+          "source_dimension": 1144,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "10100",
+          "source_dimension": 1430,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10010",
+          "source_dimension": 3003,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10002",
+          "source_dimension": 4290,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "01100",
+          "source_dimension": 5005,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "01010",
+          "source_dimension": 11583,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "01002",
+          "source_dimension": 17160,
+          "multiplicity": 5
+        }
+      ],
+      "level18_distinct_source_irreps": 9,
+      "level18_embedded_source_copies": 18,
+      "relaxed_composition_row_dimension": 7,
+      "exact_composition_compatible_row_dimension": 0,
+      "nonzero_representation_level_bianchi_row_survives": false,
+      "abstract_target_coupling_available": false,
+      "embedded_level18_source_kernels_available": false,
+      "embedded_composition_computed": false,
+      "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+    },
+    {
+      "target_dynkin_label": "10001",
+      "target_dimension": 320,
+      "multiplicity_in_hook_tensor_spinor": 1,
+      "level18_source_channels": [
+        {
+          "source_dynkin_label": "00100",
+          "source_dimension": 165,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "00010",
+          "source_dimension": 330,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "10100",
+          "source_dimension": 1430,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10010",
+          "source_dimension": 3003,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10002",
+          "source_dimension": 4290,
+          "multiplicity": 2
+        }
+      ],
+      "level18_distinct_source_irreps": 5,
+      "level18_embedded_source_copies": 8,
+      "relaxed_composition_row_dimension": 7,
+      "exact_composition_compatible_row_dimension": 0,
+      "nonzero_representation_level_bianchi_row_survives": false,
+      "abstract_target_coupling_available": false,
+      "embedded_level18_source_kernels_available": false,
+      "embedded_composition_computed": false,
+      "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+    },
+    {
+      "target_dynkin_label": "11001",
+      "target_dimension": 10240,
+      "multiplicity_in_hook_tensor_spinor": 1,
+      "level18_source_channels": [
+        {
+          "source_dynkin_label": "02000",
+          "source_dimension": 1144,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "10100",
+          "source_dimension": 1430,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10010",
+          "source_dimension": 3003,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10002",
+          "source_dimension": 4290,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "01100",
+          "source_dimension": 5005,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "20100",
+          "source_dimension": 7128,
+          "multiplicity": 3
+        },
+        {
+          "source_dynkin_label": "12000",
+          "source_dimension": 7150,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "01010",
+          "source_dimension": 11583,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "20010",
+          "source_dimension": 15400,
+          "multiplicity": 4
+        },
+        {
+          "source_dynkin_label": "01002",
+          "source_dimension": 17160,
+          "multiplicity": 5
+        },
+        {
+          "source_dynkin_label": "20002",
+          "source_dimension": 22275,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "11100",
+          "source_dimension": 33033,
+          "multiplicity": 3
+        },
+        {
+          "source_dynkin_label": "11010",
+          "source_dimension": 78650,
+          "multiplicity": 5
+        },
+        {
+          "source_dynkin_label": "11002",
+          "source_dimension": 117975,
+          "multiplicity": 6
+        }
+      ],
+      "level18_distinct_source_irreps": 14,
+      "level18_embedded_source_copies": 38,
+      "relaxed_composition_row_dimension": 7,
+      "exact_composition_compatible_row_dimension": 0,
+      "nonzero_representation_level_bianchi_row_survives": false,
+      "abstract_target_coupling_available": false,
+      "embedded_level18_source_kernels_available": false,
+      "embedded_composition_computed": false,
+      "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+    },
+    {
+      "target_dynkin_label": "20001",
+      "target_dimension": 1760,
+      "multiplicity_in_hook_tensor_spinor": 1,
+      "level18_source_channels": [
+        {
+          "source_dynkin_label": "10100",
+          "source_dimension": 1430,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10010",
+          "source_dimension": 3003,
+          "multiplicity": 1
+        },
+        {
+          "source_dynkin_label": "10002",
+          "source_dimension": 4290,
+          "multiplicity": 2
+        },
+        {
+          "source_dynkin_label": "20100",
+          "source_dimension": 7128,
+          "multiplicity": 3
+        },
+        {
+          "source_dynkin_label": "20010",
+          "source_dimension": 15400,
+          "multiplicity": 4
+        },
+        {
+          "source_dynkin_label": "20002",
+          "source_dimension": 22275,
+          "multiplicity": 2
+        }
+      ],
+      "level18_distinct_source_irreps": 6,
+      "level18_embedded_source_copies": 13,
+      "relaxed_composition_row_dimension": 7,
+      "exact_composition_compatible_row_dimension": 0,
+      "nonzero_representation_level_bianchi_row_survives": false,
+      "abstract_target_coupling_available": false,
+      "embedded_level18_source_kernels_available": false,
+      "embedded_composition_computed": false,
+      "status": "excluded as a nonzero nilpotent row by the exact relaxed multiplicity-space screen; embedded construction remains a falsification check"
+    }
+  ],
+  "target_candidate_count": 4,
+  "level18_distinct_source_fixture_count": 16,
+  "level18_source_fixture_copy_count": 42,
+  "level14_hodge_dual_analogue_fixture_count": 27,
+  "level18_source_fixtures_present": 0,
+  "level18_source_target_embedded_copy_count": 77,
+  "level17_map": {
+    "input_artifact": "results/adynkra_11d_level17_derivative_matrix.json",
+    "input_sha256": "630fc8701ef7d93e9ce37cdd50be4863dba8b062b8c0112a5d88277d8ec4f5cd",
+    "input_schema_version": "adynkra-11d-level17-derivative-matrix-v1",
+    "source_columns": 12,
+    "hook_rows": 7,
+    "exact_rank": 7,
+    "exact_nullity": 5,
+    "recomputed_kernel_dimension": 5,
+    "committed_kernel_vectors": 5,
+    "committed_kernel_vectors_annihilated": 5,
+    "left_kernel_dimension": 0,
+    "source_basis_matches": true,
+    "hook_basis_matches": true,
+    "scalar_factorizing_direction_is_closed": true,
+    "passed": true
+  },
+  "cohomology": {
+    "field": "Q",
+    "complex": "Q^12 --d16--> Q^7 --d17--> 0 at the zero-momentum relaxed representation-symbol level",
+    "level16_dimension": 12,
+    "level16_to_level17_rank": 7,
+    "level16_kernel_dimension": 5,
+    "level16_cohomology_lower_bound": 0,
+    "level16_cohomology_upper_bound": 5,
+    "level16_incoming_image_known": false,
+    "level17_dimension": 7,
+    "forced_level17_to_level18_rank": 0,
+    "level17_kernel_dimension": 7,
+    "level17_image_dimension": 7,
+    "level17_bounded_cohomology_dimension": 0,
+    "level18_candidate_irreps": 4,
+    "level18_candidate_embedded_copies": 77,
+    "level18_cohomology_computed": false,
+    "interpretation": "The committed d16 is surjective. Therefore any rational row B satisfying B d16 = 0 is zero, even before restricting B to rows produced by B5 intertwiners. The bounded hook cohomology is consequently zero.",
+    "boundary": "The level16 kernel has dimension five, but its cohomology is only bounded between zero and five because the incoming map is not part of this artifact. No level18 or momentum-dependent cohomology is claimed."
+  },
+  "generated_work_items": 161,
+  "completeness": {
+    "committed_level17_matrix_reverified_exactly": true,
+    "hook_tensor_spinor_decomposition_complete": true,
+    "level18_inventory_incidence_complete": true,
+    "level14_hodge_dual_analogue_manifest_audited": true,
+    "hodge_duality_kernel_lift_verified": false,
+    "relaxed_representation_level_composition_solved_exactly": true,
+    "bounded_zero_momentum_level17_cohomology_computed": true,
+    "abstract_target_couplings_constructed": false,
+    "embedded_level18_highest_weight_kernels_present": false,
+    "embedded_next_bianchi_compositions_computed": false,
+    "momentum_corrected_complex_computed": false,
+    "gauge_quotient_computed": false,
+    "polynomial_module_cohomology_computed": false
+  },
+  "passed": true,
+  "result": "No nonzero next-Bianchi row survives the exact relaxed zero-momentum representation-level composition gate.",
+  "boundary": "This excludes a nonzero nilpotent outgoing row on the committed seven-copy hook multiplicity space. It does not assert that embedded level18 kernels exist, construct target Clebsch-Gordan coefficients, include the superspace momentum term, quotient gauge transformations, or prove physical exactness."
+}

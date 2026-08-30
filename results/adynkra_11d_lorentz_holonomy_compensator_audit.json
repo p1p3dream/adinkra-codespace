@@ -1,0 +1,90 @@
+{
+  "schema_version": "adynkra.11d.lorentz-holonomy-compensator-audit.v2",
+  "role": "exact complete-Clifford and full-frame-basis audit of the linearized source-fixed local-Lorentz orbit",
+  "source_references": [
+    "hep-th/0101037 Eq. (1): complete p=1 through p=5 Delta decomposition",
+    "hep-th/0101037 Eqs. (24)-(26): linearized spinor frame, vector frame, and spinor anholonomy",
+    "hep-th/0107155 Eq. (2.6a): source-fixed local Lorentz frame law",
+    "hep-th/0106150 Eq. (A.12): spinor Lorentz generator normalization",
+    "arXiv:2007.05097 Eqs. (2.1)-(2.2): separated Lorentz compensator, coset holonomies, scale, and gamma-traceless H_hat"
+  ],
+  "linearized_frame_parametrization": "delta E_alpha=(1/2)(delta Psi I+delta Delta)_alpha{}^beta D_beta+delta H_alpha{}^c partial_c",
+  "source_fixed_local_lorentz_law": "delta_L E_alpha=(1/2) Lambda_de Gamma^de_alpha{}^beta D_beta at the flat background for one stored independent lower pair",
+  "source_delta_phase_convention": "Delta=i Psi_[1] Gamma^[1]+Psi_[2] Gamma^[2]+i Psi_[3] Gamma^[3]+Psi_[4] Gamma^[4]+i Psi_[5] Gamma^[5] in the independent-mask basis; the nonzero phases preserve exact cross-rank orthogonality",
+  "solved_orbit": "delta Psi=0; delta H_hat=0; delta Psi_[1,3,4,5]=0; delta Psi_[2]=Lambda_[2]",
+  "eq25_line_by_line_audit": [
+    {
+      "source_term": "(i/32) D_beta (Gamma_a Delta)^{beta gamma} D_gamma",
+      "orbit_value": "nonzero with delta Delta=Lambda_[de] Gamma^[de]",
+      "effect_on_spinor_c_trace": "after -i Gamma^a E_a basis re-expansion, +(1/32) Gamma^a Gamma^[de] Gamma_a D Lambda"
+    },
+    {
+      "source_term": "(i/32)(D_beta Psi)(Gamma_a)^{beta gamma} D_gamma",
+      "orbit_value": "zero because delta Psi=0",
+      "effect_on_spinor_c_trace": "0"
+    },
+    {
+      "source_term": "(i/16)(Gamma_a)^{alpha beta}D_alpha H_beta{}^c partial_c",
+      "orbit_value": "zero inhomogeneous term because delta H_hat=0 at the flat representative",
+      "effect_on_spinor_c_trace": "0"
+    },
+    {
+      "source_term": "delta_a{}^c Psi partial_c",
+      "orbit_value": "zero because delta Psi=0",
+      "effect_on_spinor_c_trace": "0"
+    },
+    {
+      "source_term": "-Psi_a{}^c partial_c",
+      "orbit_value": "nonzero vector-frame Lorentz rotation -Lambda_a{}^c partial_c",
+      "effect_on_spinor_c_trace": "0; it rotates the vector basis but has no D_gamma component"
+    }
+  ],
+  "clifford_basis_dimension": 1024,
+  "clifford_basis_signed_permutation_failures": 0,
+  "clifford_gram_off_diagonal_nonzero": 0,
+  "clifford_gram_diagonal_residuals": 0,
+  "p_two_coordinate_solutions": 55,
+  "induced_nonzero_coordinates_by_degree_p0_through_p5": [
+    0,
+    0,
+    55,
+    0,
+    0,
+    0
+  ],
+  "p_two_unit_coefficient_residuals": 0,
+  "delta_reconstruction_residual_entries": 0,
+  "induced_scale_variation": "0: the Lorentz generator is traceless and orthogonal to the identity",
+  "induced_h_hat_variation": "0 at linear order about H_hat=0: the local Lorentz orbit has no partial_c component",
+  "induced_p_one_variation": "0 by exact Clifford orthogonality",
+  "induced_p_two_variation": "delta Psi_[de]=Lambda_[de] with unit coefficient",
+  "induced_p_three_variation": "0 by exact Clifford orthogonality",
+  "induced_p_four_variation": "0 by exact Clifford orthogonality",
+  "induced_p_five_variation": "0 by exact Clifford orthogonality",
+  "derivative_lorentz_columns_checked": 1760,
+  "raw_coordinate_c_trace_coefficient": "1/2",
+  "compensating_p_one_three_four_five_c_trace_coefficient": "0",
+  "eq25_vector_frame_spinor_component_included": true,
+  "eq25_clifford_sandwich_identity": "Gamma^c Gamma^[de] Gamma_c=(11-2*2) Gamma^[de]=7 Gamma^[de]",
+  "eq25_clifford_sandwich_residual_entries": 0,
+  "eq25_clifford_sandwich_coefficients": [
+    "7"
+  ],
+  "eq25_vector_frame_basis_correction_coefficient": "7/32",
+  "complete_orbit_c_trace_coefficient": "23/32",
+  "eq26_rank_two_trace_coefficient": "-19/32",
+  "eq26_rank_five_trace_coefficient": "21/16",
+  "eq26_total_trace_coefficient": "23/32",
+  "eq26_minus_complete_orbit_coefficient": "0",
+  "direct_shape_residuals": 0,
+  "eq26_shape_residuals": 0,
+  "raw_coordinate_eq26_mismatch_entries": 1760,
+  "complete_orbit_eq26_mismatch_entries": 0,
+  "compensators_supply_missing_seven_over_thirty_two": false,
+  "constrained_vector_frame_supplies_seven_over_thirty_two": true,
+  "downstream_connection_torsion_recomputed": false,
+  "physical_operator_modified": false,
+  "passed": true,
+  "verdict": "The p=1,3,4,5 holonomies do not supply 7/32. They have zero inhomogeneous variation. The omitted term is the Eq. (25) spinor component of the constrained vector frame. Re-expanding the raw commutator in the full (E_gamma,E_c) frame basis adds (1/32) Gamma^c Gamma^[2] Gamma_c=7/32 and changes the raw 1/2 into the full 23/32, exactly matching Eq. (26).",
+  "boundary": "This closes only the Eq. (26) comparison on the linearized flat-background local-Lorentz orbit. Homogeneous Lorentz rotations of nonzero semi-prepotentials are quadratic in fluctuation times parameter. The earlier downstream connection, torsion, and J comparison started from the raw 1/2 coefficient and is not reused here. Those stages require a fresh full-frame computation. The audit does not change Eq. (26), fit a term, or establish induced J, T, W, complete F, F A G_p, or off-shell closure."
+}

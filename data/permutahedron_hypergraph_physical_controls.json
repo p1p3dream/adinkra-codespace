@@ -1,0 +1,195 @@
+{
+  "schema_version": "permutahedron-hypergraph-physical-controls-v1",
+  "title": "Published S8 controls projected onto the constraint hypergraph",
+  "method": [
+    "Index all 151,200 discovered hyperedges by their sorted permutation ranks.",
+    "Map the six published paired supports and the O / Diadem(8) support into that index.",
+    "Verify Garden feasibility of every unsigned support independently.",
+    "Verify the printed Boolean-factor assignment for CC, CT, CV, TT, TV, and VV directly, while using a certified Garden assignment for O.",
+    "Keep unsigned family membership separate from closure of the particular published sign assignment."
+  ],
+  "controls": [
+    {
+      "id": "CC",
+      "interpretation": "chiral + chiral",
+      "source": "arXiv:2012.14015v7, Eqs. (5.1)-(5.6)",
+      "positive_garden_control": false,
+      "published_sign_status": "published nonclosure",
+      "hyperedge_ranks": [
+        1444,
+        5768,
+        10935,
+        15259,
+        25060,
+        29384,
+        34551,
+        38875
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1444,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": false,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": false
+    },
+    {
+      "id": "CT",
+      "interpretation": "chiral + tensor",
+      "source": "arXiv:2012.14015v7, Eqs. (5.1)-(5.6)",
+      "positive_garden_control": true,
+      "published_sign_status": "published Garden closure",
+      "hyperedge_ranks": [
+        1443,
+        5771,
+        10932,
+        15260,
+        25059,
+        29387,
+        34548,
+        38876
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1443,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": true,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": true
+    },
+    {
+      "id": "CV",
+      "interpretation": "chiral + vector",
+      "source": "arXiv:2012.14015v7, Eqs. (5.1)-(5.6)",
+      "positive_garden_control": true,
+      "published_sign_status": "published Garden closure",
+      "hyperedge_ranks": [
+        1450,
+        5762,
+        10941,
+        15253,
+        25066,
+        29378,
+        34557,
+        38869
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 1450,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": true,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": true
+    },
+    {
+      "id": "O",
+      "interpretation": "R8 / Diadem(8)",
+      "source": "arXiv:2012.14015v7 Eq. (5.7); arXiv:2304.09830v2 Eq. (3.23)",
+      "positive_garden_control": true,
+      "published_sign_status": "published Garden closure",
+      "hyperedge_ranks": [
+        0,
+        5167,
+        11536,
+        16703,
+        23616,
+        28783,
+        35152,
+        40319
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 0,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": true,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": true
+    },
+    {
+      "id": "TT",
+      "interpretation": "tensor + tensor",
+      "source": "arXiv:2012.14015v7, Eqs. (5.1)-(5.6)",
+      "positive_garden_control": false,
+      "published_sign_status": "published nonclosure",
+      "hyperedge_ranks": [
+        843,
+        6611,
+        10092,
+        15860,
+        24459,
+        30227,
+        33708,
+        39476
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 843,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": false,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": false
+    },
+    {
+      "id": "TV",
+      "interpretation": "tensor + vector",
+      "source": "arXiv:2012.14015v7, Eqs. (5.1)-(5.6)",
+      "positive_garden_control": false,
+      "published_sign_status": "published nonclosure",
+      "hyperedge_ranks": [
+        850,
+        6602,
+        10101,
+        15853,
+        24466,
+        30218,
+        33717,
+        39469
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 850,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": false,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": false
+    },
+    {
+      "id": "VV",
+      "interpretation": "vector + vector",
+      "source": "arXiv:2012.14015v7, Eqs. (5.1)-(5.6)",
+      "positive_garden_control": false,
+      "published_sign_status": "published nonclosure",
+      "hyperedge_ranks": [
+        722,
+        6490,
+        10213,
+        15981,
+        24338,
+        30106,
+        33829,
+        39597
+      ],
+      "discovered_family_id": 0,
+      "family_slice_id": 722,
+      "unsigned_support_has_garden_signings": true,
+      "published_or_certified_assignment_closes": false,
+      "valid_signing_class": "unlabeled-color-signed-graph/class-00",
+      "published_assignment_belongs_to_valid_signing_class": false
+    }
+  ],
+  "validation": {
+    "controls": 7,
+    "positive_controls": 3,
+    "negative_controls": 4,
+    "controls_mapped_uniquely": 7,
+    "control_family_count": 1,
+    "positive_control_family_count": 1,
+    "negative_control_family_count": 1,
+    "positive_and_negative_controls_share_a_family": true,
+    "all_unsigned_supports_are_signable": true,
+    "printed_closure_matches_published_status": true,
+    "family_membership_separates_published_closure": false,
+    "passed": true
+  },
+  "findings": [
+    "O, CT, and CV all lie in discovered family 0, but CC, TT, TV, and VV lie in that same family as well.",
+    "Every one of the seven unsigned supports admits Garden signs, including the four supports whose published Boolean factors do not close.",
+    "The particular published signs close for O, CT, and CV and fail for CC, TT, TV, and VV, reproducing the control labels.",
+    "Subgroup-family membership cannot separate published closure or higher-dimensional parentage because the positive and negative controls share one family."
+  ],
+  "boundary": "This bridge verifies support membership and one-dimensional Garden closure. The published closure labels are controls, not a general enhancement theorem. Distinguishing four-dimensional parentage still requires height, gauge, phantom-linkage, or direct enhancement data that are absent from the unsigned hypergraph."
+}

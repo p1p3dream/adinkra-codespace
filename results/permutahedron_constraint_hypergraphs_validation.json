@@ -1,0 +1,14 @@
+{
+  "s4_identity_candidates": 3,
+  "s4_identity_hyperedges": 1,
+  "s4_distinct_hyperedges": 6,
+  "s4_matches_reference_cosets": true,
+  "s8_identity_candidates": 105,
+  "s8_candidate_degree": 12,
+  "s8_identity_hyperedges": 30,
+  "s8_distinct_hyperedges": 151200,
+  "s8_vertex_degree": 30,
+  "s8_overlapping_hyperedges_per_hyperedge": 204,
+  "both_family_recovery_checks_pass": true,
+  "passed": true
+}
