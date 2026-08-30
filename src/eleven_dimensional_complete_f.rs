@@ -3555,6 +3555,37 @@ mod tests {
             expected.iter().map(BTreeMap::len).sum::<usize>()
         );
         eprintln!("complete-F exact CUDA batch stats: {stats:#?}");
+
+        let iterations = 200_u32;
+        let cpu_started = std::time::Instant::now();
+        for _ in 0..iterations {
+            let output = batch
+                .iter()
+                .map(|input| operator.apply_sparse(input))
+                .collect::<Vec<_>>();
+            std::hint::black_box(output);
+        }
+        let cpu_elapsed = cpu_started.elapsed();
+        let gpu_started = std::time::Instant::now();
+        let mut gpu_kernel_milliseconds = 0_f64;
+        for _ in 0..iterations {
+            let (output, iteration_stats) = gpu.apply_batch(&batch).unwrap();
+            gpu_kernel_milliseconds += f64::from(iteration_stats.kernel_milliseconds);
+            std::hint::black_box(output);
+        }
+        let gpu_elapsed = gpu_started.elapsed();
+        let cpu_per_batch = cpu_elapsed.as_secs_f64() / f64::from(iterations);
+        let gpu_per_batch = gpu_elapsed.as_secs_f64() / f64::from(iterations);
+        let kernel_per_batch = gpu_kernel_milliseconds / f64::from(iterations) / 1_000.0;
+        eprintln!(
+            "complete-F sparse batch benchmark: products={} CPU={:.6}ms CUDA-kernel={:.6}ms CUDA-end-to-end={:.6}ms kernel-vs-CPU={:.3}x end-to-end={:.3}x",
+            stats.expanded_products,
+            cpu_per_batch * 1_000.0,
+            kernel_per_batch * 1_000.0,
+            gpu_per_batch * 1_000.0,
+            cpu_per_batch / kernel_per_batch,
+            cpu_per_batch / gpu_per_batch,
+        );
     }
 
     #[cfg(feature = "cuda")]
