@@ -651,6 +651,270 @@ fn gaussian_mod(value: &ExactGaussian, prime: u32) -> Result<GaussianResidue, St
     })
 }
 
+#[derive(Clone, Debug, Serialize)]
+struct P3ExactCoefficientRecord {
+    source: String,
+    coordinates: Vec<usize>,
+    component: String,
+    numerator: String,
+    denominator: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct P3PrimeDenominatorAdmissibility {
+    prime_slot: usize,
+    prime: u32,
+    prime_verified: bool,
+    prime_mod_4: u32,
+    gaussian_extension_is_field: bool,
+    common_denominator_mod_prime: u32,
+    gcd_with_common_denominator: String,
+    every_input_denominator_nonzero_mod_prime: bool,
+    modular_static_semantic_sha256: String,
+    modular_flat_plan_sha256: String,
+    modular_static_build_passed: bool,
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct P3DenominatorAdmissibilityReport {
+    schema_version: String,
+    role: String,
+    rational_input_scope: Vec<String>,
+    integral_input_scope: Vec<String>,
+    exact_coefficient_record_count: usize,
+    unique_denominators: Vec<String>,
+    common_denominator_lcm: String,
+    exact_coefficient_stream_sha256: String,
+    ordered_denominator_stream_sha256: String,
+    primes: Vec<P3PrimeDenominatorAdmissibility>,
+    proof_rule: String,
+    claim_boundary: String,
+    passed: bool,
+}
+
+fn bigint_gcd(mut left: BigInt, mut right: BigInt) -> BigInt {
+    if left < BigInt::from(0) {
+        left = -left;
+    }
+    if right < BigInt::from(0) {
+        right = -right;
+    }
+    while right != BigInt::from(0) {
+        let remainder = &left % &right;
+        left = right;
+        right = remainder;
+    }
+    left
+}
+
+fn bigint_lcm(left: &BigInt, right: &BigInt) -> BigInt {
+    if *left == BigInt::from(0) || *right == BigInt::from(0) {
+        return BigInt::from(0);
+    }
+    (left / bigint_gcd(left.clone(), right.clone())) * right
+}
+
+fn push_exact_coefficient_components(
+    records: &mut Vec<P3ExactCoefficientRecord>,
+    source: String,
+    coordinates: Vec<usize>,
+    coefficient: &ExactGaussian,
+) {
+    records.push(P3ExactCoefficientRecord {
+        source: source.clone(),
+        coordinates: coordinates.clone(),
+        component: "real".to_string(),
+        numerator: coefficient.real.numer().to_string(),
+        denominator: coefficient.real.denom().to_string(),
+    });
+    records.push(P3ExactCoefficientRecord {
+        source,
+        coordinates,
+        component: "imaginary".to_string(),
+        numerator: coefficient.imaginary.numer().to_string(),
+        denominator: coefficient.imaginary.denom().to_string(),
+    });
+}
+
+fn p3_denominator_admissibility_report() -> Result<P3DenominatorAdmissibilityReport, String> {
+    let mut records = Vec::new();
+    for (copy_ordinal, (degree, _, matrix)) in
+        crate::eleven_dimensional_clifford::gauge_form_operator_basis()
+            .into_iter()
+            .enumerate()
+    {
+        for (free_spinor, row) in matrix.into_iter().enumerate() {
+            for (derivative_spinor, value) in row.into_iter().enumerate() {
+                if *value.re.numer() == 0 && *value.im.numer() == 0 {
+                    continue;
+                }
+                let coefficient = ExactGaussian {
+                    real: Ratio::new(
+                        BigInt::from(*value.re.numer()),
+                        BigInt::from(*value.re.denom()),
+                    ),
+                    imaginary: Ratio::new(
+                        BigInt::from(*value.im.numer()),
+                        BigInt::from(*value.im.denom()),
+                    ),
+                };
+                push_exact_coefficient_components(
+                    &mut records,
+                    format!("gauge_form_degree_{degree}"),
+                    vec![copy_ordinal, free_spinor, derivative_spinor],
+                    &coefficient,
+                );
+            }
+        }
+    }
+
+    let highest = crate::eleven_dimensional_bridge::vector_spinor_target_dual_basis_states()
+        .into_iter()
+        .find(|state| state.pbw_word_simple_roots.is_empty())
+        .ok_or_else(|| "missing highest vector-spinor target state".to_string())?;
+    for (term_ordinal, entry) in highest.raw_terms.into_iter().enumerate() {
+        let coefficient = ExactGaussian {
+            real: Ratio::new(
+                BigInt::from(entry.numerator),
+                BigInt::from(entry.denominator),
+            ),
+            imaginary: Ratio::from_integer(BigInt::from(0)),
+        };
+        push_exact_coefficient_components(
+            &mut records,
+            "highest_vector_spinor_target_dual".to_string(),
+            vec![
+                term_ordinal,
+                entry.vector_weight_index,
+                entry.spinor_weight_index,
+            ],
+            &coefficient,
+        );
+    }
+
+    for vector_weight in 0..11 {
+        for spinor_weight in 0..32 {
+            let mut template_ordinal = 0_usize;
+            crate::eleven_dimensional_physical_curvature::visit_exact_fx_derivative_templates(
+                vector_weight,
+                spinor_weight,
+                |entry| {
+                    push_exact_coefficient_components(
+                        &mut records,
+                        if entry.x_two_sector {
+                            "physical_fx_template_x2".to_string()
+                        } else {
+                            "physical_fx_template_x5".to_string()
+                        },
+                        vec![
+                            vector_weight,
+                            spinor_weight,
+                            template_ordinal,
+                            entry.derivative_spinor_weight_index,
+                            entry.output_coordinate,
+                        ],
+                        &entry.coefficient,
+                    );
+                    template_ordinal += 1;
+                },
+            )?;
+        }
+    }
+
+    let mut unique_denominators = std::collections::BTreeSet::new();
+    let mut common_denominator = BigInt::from(1);
+    for record in &records {
+        let denominator = record
+            .denominator
+            .parse::<BigInt>()
+            .map_err(|error| error.to_string())?;
+        if denominator <= BigInt::from(0) {
+            return Err("p3 exact coefficient denominator is not positive".to_string());
+        }
+        common_denominator = bigint_lcm(&common_denominator, &denominator);
+        unique_denominators.insert(denominator);
+    }
+    let exact_coefficient_stream_sha256 = format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&records).map_err(|error| error.to_string())?)
+    );
+    let ordered_denominators = records
+        .iter()
+        .map(|record| &record.denominator)
+        .collect::<Vec<_>>();
+    let ordered_denominator_stream_sha256 = format!(
+        "{:x}",
+        Sha256::digest(
+            serde_json::to_vec(&ordered_denominators).map_err(|error| error.to_string())?
+        )
+    );
+
+    let mut primes = Vec::new();
+    for (prime_slot, prime) in GPU_FX_PRIMES.iter().copied().enumerate() {
+        let every_input_denominator_nonzero_mod_prime = records.iter().all(|record| {
+            record
+                .denominator
+                .parse::<BigInt>()
+                .is_ok_and(|denominator| bigint_mod(&denominator, prime) != 0)
+        });
+        let static_data = ModularFxStaticData::build(prime)?;
+        let static_semantic_sha256 = static_data.semantic_sha256().to_string();
+        let flat_plan = build_p3_modular_flat_plan(&static_data)?;
+        let gcd = bigint_gcd(common_denominator.clone(), BigInt::from(prime));
+        primes.push(P3PrimeDenominatorAdmissibility {
+            prime_slot,
+            prime,
+            prime_verified: is_prime_u32(prime),
+            prime_mod_4: prime % 4,
+            gaussian_extension_is_field: is_prime_u32(prime) && prime % 4 == 3,
+            common_denominator_mod_prime: bigint_mod(&common_denominator, prime),
+            gcd_with_common_denominator: gcd.to_string(),
+            every_input_denominator_nonzero_mod_prime,
+            modular_static_semantic_sha256: static_semantic_sha256,
+            modular_flat_plan_sha256: flat_plan.semantic_sha256().to_string(),
+            modular_static_build_passed: true,
+        });
+    }
+    let passed = !records.is_empty()
+        && primes.iter().all(|entry| {
+            entry.prime_verified
+                && entry.gaussian_extension_is_field
+                && entry.common_denominator_mod_prime != 0
+                && entry.gcd_with_common_denominator == "1"
+                && entry.every_input_denominator_nonzero_mod_prime
+                && entry.modular_static_build_passed
+        });
+    Ok(P3DenominatorAdmissibilityReport {
+        schema_version: "adynkra-11d-p3-denominator-admissibility-v1".to_string(),
+        role: "exact denominator audit for the p3 modular static and flat-plan inputs"
+            .to_string(),
+        rational_input_scope: vec![
+            "nonzero gauge-form matrix coefficients".to_string(),
+            "highest vector-spinor target-dual coefficients".to_string(),
+            "exact physical F_X derivative-template coefficients".to_string(),
+        ],
+        integral_input_scope: vec![
+            "recoupled source-stream coefficients are i128 integers".to_string(),
+            "translation-weight coefficients are i64 Gaussian integers".to_string(),
+            "wedge, contraction, and functional-hash signs are integers".to_string(),
+        ],
+        exact_coefficient_record_count: records.len(),
+        unique_denominators: unique_denominators
+            .into_iter()
+            .map(|value| value.to_string())
+            .collect(),
+        common_denominator_lcm: common_denominator.to_string(),
+        exact_coefficient_stream_sha256,
+        ordered_denominator_stream_sha256,
+        primes,
+        proof_rule: "all subsequent p3 flat-plan and column operations use only integer addition and multiplication; nonzero reduction of every rational input denominator therefore defines the required Q(i) to F_p(i) reduction homomorphism"
+            .to_string(),
+        claim_boundary: "this certifies denominator admissibility of the bounded p3 diagnostic only; it does not promote the diagnostic to complete physical F or a target quotient"
+            .to_string(),
+        passed,
+    })
+}
+
 fn i128_mod(value: i128, prime: u32) -> u32 {
     let prime = i128::from(prime);
     let residue = value % prime;
@@ -8298,6 +8562,27 @@ pub(crate) fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn p3_denominator_admissibility_certificate() {
+        let report = p3_denominator_admissibility_report().unwrap();
+        assert!(report.passed);
+        assert!(report.exact_coefficient_record_count != 0);
+        assert_eq!(report.primes.len(), GPU_FX_PRIMES.len());
+        assert!(report.primes.iter().all(|entry| {
+            entry.gcd_with_common_denominator == "1"
+                && entry.every_input_denominator_nonzero_mod_prime
+                && entry.gaussian_extension_is_field
+                && entry.modular_static_build_passed
+        }));
+        if let Ok(path) = std::env::var("ADYNKRA_P3_DENOMINATOR_CERTIFICATE_PATH") {
+            let path = std::path::PathBuf::from(path);
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent).unwrap();
+            }
+            std::fs::write(&path, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
+        }
+    }
 
     #[test]
     fn p3_three_prime_plans_have_identical_structure() {
