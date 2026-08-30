@@ -120,7 +120,7 @@ impl ExactQi {
     }
 
     pub fn is_zero(&self) -> bool {
-        self.real == r(0) && self.imaginary == r(0)
+        *self.real.numer() == 0 && *self.imaginary.numer() == 0
     }
 
     pub fn add_assign(&mut self, other: &Self) {
@@ -143,6 +143,50 @@ impl ExactQi {
     }
 
     fn multiply(&self, other: &Self) -> Self {
+        let self_real_zero = *self.real.numer() == 0;
+        let self_imaginary_zero = *self.imaginary.numer() == 0;
+        let other_real_zero = *other.real.numer() == 0;
+        let other_imaginary_zero = *other.imaginary.numer() == 0;
+        if self_imaginary_zero {
+            return Self {
+                real: if other_real_zero {
+                    r(0)
+                } else {
+                    self.real.clone() * other.real.clone()
+                },
+                imaginary: if other_imaginary_zero {
+                    r(0)
+                } else {
+                    self.real.clone() * other.imaginary.clone()
+                },
+            };
+        }
+        if self_real_zero {
+            return Self {
+                real: if other_imaginary_zero {
+                    r(0)
+                } else {
+                    -(self.imaginary.clone() * other.imaginary.clone())
+                },
+                imaginary: if other_real_zero {
+                    r(0)
+                } else {
+                    self.imaginary.clone() * other.real.clone()
+                },
+            };
+        }
+        if other_imaginary_zero {
+            return Self {
+                real: self.real.clone() * other.real.clone(),
+                imaginary: self.imaginary.clone() * other.real.clone(),
+            };
+        }
+        if other_real_zero {
+            return Self {
+                real: -(self.imaginary.clone() * other.imaginary.clone()),
+                imaginary: self.real.clone() * other.imaginary.clone(),
+            };
+        }
         Self {
             real: self.real.clone() * other.real.clone()
                 - self.imaginary.clone() * other.imaginary.clone(),
@@ -1292,7 +1336,7 @@ pub fn apply_eq29_bosonic_anholonomy(
 ///
 /// Inputs `0..DDH_DIMENSION` are ordered `D_alpha D_beta H_gamma{}^c`.
 /// The remaining inputs are `partial_b H_alpha{}^c`.
-pub fn eq28_h_to_c_alpha_b_c_operator() -> SparseQiOperator {
+fn build_eq28_h_to_c_alpha_b_c_operator() -> SparseQiOperator {
     let mut columns = vec![Vec::new(); H_SECOND_JET_DIMENSION];
     let gamma = raised_one_gammas();
     for alpha in 0..SPINOR_DIMENSION {
@@ -1327,6 +1371,15 @@ pub fn eq28_h_to_c_alpha_b_c_operator() -> SparseQiOperator {
         output_dimension: C_ALPHA_VECTOR_VECTOR_DIMENSION,
         columns,
     }
+}
+
+pub(crate) fn cached_eq28_h_to_c_alpha_b_c_operator() -> &'static SparseQiOperator {
+    static OPERATOR: OnceLock<SparseQiOperator> = OnceLock::new();
+    OPERATOR.get_or_init(build_eq28_h_to_c_alpha_b_c_operator)
+}
+
+pub fn eq28_h_to_c_alpha_b_c_operator() -> SparseQiOperator {
+    cached_eq28_h_to_c_alpha_b_c_operator().clone()
 }
 
 /// The scalar-compensator terms in `C_{alpha,b}{}^c` from Eq. (28).

@@ -1,8 +1,10 @@
 #include <cuda_runtime.h>
 
 #include <cstdint>
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 #include <new>
 #include <vector>
 
@@ -21,6 +23,16 @@ struct SparseInput {
   int64_t imaginary;
 };
 
+static_assert(sizeof(SparseEntry) == 24);
+static_assert(offsetof(SparseEntry, row) == 0);
+static_assert(offsetof(SparseEntry, real) == 8);
+static_assert(offsetof(SparseEntry, imaginary) == 16);
+static_assert(sizeof(SparseInput) == 24);
+static_assert(offsetof(SparseInput, lane) == 0);
+static_assert(offsetof(SparseInput, column) == 4);
+static_assert(offsetof(SparseInput, real) == 8);
+static_assert(offsetof(SparseInput, imaginary) == 16);
+
 struct Context {
   int device = 0;
   uint32_t input_dimension = 0;
@@ -34,6 +46,7 @@ struct Context {
   SparseInput *inputs = nullptr;
   int64_t *output_real = nullptr;
   int64_t *output_imaginary = nullptr;
+  uint64_t *expanded_products = nullptr;
   cudaStream_t stream = nullptr;
   cudaEvent_t started = nullptr;
   cudaEvent_t finished = nullptr;
@@ -71,6 +84,7 @@ void release(Context *context) {
   cudaFree(context->inputs);
   cudaFree(context->output_real);
   cudaFree(context->output_imaginary);
+  cudaFree(context->expanded_products);
   if (context->started != nullptr) {
     cudaEventDestroy(context->started);
   }
@@ -86,6 +100,44 @@ void release(Context *context) {
 __device__ inline void atomic_add_signed(int64_t *address, int64_t value) {
   atomicAdd(reinterpret_cast<unsigned long long *>(address),
             static_cast<unsigned long long>(value));
+}
+
+__global__ void dense_apply_kernel(const uint32_t *offsets,
+                                   const SparseEntry *entries,
+                                   const int64_t *input_real,
+                                   const int64_t *input_imaginary,
+                                   uint64_t dense_count,
+                                   uint32_t input_dimension,
+                                   uint32_t output_dimension,
+                                   int64_t *output_real,
+                                   int64_t *output_imaginary,
+                                   uint64_t *expanded_products) {
+  const uint64_t dense_index =
+      uint64_t(blockIdx.x) * blockDim.x + threadIdx.x;
+  if (dense_index >= dense_count) {
+    return;
+  }
+  const uint32_t column = uint32_t(dense_index % input_dimension);
+  const uint32_t lane = uint32_t(dense_index / input_dimension);
+  const int64_t source_real = input_real[dense_index];
+  const int64_t source_imaginary = input_imaginary[dense_index];
+  if (source_real == 0 && source_imaginary == 0) {
+    return;
+  }
+  const uint32_t begin = offsets[column];
+  const uint32_t end = offsets[column + 1];
+  atomicAdd(reinterpret_cast<unsigned long long *>(expanded_products),
+            static_cast<unsigned long long>(end - begin));
+  const uint64_t output_base = uint64_t(lane) * output_dimension;
+  for (uint32_t position = begin; position < end; ++position) {
+    const SparseEntry entry = entries[position];
+    const int64_t real = entry.real * source_real -
+                         entry.imaginary * source_imaginary;
+    const int64_t imaginary = entry.real * source_imaginary +
+                              entry.imaginary * source_real;
+    atomic_add_signed(&output_real[output_base + entry.row], real);
+    atomic_add_signed(&output_imaginary[output_base + entry.row], imaginary);
+  }
 }
 
 __global__ void sparse_apply_kernel(const uint32_t *offsets,
@@ -121,6 +173,17 @@ bool reserve_outputs(Context *context, uint32_t lane_count, char *error,
     return true;
   }
   const size_t count = size_t(lane_count) * context->output_dimension;
+  if (context->output_dimension != 0 &&
+      count / context->output_dimension != lane_count) {
+    set_error(error, error_capacity,
+              "complete-F batched output element count overflow");
+    return false;
+  }
+  if (count > std::numeric_limits<size_t>::max() / sizeof(int64_t)) {
+    set_error(error, error_capacity,
+              "complete-F batched output byte count overflow");
+    return false;
+  }
   int64_t *replacement_real = nullptr;
   int64_t *replacement_imaginary = nullptr;
   if (!check_cuda(cudaMalloc(&replacement_real, count * sizeof(int64_t)), error,
@@ -146,6 +209,12 @@ bool reserve_inputs(Context *context, uint32_t count, char *error,
     return true;
   }
   SparseInput *replacement = nullptr;
+  if (size_t(count) >
+      std::numeric_limits<size_t>::max() / sizeof(SparseInput)) {
+    set_error(error, error_capacity,
+              "complete-F sparse input byte count overflow");
+    return false;
+  }
   if (!check_cuda(cudaMalloc(&replacement, size_t(count) * sizeof(SparseInput)),
                   error, error_capacity, "allocate complete-F sparse inputs")) {
     return false;
@@ -206,6 +275,9 @@ void *adynkra_complete_f_sparse_create(
                   "create complete-F start event") ||
       !check_cuda(cudaEventCreate(&context->finished), error, error_capacity,
                   "create complete-F finish event") ||
+      !check_cuda(cudaMalloc(&context->expanded_products, sizeof(uint64_t)),
+                  error, error_capacity,
+                  "allocate complete-F expanded-products counter") ||
       !check_cuda(cudaMalloc(&context->offsets,
                              size_t(input_dimension + 1) * sizeof(uint32_t)),
                   error, error_capacity, "allocate complete-F offsets") ||
@@ -232,6 +304,151 @@ void *adynkra_complete_f_sparse_create(
     return nullptr;
   }
   return context;
+}
+
+int adynkra_complete_f_sparse_apply_composed_batch(
+    void *raw_first, void *raw_second, const SparseInput *host_inputs,
+    uint32_t input_count, uint32_t lane_count, int64_t *host_output_real,
+    int64_t *host_output_imaginary, uint64_t *expanded_products,
+    float *elapsed_milliseconds, char *error, size_t error_capacity) {
+  Context *first = static_cast<Context *>(raw_first);
+  Context *second = static_cast<Context *>(raw_second);
+  if (first == nullptr || second == nullptr || first == second ||
+      lane_count == 0 ||
+      first->device != second->device ||
+      first->output_dimension != second->input_dimension ||
+      (input_count != 0 && host_inputs == nullptr) ||
+      host_output_real == nullptr || host_output_imaginary == nullptr) {
+    set_error(error, error_capacity,
+              "invalid complete-F composed sparse apply input");
+    return 1;
+  }
+  uint64_t first_expanded = 0;
+  for (uint32_t index = 0; index < input_count; ++index) {
+    if (host_inputs[index].lane >= lane_count ||
+        host_inputs[index].column >= first->input_dimension) {
+      set_error(error, error_capacity,
+                "complete-F composed sparse input is out of range");
+      return 1;
+    }
+    first_expanded +=
+        uint64_t(first->host_offsets[host_inputs[index].column + 1] -
+                 first->host_offsets[host_inputs[index].column]);
+  }
+  const size_t first_output_count =
+      size_t(lane_count) * first->output_dimension;
+  const size_t second_output_count =
+      size_t(lane_count) * second->output_dimension;
+  const uint64_t dense_count = uint64_t(lane_count) * second->input_dimension;
+  const uint64_t dense_blocks = (dense_count + 255) / 256;
+  int maximum_grid_x = 0;
+  if (!check_cuda(cudaStreamSynchronize(second->stream), error, error_capacity,
+                  "synchronize complete-F composed second stream") ||
+      !check_cuda(cudaDeviceGetAttribute(&maximum_grid_x, cudaDevAttrMaxGridDimX,
+                                         first->device),
+                  error, error_capacity,
+                  "query complete-F composed grid limit")) {
+    return 1;
+  }
+  if (dense_blocks > uint64_t(maximum_grid_x)) {
+    set_error(error, error_capacity,
+              "complete-F composed dense grid exceeds device limit");
+    return 1;
+  }
+  if (!reserve_inputs(first, input_count, error, error_capacity) ||
+      !reserve_outputs(first, lane_count, error, error_capacity) ||
+      !reserve_outputs(second, lane_count, error, error_capacity) ||
+      (input_count != 0 &&
+       !check_cuda(cudaMemcpyAsync(first->inputs, host_inputs,
+                                   size_t(input_count) * sizeof(SparseInput),
+                                   cudaMemcpyHostToDevice, first->stream),
+                   error, error_capacity,
+                   "upload complete-F composed sparse inputs")) ||
+      !check_cuda(cudaMemsetAsync(first->output_real, 0,
+                                  first_output_count * sizeof(int64_t),
+                                  first->stream),
+                  error, error_capacity,
+                  "clear complete-F composed first real output") ||
+      !check_cuda(cudaMemsetAsync(first->output_imaginary, 0,
+                                  first_output_count * sizeof(int64_t),
+                                  first->stream),
+                  error, error_capacity,
+                  "clear complete-F composed first imaginary output") ||
+      !check_cuda(cudaMemsetAsync(second->output_real, 0,
+                                  second_output_count * sizeof(int64_t),
+                                  first->stream),
+                  error, error_capacity,
+                  "clear complete-F composed second real output") ||
+      !check_cuda(cudaMemsetAsync(second->output_imaginary, 0,
+                                  second_output_count * sizeof(int64_t),
+                                  first->stream),
+                  error, error_capacity,
+                  "clear complete-F composed second imaginary output") ||
+      !check_cuda(cudaMemcpyAsync(second->expanded_products, &first_expanded,
+                                  sizeof(uint64_t), cudaMemcpyHostToDevice,
+                                  first->stream),
+                  error, error_capacity,
+                  "initialize complete-F composed product count") ||
+      !check_cuda(cudaEventRecord(first->started, first->stream), error,
+                  error_capacity, "record complete-F composed start")) {
+    return 1;
+  }
+  if (input_count != 0) {
+    sparse_apply_kernel<<<input_count, 256, 0, first->stream>>>(
+        first->offsets, first->entries, first->inputs, input_count,
+        first->output_dimension, first->output_real, first->output_imaginary);
+    if (!check_cuda(cudaGetLastError(), error, error_capacity,
+                    "launch complete-F composed sparse kernel")) {
+      return 1;
+    }
+  }
+  if (dense_blocks != 0) {
+    dense_apply_kernel<<<uint32_t(dense_blocks), 256, 0, first->stream>>>(
+        second->offsets, second->entries, first->output_real,
+        first->output_imaginary, dense_count, second->input_dimension,
+        second->output_dimension, second->output_real,
+        second->output_imaginary, second->expanded_products);
+    if (!check_cuda(cudaGetLastError(), error, error_capacity,
+                    "launch complete-F composed dense kernel")) {
+      return 1;
+    }
+  }
+  if (!check_cuda(cudaEventRecord(first->finished, first->stream), error,
+                  error_capacity, "record complete-F composed finish") ||
+      !check_cuda(cudaMemcpyAsync(host_output_real, second->output_real,
+                                  second_output_count * sizeof(int64_t),
+                                  cudaMemcpyDeviceToHost, first->stream),
+                  error, error_capacity,
+                  "download complete-F composed real output") ||
+      !check_cuda(cudaMemcpyAsync(host_output_imaginary,
+                                  second->output_imaginary,
+                                  second_output_count * sizeof(int64_t),
+                                  cudaMemcpyDeviceToHost, first->stream),
+                  error, error_capacity,
+                  "download complete-F composed imaginary output") ||
+      !check_cuda(cudaMemcpyAsync(&first_expanded, second->expanded_products,
+                                  sizeof(uint64_t), cudaMemcpyDeviceToHost,
+                                  first->stream),
+                  error, error_capacity,
+                  "download complete-F composed product count") ||
+      !check_cuda(cudaStreamSynchronize(first->stream), error, error_capacity,
+                  "finish complete-F composed sparse apply")) {
+    return 1;
+  }
+  float elapsed = 0.0F;
+  if (!check_cuda(cudaEventElapsedTime(&elapsed, first->started,
+                                       first->finished),
+                  error, error_capacity,
+                  "measure complete-F composed sparse kernels")) {
+    return 1;
+  }
+  if (expanded_products != nullptr) {
+    *expanded_products = first_expanded;
+  }
+  if (elapsed_milliseconds != nullptr) {
+    *elapsed_milliseconds = elapsed;
+  }
+  return 0;
 }
 
 int adynkra_complete_f_sparse_apply_batch(
@@ -327,7 +544,8 @@ uint64_t adynkra_complete_f_sparse_resident_bytes(const void *raw_context) {
          uint64_t(context->entry_count) * sizeof(SparseEntry) +
          uint64_t(context->input_capacity) * sizeof(SparseInput) +
          uint64_t(context->output_lane_capacity) *
-             uint64_t(context->output_dimension) * 2 * sizeof(int64_t);
+             uint64_t(context->output_dimension) * 2 * sizeof(int64_t) +
+         sizeof(uint64_t);
 }
 
 void adynkra_complete_f_sparse_destroy(void *raw_context) {

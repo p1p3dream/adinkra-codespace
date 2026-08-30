@@ -111,6 +111,19 @@ pub struct FirstSuperspaceJetOutput {
 /// equations.  It accepts geometry jets rather than an `H_hat` jet because the
 /// sources do not print the missing compensator-eliminated map.
 pub fn assemble_first_superspace_jet(input: &FirstSuperspaceJetInput) -> FirstSuperspaceJetOutput {
+    assemble_first_superspace_jet_internal(input, true)
+}
+
+pub(crate) fn assemble_first_superspace_jet_2021_only(
+    input: &FirstSuperspaceJetInput,
+) -> FirstSuperspaceJetOutput {
+    assemble_first_superspace_jet_internal(input, false)
+}
+
+fn assemble_first_superspace_jet_internal(
+    input: &FirstSuperspaceJetInput,
+    include_w_2001: bool,
+) -> FirstSuperspaceJetOutput {
     for &index in input.d_c_alpha_beta_gamma.keys() {
         assert!(index < D_C_ALPHA_BETA_GAMMA_DIMENSION);
     }
@@ -154,12 +167,14 @@ pub fn assemble_first_superspace_jet(input: &FirstSuperspaceJetInput) -> FirstSu
     let d_j_plus = physical::apply_d_j_plus(&d_j_one, &d_j_two);
 
     let bosonic_connection = physical::apply_bosonic_connection(&d_spinorial_connection);
-    let assembled = physical::assemble_convention_separated_linearized_w(
-        &input.c_alpha_a_gamma,
-        &bosonic_connection,
-        &d_j_one,
-        &d_j_two,
-    );
+    let t_alpha_a_gamma =
+        physical::apply_t_alpha_e_gamma(&input.c_alpha_a_gamma, &bosonic_connection);
+    let w_2021 = physical::apply_linearized_w(&t_alpha_a_gamma, &d_j_plus);
+    let w_2001 = if include_w_2001 {
+        physical::apply_linearized_w_2001(&t_alpha_a_gamma, &d_j_two)
+    } else {
+        BTreeMap::new()
+    };
 
     FirstSuperspaceJetOutput {
         d_spinorial_connection,
@@ -167,9 +182,9 @@ pub fn assemble_first_superspace_jet(input: &FirstSuperspaceJetInput) -> FirstSu
         d_j_one,
         d_j_two,
         d_j_plus,
-        t_alpha_a_gamma: assembled.t_alpha_e_gamma,
-        w_2001: assembled.w_2001,
-        w_2021: assembled.w_2021,
+        t_alpha_a_gamma,
+        w_2001,
+        w_2021,
     }
 }
 

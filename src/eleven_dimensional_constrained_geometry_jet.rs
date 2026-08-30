@@ -316,9 +316,8 @@ fn assemble_anholonomies(
             h_second.insert(DDH_DIMENSION + coordinate, polynomial.clone());
         }
     }
-    let mut c_vector = from_sliced(&h_second, |slice| {
-        physical::eq28_h_to_c_alpha_b_c_operator().apply_sparse(slice)
-    });
+    let eq28_h = physical::cached_eq28_h_to_c_alpha_b_c_operator();
+    let mut c_vector = from_sliced(&h_second, |slice| eq28_h.apply_sparse(slice));
     merge_polynomial_maps(
         &mut c_vector,
         &from_sliced(d_scale, |slice| {
@@ -393,6 +392,45 @@ where
         }
     }
     Ok(())
+}
+
+/// Stream only the exact Eq. (40) `D Delta` sector while retaining the
+/// ordered-D derivative identity gate used by the complete geometry jet.
+pub fn visit_constrained_d_delta<F>(
+    input: &LinearizedFrameSuperfields,
+    mut emit: F,
+) -> Result<ConstrainedGeometryJetStats, String>
+where
+    F: FnMut(ConstrainedGeometryJetEntry) -> Result<(), String>,
+{
+    let (eq40, _) = form_fields(input)?;
+    let delta = build_delta(&eq40, input);
+    let d_delta = build_d_delta(&eq40);
+    let derived_d_delta = spinor_derivative(&delta, DELTA_DIMENSION)?;
+    let residual = d_delta
+        .keys()
+        .chain(derived_d_delta.keys())
+        .copied()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .filter(|key| d_delta.get(key) != derived_d_delta.get(key))
+        .count();
+    if residual != 0 {
+        return Err(format!(
+            "Eq. (40) differentiated Delta disagrees with ordered-D differentiation in {residual} coordinates"
+        ));
+    }
+    let mut stats = ConstrainedGeometryJetStats {
+        delta_derivative_identity_residual_terms: 0,
+        emitted_by_sector: BTreeMap::new(),
+    };
+    emit_map(
+        ConstrainedGeometryJetSector::DDelta,
+        &d_delta,
+        &mut stats,
+        &mut emit,
+    )?;
+    Ok(stats)
 }
 
 /// Stream the complete linearized anholonomy jet derived from one H/scale/p=2
@@ -619,5 +657,32 @@ mod tests {
         })
         .unwrap();
         assert_eq!(residuals, 0);
+    }
+
+    #[test]
+    fn narrow_d_delta_stream_matches_complete_geometry_jet_exactly() {
+        let input = probe_input();
+        let mut complete = Vec::new();
+        visit_constrained_geometry_jet(&input, |entry| {
+            if entry.sector == ConstrainedGeometryJetSector::DDelta {
+                complete.push(entry);
+            }
+            Ok(())
+        })
+        .unwrap();
+
+        let mut narrow = Vec::new();
+        let stats = visit_constrained_d_delta(&input, |entry| {
+            narrow.push(entry);
+            Ok(())
+        })
+        .unwrap();
+
+        assert_eq!(stats.delta_derivative_identity_residual_terms, 0);
+        assert_eq!(
+            stats.emitted_by_sector,
+            BTreeMap::from([(ConstrainedGeometryJetSector::DDelta, narrow.len())])
+        );
+        assert_eq!(narrow, complete);
     }
 }

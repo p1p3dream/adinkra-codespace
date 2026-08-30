@@ -23,7 +23,7 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 
 use crate::eleven_dimensional_constrained_geometry_jet::{
-    ConstrainedGeometryJetSector, visit_constrained_geometry_jet,
+    ConstrainedGeometryJetSector, visit_constrained_d_delta, visit_constrained_geometry_jet,
 };
 use crate::eleven_dimensional_first_superspace_jet::{
     self as first_jet, FirstSuperspaceJetInput, FirstSuperspaceJetOutput,
@@ -93,6 +93,13 @@ fn validate_sparse_dimension(
 pub fn assemble_geometry_level_physical_f(
     input: &GeometryLevelPhysicalFInput,
 ) -> Result<GeometryLevelPhysicalFOutput, String> {
+    assemble_geometry_level_physical_f_internal(input, true)
+}
+
+fn assemble_geometry_level_physical_f_internal(
+    input: &GeometryLevelPhysicalFInput,
+    include_w_2001: bool,
+) -> Result<GeometryLevelPhysicalFOutput, String> {
     validate_sparse_dimension("d_h", &input.d_h, physical::DH_DIMENSION)?;
     validate_sparse_dimension(
         "c_alpha_beta_gamma",
@@ -111,7 +118,11 @@ pub fn assemble_geometry_level_physical_f(
     let j_two = physical::cached_c_alpha_b_c_to_j_operator().apply_sparse(&input.c_alpha_b_c);
     let j_plus = physical::apply_j_plus(&j_one, &j_two);
     let j_minus = physical::apply_j_minus(&j_one, &j_two);
-    let first_jet = first_jet::assemble_first_superspace_jet(&input.first_jet);
+    let first_jet = if include_w_2001 {
+        first_jet::assemble_first_superspace_jet(&input.first_jet)
+    } else {
+        first_jet::assemble_first_superspace_jet_2021_only(&input.first_jet)
+    };
 
     Ok(GeometryLevelPhysicalFOutput {
         x,
@@ -254,10 +265,12 @@ impl GeometryLevelCudaOperators {
         &self,
         d_h: &[BTreeMap<usize, ExactQi>],
     ) -> Result<Vec<(BTreeMap<usize, ExactQi>, BTreeMap<usize, ExactQi>)>, String> {
-        let (raw_two, _) = self.x_two_gamma.apply_batch(d_h)?;
-        let (raw_five, _) = self.x_five_gamma.apply_batch(d_h)?;
-        let (mut x_two, _) = self.x_two_hook.apply_batch(&raw_two)?;
-        let (mut x_five, _) = self.x_five_hook.apply_batch(&raw_five)?;
+        let (mut x_two, _) = self
+            .x_two_gamma
+            .apply_composed_batch(&self.x_two_hook, d_h)?;
+        let (mut x_five, _) = self
+            .x_five_gamma
+            .apply_composed_batch(&self.x_five_hook, d_h)?;
         let normalization = num_rational::Ratio::new(1, 16);
         for values in &mut x_two {
             for value in values.values_mut() {
@@ -275,6 +288,7 @@ impl GeometryLevelCudaOperators {
     fn assemble_first_jet_batch(
         &self,
         batch: &[FirstSuperspaceJetInput],
+        include_w_2001: bool,
     ) -> Result<Vec<FirstSuperspaceJetOutput>, String> {
         let d_c_spinor = batch
             .iter()
@@ -316,11 +330,16 @@ impl GeometryLevelCudaOperators {
         for (target, source) in w_2021.iter_mut().zip(w_2021_d_j) {
             merge_exact_sparse(target, source);
         }
-        let (mut w_2001, _) = self.w_2001_from_t.apply_batch(&t_alpha_a_gamma)?;
-        let (w_2001_d_j, _) = self.w_2001_from_d_j.apply_batch(&d_j_two)?;
-        for (target, source) in w_2001.iter_mut().zip(w_2001_d_j) {
-            merge_exact_sparse(target, source);
-        }
+        let w_2001 = if include_w_2001 {
+            let (mut w_2001, _) = self.w_2001_from_t.apply_batch(&t_alpha_a_gamma)?;
+            let (w_2001_d_j, _) = self.w_2001_from_d_j.apply_batch(&d_j_two)?;
+            for (target, source) in w_2001.iter_mut().zip(w_2001_d_j) {
+                merge_exact_sparse(target, source);
+            }
+            w_2001
+        } else {
+            vec![BTreeMap::new(); batch.len()]
+        };
         Ok(d_spinorial_connection
             .into_iter()
             .zip(bosonic_connection)
@@ -379,20 +398,22 @@ fn merge_exact_sparse(target: &mut BTreeMap<usize, ExactQi>, source: BTreeMap<us
 fn assemble_geometry_level_physical_f_cuda_batch(
     inputs: &[GeometryLevelPhysicalFInput],
 ) -> Result<Vec<GeometryLevelPhysicalFOutput>, String> {
-    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, true)
+    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, true, true)
 }
 
 #[cfg(feature = "cuda")]
 fn assemble_geometry_level_physical_f_cuda_batch_for_visitor(
     inputs: &[GeometryLevelPhysicalFInput],
+    include_w_2001: bool,
 ) -> Result<Vec<GeometryLevelPhysicalFOutput>, String> {
-    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, false)
+    assemble_geometry_level_physical_f_cuda_batch_internal(inputs, false, include_w_2001)
 }
 
 #[cfg(feature = "cuda")]
 fn assemble_geometry_level_physical_f_cuda_batch_internal(
     inputs: &[GeometryLevelPhysicalFInput],
     retain_compensator_images: bool,
+    include_w_2001: bool,
 ) -> Result<Vec<GeometryLevelPhysicalFOutput>, String> {
     if inputs.is_empty() {
         return Ok(Vec::new());
@@ -438,7 +459,7 @@ fn assemble_geometry_level_physical_f_cuda_batch_internal(
             .j_one_connection
             .apply_batch(&spinorial_connection)?;
         let (j_two, _) = operators.j_two.apply_batch(&c_vector)?;
-        let first_jet = operators.assemble_first_jet_batch(&first_jet_inputs)?;
+        let first_jet = operators.assemble_first_jet_batch(&first_jet_inputs, include_w_2001)?;
         let x = if retain_compensator_images {
             inputs
                 .iter()
@@ -684,12 +705,13 @@ where
     let use_cuda = complete_f_cuda_enabled();
     #[cfg(not(feature = "cuda"))]
     let use_cuda = false;
-    visit_frame_composed_physical_f_internal(frame_input, use_cuda, emit)
+    visit_frame_composed_physical_f_internal(frame_input, use_cuda, true, emit)
 }
 
 fn visit_frame_composed_physical_f_internal<F>(
     frame_input: &LinearizedFrameSuperfields,
     use_cuda: bool,
+    include_w_2001: bool,
     mut emit: F,
 ) -> Result<FrameComposedPhysicalFStats, String>
 where
@@ -772,11 +794,11 @@ where
         #[cfg(feature = "cuda")]
         {
             if use_cuda {
-                assemble_geometry_level_physical_f_cuda_batch_for_visitor(&inputs)?
+                assemble_geometry_level_physical_f_cuda_batch_for_visitor(&inputs, include_w_2001)?
             } else {
                 inputs
                     .iter()
-                    .map(assemble_geometry_level_physical_f)
+                    .map(|input| assemble_geometry_level_physical_f_internal(input, include_w_2001))
                     .collect::<Result<Vec<_>, _>>()?
             }
         }
@@ -785,7 +807,7 @@ where
             let _ = use_cuda;
             inputs
                 .iter()
-                .map(assemble_geometry_level_physical_f)
+                .map(|input| assemble_geometry_level_physical_f_internal(input, include_w_2001))
                 .collect::<Result<Vec<_>, _>>()?
         }
     };
@@ -822,6 +844,21 @@ where
 {
     let representative = canonical_physical_frame_representative(frame_input)?;
     visit_frame_composed_physical_f(&representative, emit)
+}
+
+fn visit_gauge_fixed_physical_f_production<F>(
+    frame_input: &LinearizedFrameSuperfields,
+    emit: F,
+) -> Result<FrameComposedPhysicalFStats, String>
+where
+    F: FnMut(FrameComposedPhysicalFEntry) -> Result<(), String>,
+{
+    #[cfg(feature = "cuda")]
+    let use_cuda = complete_f_cuda_enabled();
+    #[cfg(not(feature = "cuda"))]
+    let use_cuda = false;
+    let representative = canonical_physical_frame_representative(frame_input)?;
+    visit_frame_composed_physical_f_internal(&representative, use_cuda, false, emit)
 }
 
 /// Coefficient-free label for one entry in the exact source-fixed frame
@@ -1139,7 +1176,7 @@ fn eq25_fermionic_frame_source_polynomials(
     representative: &LinearizedFrameSuperfields,
 ) -> Result<(PolynomialMap, PolynomialMap), String> {
     let mut d_delta = PolynomialMap::new();
-    visit_constrained_geometry_jet(representative, |entry| {
+    visit_constrained_d_delta(representative, |entry| {
         if entry.sector == ConstrainedGeometryJetSector::DDelta {
             add_polynomial_coefficient(
                 &mut d_delta,
@@ -1959,7 +1996,7 @@ where
         emit(entry)
     };
 
-    visit_gauge_fixed_physical_f(frame_input, |entry| {
+    visit_gauge_fixed_physical_f_production(frame_input, |entry| {
         observe_raw_frame(&entry)?;
         let Some(sector) = GaugeFixedInvariantOutputSector::from_frame(entry.sector) else {
             return Ok(());
@@ -2828,6 +2865,19 @@ mod exact_cuda_sparse {
             error: *mut c_char,
             error_capacity: usize,
         ) -> i32;
+        fn adynkra_complete_f_sparse_apply_composed_batch(
+            first_context: *mut c_void,
+            second_context: *mut c_void,
+            inputs: *const CudaSparseInput,
+            input_count: u32,
+            lane_count: u32,
+            output_real: *mut i64,
+            output_imaginary: *mut i64,
+            expanded_products: *mut u64,
+            elapsed_milliseconds: *mut f32,
+            error: *mut c_char,
+            error_capacity: usize,
+        ) -> i32;
         fn adynkra_complete_f_sparse_resident_bytes(context: *const c_void) -> u64;
         fn adynkra_complete_f_sparse_destroy(context: *mut c_void);
     }
@@ -2900,6 +2950,7 @@ mod exact_cuda_sparse {
         output_dimension: usize,
         operator_denominator: i64,
         column_l1: Vec<u128>,
+        column_entry_l1: Vec<Vec<(usize, u128)>>,
     }
 
     impl ExactCudaSparseOperator {
@@ -2917,9 +2968,11 @@ mod exact_cuda_sparse {
             let mut offsets = Vec::with_capacity(operator.input_dimension + 1);
             let mut entries = Vec::new();
             let mut column_l1 = Vec::with_capacity(operator.input_dimension);
+            let mut column_entry_l1 = Vec::with_capacity(operator.input_dimension);
             offsets.push(0_u32);
             for column in &operator.columns {
                 let mut l1 = 0_u128;
+                let mut entry_l1 = Vec::with_capacity(column.len());
                 for entry in column {
                     let real = scaled_component(&entry.coefficient.real, operator_denominator)?;
                     let imaginary =
@@ -2927,6 +2980,7 @@ mod exact_cuda_sparse {
                     l1 = l1
                         .checked_add(unsigned_l1(real, imaginary))
                         .ok_or_else(|| "complete-F column norm overflow".to_string())?;
+                    entry_l1.push((entry.row, unsigned_l1(real, imaginary)));
                     entries.push(CudaSparseEntry {
                         row: u32::try_from(entry.row)
                             .map_err(|_| "complete-F output row exceeds u32".to_string())?,
@@ -2935,6 +2989,7 @@ mod exact_cuda_sparse {
                     });
                 }
                 column_l1.push(l1);
+                column_entry_l1.push(entry_l1);
                 offsets.push(
                     u32::try_from(entries.len())
                         .map_err(|_| "complete-F operator entries exceed u32".to_string())?,
@@ -2963,6 +3018,7 @@ mod exact_cuda_sparse {
                     output_dimension: operator.output_dimension,
                     operator_denominator,
                     column_l1,
+                    column_entry_l1,
                 })
                 .ok_or_else(|| error_string(&error))
         }
@@ -3095,6 +3151,175 @@ mod exact_cuda_sparse {
                 absolute_accumulation_bound,
             };
             Ok((outputs, stats))
+        }
+
+        pub(crate) fn apply_composed_batch(
+            &self,
+            second: &Self,
+            batch: &[BTreeMap<usize, ExactQi>],
+        ) -> Result<(Vec<BTreeMap<usize, ExactQi>>, ExactCudaSparseStats), String> {
+            if batch.is_empty() {
+                return Err("complete-F CUDA batch must contain at least one lane".to_string());
+            }
+            if self.output_dimension != second.input_dimension {
+                return Err(format!(
+                    "complete-F composed dimensions do not match: {} != {}",
+                    self.output_dimension, second.input_dimension
+                ));
+            }
+            batch
+                .len()
+                .checked_mul(self.output_dimension)
+                .ok_or_else(|| {
+                    "complete-F composed intermediate output size overflow".to_string()
+                })?;
+            let composed_denominator = self
+                .operator_denominator
+                .checked_mul(second.operator_denominator)
+                .ok_or_else(|| "complete-F composed operator denominator overflow".to_string())?;
+            let mut inputs = Vec::new();
+            let mut output_denominators = Vec::with_capacity(batch.len());
+            let mut absolute_accumulation_bound = 0_u128;
+            for (lane, input) in batch.iter().enumerate() {
+                if let Some(column) = input.keys().find(|column| **column >= self.input_dimension) {
+                    return Err(format!(
+                        "complete-F CUDA input column {column} is outside {}",
+                        self.input_dimension
+                    ));
+                }
+                let input_denominator = coefficient_denominator_lcm(input.values())?;
+                output_denominators.push(
+                    composed_denominator
+                        .checked_mul(input_denominator)
+                        .ok_or_else(|| {
+                            "complete-F composed output denominator overflow".to_string()
+                        })?,
+                );
+                let mut first_lane_bound = 0_u128;
+                let mut lane_bound = 0_u128;
+                for (&column, coefficient) in input {
+                    let real = scaled_component(&coefficient.real, input_denominator)?;
+                    let imaginary = scaled_component(&coefficient.imaginary, input_denominator)?;
+                    let input_l1 = unsigned_l1(real, imaginary);
+                    first_lane_bound = first_lane_bound
+                        .checked_add(input_l1.checked_mul(self.column_l1[column]).ok_or_else(
+                            || "complete-F first composed accumulation bound overflow".to_string(),
+                        )?)
+                        .ok_or_else(|| {
+                            "complete-F first composed accumulation bound overflow".to_string()
+                        })?;
+                    let mut composed_column_l1 = 0_u128;
+                    for &(middle, first_l1) in &self.column_entry_l1[column] {
+                        composed_column_l1 = composed_column_l1
+                            .checked_add(
+                                first_l1.checked_mul(second.column_l1[middle]).ok_or_else(
+                                    || "complete-F composed column norm overflow".to_string(),
+                                )?,
+                            )
+                            .ok_or_else(|| {
+                                "complete-F composed column norm overflow".to_string()
+                            })?;
+                    }
+                    lane_bound = lane_bound
+                        .checked_add(input_l1.checked_mul(composed_column_l1).ok_or_else(|| {
+                            "complete-F composed accumulation bound overflow".to_string()
+                        })?)
+                        .ok_or_else(|| {
+                            "complete-F composed accumulation bound overflow".to_string()
+                        })?;
+                    inputs.push(CudaSparseInput {
+                        lane: u32::try_from(lane)
+                            .map_err(|_| "complete-F CUDA lane exceeds u32".to_string())?,
+                        column: u32::try_from(column)
+                            .map_err(|_| "complete-F input column exceeds u32".to_string())?,
+                        real,
+                        imaginary,
+                    });
+                }
+                if first_lane_bound > i64::MAX as u128 {
+                    return Err(format!(
+                        "complete-F exact composed CUDA lane {lane} first-stage accumulation bound {first_lane_bound} exceeds i64"
+                    ));
+                }
+                if lane_bound > i64::MAX as u128 {
+                    return Err(format!(
+                        "complete-F exact composed CUDA lane {lane} accumulation bound {lane_bound} exceeds i64"
+                    ));
+                }
+                absolute_accumulation_bound = absolute_accumulation_bound
+                    .max(first_lane_bound)
+                    .max(lane_bound);
+            }
+            let output_count = batch
+                .len()
+                .checked_mul(second.output_dimension)
+                .ok_or_else(|| "complete-F composed batched output size overflow".to_string())?;
+            let mut output_real = vec![0_i64; output_count];
+            let mut output_imaginary = vec![0_i64; output_count];
+            let mut expanded_products = 0_u64;
+            let mut kernel_milliseconds = 0_f32;
+            let mut error = [0_i8; ERROR_CAPACITY];
+            let status = unsafe {
+                adynkra_complete_f_sparse_apply_composed_batch(
+                    self.context.as_ptr(),
+                    second.context.as_ptr(),
+                    inputs.as_ptr(),
+                    u32::try_from(inputs.len())
+                        .map_err(|_| "complete-F input nonzeros exceed u32".to_string())?,
+                    u32::try_from(batch.len())
+                        .map_err(|_| "complete-F CUDA lane count exceeds u32".to_string())?,
+                    output_real.as_mut_ptr(),
+                    output_imaginary.as_mut_ptr(),
+                    &mut expanded_products,
+                    &mut kernel_milliseconds,
+                    error.as_mut_ptr(),
+                    error.len(),
+                )
+            };
+            if status != 0 {
+                return Err(error_string(&error));
+            }
+            let mut outputs = Vec::with_capacity(batch.len());
+            let mut output_nonzeros = 0_usize;
+            for (lane, output_denominator) in output_denominators.into_iter().enumerate() {
+                let mut output = BTreeMap::new();
+                let begin = lane * second.output_dimension;
+                let end = begin + second.output_dimension;
+                for (row, (&real, &imaginary)) in output_real[begin..end]
+                    .iter()
+                    .zip(&output_imaginary[begin..end])
+                    .enumerate()
+                {
+                    if real == 0 && imaginary == 0 {
+                        continue;
+                    }
+                    output.insert(
+                        row,
+                        ExactQi {
+                            real: Ratio::new(real, output_denominator),
+                            imaginary: Ratio::new(imaginary, output_denominator),
+                        },
+                    );
+                }
+                output_nonzeros += output.len();
+                outputs.push(output);
+            }
+            let resident_bytes = unsafe {
+                adynkra_complete_f_sparse_resident_bytes(self.context.as_ptr())
+                    + adynkra_complete_f_sparse_resident_bytes(second.context.as_ptr())
+            };
+            Ok((
+                outputs,
+                ExactCudaSparseStats {
+                    lane_count: batch.len(),
+                    input_nonzeros: inputs.len(),
+                    output_nonzeros,
+                    expanded_products,
+                    kernel_milliseconds,
+                    resident_bytes,
+                    absolute_accumulation_bound,
+                },
+            ))
         }
     }
 
@@ -3590,6 +3815,168 @@ mod tests {
 
     #[cfg(feature = "cuda")]
     #[test]
+    fn complete_f_sparse_cuda_composed_batch_matches_exact_x_two_chain() {
+        let first = physical::gamma_dh_operator(2);
+        let second = physical::hook_projector_operator(2);
+        assert_eq!(first.output_dimension, second.input_dimension);
+        let columns = first
+            .columns
+            .iter()
+            .enumerate()
+            .filter(|(_, column)| !column.is_empty())
+            .map(|(column, _)| column)
+            .take(16)
+            .collect::<Vec<_>>();
+        let batch = (0..8)
+            .map(|lane| {
+                columns
+                    .iter()
+                    .enumerate()
+                    .filter(|(position, _)| (position + lane) % 3 == 0)
+                    .map(|(position, &column)| {
+                        (
+                            column,
+                            ExactQi {
+                                real: num_rational::Ratio::new(
+                                    i64::try_from(position + lane + 1).unwrap(),
+                                    5,
+                                ),
+                                imaginary: num_rational::Ratio::new(
+                                    i64::try_from(position).unwrap() - i64::try_from(lane).unwrap(),
+                                    7,
+                                ),
+                            },
+                        )
+                    })
+                    .collect::<BTreeMap<_, _>>()
+            })
+            .collect::<Vec<_>>();
+        let expected = batch
+            .iter()
+            .map(|input| second.apply_sparse(&first.apply_sparse(input)))
+            .collect::<Vec<_>>();
+        let first_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&first, 0).unwrap();
+        let second_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&second, 0).unwrap();
+        let (actual, stats) = first_gpu.apply_composed_batch(&second_gpu, &batch).unwrap();
+        assert_eq!(actual, expected);
+        assert_eq!(stats.lane_count, batch.len());
+        assert_eq!(
+            stats.output_nonzeros,
+            expected.iter().map(BTreeMap::len).sum::<usize>()
+        );
+        assert!(stats.expanded_products > 0);
+        assert!(stats.kernel_milliseconds >= 0.0);
+        eprintln!("complete-F exact composed CUDA stats: {stats:#?}");
+    }
+
+    #[cfg(feature = "cuda")]
+    #[test]
+    fn complete_f_sparse_cuda_composed_batch_matches_exact_x_five_chain() {
+        let first = physical::gamma_dh_operator(5);
+        let second = physical::hook_projector_operator(5);
+        assert_eq!(first.output_dimension, second.input_dimension);
+        let columns = first
+            .columns
+            .iter()
+            .enumerate()
+            .filter(|(_, column)| !column.is_empty())
+            .map(|(column, _)| column)
+            .take(4)
+            .collect::<Vec<_>>();
+        let batch = (0..2)
+            .map(|lane| {
+                columns
+                    .iter()
+                    .enumerate()
+                    .map(|(position, &column)| {
+                        (
+                            column,
+                            ExactQi {
+                                real: num_rational::Ratio::new(
+                                    i64::try_from(position + lane + 1).unwrap(),
+                                    3,
+                                ),
+                                imaginary: num_rational::Ratio::new(
+                                    i64::try_from(position).unwrap() - i64::try_from(lane).unwrap(),
+                                    5,
+                                ),
+                            },
+                        )
+                    })
+                    .collect::<BTreeMap<_, _>>()
+            })
+            .collect::<Vec<_>>();
+        let expected = batch
+            .iter()
+            .map(|input| second.apply_sparse(&first.apply_sparse(input)))
+            .collect::<Vec<_>>();
+        let first_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&first, 0).unwrap();
+        let second_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&second, 0).unwrap();
+        let (actual, stats) = first_gpu.apply_composed_batch(&second_gpu, &batch).unwrap();
+        assert_eq!(actual, expected);
+        assert_eq!(stats.lane_count, batch.len());
+        assert_eq!(
+            stats.output_nonzeros,
+            expected.iter().map(BTreeMap::len).sum::<usize>()
+        );
+        eprintln!("complete-F exact composed X5 CUDA stats: {stats:#?}");
+    }
+
+    #[cfg(feature = "cuda")]
+    #[test]
+    fn complete_f_sparse_cuda_composed_rejects_each_stage_overflow_and_aliasing() {
+        let first_large = physical::SparseQiOperator {
+            input_dimension: 1,
+            output_dimension: 1,
+            columns: vec![vec![physical::SparseQiEntry {
+                row: 0,
+                coefficient: ExactQi::from_integer(i64::MAX),
+            }]],
+        };
+        let zero_second = physical::SparseQiOperator {
+            input_dimension: 1,
+            output_dimension: 1,
+            columns: vec![Vec::new()],
+        };
+        let first_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&first_large, 0).unwrap();
+        let zero_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&zero_second, 0).unwrap();
+        let input = vec![BTreeMap::from([(0, ExactQi::from_integer(2))])];
+        let first_error = first_gpu
+            .apply_composed_batch(&zero_gpu, &input)
+            .unwrap_err();
+        assert!(first_error.contains("first-stage accumulation bound"));
+
+        let identity = physical::SparseQiOperator {
+            input_dimension: 1,
+            output_dimension: 1,
+            columns: vec![vec![physical::SparseQiEntry {
+                row: 0,
+                coefficient: ExactQi::one(),
+            }]],
+        };
+        let second_large = physical::SparseQiOperator {
+            input_dimension: 1,
+            output_dimension: 1,
+            columns: vec![vec![physical::SparseQiEntry {
+                row: 0,
+                coefficient: ExactQi::from_integer(i64::MAX),
+            }]],
+        };
+        let identity_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&identity, 0).unwrap();
+        let second_gpu = exact_cuda_sparse::ExactCudaSparseOperator::new(&second_large, 0).unwrap();
+        let second_error = identity_gpu
+            .apply_composed_batch(&second_gpu, &input)
+            .unwrap_err();
+        assert!(second_error.contains("accumulation bound"));
+
+        let alias_error = identity_gpu
+            .apply_composed_batch(&identity_gpu, &input)
+            .unwrap_err();
+        assert!(alias_error.contains("invalid complete-F composed"));
+    }
+
+    #[cfg(feature = "cuda")]
+    #[test]
     fn complete_f_geometry_cuda_batch_matches_cpu() {
         let c_to_j_one = physical::c_alpha_beta_gamma_to_j_one_operator();
         let c_to_omega = physical::c_alpha_b_c_to_spinorial_connection_operator();
@@ -3629,12 +4016,12 @@ mod tests {
     #[ignore = "RTX 4090 complete-F source-column benchmark"]
     fn complete_f_gpu_source_column_benchmark() {
         let (_, input) = source_basis_input(0).unwrap();
-        visit_frame_composed_physical_f_internal(&input, false, |_| Ok(())).unwrap();
-        visit_frame_composed_physical_f_internal(&input, true, |_| Ok(())).unwrap();
+        visit_frame_composed_physical_f_internal(&input, false, true, |_| Ok(())).unwrap();
+        visit_frame_composed_physical_f_internal(&input, true, true, |_| Ok(())).unwrap();
 
         let mut cpu_entries = Vec::new();
         let cpu_started = std::time::Instant::now();
-        let cpu_stats = visit_frame_composed_physical_f_internal(&input, false, |entry| {
+        let cpu_stats = visit_frame_composed_physical_f_internal(&input, false, true, |entry| {
             cpu_entries.push(entry);
             Ok(())
         })
@@ -3643,7 +4030,7 @@ mod tests {
 
         let mut gpu_entries = Vec::new();
         let gpu_started = std::time::Instant::now();
-        let gpu_stats = visit_frame_composed_physical_f_internal(&input, true, |entry| {
+        let gpu_stats = visit_frame_composed_physical_f_internal(&input, true, true, |entry| {
             gpu_entries.push(entry);
             Ok(())
         })
