@@ -4,6 +4,7 @@ use std::process::Command;
 
 fn main() {
     println!("cargo:rerun-if-changed=cuda/second_momentum_fx_cuda.cu");
+    println!("cargo:rerun-if-changed=cuda/complete_f_sparse_cuda.cu");
     println!("cargo:rerun-if-env-changed=CUDA_HOME");
     println!("cargo:rerun-if-env-changed=CUDA_PATH");
     println!("cargo:rerun-if-env-changed=ADYNKRA_CUDA_ARCH");
@@ -28,7 +29,8 @@ fn main() {
     }
 
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("Cargo must provide OUT_DIR"));
-    let object = out_dir.join("second_momentum_fx_cuda.o");
+    let second_momentum_object = out_dir.join("second_momentum_fx_cuda.o");
+    let complete_f_object = out_dir.join("complete_f_sparse_cuda.o");
     let archive = out_dir.join("libadynkra_second_momentum_fx_cuda.a");
     let architecture = env::var("ADYNKRA_CUDA_ARCH").unwrap_or_else(|_| "sm_89".to_owned());
     run(
@@ -43,13 +45,29 @@ fn main() {
             .arg("-c")
             .arg("cuda/second_momentum_fx_cuda.cu")
             .arg("-o")
-            .arg(&object),
+            .arg(&second_momentum_object),
         "compile second-momentum CUDA backend",
     );
     run(
         Command::new(&nvcc)
+            .arg("-std=c++17")
+            .arg("-O3")
+            .arg("-lineinfo")
+            .arg("-Xptxas=-warn-spills")
+            .arg("--threads=0")
+            .arg(format!("-arch={architecture}"))
+            .arg("-Xcompiler=-fPIC")
+            .arg("-c")
+            .arg("cuda/complete_f_sparse_cuda.cu")
+            .arg("-o")
+            .arg(&complete_f_object),
+        "compile complete-F sparse CUDA backend",
+    );
+    run(
+        Command::new(&nvcc)
             .arg("--lib")
-            .arg(&object)
+            .arg(&second_momentum_object)
+            .arg(&complete_f_object)
             .arg("-o")
             .arg(&archive),
         "archive second-momentum CUDA backend",
