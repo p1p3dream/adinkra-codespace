@@ -1,0 +1,871 @@
+{
+  "schema_version": "adynkra-11d-teleparallel-lorentz-gpu-v1",
+  "source_coordinate": 131857,
+  "momentum_axis": 5,
+  "image_ambient_columns": 1760,
+  "image_rank": 320,
+  "right_hand_sides": 55,
+  "matrix_nonzeros": 38400,
+  "rhs_nonzeros": 1032,
+  "selected_csr_nonzeros": 38400,
+  "cuda_source_sha256": "595fbdcef3bdae53c90c38e7d5cf2d4108f65a6d7fb4bcea5b88f76184b6fbb6",
+  "rust_source_sha256": "cbb0f37dae56414ab2425c8f789da45c8a8def570aee04c088a1ae55fdfa4c47",
+  "handoff_source_sha256": "c5752b78e64f4562d0264818ed1b23dc719a7aba467e2dc4059831c6638e3a5b",
+  "exact_coordinate_sha256": "72c1d8346f122842e719dbc10ede3def7c4da6ee4896be41b3197dc8589927a0",
+  "ordered_primes": [
+    1073741783,
+    1073741723,
+    1073741719
+  ],
+  "residual_counts": [
+    0,
+    0,
+    0
+  ],
+  "first_residual_key": null,
+  "device_milliseconds": 26.822657,
+  "resident_bytes": 18359116,
+  "high_water_bytes": 19670220,
+  "exact_coordinate_terms": 55,
+  "generator_solutions": [
+    {
+      "generator_left": 0,
+      "generator_right": 1,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 2,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 131,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 56
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 180,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 2153,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 430,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 240,
+            "imaginary_denominator": 7
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 443,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 8,
+            "imaginary_numerator": 2167,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 256,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": -2153,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 303,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": -2153,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 496,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 240,
+            "imaginary_denominator": 7
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 780,
+          "value": {
+            "real_numerator": -5,
+            "real_denominator": 6,
+            "imaginary_numerator": 3113,
+            "imaginary_denominator": 14
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 132,
+          "value": {
+            "real_numerator": -7,
+            "real_denominator": 48,
+            "imaginary_numerator": 6473,
+            "imaginary_denominator": 168
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 3,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 125,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 56
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 186,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 36,
+            "imaginary_numerator": -1193,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 375,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 36,
+            "imaginary_numerator": -233,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 441,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 72,
+            "imaginary_numerator": 473,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 248,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 36,
+            "imaginary_numerator": -1193,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 311,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 36,
+            "imaginary_numerator": 1193,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 498,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 36,
+            "imaginary_numerator": -233,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 776,
+          "value": {
+            "real_numerator": 5,
+            "real_denominator": 36,
+            "imaginary_numerator": -3113,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 126,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 144,
+            "imaginary_numerator": 247,
+            "imaginary_denominator": 168
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 4,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 100,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 443,
+            "imaginary_denominator": 105
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 450,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 4793,
+            "imaginary_denominator": 140
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 501,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 240,
+            "imaginary_denominator": 7
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 101,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 1793,
+            "imaginary_denominator": 420
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 5,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 45,
+          "value": {
+            "real_numerator": -5,
+            "real_denominator": 16,
+            "imaginary_numerator": -7955,
+            "imaginary_denominator": 168
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 446,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 8,
+            "imaginary_numerator": -2167,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 505,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": 1447,
+            "imaginary_denominator": 21
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 46,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 168
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 6,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 113,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 48,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 56
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 230,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": -1193,
+            "imaginary_denominator": 14
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 461,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 24,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 28
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 281,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 2153,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 510,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 760,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 114,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 56
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 111,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 48,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 56
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 226,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": -2153,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 455,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 24,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 28
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 285,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": -1193,
+            "imaginary_denominator": 14
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 516,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 705,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 112,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 56
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 120,
+          "value": {
+            "real_numerator": 3,
+            "real_denominator": 16,
+            "imaginary_numerator": -5485,
+            "imaginary_denominator": 56
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 171,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 6,
+            "imaginary_numerator": 2153,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 476,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 24,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 28
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 523,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 650,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 121,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 48,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 56
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 116,
+          "value": {
+            "real_numerator": 7,
+            "real_denominator": 48,
+            "imaginary_numerator": -6473,
+            "imaginary_denominator": 168
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 175,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 6,
+            "imaginary_numerator": -1193,
+            "imaginary_denominator": 14
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 468,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 24,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 28
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 531,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 595,
+          "value": {
+            "real_numerator": 0,
+            "real_denominator": 1,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 42
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 117,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 48,
+            "imaginary_numerator": -713,
+            "imaginary_denominator": 56
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 0,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": [
+        {
+          "original_d_psi_two_coordinate": 10,
+          "value": {
+            "real_numerator": 7,
+            "real_denominator": 48,
+            "imaginary_numerator": -1207,
+            "imaginary_denominator": 56
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 61,
+          "value": {
+            "real_numerator": -1,
+            "real_denominator": 8,
+            "imaginary_numerator": 2167,
+            "imaginary_denominator": 84
+          }
+        },
+        {
+          "original_d_psi_two_coordinate": 11,
+          "value": {
+            "real_numerator": 1,
+            "real_denominator": 48,
+            "imaginary_numerator": 713,
+            "imaginary_denominator": 168
+          }
+        }
+      ]
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 2,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 3,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 4,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 5,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 6,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 1,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 3,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 4,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 5,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 6,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 2,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 4,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 5,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 6,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 3,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 4,
+      "generator_right": 5,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 4,
+      "generator_right": 6,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 4,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 4,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 4,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 4,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 5,
+      "generator_right": 6,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 5,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 5,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 5,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 5,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 6,
+      "generator_right": 7,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 6,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 6,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 6,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 7,
+      "generator_right": 8,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 7,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 7,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 8,
+      "generator_right": 9,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 8,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    },
+    {
+      "generator_left": 9,
+      "generator_right": 10,
+      "exact_image_residual_entries": 0,
+      "coefficients": []
+    }
+  ],
+  "modular_membership_passed": true,
+  "exact_reconstruction_complete": true,
+  "coherent_cocycle_integrability_complete": false,
+  "corrected_target_zero_commutator_complete": false,
+  "boundary": "Three-prime membership of all 55 fixed-source raw commutators in the rank-320 local-Lorentz image is necessary but does not construct a coherent exact compensator or a corrected physical representative."
+}

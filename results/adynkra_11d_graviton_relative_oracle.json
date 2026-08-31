@@ -1,0 +1,45 @@
+{
+  "schema_version": "adynkra-11d-graviton-relative-oracle-v1",
+  "momentum_axis": 0,
+  "component_frame_dimension": 352,
+  "component_curl_dimension": 1760,
+  "component_curl_rank": 320,
+  "eq41_metric_descendant_dimensions": [
+    2112,
+    352
+  ],
+  "graviton_riemann_descendant_dimensions": [
+    96800,
+    352
+  ],
+  "eq31f_spin_connection_descendant_dimensions": [
+    96800,
+    1760
+  ],
+  "eq31f_eq41_all_row_residual_entries": 0,
+  "eq41_charge_row_adapter_residual_entries": 0,
+  "eq41_charge_row_adapter_mutation_residual_entries": 352,
+  "eq31f_local_connection_curl_residual_entries": 0,
+  "graviton_bianchi_residual_entries": 0,
+  "graviton_normalization_mutation_residual_entries": 6080,
+  "graviton_descendant_rank": 320,
+  "eq31g_descendant_rank": 320,
+  "eq31g_bianchi_residual_entries": 0,
+  "eq31f_printed_curl_coefficient": "-i",
+  "eq31g_printed_curl_coefficient": "-1/8",
+  "printed_coefficient_ratio_eq31g_over_eq31f": "-i/8",
+  "repository_riemann_is_twice_conventional": true,
+  "common_curl_basis_sha256": "b7785e88bc8ed85009f7490121fe62be2c94d1973bf72324fa39e686e5bd0c14",
+  "eq41_riemann_stream_sha256": "cad238ebb75214082c2b8370d8b27064382c65d0a1ac51e07ae53f4f0d60d88c",
+  "eq31f_riemann_stream_sha256": "43aada29c309a72885983428191d9739757b8c3c9ff66afe0666be15037f993e",
+  "eq31g_dg4_stream_sha256": "ee438dac4c196dc29309ba28677010a59df5e1cd07548f2fbdb4ec47d264e0b4",
+  "source_pdf_sha256": {
+    "hep-th/0101037v4": "3d40a1b32fa4491dee56b3e99802172d2c5039b2de198b987ce121a1bbb15cc3",
+    "hep-th/0107155v2": "71ccd43c2dea3df8fb9708c016595463cca2674bccad1872c955fc2c8647f25e"
+  },
+  "oracle_source_sha256": "70144d00e4ce3d47301a5ea08490fafb7593b17943075ee8da21253fbbba71dc",
+  "ordinary_on_shell_relative_normalization_fixed": true,
+  "off_shell_hhat_source_normalization_fixed": false,
+  "passed": true,
+  "boundary": "Passing fixes the ordinary on-shell component target normalization of the Eq3.1f/Eq41 graviton descendant relative to the Eq3.1g A3 descendant because both use the identical independent gravitino curl. It does not normalize an off-shell Hhat source, identify Eq40 Psi_[3] with A3, or include the J and X corrections in Eq41."
+}

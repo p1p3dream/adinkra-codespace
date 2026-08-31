@@ -1,0 +1,131 @@
+{
+  "boundary": "Passing exhausts local polynomial Hhat-to-A3 potentials at the Eq. 40 engineering weight. It does not exhaust nonlocal inverse-momentum operators, higher-weight potentials, direct DG4 maps, unknown source differential quotients, or different physical source constructions. The Rarita chain is an on-shell diagnostic only and cannot be relabeled as an off-shell semi-prepotential constraint.",
+  "character_hashes": {
+    "Hhat": "98c1a0d71447eaa0f903653aed0c5b53f1f3fba6c47292620b74a63e74afbfd0",
+    "S": "f381879167259fb6e3291af1df02bd77b39d8f78be7b72490f33023672f67f81",
+    "S_tensor_Hhat": "336c37b7dffc3b7b8c8f8f4dd155316f699b5206a2d704093579f5e27cba248f",
+    "S_tensor_trace_spinor": "12f250a27864ff43a05925547c3f17f1f10799fa47730fa774b11e8d82d85625",
+    "V": "69718a37fcd50c553483a76a4f209f52f6203c1199671e02d2efe23a82498541",
+    "exterior4_S": "b87449c2075dd5bbbba3751385bcdc0723f8d6137050eee553fd46364555c2fd",
+    "exterior4_S_tensor_Hhat": "9d8122a7df1793bbfd50f2919642a21d7fb820442b215504e86506e276200489"
+  },
+  "dependencies": {
+    "character_oracle": {
+      "path": "scripts/eleven_dimensional_higher_bidegree_hom_oracle.py",
+      "sha256": "7b0bf4a7f58a89903bd2c63d0fe9ebfcb61b8157ae3da635701b12ea3ea12b3c"
+    },
+    "clifford_projectors": {
+      "path": "results/adynkra_11d_clifford_projectors_validation.json",
+      "sha256": "0f5efdec8c36c7449d27a80be9eab0cd8c39db970b72d9910ae2e6fd385686b2"
+    },
+    "eq40_independent_a3_fiber": {
+      "path": "results/adynkra_11d_eq40_independent_a3_fiber.json",
+      "sha256": "63cdc0edebfe62c1a9d279fa7d1df2d75cc66248a2d8fc513e0fce12147a57ee"
+    },
+    "higher_bidegree_hom_inventory": {
+      "path": "results/adynkra_11d_higher_bidegree_hom_inventory.json",
+      "sha256": "0e595b3787e9d9c1c60090b270bdc7a967efcea064850d9f3531d103b49bb52f"
+    },
+    "raw_three_channel_g4_bianchi": {
+      "path": "results/adynkra_11d_raw_three_channel_g4_bianchi.json",
+      "sha256": "a0f18ddccaa0c526aa3c38af2ebef081efd1c66d5b6650cfa9f730112c00a6d1"
+    }
+  },
+  "engineering_filtration": {
+    "descendant_weight_four_PBW_bidegrees": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        4,
+        0
+      ]
+    ],
+    "nonnegative_local_weight_one_bidegrees": [
+      [
+        1,
+        0
+      ]
+    ],
+    "required_Hhat_to_A3_potential_weight": 1,
+    "weight_D": 1,
+    "weight_p": 2
+  },
+  "full_H_trace_ray": {
+    "can_repair_an_existing_Hhat_row": false,
+    "factorization": "S_D tensor H -> S_D tensor S_trace -> Lambda3 V",
+    "formula": "tau=Gamma^a H_a; A3_trace is the unique S_D tensor tau to Lambda3 map",
+    "gamma_trace_after_P320_residual_entries": 0,
+    "gamma_trace_image_rank": 32,
+    "gamma_traceless_projector_rank": 320,
+    "vanishes_on_every_Hhat_input": true
+  },
+  "oracle_source_sha256": "fd54b9643225b1923c6ff8bb61359370c636c81e26e71ae45825334476eb780c",
+  "passed": true,
+  "potential_hom_multiplicities": {
+    "Hom_S_tensor_Hhat_to_A3": 1,
+    "Hom_S_tensor_full_H_to_A3": 2,
+    "Hom_S_tensor_trace_spinor_to_A3": 1,
+    "full_H_decomposition": "H = Hhat(10001) direct-sum Gamma(S)(00001)"
+  },
+  "same_descendant_weight_audit": {
+    "d0_p2_D_G4_Hom_dimension": 4,
+    "d2_p1_D_G4_Hom_dimension": 52,
+    "d4_p0_D_A3_by_irrep": {
+      "00001": 3,
+      "00101": 13,
+      "01001": 13,
+      "10001": 10
+    },
+    "d4_p0_D_A3_total": 39,
+    "d4_p0_D_G4_by_irrep": {
+      "00001": 3,
+      "00011": 10,
+      "00101": 13,
+      "01001": 13,
+      "10001": 10
+    },
+    "d4_p0_D_G4_total": 49,
+    "d4_p0_can_change_d2_p1_witness_without_source_relation": false,
+    "reason": "PBW bidegrees are direct-sum row families; no audited differential source relation identifies D4p0 with D2p1"
+  },
+  "schema_version": "adynkra-11d-eq40-source-exhaustion-v1",
+  "smallest_typed_source_restriction": {
+    "direct_P320_Hhat_equals_component_gravitino_allowed": false,
+    "direct_rejection_reason": "Hhat is a semi-prepotential and Eq. 25 constructs the physical component gravitino from D Delta and D Psi; a shared 320 irrep is not a source-to-target descendant map",
+    "expected_PBW_bidegrees": [
+      [
+        2,
+        1
+      ],
+      [
+        0,
+        2
+      ]
+    ],
+    "extra_outer_spinor_derivative_required": false,
+    "negative_gate": "form the complete residual functional across all 320 Hhat columns and test rank(C_RS) versus rank([C_RS;w])",
+    "on_shell_diagnostic_chain": "Hhat -> corrected Eq40 Delta -> DDelta -> Eq25 physical psi -> curl -> Rarita Euler",
+    "positive_gate": "require exact factorization of the full D2p1 plus D0p2 residual through C_RS; a D2p1-only equality is insufficient",
+    "status": "legitimate on-shell diagnostic after binding corrected right-C and horizontal Lorentz descent; not an off-shell Hhat source equation"
+  },
+  "unique_Hhat_ray": {
+    "Bianchi_closed_raw_ray_dimension": 1,
+    "Bianchi_kernel_basis_trace_exterior_hook": [
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "d2_p1_off_image_slices": 3660,
+    "exhausted_at_required_potential_weight": true,
+    "multiplicity": 1,
+    "physical_fiber_compatible_on_unrestricted_Hhat": false
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "schema_version": "adynkra-11d-d02-remaining-generator-v1",
+  "branch": "(d_D,d_p)=(0,2)",
+  "source_dimension": 21120,
+  "target_dimension": 10560,
+  "expected_sector_multiplicities": {
+    "01001": 1,
+    "10001": 2
+  },
+  "one_form_projected_images": 352,
+  "two_form_projected_images": 1760,
+  "one_form_projector_scale": 11,
+  "two_form_projector_scale": 15,
+  "source_equivariance_checks_per_seed": 1161600,
+  "source_equivariance_residuals": [
+    0,
+    0,
+    0
+  ],
+  "target_embedding_checks": [
+    96800,
+    19360
+  ],
+  "target_embedding_residuals": [
+    0,
+    0
+  ],
+  "rref_rank_01001": 1,
+  "rref_rank_10001": 2,
+  "rref_pivot_rows_10001": [
+    [
+      0,
+      542
+    ],
+    [
+      0,
+      543
+    ]
+  ],
+  "rref_pivot_values_10001": [
+    [
+      -11,
+      -7
+    ],
+    [
+      11,
+      4
+    ]
+  ],
+  "streams": [
+    {
+      "generator_column": 53,
+      "target_irrep": "01001",
+      "seed": "15 P_01001 Gamma_[2] slash(p)(p wedge H_lower)",
+      "emitted_nonzero_rows": 3669120,
+      "maximum_column_support": 330,
+      "stream_sha256": "6e49f54c97379339a94423dfc938723cf9f8d90a191aa6f920b54efdba7c04b4",
+      "first_witness": {
+        "momentum_pair_ordinal": 0,
+        "momentum_pair": [
+          0,
+          0
+        ],
+        "h_hat_ordinal": 0,
+        "source_coordinate": 0,
+        "target_coordinate": 542,
+        "canonical_row_ordinal": 18436915742,
+        "coefficient": -3
+      }
+    },
+    {
+      "generator_column": 54,
+      "target_irrep": "10001",
+      "seed": "11 P_10001 Gamma_[3] p^2 H_lower",
+      "emitted_nonzero_rows": 591360,
+      "maximum_column_support": 168,
+      "stream_sha256": "99cb342621defab63eeffd4df3509b8f856fa4b1e567352f50fa722a4991e579",
+      "first_witness": {
+        "momentum_pair_ordinal": 0,
+        "momentum_pair": [
+          0,
+          0
+        ],
+        "h_hat_ordinal": 0,
+        "source_coordinate": 0,
+        "target_coordinate": 542,
+        "canonical_row_ordinal": 18436915742,
+        "coefficient": -11
+      }
+    },
+    {
+      "generator_column": 55,
+      "target_irrep": "10001",
+      "seed": "11 P_10001 Gamma_[3] p_a (p.H)",
+      "emitted_nonzero_rows": 2217600,
+      "maximum_column_support": 330,
+      "stream_sha256": "a929dcc3f4c9638aab66357987a34f90e4e9f721335d1dd90c1a4257f8c3643d",
+      "first_witness": {
+        "momentum_pair_ordinal": 0,
+        "momentum_pair": [
+          0,
+          0
+        ],
+        "h_hat_ordinal": 0,
+        "source_coordinate": 0,
+        "target_coordinate": 542,
+        "canonical_row_ordinal": 18436915742,
+        "coefficient": -7
+      }
+    }
+  ],
+  "bianchi": {
+    "source_h_columns": 320,
+    "symmetric_three_momentum_dimension": 286,
+    "target_spinor_five_form_dimension": 14784,
+    "aggregated_nonzero_rows": 13453440,
+    "per_generator_nonzero_rows": [
+      9905280,
+      13453440,
+      4139520,
+      9905280
+    ],
+    "per_generator_sha256": [
+      "ee45cc4dc2c26656d3278ace0feb5d0f9dfaae5b2d0b1df826b89cb264b53201",
+      "44a8a8d989e82c1c18af730fbc082af1153ff5e0a13a5047de383d1ec2c04fa3",
+      "3ebfdb6043fbc0f8ee15cabfb042410c8f6b6cae74f03403c71e0533f11da76c",
+      "88444f2b6571a03c41f03d3c9222318de8dc15ffb895ce8c2301dad0872959ec"
+    ],
+    "modular_primes": [
+      1073741783,
+      1073741723,
+      1073741719
+    ],
+    "modular_ranks": [
+      2,
+      2,
+      2
+    ],
+    "exact_rank": 2,
+    "exact_kernel_dimension": 2,
+    "exact_kernel_basis": [
+      [
+        "22/5",
+        "11/5",
+        "1",
+        "0"
+      ],
+      [
+        "4",
+        "0",
+        "0",
+        "1"
+      ]
+    ],
+    "exact_pivot_rows": [
+      [
+        0,
+        0,
+        714
+      ],
+      [
+        0,
+        0,
+        7470
+      ]
+    ],
+    "exact_replay_residuals": 0,
+    "passed": true
+  },
+  "omitted_h_lowering_mutation_rejected": true,
+  "duplicate_10001_seed_mutation_rejected": true,
+  "bianchi_filter_complete": true,
+  "gpu_csr_parity_complete": true,
+  "gpu_csr_parity_artifact_sha256": "bb7ad5bced4ae17cd05c6f7bab528dc6c04b281dd18b8f70e5631155c4e21ff0",
+  "gpu_csr_parity_terms": 8695680,
+  "gpu_csr_parity_wall_seconds": "6.94",
+  "gpu_csr_high_water_bytes": 31195411,
+  "passed_intertwiner_inventory": true,
+  "passed": true,
+  "boundary": "This exhausts the four representation-theoretic d02 intertwiners only when combined with column 52, computes their exact Bianchi image, and records CPU/GPU CSR parity. It does not construct or filter the 52 d21 intertwiners."
+}

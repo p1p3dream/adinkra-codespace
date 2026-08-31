@@ -1,0 +1,154 @@
+{
+  "boundary": "Raw descendant Hom counts do not impose superspace integrability, Bianchi descent, source gauge quotient, Eq. 40 coefficients, or engineering-degree completeness.",
+  "d0_p2_00001_generator_dependency": {
+    "artifact_hash_intentionally_omitted": "the generator report already binds this Hom inventory artifact; copying its artifact hash here would create a circular digest dependency",
+    "emitted_nonzero_rows": 2217600,
+    "generator_operator_rank": 32,
+    "path": "results/adynkra_11d_d02_00001_source_generator.json",
+    "semantic_stream_sha256": "c0b3849a01ed2083848cd78339e4f4fcd51921bb8e73eee5e553d3dc3bf133ed",
+    "source_basis_sha256": "26116cab88d36f7bb5b75d62bf27133172dd4574aff789f29013ad60364da226",
+    "target_casimir_eigen_residual_entries": 0,
+    "target_projector_residual_entries": 0
+  },
+  "descendant_targets": {
+    "D_A3_irreps": [
+      "00001",
+      "00101",
+      "01001",
+      "10001"
+    ],
+    "D_G4_irreps": [
+      "00001",
+      "00011",
+      "00101",
+      "01001",
+      "10001"
+    ],
+    "d0_p2_D_A3_by_irrep": {
+      "00001": 1,
+      "00101": 0,
+      "01001": 1,
+      "10001": 2
+    },
+    "d0_p2_D_A3_total": 4,
+    "d0_p2_D_G4_by_irrep": {
+      "00001": 1,
+      "00011": 0,
+      "00101": 0,
+      "01001": 1,
+      "10001": 2
+    },
+    "d0_p2_D_G4_total": 4,
+    "d2_p1_D_A3_by_irrep": {
+      "00001": 7,
+      "00101": 11,
+      "01001": 14,
+      "10001": 13
+    },
+    "d2_p1_D_A3_total": 45,
+    "d2_p1_D_G4_by_irrep": {
+      "00001": 7,
+      "00011": 7,
+      "00101": 11,
+      "01001": 14,
+      "10001": 13
+    },
+    "d2_p1_D_G4_total": 52
+  },
+  "dg4_cartesian_projector_dependency": {
+    "artifact_sha256": "a616e996fb8b002473743840051df5792dfeef6d5b43c7fe378d8a9d0e2cab6d",
+    "cartesian_basis_sha256": "f2dfae7e9422a639142622e431fcf10166edeb9ae9f5976169ec638a3148e739",
+    "casimir_operator_sha256": "50bd1a225f783092467131c525075be88e3f00b89561804305179150a21e421a",
+    "exhaustive_projector_ranks": [
+      32,
+      5280,
+      3520,
+      1408,
+      320
+    ],
+    "module_source_sha256": "f8b5b3d07903d311abb2738f7e2b718033190490a948955860b276644af0a812",
+    "path": "results/adynkra_11d_dg4_casimir_projectors.json",
+    "projector_polynomials_sha256": "cd27eea281fe760fe010aeb24d638d50138044c6b52baf55c34c60df51c9ff91"
+  },
+  "direct_a3_g4": {
+    "d0_p2_to_a3": 0,
+    "d0_p2_to_g4": 0,
+    "d2_p1_to_a3": 0,
+    "d2_p1_to_g4": 0
+  },
+  "fixed_witness_support": {
+    "canonical_target_irrep_for_witness": null,
+    "d0_p2_can_populate": false,
+    "d0_p2_reason": "every d0,p2 map has total momentum degree two, while the pinned row has total momentum degree one",
+    "d2_p1_evidence": "the corrected teleparallel operator is itself an equivariant member of this 52-dimensional Hom space and has exact coefficient 1/1280 on the row",
+    "d2_p1_raw_Hom_can_populate": true,
+    "row": "source0/output0/exterior-mask-0x00010001/p_1",
+    "target_irrep_status": "exact exhaustive Cartesian Casimir projectors exist for all five D G4 irreps; a single Cartesian row is not itself assigned one canonical irrep"
+  },
+  "passed": true,
+  "schema_version": "adynkra-11d-higher-bidegree-hom-oracle-v3",
+  "source_graph_pullbacks_d0_p2": {
+    "bosonic_form_pullback_count": 0,
+    "reason": "an even-D jet of spinorial Hhat cannot map to a bosonic form compensator",
+    "spinor_intermediate_multiplicity": 1
+  },
+  "source_graph_pullbacks_d2_p1": {
+    "antisymmetrized_form_factorization_rank": null,
+    "ordered_D_eq40_p1_p3_p4_p5_columns_before_outer_inner_antisymmetrization": 43,
+    "ordered_D_form_factorization_columns_p1_through_p5_before_outer_inner_antisymmetrization": 51,
+    "ordered_D_p2_local_lorentz_columns_before_outer_inner_antisymmetrization": 8,
+    "rank_blocker": "the Lambda2 S projector recouples the two spinors across the form and hook intermediate bases; the ordered coefficient count is not the rank after PBW antisymmetrization",
+    "through_form_degree": {
+      "0": {
+        "d_a3": 2,
+        "d_g4": 2,
+        "pullback_multiplicity_in_S_tensor_Hhat": 0
+      },
+      "1": {
+        "d_a3": 5,
+        "d_g4": 5,
+        "pullback_multiplicity_in_S_tensor_Hhat": 1
+      },
+      "2": {
+        "d_a3": 8,
+        "d_g4": 8,
+        "pullback_multiplicity_in_S_tensor_Hhat": 1
+      },
+      "3": {
+        "d_a3": 10,
+        "d_g4": 11,
+        "pullback_multiplicity_in_S_tensor_Hhat": 1
+      },
+      "4": {
+        "d_a3": 11,
+        "d_g4": 13,
+        "pullback_multiplicity_in_S_tensor_Hhat": 1
+      },
+      "5": {
+        "d_a3": 11,
+        "d_g4": 14,
+        "pullback_multiplicity_in_S_tensor_Hhat": 1
+      }
+    }
+  },
+  "validation": {
+    "D_A3_target_dimension": 5280,
+    "D_G4_target_dimension": 10560,
+    "S_tensor_Hhat_dimension": 10240,
+    "S_tensor_Hhat_known_irreps": {
+      "00002": 1,
+      "00010": 1,
+      "00100": 1,
+      "01000": 1,
+      "10000": 1,
+      "10002": 1,
+      "10010": 1,
+      "10100": 1,
+      "11000": 1,
+      "20000": 1
+    },
+    "exterior2_spinor_dimension": 496,
+    "symmetric2_vector_dimension": 66
+  },
+  "weight_convention": "twice-orthonormal B5 weights; exact integer character convolution and Weyl alternant extraction"
+}

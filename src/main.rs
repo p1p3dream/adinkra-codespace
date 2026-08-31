@@ -30,21 +30,50 @@ mod code;
 mod coset_primed_lanczos;
 mod dashing;
 mod decompose;
+mod eleven_dimensional_a3_curl_fiber_product;
 mod eleven_dimensional_abstract_clifford_join;
 mod eleven_dimensional_b5_majorana_target_join;
 mod eleven_dimensional_bridge;
 mod eleven_dimensional_clifford;
 mod eleven_dimensional_complete_f;
 mod eleven_dimensional_complete_f_kernel;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_component_gravitino_a3_fiber;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_component_gravity_relative_fiber;
 mod eleven_dimensional_constrained_geometry_jet;
+mod eleven_dimensional_corrected_four_form_normalization;
+mod eleven_dimensional_corrected_full_chain_oracle;
+#[cfg(test)]
+mod eleven_dimensional_corrected_lambda3_normalization_oracle;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_corrected_teleparallel_equivariance;
 mod eleven_dimensional_covariant_cohomology_gate;
+mod eleven_dimensional_d02_00001_generator;
+mod eleven_dimensional_d21_invariant_diagrams;
+mod eleven_dimensional_dg4_casimir_projectors;
 mod eleven_dimensional_direct_local_lorentz;
+mod eleven_dimensional_enlarged_four_form_source;
 mod eleven_dimensional_eq40_frame_composition;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_eq40_independent_a3_fiber;
 mod eleven_dimensional_first_superspace_jet;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_four_form_56_gpu;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_four_form_56_physics_rows;
+mod eleven_dimensional_four_form_normalization;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_four_form_source_constraint_quotient;
 mod eleven_dimensional_free_complex;
+mod eleven_dimensional_gamma24_source_variance;
 mod eleven_dimensional_gauge;
+mod eleven_dimensional_graviton_gravitino_relative;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_graviton_relative_oracle;
 mod eleven_dimensional_h_hat_jet;
 mod eleven_dimensional_hook_bianchi;
+mod eleven_dimensional_independent_a3_adapter;
 mod eleven_dimensional_j1_lorentz_residual;
 mod eleven_dimensional_k_fag_solver;
 mod eleven_dimensional_level16_couplings;
@@ -52,9 +81,13 @@ mod eleven_dimensional_level18_embedded;
 mod eleven_dimensional_level18_momentum;
 mod eleven_dimensional_level18_target_quotient;
 mod eleven_dimensional_linear_susy;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_lorentz_coboundary;
 mod eleven_dimensional_lorentz_holonomy_compensator_audit;
 mod eleven_dimensional_majorana;
 mod eleven_dimensional_physical_adapter_audit;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_physical_component_k;
 mod eleven_dimensional_physical_curvature;
 mod eleven_dimensional_physical_k;
 mod eleven_dimensional_prepotential;
@@ -81,6 +114,7 @@ mod eleven_dimensional_spinorial_differential;
 mod eleven_dimensional_superderivative_normal_form;
 mod eleven_dimensional_target_equation_complex;
 mod eleven_dimensional_target_stream;
+mod eleven_dimensional_teleparallel_lorentz_gpu;
 mod eleven_dimensional_top_down;
 mod enhance;
 mod eval;
@@ -323,14 +357,52 @@ fn main() {
             cmd_adynkra_11d_superderivative_normal_form_build(&args)
         }
         "adynkra-11d-h-hat-jet-build" => cmd_adynkra_11d_h_hat_jet_build(&args),
+        "adynkra-11d-independent-a3-pregauge-build" => {
+            cmd_adynkra_11d_independent_a3_pregauge_build(&args)
+        }
+        "adynkra-11d-eq40-independent-a3-fiber-build" => {
+            cmd_adynkra_11d_eq40_independent_a3_fiber_build(&args)
+        }
+        "adynkra-11d-graviton-relative-oracle-build" => {
+            cmd_adynkra_11d_graviton_relative_oracle_build(&args)
+        }
         "adynkra-11d-eq40-frame-composition-build" => {
             cmd_adynkra_11d_eq40_frame_composition_build(&args)
+        }
+        "adynkra-11d-four-form-normalization-build" => {
+            cmd_adynkra_11d_four_form_normalization_build(&args)
+        }
+        "adynkra-11d-four-form-normalization-witness" => {
+            cmd_adynkra_11d_four_form_normalization_witness(&args)
+        }
+        "adynkra-11d-four-form-normalization-validate" => {
+            cmd_adynkra_11d_four_form_normalization_validate(&args)
+        }
+        "adynkra-11d-corrected-four-form-normalization-build" => {
+            cmd_adynkra_11d_corrected_four_form_normalization_build(&args)
+        }
+        "adynkra-11d-raw-three-channel-g4-bianchi-build" => {
+            cmd_adynkra_11d_raw_three_channel_g4_bianchi_build(&args)
+        }
+        "adynkra-11d-dg4-casimir-projectors-build" => {
+            cmd_adynkra_11d_dg4_casimir_projectors_build(&args)
+        }
+        "adynkra-11d-dg4-c4-device-csr-build" => cmd_adynkra_11d_dg4_c4_device_csr_build(&args),
+        "adynkra-11d-d02-00001-generator-build" => cmd_adynkra_11d_d02_00001_generator_build(&args),
+        "adynkra-11d-d02-remaining-generators-build" => {
+            cmd_adynkra_11d_d02_remaining_generators_build(&args)
+        }
+        "adynkra-11d-raw-three-channel-g4-bianchi-validate" => {
+            cmd_adynkra_11d_raw_three_channel_g4_bianchi_validate(&args)
         }
         "adynkra-11d-constrained-geometry-jet-build" => {
             cmd_adynkra_11d_constrained_geometry_jet_build(&args)
         }
         "adynkra-11d-physical-k-audit" => cmd_adynkra_11d_physical_k_audit(&args),
         "adynkra-11d-physical-k-validate" => cmd_adynkra_11d_physical_k_validate(&args),
+        "adynkra-11d-physical-component-k-build" => {
+            cmd_adynkra_11d_physical_component_k_build(&args)
+        }
         "adynkra-11d-target-stream-build" => cmd_adynkra_11d_target_stream_build(&args),
         "adynkra-11d-second-momentum-build" => cmd_adynkra_11d_second_momentum_build(&args),
         "adynkra-11d-second-momentum-recoupling-build" => {
@@ -688,16 +760,46 @@ fn print_usage(prog: &str) {
     eprintln!("                          Certify the exact ordered-D and formal-momentum algebra");
     eprintln!("  adynkra-11d-h-hat-jet-build [json]");
     eprintln!("                          Build the bounded H/scale/Lorentz polynomial jet stream");
+    eprintln!("  adynkra-11d-independent-a3-pregauge-build [json]");
+    eprintln!("  adynkra-11d-eq40-independent-a3-fiber-build [json] [source-ordinal]");
+    eprintln!("  adynkra-11d-graviton-relative-oracle-build [json]");
+    eprintln!("                          Certify independent A3 gauge descent to G4 and D G4");
     eprintln!("  adynkra-11d-eq40-frame-composition-build [json]");
     eprintln!(
         "                          Compose the frame jet through the differentiated Eq. (40) solve"
     );
+    eprintln!("  adynkra-11d-four-form-normalization-build [json] [threads]");
+    eprintln!(
+        "                          Characterize p wedge D Psi_[3] against teleparallel D F_[4] on all 320 source columns"
+    );
+    eprintln!("  adynkra-11d-four-form-normalization-witness [json]");
+    eprintln!(
+        "                          Write the exact one-column proportionality counterexample"
+    );
+    eprintln!("  adynkra-11d-four-form-normalization-validate [json]");
+    eprintln!(
+        "                          Replay manifest, checkpoints, witness, and report without regenerating rows"
+    );
+    eprintln!("  adynkra-11d-raw-three-channel-g4-bianchi-build [json]");
+    eprintln!(
+        "                          Build the exact corrected Gamma4 three-channel Bianchi diagnostic"
+    );
+    eprintln!("  adynkra-11d-raw-three-channel-g4-bianchi-validate [json]");
+    eprintln!(
+        "                          Recompute and validate the immutable three-channel report"
+    );
+    eprintln!("  adynkra-11d-d02-00001-generator-build [json]");
+    eprintln!("                          Build the first exact (0,2) source-side D G4 generator");
+    eprintln!("  adynkra-11d-d02-remaining-generators-build [json]");
+    eprintln!("                          Build the exact 01001 plus two 10001 (0,2) generators");
     eprintln!("  adynkra-11d-constrained-geometry-jet-build [json]");
     eprintln!("                          Assemble Eqs. (13)/(14) and their exact first spinor jet");
     eprintln!("  adynkra-11d-physical-k-audit [json]");
     eprintln!("                          Audit and bind the physical K input boundary");
     eprintln!("  adynkra-11d-physical-k-validate <spec-json> [embedded-dir] [summary-json]");
     eprintln!("                          Validate a physical K and open the exact quotient gate");
+    eprintln!("  adynkra-11d-physical-component-k-build [json]");
+    eprintln!("                          Certify the independent component K, F K=0, and null cohomology");
     eprintln!("  adynkra-11d-target-stream-build [data-json] [validation-json]");
     eprintln!("                          Build the target-resolved exact 11 by 32 stream");
     eprintln!("  adynkra-11d-second-momentum-build [json]");
@@ -3644,6 +3746,207 @@ fn cmd_adynkra_11d_complete_f_build(args: &[String]) {
     }
 }
 
+fn cmd_adynkra_11d_four_form_normalization_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_eq40_four_form_normalization.json");
+    let threads = args
+        .get(3)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid four-form thread count: {error}");
+            std::process::exit(2);
+        })
+        .unwrap_or(4);
+    let report = eleven_dimensional_four_form_normalization::write_artifact_parallel(
+        std::path::Path::new(path),
+        threads,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write {path}: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.comparison_completed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_four_form_normalization_witness(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_eq40_four_form_nonproportionality_witness_v2.json");
+    let report = eleven_dimensional_four_form_normalization::write_witness_artifact(
+        std::path::Path::new(path),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write {path}: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.decisive_nonproportionality_witness {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_four_form_normalization_validate(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_eq40_four_form_normalization.json");
+    let validation =
+        eleven_dimensional_four_form_normalization::validate_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to validate {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&validation).unwrap());
+}
+
+fn cmd_adynkra_11d_corrected_four_form_normalization_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_right_c_full_chain_four_form_normalization.json");
+    let threads = args
+        .get(3)
+        .map(|value| value.parse::<usize>())
+        .transpose()
+        .unwrap_or_else(|error| {
+            eprintln!("Invalid corrected four-form thread count: {error}");
+            std::process::exit(2);
+        })
+        .unwrap_or(8);
+    let report = eleven_dimensional_corrected_four_form_normalization::write_observed_artifact(
+        std::path::Path::new(path),
+        threads,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write {path}: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed && !report.decisive_nonproportionality_witness {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_dg4_casimir_projectors_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_dg4_casimir_projectors.json");
+    let report =
+        eleven_dimensional_dg4_casimir_projectors::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| panic!("failed to write {path}: {error}"));
+    println!(
+        "wrote {path}: ranks={:?}, residuals={}, passed={}",
+        report.exhaustive_projector_ranks,
+        report.exhaustive_minimal_polynomial_residuals,
+        report.passed_canary
+    );
+}
+
+fn cmd_adynkra_11d_dg4_c4_device_csr_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_dg4_c4_device_csr.json");
+    let report = eleven_dimensional_dg4_casimir_projectors::write_device_csr_artifact(
+        std::path::Path::new(path),
+    )
+    .unwrap_or_else(|error| panic!("failed to write {path}: {error}"));
+    println!(
+        "wrote {path}: rows={}, nnz={}, binary_sha256={}, parity={}, passed={}",
+        report.row_statistics.rows,
+        report.row_statistics.nonzeros,
+        report.binary_sha256,
+        report.parity_canaries.len(),
+        report.passed
+    );
+}
+
+fn cmd_adynkra_11d_d02_00001_generator_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_d02_00001_source_generator.json");
+    let report = eleven_dimensional_d02_00001_generator::write_artifact(std::path::Path::new(path))
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_d02_remaining_generators_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_d02_remaining_seed_inventory.json");
+    let report = eleven_dimensional_d02_00001_generator::write_remaining_artifact(
+        std::path::Path::new(path),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write {path}: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed_intertwiner_inventory {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_raw_three_channel_g4_bianchi_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_raw_three_channel_g4_bianchi.json");
+    let report =
+        eleven_dimensional_gamma24_source_variance::write_raw_three_channel_g4_bianchi_artifact(
+            std::path::Path::new(path),
+        )
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to write {path}: {error}");
+            std::process::exit(2);
+        });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_raw_three_channel_g4_bianchi_validate(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_raw_three_channel_g4_bianchi.json");
+    let sha256 =
+        eleven_dimensional_gamma24_source_variance::validate_raw_three_channel_g4_bianchi_artifact(
+            std::path::Path::new(path),
+        )
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to validate {path}: {error}");
+            std::process::exit(2);
+        });
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schema_version": "adynkra-11d-raw-three-channel-g4-bianchi-validation-v1",
+            "report_path": path,
+            "report_sha256": sha256,
+            "passed": true
+        }))
+        .unwrap()
+    );
+}
+
 fn cmd_adynkra_11d_superfield_curvature_hash(args: &[String]) {
     let path = args
         .get(2)
@@ -3842,6 +4145,64 @@ fn cmd_adynkra_11d_h_hat_jet_build(args: &[String]) {
     }
 }
 
+fn cmd_adynkra_11d_independent_a3_pregauge_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_independent_a3_pregauge_adapter.json");
+    let report =
+        eleven_dimensional_independent_a3_adapter::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_eq40_independent_a3_fiber_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_eq40_independent_a3_fiber.json");
+    let source_ordinal = args
+        .get(3)
+        .map(|value| {
+            value
+                .parse::<usize>()
+                .expect("source ordinal must be usize")
+        })
+        .unwrap_or(0);
+    let report = eleven_dimensional_eq40_independent_a3_fiber::write_artifact(
+        std::path::Path::new(path),
+        source_ordinal,
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write {path}: {error}");
+        std::process::exit(2);
+    });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+}
+
+fn cmd_adynkra_11d_graviton_relative_oracle_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_graviton_relative_oracle.json");
+    let report =
+        eleven_dimensional_graviton_relative_oracle::write_artifact(std::path::Path::new(path))
+            .unwrap_or_else(|error| {
+                eprintln!("Failed to write {path}: {error}");
+                std::process::exit(2);
+            });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
 fn cmd_adynkra_11d_eq40_frame_composition_build(args: &[String]) {
     let path = args
         .get(2)
@@ -3886,6 +4247,24 @@ fn cmd_adynkra_11d_physical_k_audit(args: &[String]) {
             eprintln!("Failed to write {path}: {error}");
             std::process::exit(2);
         });
+    println!("{}", serde_json::to_string_pretty(&report).unwrap());
+    if !report.passed {
+        std::process::exit(2);
+    }
+}
+
+fn cmd_adynkra_11d_physical_component_k_build(args: &[String]) {
+    let path = args
+        .get(2)
+        .map(String::as_str)
+        .unwrap_or("results/adynkra_11d_physical_component_k.json");
+    let report = eleven_dimensional_physical_component_k::write_artifact(
+        std::path::Path::new(path),
+    )
+    .unwrap_or_else(|error| {
+        eprintln!("Failed to write {path}: {error}");
+        std::process::exit(2);
+    });
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
     if !report.passed {
         std::process::exit(2);

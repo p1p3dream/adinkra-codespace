@@ -1,0 +1,270 @@
+{
+  "schema_version": "adynkra-11d-physical-component-k-v1",
+  "role": "exact direct-sum component gauge map, curvature map, and null-momentum physical cohomology",
+  "signature": "Spin(1,10), mostly-plus eta=(-,+,...,+)",
+  "physical_component_k_constructed": true,
+  "prepotential_k_into_h_hat_constructed": false,
+  "direct_sum_parameter_basis": [
+    "diffeomorphism xi_a (11)",
+    "Abelian two-form Lambda_ab (55)",
+    "local supersymmetry epsilon_alpha (32)"
+  ],
+  "direct_sum_potential_basis": [
+    "symmetric metric perturbation h_ab (66)",
+    "three-form potential A_abc (165)",
+    "vector-spinor gravitino psi_a^alpha (352)"
+  ],
+  "direct_sum_curvature_basis": [
+    "ambient ordered antisymmetric-pair R_ab|cd basis (3025)",
+    "four-form G_abcd (330)",
+    "antisymmetric gravitino curl C_ab^alpha (1760)"
+  ],
+  "exact_gauge_formulas": [
+    "delta h_ab = p_a xi_b + p_b xi_a",
+    "delta A_abc = p_a Lambda_bc - p_b Lambda_ac + p_c Lambda_ab",
+    "delta psi_a^alpha = p_a epsilon^alpha",
+    "delta Lambda_ab = p_a lambda_b - p_b lambda_a",
+    "delta lambda_a = p_a sigma"
+  ],
+  "antisymmetrization_convention": "stored exterior-product coefficients are unnormalized: no 1/q! factorial is inserted in p wedge omega",
+  "formula_source": "arXiv:0903.0259, Eq. (2) and the following free three-form reducibility discussion",
+  "direct_sum_k_dimensions": [
+    583,
+    98
+  ],
+  "direct_sum_f_dimensions": [
+    5115,
+    583
+  ],
+  "riemann_row_basis": "the target_sector_complex graviton curvature uses the ambient 55 by 55 ordered pair basis; no algebraic-symmetry quotient or 1210-row projector is applied",
+  "ambient_riemann_rows": 3025,
+  "canonical_riemann_irrep_rows_not_used": 1210,
+  "formal_sectors": [
+    {
+      "sector": "Pauli-Fierz graviton",
+      "gauge_dimensions": [
+        66,
+        11
+      ],
+      "curvature_dimensions": [
+        3025,
+        66
+      ],
+      "bianchi_dimensions": [
+        9075,
+        3025
+      ],
+      "euler_dimensions": [
+        66,
+        66
+      ],
+      "curvature_after_gauge_residual_terms": 0,
+      "bianchi_after_curvature_residual_terms": 0,
+      "euler_factorization_residual_terms": 0,
+      "euler_after_gauge_residual_terms": 0,
+      "noether_after_euler_residual_terms": 0,
+      "mutation_residual_terms": 3,
+      "fk_gauge_term_mutation_potential_column": 0,
+      "fk_gauge_term_mutation_residual_terms": 100,
+      "passed": true
+    },
+    {
+      "sector": "four-form curvature of the Abelian three-form",
+      "gauge_dimensions": [
+        165,
+        55
+      ],
+      "curvature_dimensions": [
+        330,
+        165
+      ],
+      "bianchi_dimensions": [
+        462,
+        330
+      ],
+      "euler_dimensions": [
+        165,
+        165
+      ],
+      "curvature_after_gauge_residual_terms": 0,
+      "bianchi_after_curvature_residual_terms": 0,
+      "euler_factorization_residual_terms": 0,
+      "euler_after_gauge_residual_terms": 0,
+      "noether_after_euler_residual_terms": 0,
+      "mutation_residual_terms": 4,
+      "fk_gauge_term_mutation_potential_column": 0,
+      "fk_gauge_term_mutation_residual_terms": 8,
+      "passed": true
+    },
+    {
+      "sector": "Rarita-Schwinger vector-spinor",
+      "gauge_dimensions": [
+        352,
+        32
+      ],
+      "curvature_dimensions": [
+        1760,
+        352
+      ],
+      "bianchi_dimensions": [
+        5280,
+        1760
+      ],
+      "euler_dimensions": [
+        352,
+        352
+      ],
+      "curvature_after_gauge_residual_terms": 0,
+      "bianchi_after_curvature_residual_terms": 0,
+      "euler_factorization_residual_terms": 0,
+      "euler_after_gauge_residual_terms": 0,
+      "noether_after_euler_residual_terms": 0,
+      "mutation_residual_terms": 2,
+      "fk_gauge_term_mutation_potential_column": 0,
+      "fk_gauge_term_mutation_residual_terms": 10,
+      "passed": true
+    }
+  ],
+  "formal_direct_sum_fk_residual_terms": 0,
+  "formal_direct_sum_bianchi_f_residual_terms": 0,
+  "formal_direct_sum_euler_k_residual_terms": 0,
+  "formal_direct_sum_euler_factorization_residual_terms": 0,
+  "null_momentum_covector": [
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "null_momentum_square": 0,
+  "null_cohomology": [
+    {
+      "sector": "Pauli-Fierz graviton h_ab",
+      "potential_dimension": 66,
+      "gauge_parameter_dimension": 11,
+      "gauge_rank": 11,
+      "raw_potential_quotient_dimension": 55,
+      "euler_rank": 11,
+      "on_shell_kernel_dimension": 55,
+      "gauge_image_lies_in_euler_kernel": true,
+      "physical_cohomology_dimension": 44,
+      "expected_physical_cohomology_dimension": 44,
+      "passed": true
+    },
+    {
+      "sector": "Abelian three-form A_abc",
+      "potential_dimension": 165,
+      "gauge_parameter_dimension": 55,
+      "gauge_rank": 45,
+      "raw_potential_quotient_dimension": 120,
+      "euler_rank": 36,
+      "on_shell_kernel_dimension": 129,
+      "gauge_image_lies_in_euler_kernel": true,
+      "physical_cohomology_dimension": 84,
+      "expected_physical_cohomology_dimension": 84,
+      "passed": true
+    },
+    {
+      "sector": "massless Rarita-Schwinger gravitino psi_a",
+      "potential_dimension": 352,
+      "gauge_parameter_dimension": 32,
+      "gauge_rank": 32,
+      "raw_potential_quotient_dimension": 320,
+      "euler_rank": 192,
+      "on_shell_kernel_dimension": 160,
+      "gauge_image_lies_in_euler_kernel": true,
+      "physical_cohomology_dimension": 128,
+      "expected_physical_cohomology_dimension": 128,
+      "passed": true
+    }
+  ],
+  "raw_potential_quotient_dimensions": [
+    55,
+    120,
+    320
+  ],
+  "physical_bosonic_split": [
+    44,
+    84
+  ],
+  "physical_bosonic_dimension": 128,
+  "physical_fermionic_dimension": 128,
+  "three_form_reducibility": {
+    "chain_dimensions": [
+      [
+        11,
+        1
+      ],
+      [
+        55,
+        11
+      ],
+      [
+        165,
+        55
+      ]
+    ],
+    "chain_ranks_at_null_momentum": [
+      1,
+      10,
+      45
+    ],
+    "first_composition_residual_entries": 0,
+    "second_composition_residual_entries": 0,
+    "rank_exactness": [
+      true,
+      true
+    ],
+    "passed": true
+  },
+  "dependency_bindings": [
+    {
+      "path": "results/adynkra_11d_target_equation_complex.json",
+      "expected_sha256": "1aa334d1f2cbcc8a46bf2f915b5aeadf16543131241dcdcdc7257e6252d90092",
+      "observed_sha256": "1aa334d1f2cbcc8a46bf2f915b5aeadf16543131241dcdcdc7257e6252d90092",
+      "passed_field": true,
+      "matched": true
+    },
+    {
+      "path": "results/adynkra_11d_free_complex_validation.json",
+      "expected_sha256": "d151cfc2b086a737aee7c02f85c6b2b77332451506a8a47cbe78d642876c17e0",
+      "observed_sha256": "d151cfc2b086a737aee7c02f85c6b2b77332451506a8a47cbe78d642876c17e0",
+      "passed_field": true,
+      "matched": true
+    },
+    {
+      "path": "results/adynkra_11d_a3_curl_fiber_product.json",
+      "expected_sha256": "53f078a1189555734a9c48f674a0528f620460d0ffe8cd60d461f1533b13558a",
+      "observed_sha256": "53f078a1189555734a9c48f674a0528f620460d0ffe8cd60d461f1533b13558a",
+      "passed_field": true,
+      "matched": true
+    },
+    {
+      "path": "results/adynkra_11d_graviton_gravitino_relative.json",
+      "expected_sha256": "17f9f227491a1f12bc8449a51f19039522bde86e1a3e1de8250cd9fd01bb11a3",
+      "observed_sha256": "17f9f227491a1f12bc8449a51f19039522bde86e1a3e1de8250cd9fd01bb11a3",
+      "passed_field": true,
+      "matched": true
+    },
+    {
+      "path": "results/adynkra_11d_graviton_relative_oracle.json",
+      "expected_sha256": "b03408ee5e3bf7e7156e47636fe189d47a48dc8a20794c7eefec568cdcc8c789",
+      "observed_sha256": "b03408ee5e3bf7e7156e47636fe189d47a48dc8a20794c7eefec568cdcc8c789",
+      "passed_field": true,
+      "matched": true
+    }
+  ],
+  "source_sha256": {
+    "src/eleven_dimensional_free_complex.rs": "fdbe27f7dc5af3927d0b617430a573aece45d5c1a598728f119f070ffd9d2b94",
+    "src/eleven_dimensional_physical_component_k.rs": "6301d8049528a17935f0b1957c529958a6c4ff0611824264b59401f7d32048ca",
+    "src/eleven_dimensional_target_equation_complex.rs": "724b4a690746bf1823460ed57c9b16a67d3fc698ad020bff68df78b89251e958"
+  },
+  "passed": true,
+  "scope_boundary": "This is the independent free component-field complex only. It constructs K from component gauge parameters into (h,A3,psi) and F from those component potentials into (R,G4,curl). It does not construct, infer, or validate the missing prepotential map K: H_Xi -> H_hat, a source superfield equation, auxiliary fields, interactions, or off-shell supersymmetry closure."
+}

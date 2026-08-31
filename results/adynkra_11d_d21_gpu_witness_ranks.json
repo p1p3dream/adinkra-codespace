@@ -1,0 +1,555 @@
+{
+  "boundary": "Three-prime witness ranks and exact nonzero selected minors certify the 52-dimensional antisymmetrized equivariant diagram span. This report does not yet bind final 56 global column streams or solve the physical coefficient equations.",
+  "c4_device_csr_sha256": "c8b470ac061937c1d54f523d52acc495af1e07c36f9bc9676eea7ae79e305440",
+  "channels": [
+    {
+      "candidate_diagrams": 21,
+      "kernel_milliseconds": 721.527099609375,
+      "outer_fierz_degree": 0,
+      "sectors": [
+        {
+          "exact_determinant": "-10616832",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "ae5a150831ddec100333359a55261f80cb12e465c1aad1b383481b0b5fac3e5c",
+          "expected_rank": 1,
+          "global_columns": [
+            0
+          ],
+          "per_prime_ranks": [
+            1,
+            1,
+            1
+          ],
+          "projector_denominator": 48660480,
+          "sector": "00001",
+          "selected_diagram_ordinals": [
+            0
+          ],
+          "selected_local_candidates": [
+            0
+          ],
+          "witness_rows": [
+            594739214
+          ]
+        },
+        {
+          "exact_determinant": null,
+          "expected_rank": 0,
+          "per_prime_ranks": [
+            0,
+            0,
+            0
+          ],
+          "sector": "00011",
+          "selected_diagram_ordinals": [],
+          "selected_local_candidates": [],
+          "witness_rows": []
+        },
+        {
+          "exact_determinant": null,
+          "expected_rank": 0,
+          "per_prime_ranks": [
+            0,
+            0,
+            0
+          ],
+          "sector": "00101",
+          "selected_diagram_ordinals": [],
+          "selected_local_candidates": [],
+          "witness_rows": []
+        },
+        {
+          "exact_determinant": "-1032192",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "d01b5036dd1936a7f026a747f62d226a15b7be12f1d5ee27493207aa6ea3b2ae",
+          "expected_rank": 1,
+          "global_columns": [
+            25
+          ],
+          "per_prime_ranks": [
+            1,
+            1,
+            1
+          ],
+          "projector_denominator": 3870720,
+          "sector": "01001",
+          "selected_diagram_ordinals": [
+            0
+          ],
+          "selected_local_candidates": [
+            0
+          ],
+          "witness_rows": [
+            594739214
+          ]
+        },
+        {
+          "exact_determinant": "-4128768",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "9393c28bbdb88f8078acbe34c434c27b71eef5d78ecc639f1c45aaa44c59d069",
+          "expected_rank": 1,
+          "global_columns": [
+            39
+          ],
+          "per_prime_ranks": [
+            1,
+            1,
+            1
+          ],
+          "projector_denominator": -8515584,
+          "sector": "10001",
+          "selected_diagram_ordinals": [
+            0
+          ],
+          "selected_local_candidates": [
+            0
+          ],
+          "witness_rows": [
+            594739214
+          ]
+        }
+      ],
+      "witnesses_scanned": 32
+    },
+    {
+      "candidate_diagrams": 209,
+      "kernel_milliseconds": 1957.6466064453125,
+      "outer_fierz_degree": 3,
+      "sectors": [
+        {
+          "exact_determinant": "39397489540237099008",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "a6dd84df926db022efa4c5a6dfec24eb1f4e36f93e6ea3e6829e7eb28ede020a",
+          "expected_rank": 3,
+          "global_columns": [
+            1,
+            2,
+            3
+          ],
+          "per_prime_ranks": [
+            3,
+            3,
+            3
+          ],
+          "projector_denominator": 48660480,
+          "sector": "00001",
+          "selected_diagram_ordinals": [
+            21,
+            33,
+            45
+          ],
+          "selected_local_candidates": [
+            0,
+            12,
+            24
+          ],
+          "witness_rows": [
+            594739214,
+            1392410462,
+            2784820051
+          ]
+        },
+        {
+          "exact_determinant": "-8697308774400",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "ada3aedbc654cc51fccb039f2fdf18632e9c17a361d00e96172c69f0e2c85f6c",
+          "expected_rank": 2,
+          "global_columns": [
+            7,
+            8
+          ],
+          "per_prime_ranks": [
+            2,
+            2,
+            2
+          ],
+          "projector_denominator": 10321920,
+          "sector": "00011",
+          "selected_diagram_ordinals": [
+            45,
+            57
+          ],
+          "selected_local_candidates": [
+            24,
+            36
+          ],
+          "witness_rows": [
+            1392410462,
+            2784820051
+          ]
+        },
+        {
+          "exact_determinant": "-13785969539919765684879360000000",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "2ed216884641bfc125ae426ebcf2bd4c7d55cb57883abb3e25b6f666a7167f83",
+          "expected_rank": 5,
+          "global_columns": [
+            14,
+            15,
+            16,
+            17,
+            18
+          ],
+          "per_prime_ranks": [
+            5,
+            5,
+            5
+          ],
+          "projector_denominator": -3870720,
+          "sector": "00101",
+          "selected_diagram_ordinals": [
+            21,
+            33,
+            45,
+            47,
+            57
+          ],
+          "selected_local_candidates": [
+            0,
+            12,
+            24,
+            26,
+            36
+          ],
+          "witness_rows": [
+            594739214,
+            1392410462,
+            1392410476,
+            2784820051,
+            2784820068
+          ]
+        },
+        {
+          "exact_determinant": "46628102050115953563425165663010816000",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "a051796e0d7cb1f54240e5e4e27d952a273d1bd48e2f414249a7b4a951351bb0",
+          "expected_rank": 6,
+          "global_columns": [
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "per_prime_ranks": [
+            6,
+            6,
+            6
+          ],
+          "projector_denominator": 3870720,
+          "sector": "01001",
+          "selected_diagram_ordinals": [
+            21,
+            79,
+            33,
+            45,
+            47,
+            57
+          ],
+          "selected_local_candidates": [
+            0,
+            58,
+            12,
+            24,
+            26,
+            36
+          ],
+          "witness_rows": [
+            594739214,
+            594739530,
+            1392410462,
+            1392410476,
+            2784820051,
+            2784820068
+          ]
+        },
+        {
+          "exact_determinant": "3118252047838708978736012864594431180800",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "67cb1bdf519effe04397e04200de0cba032bfd59954d4deb18c27678b84e5acd",
+          "expected_rank": 6,
+          "global_columns": [
+            40,
+            41,
+            42,
+            43,
+            44,
+            45
+          ],
+          "per_prime_ranks": [
+            6,
+            6,
+            6
+          ],
+          "projector_denominator": -8515584,
+          "sector": "10001",
+          "selected_diagram_ordinals": [
+            21,
+            69,
+            33,
+            45,
+            47,
+            57
+          ],
+          "selected_local_candidates": [
+            0,
+            48,
+            12,
+            24,
+            26,
+            36
+          ],
+          "witness_rows": [
+            594739214,
+            594739530,
+            1392410462,
+            1392410476,
+            2784820051,
+            2784820068
+          ]
+        }
+      ],
+      "witnesses_scanned": 32
+    },
+    {
+      "candidate_diagrams": 170,
+      "kernel_milliseconds": 2196.13916015625,
+      "outer_fierz_degree": 4,
+      "sectors": [
+        {
+          "exact_determinant": "-155127615064683577344",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "6204d79a965a38baa8ee4485ee74032552671e481077db6ef91c8a015d03b794",
+          "expected_rank": 3,
+          "global_columns": [
+            4,
+            5,
+            6
+          ],
+          "per_prime_ranks": [
+            3,
+            3,
+            3
+          ],
+          "projector_denominator": 48660480,
+          "sector": "00001",
+          "selected_diagram_ordinals": [
+            238,
+            234,
+            230
+          ],
+          "selected_local_candidates": [
+            8,
+            4,
+            0
+          ],
+          "witness_rows": [
+            594739214,
+            1392410462,
+            2784820051
+          ]
+        },
+        {
+          "exact_determinant": "-1761506077448824912396061813935964160",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "d52dfafc4e40d014cb6ac2ffb74192627da8f2f62b854a3eec1c8cc38933b771",
+          "expected_rank": 5,
+          "global_columns": [
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "per_prime_ranks": [
+            5,
+            5,
+            5
+          ],
+          "projector_denominator": 10321920,
+          "sector": "00011",
+          "selected_diagram_ordinals": [
+            238,
+            234,
+            278,
+            290,
+            230
+          ],
+          "selected_local_candidates": [
+            8,
+            4,
+            48,
+            60,
+            0
+          ],
+          "witness_rows": [
+            594739214,
+            1392410462,
+            1392410476,
+            1392410600,
+            2784820051
+          ]
+        },
+        {
+          "exact_determinant": "7909942313906751714066019188278820864000",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "bfd9af46f0bc6bb0a48b255f9aa744ad378b1a799ebff3ff83bfdf43a00906e9",
+          "expected_rank": 6,
+          "global_columns": [
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "per_prime_ranks": [
+            6,
+            6,
+            6
+          ],
+          "projector_denominator": -3870720,
+          "sector": "00101",
+          "selected_diagram_ordinals": [
+            238,
+            234,
+            249,
+            278,
+            290,
+            230
+          ],
+          "selected_local_candidates": [
+            8,
+            4,
+            19,
+            48,
+            60,
+            0
+          ],
+          "witness_rows": [
+            594739214,
+            1392410462,
+            1392410476,
+            1392410600,
+            1392410608,
+            2784820051
+          ]
+        },
+        {
+          "exact_determinant": "736376054843093281010245913519327240886681600000",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "80d60e21a0024bfc751e57cc8d4aa82c82f0397a81e80979d3183d226c17f0b2",
+          "expected_rank": 7,
+          "global_columns": [
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38
+          ],
+          "per_prime_ranks": [
+            7,
+            7,
+            7
+          ],
+          "projector_denominator": 3870720,
+          "sector": "01001",
+          "selected_diagram_ordinals": [
+            238,
+            278,
+            234,
+            249,
+            290,
+            230,
+            239
+          ],
+          "selected_local_candidates": [
+            8,
+            48,
+            4,
+            19,
+            60,
+            0,
+            9
+          ],
+          "witness_rows": [
+            594739214,
+            594739530,
+            1392410462,
+            1392410476,
+            1392410600,
+            2784820051,
+            2784820068
+          ]
+        },
+        {
+          "exact_determinant": "-129719285190090293515418135167128337121280",
+          "exact_determinant_nonzero": true,
+          "exact_matrix_sha256": "f931aeb0e7aa92d7c6ddb93303ea26651c14192f7fef9f1bad54edbbf4d9d394",
+          "expected_rank": 6,
+          "global_columns": [
+            46,
+            47,
+            48,
+            49,
+            50,
+            51
+          ],
+          "per_prime_ranks": [
+            6,
+            6,
+            6
+          ],
+          "projector_denominator": -8515584,
+          "sector": "10001",
+          "selected_diagram_ordinals": [
+            238,
+            278,
+            234,
+            249,
+            230,
+            239
+          ],
+          "selected_local_candidates": [
+            8,
+            48,
+            4,
+            19,
+            0,
+            9
+          ],
+          "witness_rows": [
+            594739214,
+            594739530,
+            1392410462,
+            1392410476,
+            2784820051,
+            2784820068
+          ]
+        }
+      ],
+      "witnesses_scanned": 32
+    }
+  ],
+  "device": "RTX 4090",
+  "expected_plus_one_sentinel": true,
+  "frozen_device_diagram_blob_sha256": "ecf6545e4b6cc997a9f6ad5744e810892b76837b6eb6dd1c4e8f8f97757c901c",
+  "metric_variance": {
+    "gamma_attachments": "momentum 1; H and output eta",
+    "h_output": "eta",
+    "momentum_h": 1,
+    "momentum_output": 1
+  },
+  "ordered_primes": [
+    1073741783,
+    1073741723,
+    1073741719
+  ],
+  "output_antisymmetrization": "all 24 S4 permutations with parity; common factor 24 is retained",
+  "passed": true,
+  "schema_version": "adynkra-11d-d21-gpu-witness-rank-v1",
+  "witnesses_per_channel": 32
+}

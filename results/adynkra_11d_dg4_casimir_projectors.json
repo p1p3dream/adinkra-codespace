@@ -1,0 +1,72 @@
+{
+  "schema_version": "adynkra-11d-dg4-casimir-projector-canary-v1",
+  "target": "S tensor Lambda4(V) = 00001 + 00011 + 00101 + 01001 + 10001",
+  "target_dimension": 10560,
+  "module_source_sha256": "f8b5b3d07903d311abb2738f7e2b718033190490a948955860b276644af0a812",
+  "cartesian_basis_sha256": "f2dfae7e9422a639142622e431fcf10166edeb9ae9f5976169ec638a3148e739",
+  "casimir_operator_sha256": "50bd1a225f783092467131c525075be88e3f00b89561804305179150a21e421a",
+  "projector_polynomials_sha256": "cd27eea281fe760fe010aeb24d638d50138044c6b52baf55c34c60df51c9ff91",
+  "sectors": [
+    {
+      "dynkin_label": "00001",
+      "expected_dimension": 32,
+      "casimir4_eigenvalue": 55
+    },
+    {
+      "dynkin_label": "00011",
+      "expected_dimension": 5280,
+      "casimir4_eigenvalue": 183
+    },
+    {
+      "dynkin_label": "00101",
+      "expected_dimension": 3520,
+      "casimir4_eigenvalue": 163
+    },
+    {
+      "dynkin_label": "01001",
+      "expected_dimension": 1408,
+      "casimir4_eigenvalue": 135
+    },
+    {
+      "dynkin_label": "10001",
+      "expected_dimension": 320,
+      "casimir4_eigenvalue": 99
+    }
+  ],
+  "sector_dimensions_sum": 10560,
+  "casimir_columns_constructed": 10560,
+  "minimum_casimir_column_support": 29,
+  "maximum_casimir_column_support": 29,
+  "sample_basis_ordinals": [
+    0,
+    1,
+    329,
+    330,
+    1649,
+    5279,
+    10559
+  ],
+  "minimal_polynomial_sample_residuals": 0,
+  "projector_sum_sample_residuals": 0,
+  "projector_eigen_sample_residuals": 0,
+  "wrong_eigenvalue_mutation_residuals": 330,
+  "exhaustive_minimal_polynomial_columns_checked": 10560,
+  "exhaustive_minimal_polynomial_residuals": 0,
+  "exhaustive_projector_traces": [
+    "32",
+    "5280",
+    "3520",
+    "1408",
+    "320"
+  ],
+  "exhaustive_projector_ranks": [
+    32,
+    5280,
+    3520,
+    1408,
+    320
+  ],
+  "exhaustive_projector_ranks_constructed": true,
+  "passed_canary": true,
+  "boundary": "The canary checks the Casimir convention and exact spectral projectors on deterministic Cartesian basis samples. The minimal polynomial and projector ranks are exhaustive over all 10,560 Cartesian columns. Explicit serialized projector rows, source-side Hom intertwiners, PBW integrability, Bianchi descent, and GPU row emission remain open."
+}

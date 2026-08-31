@@ -1,0 +1,504 @@
+{
+  "schema_version": "adynkra-11d-dg4-c4-device-csr-v1",
+  "target_dimension": 10560,
+  "proof_primes": [
+    1073741783,
+    1073741723,
+    1073741719
+  ],
+  "module_source_sha256": "50c0902b8edfae664c5450b24dc85a981ce40eb45ecc65559e4c16eb31adeffe",
+  "cartesian_basis_sha256": "f2dfae7e9422a639142622e431fcf10166edeb9ae9f5976169ec638a3148e739",
+  "casimir_operator_sha256": "50bd1a225f783092467131c525075be88e3f00b89561804305179150a21e421a",
+  "projector_polynomials_sha256": "cd27eea281fe760fe010aeb24d638d50138044c6b52baf55c34c60df51c9ff91",
+  "row_statistics": {
+    "rows": 10560,
+    "nonzeros": 306240,
+    "minimum_row_nonzeros": 29,
+    "maximum_row_nonzeros": 29,
+    "row_nonzero_histogram": {
+      "29": 10560
+    }
+  },
+  "exact_coefficient_minimum": -4,
+  "exact_coefficient_maximum": 167,
+  "csr_structure_sha256": "08bd2ac0b656dadaabe56b05f764d8a4a8b5c8c503f7441ad626e7a2594c541e",
+  "exact_coefficients_sha256": "b9fc402c967550ae4717e729abbf00c9da132c280c31ae6ed685d061205ac1eb",
+  "modular_coefficients_sha256": "82f150ff77fabb91cbe3a4b6ca9abb85b5d1a6430ed815f07983ba11b6b5267d",
+  "projector_specs_sha256": "15bfc2a7c71ec168ce8b66e8ef280736a7f9a3b005b1c129629af856a27e06f6",
+  "binary_file": "adynkra_11d_dg4_c4_device_csr.csr.bin",
+  "binary_sha256": "c8b470ac061937c1d54f523d52acc495af1e07c36f9bc9676eea7ae79e305440",
+  "binary_bytes": 7392408,
+  "projectors": [
+    {
+      "dynkin_label": "00001",
+      "target_eigenvalue": 55,
+      "ordered_shift_eigenvalues": [
+        183,
+        163,
+        135,
+        99
+      ],
+      "exact_denominator": 48660480,
+      "denominator_residues": [
+        48660480,
+        48660480,
+        48660480
+      ],
+      "inverse_denominator_residues": [
+        224306837,
+        1059559756,
+        1057923956
+      ]
+    },
+    {
+      "dynkin_label": "00011",
+      "target_eigenvalue": 183,
+      "ordered_shift_eigenvalues": [
+        55,
+        163,
+        135,
+        99
+      ],
+      "exact_denominator": 10321920,
+      "denominator_residues": [
+        10321920,
+        10321920,
+        10321920
+      ],
+      "inverse_denominator_residues": [
+        904054834,
+        239925505,
+        78822220
+      ]
+    },
+    {
+      "dynkin_label": "00101",
+      "target_eigenvalue": 163,
+      "ordered_shift_eigenvalues": [
+        55,
+        183,
+        135,
+        99
+      ],
+      "exact_denominator": -3870720,
+      "denominator_residues": [
+        1069871063,
+        1069871003,
+        1069870999
+      ],
+      "inverse_denominator_residues": [
+        94584603,
+        791854284,
+        505635226
+      ]
+    },
+    {
+      "dynkin_label": "01001",
+      "target_eigenvalue": 135,
+      "ordered_shift_eigenvalues": [
+        55,
+        183,
+        163,
+        99
+      ],
+      "exact_denominator": 3870720,
+      "denominator_residues": [
+        3870720,
+        3870720,
+        3870720
+      ],
+      "inverse_denominator_residues": [
+        979157180,
+        281887439,
+        568106493
+      ]
+    },
+    {
+      "dynkin_label": "10001",
+      "target_eigenvalue": 99,
+      "ordered_shift_eigenvalues": [
+        55,
+        183,
+        163,
+        135
+      ],
+      "exact_denominator": -8515584,
+      "denominator_residues": [
+        1065226199,
+        1065226139,
+        1065226135
+      ],
+      "inverse_denominator_residues": [
+        1019121895,
+        847998185,
+        1010737262
+      ]
+    }
+  ],
+  "parity_canaries": [
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741783,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741783,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741783,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741723,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741723,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741723,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741719,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741719,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00001",
+      "prime": 1073741719,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741783,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741783,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741783,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741723,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741723,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741723,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741719,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741719,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00011",
+      "prime": 1073741719,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741783,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741783,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741783,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741723,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741723,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741723,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741719,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741719,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "00101",
+      "prime": 1073741719,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741783,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741783,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741783,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741723,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741723,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741723,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741719,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741719,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "01001",
+      "prime": 1073741719,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741783,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741783,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741783,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741723,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741723,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741723,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741719,
+      "input_ordinal": 0,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741719,
+      "input_ordinal": 5279,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    },
+    {
+      "dynkin_label": "10001",
+      "prime": 1073741719,
+      "input_ordinal": 10559,
+      "four_stages_checked": 4,
+      "expected_nonzeros": 330,
+      "residual_entries": 0
+    }
+  ],
+  "parity_canary_sha256": "7d99c87d13210ef1aab85f8f648c9ae16dd86aa58263a5150ba9fd52fe408487",
+  "wrong_shift_mutation_residual_entries": 295,
+  "passed": true,
+  "boundary": "The binary freezes exact C4 CSR, prime-major modular coefficients, and five four-shift projector specifications. CPU canaries replay every stage at three primes. Device execution and device-produced pivot certificates remain separate acceptance gates."
+}

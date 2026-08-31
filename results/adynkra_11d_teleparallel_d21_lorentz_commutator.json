@@ -1,0 +1,330 @@
+{
+  "boundary": "This exact witness-source audit rejects the corrected teleparallel stream as a Lorentz intertwiner into raw D G4. It does not prove that the stream fails after a correctly constructed local-Lorentz or target-gauge quotient. The earlier rank-53 augmented witness is not a physical no-go because it compared an equivariant Hom basis with a non-equivariant gauge-fixed target.",
+  "cached_h_hat_columns": 34,
+  "decisive_augmented_row": 1392410608,
+  "decisive_row_residuals": 0,
+  "decisive_row_target_coordinate": 688,
+  "first_residual": {
+    "canonical_row": 1392410149,
+    "generator": [
+      0,
+      2
+    ],
+    "imaginary_denominator": "1536",
+    "imaginary_numerator": "7",
+    "real_denominator": "5376",
+    "real_numerator": "9325",
+    "target_coordinate": 229
+  },
+  "generator_residual_counts": [
+    {
+      "left": 0,
+      "residual_rows": 0,
+      "right": 1
+    },
+    {
+      "left": 0,
+      "residual_rows": 112,
+      "right": 2
+    },
+    {
+      "left": 0,
+      "residual_rows": 112,
+      "right": 3
+    },
+    {
+      "left": 0,
+      "residual_rows": 120,
+      "right": 4
+    },
+    {
+      "left": 0,
+      "residual_rows": 120,
+      "right": 5
+    },
+    {
+      "left": 0,
+      "residual_rows": 112,
+      "right": 6
+    },
+    {
+      "left": 0,
+      "residual_rows": 112,
+      "right": 7
+    },
+    {
+      "left": 0,
+      "residual_rows": 112,
+      "right": 8
+    },
+    {
+      "left": 0,
+      "residual_rows": 112,
+      "right": 9
+    },
+    {
+      "left": 0,
+      "residual_rows": 120,
+      "right": 10
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 2
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 3
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 4
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 5
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 6
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 7
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 1,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 3
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 4
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 5
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 6
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 7
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 2,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 4
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 5
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 6
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 7
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 3,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 4,
+      "residual_rows": 0,
+      "right": 5
+    },
+    {
+      "left": 4,
+      "residual_rows": 0,
+      "right": 6
+    },
+    {
+      "left": 4,
+      "residual_rows": 0,
+      "right": 7
+    },
+    {
+      "left": 4,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 4,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 4,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 5,
+      "residual_rows": 0,
+      "right": 6
+    },
+    {
+      "left": 5,
+      "residual_rows": 0,
+      "right": 7
+    },
+    {
+      "left": 5,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 5,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 5,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 6,
+      "residual_rows": 0,
+      "right": 7
+    },
+    {
+      "left": 6,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 6,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 6,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 7,
+      "residual_rows": 0,
+      "right": 8
+    },
+    {
+      "left": 7,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 7,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 8,
+      "residual_rows": 0,
+      "right": 9
+    },
+    {
+      "left": 8,
+      "residual_rows": 0,
+      "right": 10
+    },
+    {
+      "left": 9,
+      "residual_rows": 0,
+      "right": 10
+    }
+  ],
+  "generators_checked": 55,
+  "lorentz_equivariant": false,
+  "next_executable_step": "Construct the exact local-Lorentz or source-gauge image, reduce this commutator cocycle in the declared quotient, and require zero residual before rerunning the 56-column coefficient solve.",
+  "outcome": "gauge_fixed_non_equivariant_target_not_a_d21_hom_member",
+  "passed": true,
+  "physics_promotion_blocked": true,
+  "quarantined_global57_sha256": "5645e60a1e81222b654edc25b488ca5874fecc1919ac0890cc538b7c34a77e1f",
+  "residual_stream_sha256": "534360babeffee961283c74f77c2c489c068b5eccedf80253adbd67bb9013d53",
+  "schema_version": "adynkra-11d-teleparallel-d21-lorentz-commutator-v1",
+  "source_action_oracle": {
+    "generators_per_diagram": 55,
+    "known_invariant_diagrams": [
+      0,
+      21,
+      238
+    ],
+    "residual_rows": 0,
+    "test": "d21_full_source_generator_matches_invariant_diagrams"
+  },
+  "source_coordinate": 131857,
+  "source_parts": {
+    "h_hat": 17,
+    "momentum": 5,
+    "outer_pair": [
+      1,
+      8
+    ]
+  },
+  "source_sha256": {
+    "d21_source_action": "e6557b9e70ea09ab10c754d34c8e9100de670f284af38f7335aafde0fde98778",
+    "gpu_audit": "8c3ce31163b5402d468bbb03934e46ecda22edc6eef74917df8484e97222173c",
+    "physics_rows": "91408ac85f068416acc02ce5ceb7a885307fada5c76783dedf63461db6840291"
+  },
+  "total_residual_rows": 1032
+}

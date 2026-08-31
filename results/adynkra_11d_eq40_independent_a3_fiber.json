@@ -1,0 +1,145 @@
+{
+  "schema_version": "adynkra-11d-eq40-independent-a3-fiber-v1",
+  "source_ordinal": 0,
+  "typed_source": "S_D tensor H_hat at (D=1,p=0), differentiated once in PBW normal form",
+  "candidate_potential_bidegree": [
+    1,
+    0
+  ],
+  "compared_descendant_bidegree": [
+    2,
+    1
+  ],
+  "pbw_descendant_bidegrees": [
+    [
+      2,
+      1
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "target_join": "corrected numeric-mask Lambda3 -> lexicographic A3 -> target d:A3->G4 -> exact Eq3.1g image projector",
+  "derivative_index_contract": "beta is contracted inside Psi3=(1/16) Gamma2^{beta gamma} D_beta H_gamma; the subsequently applied D_alpha remains the free DG4 derivative row",
+  "contracted_inner_beta_and_free_outer_alpha": true,
+  "derivative_index_relabel_used": false,
+  "gauge_quotient": "comparison is after d, so A3 gauge image p wedge Lambda2 is annihilated exactly; no negative-momentum gauge parameter is admitted at candidate p-degree zero",
+  "hhat_lambda3_hom_dimension": 1,
+  "full_h_lambda3_hom_dimension": 2,
+  "general_d2_p1_dg4_hom_dimension": 52,
+  "general_d0_p2_dg4_hom_dimension": 4,
+  "corrected_lambda3_complete_for_stated_slice": true,
+  "gamma24_source_variance_passed": true,
+  "corrected_lambda3_operator_rank": 165,
+  "eq31g_operator_dimensions": [
+    10560,
+    1760
+  ],
+  "eq31g_operator_nonzero_entries": 63360,
+  "projector_in_image_canary_residual_rows": 0,
+  "projector_off_image_mutation_residual_rows": 204,
+  "physical_fiber_certificate_path": "results/adynkra_11d_a3_curl_fiber_product.json",
+  "physical_fiber_certificate_sha256": "53f078a1189555734a9c48f674a0528f620460d0ffe8cd60d461f1533b13558a",
+  "physical_fiber_certificate_expected_sha256": "53f078a1189555734a9c48f674a0528f620460d0ffe8cd60d461f1533b13558a",
+  "physical_fiber_certificate_hash_matches": true,
+  "physical_fiber_certificate_passed": true,
+  "physical_fiber_intersection_dimension": 320,
+  "hom_inventory_path": "results/adynkra_11d_higher_bidegree_hom_inventory.json",
+  "hom_inventory_sha256": "0e595b3787e9d9c1c60090b270bdc7a967efcea064850d9f3531d103b49bb52f",
+  "hom_inventory_expected_sha256": "0e595b3787e9d9c1c60090b270bdc7a967efcea064850d9f3531d103b49bb52f",
+  "hom_inventory_hash_matches": true,
+  "candidate_rows": 18972,
+  "pbw_monomial_slices": 3681,
+  "on_image_slices": 21,
+  "off_image_slices": 3660,
+  "recovered_curl_rows": 155293,
+  "exact_image_residual_rows": 869616,
+  "d2_p1": {
+    "bidegree": [
+      2,
+      1
+    ],
+    "candidate_rows": 17856,
+    "monomial_slices": 3660,
+    "on_image_slices": 0,
+    "off_image_slices": 3660,
+    "recovered_curl_rows": 155254,
+    "exact_image_residual_rows": 869616
+  },
+  "d0_p2": {
+    "bidegree": [
+      0,
+      2
+    ],
+    "candidate_rows": 1116,
+    "monomial_slices": 21,
+    "on_image_slices": 21,
+    "off_image_slices": 0,
+    "recovered_curl_rows": 39,
+    "exact_image_residual_rows": 0
+  },
+  "unexpected_bidegree_slices": 0,
+  "first_off_image_witness": {
+    "monomial": {
+      "exterior_spinor_mask": 3,
+      "momentum_exponents": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "target_coordinate": 42,
+    "candidate": {
+      "real": [
+        1,
+        48
+      ],
+      "imaginary": [
+        0,
+        1
+      ]
+    },
+    "reconstructed_image": {
+      "real": [
+        1,
+        336
+      ],
+      "imaginary": [
+        0,
+        1
+      ]
+    },
+    "residual": {
+      "real": [
+        -1,
+        56
+      ],
+      "imaginary": [
+        0,
+        1
+      ]
+    }
+  },
+  "candidate_g4_bianchi_residual_rows": 0,
+  "candidate_stream_sha256": "ac82918b69c465027bedf709a8ff53cb62e840c90c41a83cdaa47f7843916420",
+  "oracle_source_sha256": "276bacba7c04f04fc2c58517288128d17da7ec54ad4292bc987d279753eec1cc",
+  "source_sha256": {
+    "src/eleven_dimensional_eq40_independent_a3_fiber.rs": "276bacba7c04f04fc2c58517288128d17da7ec54ad4292bc987d279753eec1cc",
+    "src/eleven_dimensional_gamma24_source_variance.rs": "8b5738bdafd0054ecf5586b45520ca38843083c046b8fa7368abe960af0021c5",
+    "src/eleven_dimensional_physical_curvature.rs": "051e0f604fbf5c6aa07479f8945b9736fa803a7c5f5f3d002cc7fead064cef0d",
+    "src/eleven_dimensional_superderivative_normal_form.rs": "df8ddf8d8ac4ec9c6e57bf550074c6278f2857849b478f1276e62e9f6dc5ff93",
+    "src/eleven_dimensional_target_equation_complex.rs": "724b4a690746bf1823460ed57c9b16a67d3fc698ad020bff68df78b89251e958"
+  },
+  "physical_fiber_compatible_on_unrestricted_hhat_slice": false,
+  "passed": true,
+  "boundary": "An off-image witness rules out identifying the unique corrected Eq40 Lambda3 ray with the ordinary physical A3 on the unrestricted Hhat PBW slice. It does not rule out a constrained source quotient, the gamma-trace spinor ray in full H, higher-bidegree potential maps, or a different physical source construction."
+}

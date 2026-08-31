@@ -1,0 +1,83 @@
+{
+  "schema_version": "adynkra-11d-corrected-full-chain-oracle-v1",
+  "source_ordinal": 0,
+  "source_variance_adapter": "right-multiply the H-spinor slot of every DH/DDH slice by primitive C before the Eq. (40) Gamma2/Gamma5 solves; (Gamma[p] C) C = -Gamma[p]",
+  "candidate_normalization": "Psi_[3] = (1/16) corrected Gamma2 exterior; numeric mask joined to lexicographic target A3",
+  "row_key": "(explicit outer derivative spinor * 330 + lexicographic G4 ordinal, ordered exterior-D mask, p_0..p_10 exponents)",
+  "corrected_psi_nonzero_terms": [
+    2,
+    72,
+    168,
+    252
+  ],
+  "corrected_d_psi_nonzero_terms": [
+    66,
+    2376,
+    5544,
+    8316
+  ],
+  "delta_nonzero_rows": 214,
+  "d_delta_nonzero_rows": 7062,
+  "delta_derivative_residual_rows": 0,
+  "corrected_eq25_frame_rows": 2128,
+  "corrected_curl_rows": 21278,
+  "eq29_curl_residual_rows": 0,
+  "candidate_rows": 18972,
+  "corrected_teleparallel_rows": 343720,
+  "common_rows": 0,
+  "candidate_only_rows": 18972,
+  "teleparallel_only_rows": 343720,
+  "exact_scale": null,
+  "exact_residual_rows": 343720,
+  "first_mismatch": {
+    "row": {
+      "output_coordinate": 0,
+      "exterior_spinor_mask": 65537,
+      "momentum_exponents": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "candidate": {
+      "real": [
+        0,
+        1
+      ],
+      "imaginary": [
+        0,
+        1
+      ]
+    },
+    "teleparallel": {
+      "real": [
+        1,
+        1280
+      ],
+      "imaginary": [
+        0,
+        1
+      ]
+    },
+    "residual": {
+      "real": [
+        -1,
+        1280
+      ],
+      "imaginary": [
+        0,
+        1
+      ]
+    }
+  },
+  "passed": false,
+  "boundary": "This is an independent first-column check of the fully source-variance-corrected compensator-to-teleparallel chain. Failure rules out proportionality on this unrestricted H_hat source column only; it does not prove bidegree exhaustion, target-gauge descent, or irreducibility."
+}

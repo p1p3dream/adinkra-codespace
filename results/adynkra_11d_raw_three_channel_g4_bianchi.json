@@ -1,0 +1,54 @@
+{
+  "schema_version": "adynkra-11d-raw-three-channel-g4-bianchi-v1",
+  "source_dimension": 10240,
+  "coefficient_columns": [
+    "p wedge Gamma4-trace Lambda3",
+    "i_p Gamma4-exterior Lambda5",
+    "p_e Gamma4-hook H_[4]{}^e"
+  ],
+  "g4_nonzero_rows_per_channel": [
+    184320,
+    403200,
+    695040
+  ],
+  "bianchi_nonzero_rows_per_channel": [
+    0,
+    2822400,
+    3709440
+  ],
+  "g4_coefficient_rank_mod_prime": 3,
+  "bianchi_coefficient_rank_mod_prime": 2,
+  "measured_raw_rank": 3630,
+  "measured_projection_ranks": [
+    165,
+    462,
+    3003
+  ],
+  "projector_reconstruction_residuals": 0,
+  "hook_trace_residuals": 0,
+  "hook_exterior_residuals": 0,
+  "trace_bianchi_residual_rows": 0,
+  "lambda_five_bianchi_residual_rows": 2822400,
+  "hook_bianchi_residual_rows": 3709440,
+  "adapter_equivariance_checks": 2575485,
+  "adapter_equivariance_residuals": 0,
+  "proof_prime": 1073741783,
+  "all_g4_columns_independent": true,
+  "bianchi_kernel_dimension": 1,
+  "exact_kernel_basis": [
+    [
+      1,
+      0,
+      0
+    ]
+  ],
+  "symbolic_rows_sha256": "dfe3b010d62c3ec86b65c3d147551ae15edd2986d5f63294da87db1c473b079b",
+  "module_source_sha256": "c7172139824ef12e3a2557449d849248a4eb88ea6756dd526b22a4b688da881b",
+  "legacy_normalization_report_sha256": "1efa2a40eafef1a9a7c6c1ae40ca2988da8154230948e87b31fb45749b3018b8",
+  "legacy_candidate_stream_sha256": "1c90694c58edac95c3448c5a28417aa86cdc89c05b506d8dee6e143157558b17",
+  "legacy_teleparallel_stream_sha256": "4508051083d064f67bebb7471662f087a16beea6bb2d5ab293a95421c36417fe",
+  "legacy_residual_stream_sha256": "51f950fa8b5ecf48421841d73b85e03c50b7e3521a1f6c677b525ddf152f236a",
+  "diagnostic_completed": true,
+  "passed": true,
+  "boundary": "This diagnostic proves exact tensor equivariance of the three raw momentum adapters, their coefficient rank on the complete canonical source basis, and the exact target Bianchi rank. It does not identify a raw channel with the physical four-form, fix normalization against the gravitino, impose target gauge K, or prove irreducibility."
+}

@@ -14,6 +14,18 @@ results/**/*.rejected.*
 results/.level12-rust-staging/
 results/eleven_dimensional_first_momentum_fx_checkpoints/
 results/eleven_dimensional_first_momentum_fx_shared_checkpoints/
+results/*.json.run/
+results/quarantine/
+results/*scratch*.json
+
+# Superseded 11D four-form normalization artifacts retained locally for audit
+results/adynkra_11d_corrected_lambda3_four_form_normalization.json
+results/adynkra_11d_corrected_lambda3_four_form_normalization_authoritative.json
+results/adynkra_11d_corrected_lambda3_four_form_normalization_v2.json
+results/adynkra_11d_corrected_lambda3_normalization_oracle_column0.json
+results/adynkra_11d_eq40_four_form_nonproportionality_witness.json
+results/adynkra_11d_eq40_four_form_normalization.json
+results/adynkra_11d_eq40_four_form_normalization_validation.json
 
 # Call recordings and transcripts, never commit
 transcripts/

@@ -1,0 +1,320 @@
+{
+  "schema_version": "adynkra-11d-graviton-gravitino-relative-v1",
+  "source_pdf_sha256": "3d40a1b32fa4491dee56b3e99802172d2c5039b2de198b987ce121a1bbb15cc3",
+  "source_equation": "hep-th/0101037 Eq.(41): delta_Q e_a{}^m=-epsilon^beta[T_{beta a}{}^b+psi_a{}^gamma T_{beta gamma}{}^b]e_b{}^m",
+  "inferred_flat_metric_formula": "D_alpha h_mn=i[(C Gamma_n)_{alpha gamma}psi_m{}^gamma+(C Gamma_m)_{alpha gamma}psi_n{}^gamma]",
+  "inference_steps": [
+    "Flat conventional torsion is T_{alpha beta}{}^c=i(Gamma^c)_{alpha beta} and T_{alpha a}{}^b=0.",
+    "Eq.(41) therefore gives D_alpha f_a{}^m=-i(C Gamma^m)_{alpha gamma}psi_a{}^gamma for e_a{}^m=delta_a{}^m+f_a{}^m.",
+    "The covariant metric perturbation is h_mn=-eta_nn f_m{}^n-eta_mm f_n{}^m, which gives the recorded symmetric formula with both vector metric factors."
+  ],
+  "pinned_primes": [
+    1073741783,
+    1073741723,
+    1073741719
+  ],
+  "axes": [
+    {
+      "momentum_axis": 0,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 0,
+      "first_d_riemann_value": "0+(2)i",
+      "d_riemann_stream_sha256": "c94bff6e2970c531bd421b4508b355787ad5caf9054aa323848a9e0f2eb50e12"
+    },
+    {
+      "momentum_axis": 1,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 0,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "fcd12a030ad084ec031390df84cc8f7d2e478df6ba2b0dfa1fe96adae17b01cb"
+    },
+    {
+      "momentum_axis": 2,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 56,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "e6fa0deeeb22fc81f37f56564626fc7f63a6b57f8f45ed460444a5771461cebe"
+    },
+    {
+      "momentum_axis": 3,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 112,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "7b087099a9fe582620dc67d589da66c0c7ed3771534c2d442dad67e95e5eeeeb"
+    },
+    {
+      "momentum_axis": 4,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 168,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "36bcf3979257c0fa6f29d726836456377aa170d2b1afe43069f3e8b86c8e627a"
+    },
+    {
+      "momentum_axis": 5,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 224,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "3343cd6ff838b1847febafc450350b40af3ebd0e852cc3118828d849eb50689e"
+    },
+    {
+      "momentum_axis": 6,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 280,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "a32a570c49b52f42d6c3e5b967a35a984eba0f5f611b92dd6d33459ff379d13c"
+    },
+    {
+      "momentum_axis": 7,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 336,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "70ed53042becad99c71a3b731e59ac60a2b0bf03a8dbd102b63a2bc3d4b326c5"
+    },
+    {
+      "momentum_axis": 8,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 392,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "3efd27f3662f16ce778a12bc00f99e8ffd4e9e24c134335690be7161b6c9d0ce"
+    },
+    {
+      "momentum_axis": 9,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 448,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "509b6498ea39ebee23b63a4c39ba73adcc72ea467b4666501f94bd8ea6fae432"
+    },
+    {
+      "momentum_axis": 10,
+      "d_riemann_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "curl_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "stacked_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "common_gauge_kernel_dimension": 32,
+      "exact_curl_factor_replay_residual_entries": 0,
+      "exact_d_riemann_gauge_residual_entries": 0,
+      "exact_curl_gauge_residual_entries": 0,
+      "omitted_symmetric_term_mutation_difference_entries": 3200,
+      "first_d_riemann_coordinate": 504,
+      "first_d_riemann_value": "0+(-2)i",
+      "d_riemann_stream_sha256": "e2314b7fc54cf213b5a9e0507c8cff48b967be3d92d2e6adc08216af4daf00a1"
+    }
+  ],
+  "characteristic_zero_common_rank": 320,
+  "characteristic_zero_common_kernel_dimension": 32,
+  "normalization_canary_passed": true,
+  "charge_square_minus_identity_residual_entries": 0,
+  "lower_c_gamma_symmetry_residual_entries": 0,
+  "no_c_mutation_difference_entries": 704,
+  "right_c_mutation_difference_entries": 320,
+  "spinor_basis_conversion": "The curl stores the upper Majorana spinor coordinate gamma unchanged. Eq.(41) lowers the derivative spinor with the primitive charge form, so its coefficient is (C Gamma_m)_{alpha gamma}. Both C and Gamma use the same real Majorana basis; C^2=-I and C Gamma_m is symmetric. Omitting C or multiplying C on the right changes the exact tensor and is rejected.",
+  "source_sha256": {
+    "src/eleven_dimensional_free_complex.rs": "fdbe27f7dc5af3927d0b617430a573aece45d5c1a598728f119f070ffd9d2b94",
+    "src/eleven_dimensional_graviton_gravitino_relative.rs": "7f078e071b97ac2cda9702ec7d6f01cbc4eb2161eff6341ff071847115c3531b",
+    "src/eleven_dimensional_majorana.rs": "14ce0d232b5dcc71dee945dda69dd93ce22787267d3e8f3bad6ae17c3a15c782",
+    "src/eleven_dimensional_target_equation_complex.rs": "724b4a690746bf1823460ed57c9b16a67d3fc698ad020bff68df78b89251e958"
+  },
+  "passed": true,
+  "scope_boundary": "This certifies the independent linearized component graviton/gravitino relative-curvature normalization and common gauge kernel. It does not invoke Eq25 or Hhat, identify the Hhat physical source, include nonlinear four-form terms, or prove irreducibility."
+}

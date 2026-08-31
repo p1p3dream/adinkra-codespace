@@ -1,0 +1,92 @@
+{
+  "schema_version": "adynkra-11d-independent-a3-pregauge-adapter-v1",
+  "role": "independent pre-gauge Abelian A3, G4, and D G4 target adapter",
+  "coefficient_field": "Q(i)[p_0,...,p_10]",
+  "source_boundary": "independent A3 and D A3 coordinates; no H_hat, Eq. (40), or Psi_[3] identification",
+  "a0_dimension": 1,
+  "a1_dimension": 11,
+  "a2_gauge_parameter_dimension": 55,
+  "a3_potential_dimension": 165,
+  "g4_curvature_dimension": 330,
+  "d_a3_dimension": 5280,
+  "d_g4_dimension": 10560,
+  "a0_to_a1_dimensions": [
+    11,
+    1
+  ],
+  "a1_to_a2_dimensions": [
+    55,
+    11
+  ],
+  "a2_to_a3_dimensions": [
+    165,
+    55
+  ],
+  "a3_to_g4_dimensions": [
+    330,
+    165
+  ],
+  "g4_bianchi_dimensions": [
+    462,
+    330
+  ],
+  "a0_to_a1_nonzero_terms": 11,
+  "a1_to_a2_nonzero_terms": 110,
+  "a2_to_a3_nonzero_terms": 495,
+  "a3_to_g4_nonzero_terms": 1320,
+  "g4_bianchi_nonzero_terms": 2310,
+  "reducibility_stage_zero_composition_residual_terms": 0,
+  "reducibility_stage_one_composition_residual_terms": 0,
+  "gauge_curvature_composition_residual_terms": 0,
+  "curvature_bianchi_composition_residual_terms": 0,
+  "d_g4_bianchi_columns_checked": 5280,
+  "d_g4_bianchi_residual_terms": 0,
+  "e0_a0_to_a1_rank": 1,
+  "e0_a1_to_a2_rank": 10,
+  "e0_a2_gauge_rank": 45,
+  "e0_a3_to_g4_rank": 120,
+  "e0_a3_quotient_dimension": 120,
+  "e0_closed_g4_dimension": 120,
+  "canonical_canary_derivative_spinor": 0,
+  "canonical_canary_a3_axes": [
+    1,
+    2,
+    3
+  ],
+  "canonical_canary_g4_axes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "canonical_canary_momentum_axis": 0,
+  "canonical_canary_coefficient": 1,
+  "canonical_canary_passed": true,
+  "local_lorentz_first_jet_columns_checked": 1760,
+  "local_lorentz_vertical_nonzero_terms": 0,
+  "local_lorentz_vertical_image_rank": 0,
+  "local_lorentz_source_disjoint": true,
+  "local_lorentz_mutation_detected": true,
+  "eq31g_forward_dimensions": [
+    10560,
+    1760
+  ],
+  "eq31g_forward_nonzero_entries": 63360,
+  "eq31g_nonzero_entries_per_column": 36,
+  "eq31g_canary_input_terms": 3,
+  "eq31g_canary_output_terms": 108,
+  "eq31g_left_inverse_residual_terms": 0,
+  "eq31g_off_image_mutation_rejected": true,
+  "a3_basis_sha256": "2b9e61bde5958b5ef81dad47243fc199665f3484d4cf80e9a989adecaff2929c",
+  "g4_basis_sha256": "7d8f4a57dd25b72d6895f71ed58084b3170dc6be02c9eabe0a3605f0b15c0684",
+  "target_complex_semantic_sha256": "25acf45c62acf4e6edec417f45f0a41b091092b05656c7d6bb50721d9c96c2c2",
+  "d_g4_stream_sha256": "5a9e3db1aa39f65cb3e6d42386102cb3cdf750af751094bbb952aea0e9f17da1",
+  "eq31g_operator_sha256": "adcded3f40034f446b0c794437281a3efd62b64ac41ec2e70172b14c07b04984",
+  "adapter_source_sha256": "4ca06cc68c180b10e963b99a37f6869be1a23c90311cefab0953153577d1c041",
+  "independent_a3_source_constructed": true,
+  "eq40_psi_three_used": false,
+  "h_hat_to_a3_identification_claimed": false,
+  "physical_h_hat_source_map_complete": false,
+  "passed": true,
+  "boundary": "Passing certifies the independent Abelian A3 gauge complex, G4 and D G4 target maps, exact Bianchi identities, zero local-Lorentz vertical image by source disjointness, and the algebraic hep-th/0107155 Eq. (3.1g) forward/left-inverse conventions. It does not identify Eq. (40) Psi_[3] with physical A3, construct A3 from H_hat, impose the on-shell Eq. (3.1g) relation on a common source, or prove irreducibility."
+}

@@ -1,0 +1,409 @@
+{
+  "schema_version": "adynkra-11d-a3-curl-fiber-product-v1",
+  "pinned_primes": [
+    1073741783,
+    1073741723,
+    1073741719
+  ],
+  "momentum_fibers": [
+    {
+      "momentum_axis": 0,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 1,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 2,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 3,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 4,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 5,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 6,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 7,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 8,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 9,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    },
+    {
+      "momentum_axis": 10,
+      "da3_image_rank": 3840,
+      "curl_image_rank": 1760,
+      "outside_rows": 6720,
+      "outside_nonzeros": 40320,
+      "outside_rank_by_prime": [
+        1440,
+        1440,
+        1440
+      ],
+      "intersection_dimension_by_prime": [
+        320,
+        320,
+        320
+      ]
+    }
+  ],
+  "exact_pairings": [
+    {
+      "momentum_axis": 0,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 0,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 330,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 210,
+      "first_da3_value": "-1/2+(0)i",
+      "paired_stream_sha256": "a4a1f6ffa990077adecf41beef0ce1f3c828be1b6aee13d2633542f496e88b5a"
+    },
+    {
+      "momentum_axis": 1,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 0,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 330,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "9d0e8d2f5364fe81d01fd2ffe74a33ba4811a72c8820be26a41381f22d08746e"
+    },
+    {
+      "momentum_axis": 2,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 32,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 373,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 189,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "e36ac6f502dfc905afea9c050bc9844d83cc184692c445d861fd2fc6ad075042"
+    },
+    {
+      "momentum_axis": 3,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 64,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 394,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 189,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "a7c181b88a2c1b8d55255f9b36d783ee884f461d054142e93ddaee5f1e24640d"
+    },
+    {
+      "momentum_axis": 4,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 96,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 366,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "b4c2122e5c3a1ca26d4bfa84aacc7f840bf58809a696bd88da5d1a24b5586c47"
+    },
+    {
+      "momentum_axis": 5,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 128,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 367,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "1e6e5c75449dffda12d4fc4d2263a59d42b46245b0c71a271f2da8a23d0436f8"
+    },
+    {
+      "momentum_axis": 6,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 160,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 368,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "b001c9bf47b134ddb16cc595462563fdc81bea135b0080b4492963ed92b67fd5"
+    },
+    {
+      "momentum_axis": 7,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 192,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 369,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "f9a64e81b16390ad849f7b8464a949c65b18cd9a5c81c2734d0fda957d6e0c46"
+    },
+    {
+      "momentum_axis": 8,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 224,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 370,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "d9c6a936df629f3bd90f63574a03d097adfdeb8ee2df0bd565f55ba165b155dd"
+    },
+    {
+      "momentum_axis": 9,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 256,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 371,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "75b7a11baf20e57425cdd26eb77eff82e2b354cdf35b732ac21fb25dd0454475"
+    },
+    {
+      "momentum_axis": 10,
+      "paired_maps": 320,
+      "curl_basis_rank_by_prime": [
+        320,
+        320,
+        320
+      ],
+      "outside_support_residual_entries": 0,
+      "exact_forward_replay_residual_entries": 0,
+      "first_curl_coordinate": 288,
+      "first_curl_value": "1+(0)i",
+      "first_dg4_coordinate": 372,
+      "first_dg4_value": "-1/2+(0)i",
+      "first_da3_coordinate": 174,
+      "first_da3_value": "1/2+(0)i",
+      "paired_stream_sha256": "be0480861005c89737e75d7d5cdc9045256bca86e80614a170cd4d799cebf71e"
+    }
+  ],
+  "characteristic_zero_intersection_dimension": 320,
+  "denominator_admissible_at_all_pinned_primes": true,
+  "normalization_canary_passed": true,
+  "source_sha256": {
+    "src/eleven_dimensional_a3_curl_fiber_product.rs": "228a05cdbe2c7b66b7fccbc6ce10eb1ea5146fe7b7cbb75105255070015d3dd8",
+    "src/eleven_dimensional_h_hat_jet.rs": "7bea816a4ad4c99506256b82871e8fda4d2002e97baa3b9679050620f5bd1fca",
+    "src/eleven_dimensional_independent_a3_adapter.rs": "1e105b9e7cea17072a8790ac0031a544419fa72bf382a543fcfc40ea9c6e83f1",
+    "src/eleven_dimensional_physical_curvature.rs": "051e0f604fbf5c6aa07479f8945b9736fa803a7c5f5f3d002cc7fead064cef0d",
+    "src/eleven_dimensional_target_equation_complex.rs": "724b4a690746bf1823460ed57c9b16a67d3fc698ad020bff68df78b89251e958"
+  },
+  "passed": true,
+  "scope_boundary": "This certifies the independent fixed-momentum DA3/Eq3.1g-curl fiber product and its exact characteristic-zero paired basis. It does not identify an Hhat source map, invoke Eq25, or prove irreducibility."
+}

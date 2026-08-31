@@ -1,0 +1,11 @@
+{
+  "schema_version": "adynkra-11d-corrected-gamma25-parity-v1",
+  "columns_checked_per_degree": 10240,
+  "p2_residual_rows": 0,
+  "p5_residual_rows": 0,
+  "p2_adapted_sha256": "5fd9e5af8895e6a4a1b5f020201c6d5f2a7513fc721016234548b295267a2542",
+  "p2_direct_sha256": "5fd9e5af8895e6a4a1b5f020201c6d5f2a7513fc721016234548b295267a2542",
+  "p5_adapted_sha256": "01aa588549f0e3c7dea56c2c539a15e971826636d32974185a8e3f2cc954a3ba",
+  "p5_direct_sha256": "01aa588549f0e3c7dea56c2c539a15e971826636d32974185a8e3f2cc954a3ba",
+  "passed": true
+}

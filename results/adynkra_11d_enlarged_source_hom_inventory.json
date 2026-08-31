@@ -1,0 +1,215 @@
+{
+  "checks": {
+    "a3_d2_counts": true,
+    "corrected_full_scan_has_zero_common_support": true,
+    "fixed_witness_is_nonzero_target_only": true,
+    "g4_d2_counts": true,
+    "gamma_trace_rank_32": true,
+    "gamma_traceless_rank_320": true,
+    "h_hat_bianchi_rank_2": true,
+    "h_hat_closed_kernel_is_trace_ray": true,
+    "h_hat_raw_g4_rank_3": true,
+    "only_p2_is_lorentz_stueckelberg": true,
+    "source_dimension_1376": true,
+    "spinor_square_dimension_1024": true,
+    "spinor_times_h_hat_dimension_10240": true
+  },
+  "d2_p0_a3_basis": [
+    [
+      {
+        "contractions": 0,
+        "derivative_form_degree": 3,
+        "route": "direct",
+        "source_form_degree": 0
+      }
+    ],
+    [
+      {
+        "contractions": 1,
+        "derivative_form_degree": 4,
+        "route": "direct",
+        "source_form_degree": 1
+      }
+    ],
+    [
+      {
+        "contractions": 1,
+        "derivative_form_degree": 3,
+        "route": "direct",
+        "source_form_degree": 2
+      }
+    ],
+    [
+      {
+        "contractions": 0,
+        "derivative_form_degree": 0,
+        "route": "direct",
+        "source_form_degree": 3
+      },
+      {
+        "contractions": 2,
+        "derivative_form_degree": 4,
+        "route": "direct",
+        "source_form_degree": 3
+      }
+    ],
+    [
+      {
+        "contractions": 2,
+        "derivative_form_degree": 3,
+        "route": "direct",
+        "source_form_degree": 4
+      },
+      {
+        "contractions": 0,
+        "derivative_form_degree": 4,
+        "route": "hodge",
+        "source_form_degree": 4
+      }
+    ],
+    [
+      {
+        "contractions": 0,
+        "derivative_form_degree": 3,
+        "route": "hodge",
+        "source_form_degree": 5
+      },
+      {
+        "contractions": 3,
+        "derivative_form_degree": 4,
+        "route": "direct",
+        "source_form_degree": 5
+      }
+    ]
+  ],
+  "d2_p0_g4_basis": [
+    [
+      {
+        "contractions": 0,
+        "derivative_form_degree": 4,
+        "route": "direct",
+        "source_form_degree": 0
+      }
+    ],
+    [
+      {
+        "contractions": 0,
+        "derivative_form_degree": 3,
+        "route": "direct",
+        "source_form_degree": 1
+      }
+    ],
+    [
+      {
+        "contractions": 1,
+        "derivative_form_degree": 4,
+        "route": "direct",
+        "source_form_degree": 2
+      }
+    ],
+    [
+      {
+        "contractions": 1,
+        "derivative_form_degree": 3,
+        "route": "direct",
+        "source_form_degree": 3
+      },
+      {
+        "contractions": 0,
+        "derivative_form_degree": 4,
+        "route": "hodge",
+        "source_form_degree": 3
+      }
+    ],
+    [
+      {
+        "contractions": 0,
+        "derivative_form_degree": 0,
+        "route": "direct",
+        "source_form_degree": 4
+      },
+      {
+        "contractions": 0,
+        "derivative_form_degree": 3,
+        "route": "hodge",
+        "source_form_degree": 4
+      },
+      {
+        "contractions": 2,
+        "derivative_form_degree": 4,
+        "route": "direct",
+        "source_form_degree": 4
+      }
+    ],
+    [
+      {
+        "contractions": 2,
+        "derivative_form_degree": 3,
+        "route": "direct",
+        "source_form_degree": 5
+      },
+      {
+        "contractions": 1,
+        "derivative_form_degree": 4,
+        "route": "hodge",
+        "source_form_degree": 5
+      }
+    ]
+  ],
+  "hom_dimensions": {
+    "d0_p0_forms_to_a3_g4": [
+      1,
+      1
+    ],
+    "d0_p1_forms_to_a3_g4": [
+      2,
+      2
+    ],
+    "d1_p0_full_h_to_a3_g4": [
+      2,
+      2
+    ],
+    "d1_p1_full_h_to_a3_g4": [
+      5,
+      5
+    ],
+    "d2_p0_a3_by_source_form_degree": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "d2_p0_forms_to_a3_g4": [
+      9,
+      10
+    ],
+    "d2_p0_g4_by_source_form_degree": [
+      1,
+      1,
+      1,
+      2,
+      3,
+      2
+    ]
+  },
+  "independent_direct_sum_can_fill_fixed_h_hat_row": false,
+  "input_sha256": {
+    "lorentz_orbit": "22f70844ab97645784adc47fb9d86d41ac90777cf3732cb1310db8a6ea5351d9",
+    "normalization": "b171124ca27b79bdf614dedddc8867deab613aa40fb236f66551e8ebf8307ce1",
+    "projectors": "0f5efdec8c36c7449d27a80be9eab0cd8c39db970b72d9910ae2e6fd385686b2",
+    "raw_g4": "a0f18ddccaa0c526aa3c38af2ebef081efd1c66d5b6650cfa9f730112c00a6d1"
+  },
+  "passed": true,
+  "reason": "source ordinal is part of the row key; independent irreducible source summands extend the operator by new columns and cannot change an existing H_hat column",
+  "schema_version": "adynkra-11d-enlarged-source-hom-oracle-v1",
+  "source_coordinate_dimensions": {
+    "clifford_form_compensators": 1024,
+    "current_quotiented_independent_h_hat_plus_scale": 321,
+    "h_full": 352,
+    "h_gamma_trace_gauge": 32,
+    "h_gamma_traceless": 320,
+    "raw_total": 1376
+  }
+}

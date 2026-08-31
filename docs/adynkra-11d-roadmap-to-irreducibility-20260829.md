@@ -349,6 +349,12 @@ the corresponding 77-block basis description is stored in
 `results/adynkra_11d_level18_target_quotient_basis.json`.
 No `results/adynkra_11d_physical_k_validated.json` presently exists.
 
+This missing map must not be confused with the ordinary free component-field
+gauge map from diffeomorphism, two-form, and local-supersymmetry parameters
+into `(h,A_3,psi)`. The latter is now exact and is recorded in section 4.5a,
+but it has no certified lift into `H_hat` and no routing into the 77-block
+basis.
+
 ### 3.4 Physical operator
 
 The completed operator must have a typed codomain, not a bag of selected
@@ -626,6 +632,289 @@ These numbers count nonzero sparse emitted terms for that one exact canary.
 They are not representation dimensions, matrix ranks, or term counts for the
 complete 321-column operator.
 
+### 4.3a Corrected one-derivative Gamma4 channel diagnostic
+
+The canonical gamma-traceless `H_hat` basis stores a column spinor. The
+source-variance-correct Eq. (39) join is therefore
+
+\[
+(\Gamma_{[p]}C)C=-\Gamma_{[p]},
+\]
+
+not direct application of `Gamma_[p] C` to that basis. With this correction,
+the Gamma4 trace and Gamma2 exterior obey the exact identity
+
+\[
+\operatorname{Tr}(\Gamma_{[4]}D\widehat H)
+=-3\operatorname{Alt}(\Gamma_{[2]}D\widehat H)
+\]
+
+on all 10,240 canonical source columns and all 165 three-form rows. Both maps
+have rank 165.
+
+The corrected Gamma4 form-vector has measured rank 3,630 and decomposes with
+exact ranks `165 + 462 + 3,003`. Reconstruction, hook trace, and hook exterior
+residuals are zero. The three raw momentum-to-four-form channels are:
+
+1. `p wedge Gamma4-trace Lambda3`;
+2. `i_p Gamma4-exterior Lambda5`, using raised momentum and the mostly-plus
+   time sign;
+3. `p_e Gamma4-hook H_[4]{}^e`, with no additional metric on the already
+   contravariant hook index.
+
+All 2,575,485 exact adapter equivariance checks pass. The three pre-Bianchi
+coefficient columns have rank three. The target Bianchi matrix has rank two
+and exact kernel `span{(1,0,0)}`: the trace channel has zero Bianchi rows,
+while the Lambda5 and hook channels have 2,822,400 and 3,709,440 nonzero rows.
+
+The durable report is
+`results/adynkra_11d_raw_three_channel_g4_bianchi.json`, SHA-256
+`a0f18ddccaa0c526aa3c38af2ebef081efd1c66d5b6650cfa9f730112c00a6d1`.
+Its canonical symbolic-row digest is
+`dfe3b010d62c3ec86b65c3d147551ae15edd2986d5f63294da87db1c473b079b`
+and its source-module digest is
+`c7172139824ef12e3a2557449d849248a4eb88ea6756dd526b22a4b688da881b`.
+
+This closes only the raw one-derivative Bianchi slice. It selects a unique
+closed ray up to scale within those three channels. It does not identify that
+ray with the physical component four-form, fix its normalization against the
+gravitino or graviton, prove exhaustion of every admissible bidegree, impose
+the complete source redundancies or target gauge module K, or prove
+irreducibility. The earlier teleparallel comparison is bound to the legacy
+direct `Gamma_[p] C` convention and must not be used to reject the corrected
+trace ray. A fully right-C-corrected descendant comparison was therefore
+required.
+
+The corrected descendant comparison is now complete as a bounded no-go test.
+The production path first canonicalizes the 320 `H_hat` columns, then composes
+the final H-spinor slot of every `DH` and `DDH` slice with the primitive charge
+conjugation matrix. It feeds those corrected slices through the unchanged full
+Eq. (40) `Psi_[1,3,4,5]` solve, `Delta/DDelta`, Eq. (25) gravitino, curl, and
+teleparallel `D G4` chains. Independent parity gates compare the adapted
+legacy Gamma2 and Gamma5 maps with direct `-Gamma_[p]` contractions on all
+10,240 source columns per degree. Both have zero residual rows, with digests
+`5fd9e5af8895e6a4a1b5f020201c6d5f2a7513fc721016234548b295267a2542`
+and
+`01aa588549f0e3c7dea56c2c539a15e971826636d32974185a8e3f2cc954a3ba`.
+
+Across all 320 columns, the corrected trace-ray candidate has 6,760,512
+nonzero rows and the corrected teleparallel descendant has 179,988,160. Their
+typed supports have zero rows in common. The candidate scale is therefore
+forced to zero, while the target is nonzero, giving 179,988,160 exact residual
+rows. The first witness is source column 0, output coordinate 0, ordered
+spinor mask `0x00010001`, momentum `p_1`, candidate zero, and teleparallel
+coefficient `1/1280`.
+
+The durable report is
+`results/adynkra_11d_right_c_full_chain_four_form_normalization.json`, SHA-256
+`b171124ca27b79bdf614dedddc8867deab613aa40fb236f66551e8ebf8307ce1`.
+Its manifest SHA-256 is
+`fddacdeffea8534c23bac7e0b26d8f83b667025cea414f17950cc04b4e9ca072`.
+All 320 payload-hashed checkpoints, aggregate counts, stream digests, source
+hashes, executable hash, basis hash, target-curvature hash, and teleparallel
+map hash were independently re-read and validated.
+
+This result rules out proportionality of the unique closed trace ray to the
+pinned teleparallel target on the unrestricted canonical `H_hat` source. It
+does not finish physical four-form normalization. Additional source
+constraints could change the comparison domain, and the complete equivariant
+bidegree inventory could supply channels outside the bounded three-channel
+slice. The earlier
+`results/adynkra_11d_corrected_lambda3_four_form_normalization_v2.json` is
+explicitly marked mixed-convention scratch by its sidecar and is not evidence.
+
+### 4.3b Independent component A3/gravitino target fiber
+
+The physical target normalization now has an independent component-level
+anchor that does not call Eq. (25), `H_hat`, Eq. (40), or the gauge-fixed
+teleparallel section. It joins two separately typed maps into the canonical
+`D_alpha G_[4]` target:
+
+1. the Abelian first-jet map `D A_[3] -> D G_[4]` with `G_4=dA_3`;
+2. the component gravitino-curl map fixed by hep-th/0107155v2 Eq. (3.1g),
+   with printed coefficient `-1/8` and expanded partition coefficient
+   magnitude `1/2`.
+
+For every fixed momentum axis, the independent `D A_3` image has rank 3,840
+and the Eq. (3.1g) curl image has rank 1,760. Restricting the latter to the
+6,720 target rows outside the `p wedge D A_3` image gives rank 1,440 at all
+three pinned primes. The target-image intersection therefore has dimension
+320, the combined image has rank 5,280, and the fiber-product kernel has
+dimension 1,760. These ranks are identical for all eleven momentum axes.
+
+The 320-dimensional intersection is not inferred only from modular ranks.
+For every momentum axis, 320 canonical component-frame curl maps are
+independent at all three primes, have zero support outside the `D A_3` image,
+and replay exactly over `Q(i)` through an explicit `D A_3` preimage. The
+fixed-axis Bianchi residual is zero. A target-form join mutation produces a
+nonzero residual. The independent A3 adapter has zero local-Lorentz vertical
+image, and no quotient by the unrelated `D Psi_[2]` orbit is applied to the
+component curl source.
+
+The durable report is
+`results/adynkra_11d_a3_curl_fiber_product.json`, SHA-256
+`53f078a1189555734a9c48f674a0528f620460d0ffe8cd60d461f1533b13558a`.
+Its source hashes, eleven momentum records, 22 three-prime rank vectors, 11
+exact replay records, and normalization canary were independently re-read.
+The current fiber-product source hash is
+`228a05cdbe2c7b66b7fccbc6ce10eb1ea5146fe7b7cbb75105255070015d3dd8`.
+
+This closes the component A3/gravitino target fiber and its relative
+Eq. (3.1g) normalization. It does not identify a map from `H_hat` into this
+component fiber, fix normalization relative to the graviton/Riemann branch,
+prove complete source or bidegree scope, construct physical K, or prove
+irreducibility.
+
+### 4.3c Independent component graviton/gravitino normalization
+
+The remaining target-side relative normalization is now fixed on the ordinary
+on-shell component branch, independently of Eq. (25), `H_hat`, and Eq. (40).
+The exact comparison starts from hep-th/0101037 Eq. (41),
+
+\[
+D_\alpha h_{mn}=i\left[(\Gamma_m C)_{\alpha\gamma}\psi_n{}^\gamma
+ +(\Gamma_n C)_{\alpha\gamma}\psi_m{}^\gamma\right],
+\]
+
+and applies the independent Pauli-Fierz curvature. After the explicit
+derivative-row charge adapter `C^{-1}(C Gamma_m)=Gamma_m`, this agrees exactly
+with
+
+\[
+D_\alpha R^{\rm repo}_{ab|cd}
+=i\left[(p_a\Gamma_b-p_b\Gamma_a)C_{cd}
++(p_c\Gamma_d-p_d\Gamma_c)C_{ab}\right]_\alpha.
+\]
+
+The coefficient is one because the repository Riemann convention is twice
+the conventional curvature. At each of the eleven coordinate momentum
+fibers, the component curl, Riemann descendant, and Eq. (3.1g) `D G_4` maps
+have rank 320. The charge adapter, curvature identity, connection-gradient
+curl, Riemann Bianchi, and gravitino-curl Bianchi all have zero residual.
+Mutation gates detect the overall sign and charge-row join. A separate
+fixed-null-momentum implementation checks the same identity on all 352 raw
+gravitino-frame columns, also with rank 320, and detects half-normalization,
+time-metric, and omitted-pair mutations with 22,496, 1,216, and 11,840
+residual entries respectively.
+
+The all-axis durable report is
+`results/adynkra_11d_graviton_gravitino_relative.json`, SHA-256
+`17f9f227491a1f12bc8449a51f19039522bde86e1a3e1de8250cd9fd01bb11a3`.
+The independently derived `p_0` oracle is
+`results/adynkra_11d_graviton_relative_oracle.json`, SHA-256
+`b03408ee5e3bf7e7156e47636fe189d47a48dc8a20794c7eefec568cdcc8c789`.
+Both artifacts were rebuilt report-last after the shared source freeze and
+independently re-read with every embedded source hash matching. The oracle
+source hash is
+`70144d00e4ce3d47301a5ea08490fafb7593b17943075ee8da21253fbbba71dc`.
+
+Together with section 4.3b, this fixes the component target normalization
+among Riemann, gravitino curl, and `G_4`. It still does not identify the
+corrected Eq. (40) source ray with the independent component `A_3/G_4` fiber,
+extend Eq. (41) through off-shell J/X corrections, construct physical K, or
+prove irreducibility.
+
+### 4.3d Direct corrected Eq. (40) source-identification no-go
+
+The corrected Eq. (40) `Lambda3` ray has now been compared directly with the
+independent component `A_3/G_4` fiber from section 4.3b. This calculation does
+not call Eq. (25) or the teleparallel section. It forms
+
+\[
+\Psi_{[3]}={1\over16}\Gamma_{[2]}{}^{\beta\gamma}D_\beta
+\widehat H_\gamma,
+\]
+
+keeps the subsequently applied `D_alpha` as the free target derivative row,
+reduces the differentiated expression to PBW normal form, applies
+`d:A_3 -> G_4`, and projects each canonical target slice onto the exact
+Eq. (3.1g) image. Comparing after `d` annihilates the ordinary
+`A_3 -> A_3+p wedge Lambda2` gauge image.
+
+The candidate is Bianchi closed and contains 18,972 nonzero rows over 3,681
+PBW monomial slices. Its `(D,p)=(0,2)` branch has 21 slices, all 21 in the
+physical image, with zero exact reconstruction residual. Its `(2,1)` branch
+has 3,660 slices, none in the physical image, with 869,616 exact residual
+rows. The first witness has exterior-spinor mask `3`, momentum axis `10`, and
+target coordinate `42`: the candidate coefficient is `1/48`, the reconstructed
+physical-image coefficient is `1/336`, and the residual is `-1/56`. The
+projector accepts an in-image canary exactly and rejects an off-image mutation.
+
+The durable report is
+`results/adynkra_11d_eq40_independent_a3_fiber.json`, SHA-256
+`63cdc0edebfe62c1a9d279fa7d1df2d75cc66248a2d8fc513e0fce12147a57ee`.
+Its source hash is
+`276bacba7c04f04fc2c58517288128d17da7ec54ad4292bc987d279753eec1cc`.
+It binds the final physical-fiber report from section 4.3b and the complete
+higher-bidegree Hom inventory,
+`results/adynkra_11d_higher_bidegree_hom_inventory.json`, SHA-256
+`0e595b3787e9d9c1c60090b270bdc7a967efcea064850d9f3531d103b49bb52f`.
+All embedded source hashes, branch sums, bidegrees, gauge join, projector
+canaries, and the first exact witness were independently re-read.
+
+Therefore the unique corrected Eq. (40) `Lambda3` ray cannot be identified
+with the ordinary physical `A_3` on the unrestricted `H_hat` PBW slice. This
+is a source-identification no-go, not a proof that physical `F` does not exist.
+It does not rule out a constrained source quotient, the gamma-trace spinor ray
+in full `H`, higher-bidegree potential maps, or a different physical source
+construction.
+
+### 4.3e Engineering-degree source exhaustion
+
+The remaining local polynomial source space at the Eq. (40) engineering
+degree is now exhausted. Assigning weight one to `D` and weight two to `p`, a
+weight-one `H_hat -> A_3` potential has only the nonnegative bidegree `(1,0)`.
+Exact B5 character extraction gives
+
+```text
+dim Hom(S tensor H_hat, A_3)       = 1
+dim Hom(S tensor S_trace, A_3)     = 1
+dim Hom(S tensor full H, A_3)      = 2.
+```
+
+The first line is the corrected Eq. (40) ray ruled out in section 4.3d. The
+second full-`H` ray factors through `tau=Gamma^a H_a`. The exact rank-32 trace
+and rank-320 traceless projectors give `tau(P_320 H)=0`, so this ray vanishes
+on every `H_hat` input and cannot change an existing `H_hat` witness row.
+
+At descendant weight four the canonical PBW families are `(4,0)`, `(2,1)`,
+and `(0,2)`. The existing exact dimensions for the last two are 52 and 4.
+Fresh character extraction gives 49 direct `(4,0)` maps into `D G_4`, split
+as `3,10,13,13,10` across `00001,00011,00101,01001,10001`. These maps occupy
+a separate PBW row family. They cannot alter the certified `(2,1)` witness
+unless a separately proved source differential relation identifies the two
+families.
+
+The durable report is
+`results/adynkra_11d_eq40_source_exhaustion.json`, SHA-256
+`a46e6b42c83354d5a38c8bdeb1d80f35820972de9bc8cc8cf9a7a597503b632a`.
+Its source is
+`scripts/eleven_dimensional_eq40_source_exhaustion_oracle.py`, SHA-256
+`fd54b9643225b1923c6ff8bb61359370c636c81e26e71ae45825334476eb780c`.
+It binds the Eq. (40) physical-fiber no-go, the higher-bidegree inventory, the
+Clifford projectors, and the three-channel Bianchi kernel, and records semantic
+hashes for every character used.
+
+This closes same-engineering local polynomial `H_hat -> A_3` rescue. It does
+not close nonlocal inverse-momentum operators, higher-weight potentials,
+unknown differential source quotients, or different physical sources. A
+direct application of the component Rarita-Schwinger equation to `P_320 H` is
+not typed: `H_hat` is a semi-prepotential, while Eq. (25) constructs the
+physical component gravitino from `D Delta` and `D Psi`. The smallest honest
+on-shell diagnostic must instead use the corrected descendant chain
+
+```text
+H_hat -> Eq. (40) Delta -> D Delta -> Eq. (25) psi
+      -> gravitino curl -> Rarita-Schwinger Euler.
+```
+
+That chain already has the `(2,1)` and `(0,2)` PBW branches, so no additional
+outer spinor derivative is allowed. A negative witness is a rank increase
+from `C_RS` to `[C_RS;w]`. A positive result requires exact factorization of
+the complete residual through both branches of `C_RS`, not a `(2,1)`-only
+match. Even a positive result would establish only an on-shell diagnostic,
+not an off-shell semi-prepotential constraint.
+
 ### 4.4 Exact level-18 representation data
 
 The identity
@@ -683,6 +972,81 @@ constructed.
 The underlying exact free-complex report is
 `results/adynkra_11d_free_complex_validation.json`, SHA-256
 `d151cfc2b086a737aee7c02f85c6b2b77332451506a8a47cbe78d642876c17e0`.
+
+### 4.5a Physical component gauge complex, distinct from prepotential K
+
+The ordinary free component-field gauge map is now certified as a direct sum
+over all eleven formal momentum variables:
+
+\[
+K_{\rm comp}:V^*\oplus\Lambda^2V^*\oplus S
+\longrightarrow
+\operatorname{Sym}^2V^*\oplus\Lambda^3V^*\oplus(V^*\otimes S).
+\]
+
+In the repository's unnormalized exterior-product convention, its exact
+formulas are
+
+\[
+\begin{aligned}
+\delta h_{ab}&=p_a\xi_b+p_b\xi_a,\\
+\delta A_{abc}&=p_a\Lambda_{bc}-p_b\Lambda_{ac}+p_c\Lambda_{ab},\\
+\delta\psi_a{}^\alpha&=p_a\epsilon^\alpha.
+\end{aligned}
+\]
+
+These are the linearized transformations in arXiv:0903.0259 Eq. (2). The
+three-form parameter has the complete second-order reducibility chain
+
+\[
+\sigma\mathrel{\mathop{\longrightarrow}^{p\wedge}}\lambda_a
+\mathrel{\mathop{\longrightarrow}^{p\wedge}}\Lambda_{ab}
+\mathrel{\mathop{\longrightarrow}^{p\wedge}}A_{abc},
+\]
+
+with `delta Lambda_ab=p_a lambda_b-p_b lambda_a` and
+`delta lambda_a=p_a sigma`. Both consecutive compositions vanish exactly.
+
+The direct component map has shape `583 x 98`. The curvature map into the
+ambient ordered-pair Riemann rows, `G_4`, and gravitino curl has shape
+`5,115 x 583`. The Riemann block deliberately uses the full `55 x 55 = 3,025`
+ordered antisymmetric-pair basis rather than a 1,210-row algebraic-symmetry
+projection. Over `Q(i)[p_0,...,p_10]`, every sector has exact
+`F_comp K_comp=0`; curvature-Bianchi, curvature-Euler, gauge-Euler, and
+Euler-Noether compositions also vanish. Independent one-term gauge-map
+mutations produce 100, 8, and 10 residual terms in the graviton, three-form,
+and gravitino sectors.
+
+At the fixed lightlike covector `p_a=(1,1,0,...,0)`, the component gauge ranks
+are `11,45,32`. The three-form reducibility ranks are `1,10,45`. Quotienting
+the raw potential spaces only by component gauge gives dimensions
+`55,120,320`. These are not the physical `44,84,128`. The latter are the
+on-shell cohomologies
+
+\[
+\ker(E_{\rm Euler})/\operatorname{im}K_{\rm comp},
+\]
+
+using Euler ranks `11,36,192` and on-shell kernel dimensions `55,129,160`.
+Thus the physical bosonic and fermionic totals are both 128, split as
+`44+84|128`.
+
+The durable report is
+`results/adynkra_11d_physical_component_k.json`, SHA-256
+`4b58938dd9861fc27844caf0c68d04617c80abd43d8c7ee4997f59932792c881`.
+Its source-module SHA-256 is
+`6301d8049528a17935f0b1957c529958a6c4ff0611824264b59401f7d32048ca`.
+It binds the target equation complex, free complex, independent `A_3` fiber,
+all-axis graviton/gravitino normalization, and independent graviton oracle to
+their frozen hashes. An independent reread reproduced every hash, formula,
+shape, rank, reducibility identity, cohomology count, formal zero composition,
+and mutation requirement.
+
+This closes the free physical component gauge complex only. It does not
+construct or infer the prepotential map
+`K: X_target -> H_hat`, route component gauge parameters into the 77-block
+basis, construct a source superfield equation, add auxiliary fields or
+interactions, or establish off-shell closure. Phase 3 therefore remains open.
 
 ### 4.6 Certified projectors and missing module promotion
 
@@ -1908,6 +2272,17 @@ equivariance residuals.
 Impose closure, source invariance, target reducibility, descendant matching,
 and Euler/Noether constraints. Report solution rank/nullity and normalization
 status.
+
+**Current bounded status:** component target normalization among Riemann,
+gravitino curl, and `G_4` is fixed. Closure is solved for the corrected
+three-channel one-derivative slice, whose Bianchi kernel is exactly the trace
+ray. The direct independent physical-fiber test rules out identifying the
+corrected Eq. (40) `H_hat` `Lambda3` ray with ordinary physical `A_3` on the
+unrestricted PBW source: all 3,660 `(2,1)` slices are off-image. A constrained
+source quotient, the full-`H` gamma-trace spinor ray, higher-bidegree potential
+maps, and different source constructions remain open. Source redundancy,
+Euler/Noether routing, physical K, and bidegree exhaustion also remain open,
+so Task 4 is not complete.
 
 ### Task 5: publish complete F v1
 
