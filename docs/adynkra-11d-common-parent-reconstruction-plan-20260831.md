@@ -220,11 +220,39 @@ Do not:
 
 ## Compute architecture
 
-Use CPU exact character and highest-weight machinery for completeness and
-source provenance. Use CUDA for Cartesian diagram evaluation, PBW stream
-construction, sparse compaction, and simultaneous three-prime rank screens
-when measured output volume warrants it. Keep canonical pivot minors and final
-`Q(i)` replay on CPU. Never materialize a dense ambient jet-to-component map.
+This project is GPU-first from the first implementation. Every operation whose
+cost grows with Cartesian coordinates, jet order, candidate count, row count,
+or finite-field width must be implemented on CUDA before production launch.
+
+The GPU owns:
+
+- parent-map Cartesian evaluation;
+- PBW traversal and normal-form stream construction;
+- obstruction and component-curvature composition;
+- sparse emission, sorting, reduction, and cancellation;
+- simultaneous three-prime rank, kernel, and retained-pivot calculations;
+- coupled supersymmetry and source-gauge descent systems;
+- formal-momentum closure batches;
+- constraint, syzygy, and reducibility rank screens;
+- complete residual replay over the support union.
+
+Use persistent device contexts, compressed signed-permutation Clifford tables,
+device-resident sparse operators, fused kernels, asynchronous double buffering,
+bounded-memory batches, and retained witness pivots. Upload immutable bases and
+operators once. Do not insert host round trips between PBW stages, projector
+stages, or finite-field reductions. Never materialize a dense ambient
+jet-to-component map.
+
+CPU work is restricted to small proof-control tasks: exact character counts,
+canonical grammar and manifest generation, immutable hashes, denominator
+audits, exact `Q(i)` reconstruction of retained minors, and final certificate
+publication. Every CPU oracle must have a CUDA parity canary before production
+data are accepted.
+
+Every production kernel must expose five-second heartbeats, batch progress,
+throughput, nonzero counts, retained ranks, first failing witness, VRAM
+resident and high-water bytes, checkpoint identity, and deterministic stream
+hashes. No long opaque run is permitted.
 
 ## Current boundary
 
