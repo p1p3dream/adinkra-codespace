@@ -37,29 +37,36 @@ PBW slices outside the physical Eq. 3.1g image, with first residual `-1/56`.
 ## Governing hypothesis
 
 `Hhat` is a semi-prepotential, not an arbitrary 320-component source. The
-common parent proposed in the audited literature is an unconstrained spinor
-prepotential and its scalar contraction:
+common parent proposed in the audited literature is the unconstrained spinor
+prepotential itself. Its scalar contraction is a distinguished subroute:
 
 ```text
+Psi_alpha --> Hhat,
 Psi_alpha --> V = D^alpha Psi_alpha --> Hhat.
 ```
 
-The repository already contains the exact level-15 scalar bridge, twelve
-level-16 source embeddings, seven level-17 embeddings, PBW normal form, B5
-character machinery, and the higher-momentum response infrastructure needed
-to test this hypothesis.
+The scalar-factorizing local bridge has already failed its complete
+`p D_[13]` correction test and is retained only as a negative-control line.
+It must not be substituted for the full parent space. The repository contains
+twelve exact direct level-16 leading embeddings, seven level-17 hook
+embeddings, forty-four first-momentum maps, the declared seventy-seven
+second-momentum maps, PBW normal form, B5 character machinery, and the
+higher-momentum response infrastructure needed to test the direct hypothesis.
 
 ## Phase 1: derive the allowed Hhat image
 
-Construct the complete equivariant family
+Construct the complete filtered equivariant family
 
 ```text
-P_H: J^15(V) --> Hhat
+P_H: J(Psi) --> Hhat
 ```
 
-in the existing Cartesian Majorana basis. Completeness must come from exact
-B5 multiplicities and an exact independent generator rank, not from a selected
-list of gamma diagrams.
+in the existing Cartesian Majorana basis. Begin with the exact direct-spinor
+`D^16 Psi` and `p D^14 Psi` bases and continue through every lower symbol at
+the declared engineering weight. Completeness must come from exact B5
+multiplicities and an exact independent generator rank, not from a selected
+list of gamma diagrams. The scalar-factorizing direction is tagged inside the
+direct basis and is never used as the whole candidate space.
 
 Let `O` be the certified physical-image obstruction
 
@@ -67,18 +74,25 @@ Let `O` be the certified physical-image obstruction
 O = (1 - P_physical) D(d Psi3).
 ```
 
-The first decisive calculation is
+The obstruction `O` is a valid negative-control functional for any candidate
+that claims the physical three-form factors through the rejected Eq. 40
+`Hhat` ray. It is not a valid constraint on a direct parent map `P_A` that does
+not factor through `Hhat`.
+
+The first decisive common-parent calculation is the coupled kernel
 
 ```text
-kernel(O P_H).
+kernel C(P_H, P_h, P_A, P_psi),
 ```
 
-Run the exact `-1/56` witness functional first. Only surviving combinations
-advance to the complete physical-image replay.
+where `C` contains the component-curvature, supersymmetry, and source-gauge
+descent equations. Run the exact `-1/56` witness first only on the
+`Hhat`-factorizing `P_A` subblock. Only coupled survivors advance to complete
+physical-image replay.
 
 ### Phase 1 outcomes
 
-1. `nullity = 0`: reject the current scalar/spinor common-parent realization.
+1. `nullity = 0`: reject the declared direct-spinor common-parent filtration.
 2. Nonzero nullity but zero physical rank: reject an overconstrained solution.
 3. Nonzero nullity and nonzero physical rank: define the allowed source as
    `im(P_H)` and continue.
@@ -100,6 +114,45 @@ at the engineering degrees fixed by the source inventory. Enumerate every
 equivariant map at each declared bidegree. Each generated Cartesian basis must
 pass exact Lorentz equivariance, expected multiplicity rank, PBW typing, and
 mutation gates.
+
+The first leading blocks are already fixed by the exact spinor-prepotential
+inventory:
+
+| map | parent level | target | leading multiplicity |
+|---|---:|---|---:|
+| `P_H` | 16 | `(10001)` gamma-traceless vector-spinor | 12 |
+| `P_h` | 17 | `(20000)` conformal graviton | 2 |
+| `P_A` | 17 | `(00100)` three-form | 8 |
+| `P_psi` | 18 | `(10001)` conformal gravitino | 8 |
+
+These are candidate multiplicities, not physical copies. The coupled chain
+equations must select their relative combinations and all required lower
+symbols.
+
+The complete filtered representation inventory is now frozen. Its canonical
+manifest contains 1,386 columns:
+
+| block | total columns | counts by lower-symbol order `q` |
+|---|---:|---|
+| `P_H` | 386 | `12, 44, 77, 100, 81, 41, 21, 9, 1` |
+| `P_h` | 132 | `2, 14, 24, 31, 30, 17, 8, 4, 2` |
+| `P_A` | 268 | `8, 30, 49, 64, 58, 32, 16, 9, 2` |
+| `P_psi` | 600 | `8, 57, 109, 136, 133, 85, 41, 21, 9, 1` |
+
+Every multiplicity has two independent exact character checks. The canonical
+manifest SHA-256 is
+`38ba66b5f90a2938706c9f68b9cc1cd969b60b407655e0643e33dbeb411f36cb`.
+This closes representation counting, not Cartesian construction.
+
+The existing bounded calculations are now explicitly negative controls:
+
+- the scalar-factorizing bridge has correction rank 2 and augmented rank 3;
+- the `P_H` `q=0,1` family has rank 56 and nullity 0;
+- the `P_H` `q=2` family has rank 77 and nullity 0.
+
+They do not test the 1,386-column direct common-parent family. The immediate
+construction gap is 253 `P_H` Cartesian emitters at `q >= 3` and 1,000 coupled
+`P_h`, `P_A`, and `P_psi` emitters.
 
 ## Phase 3: solve the coupled chain-map equations
 
@@ -183,15 +236,17 @@ derived semi-prepotential constraints. Publish:
 
 The common-parent construction passes only if:
 
-1. `O P_H = 0` exactly;
-2. the physical `G4` image remains nonzero;
-3. the Riemann, four-form, and gravitino Bianchi identities vanish;
-4. all source gauge maps descend through physical component `K`;
-5. `F_pre K_pre = 0` over formal momentum;
-6. the null-momentum cohomology is exactly `44 + 84 | 128`;
-7. no additional physical states survive;
-8. every modular survivor replays exactly over `Q(i)`;
-9. source, basis, operator, artifact, and row-dictionary hashes reproduce.
+1. the full coupled compatibility operator annihilates the selected parent
+   combination exactly;
+2. every `Hhat`-factorizing three-form subblock satisfies `O P_H = 0` exactly;
+3. the physical `G4` image remains nonzero;
+4. the Riemann, four-form, and gravitino Bianchi identities vanish;
+5. all source gauge maps descend through physical component `K`;
+6. `F_pre K_pre = 0` over formal momentum;
+7. the null-momentum cohomology is exactly `44 + 84 | 128`;
+8. no additional physical states survive;
+9. every modular survivor replays exactly over `Q(i)`;
+10. source, basis, operator, artifact, and row-dictionary hashes reproduce.
 
 ## Rejected shortcuts
 
@@ -210,10 +265,11 @@ Do not:
 ## Execution order
 
 1. Freeze the physical component `F` and `K` certificates.
-2. Export the complete level-15/16 `P_H` coefficient basis.
-3. Run the `-1/56` witness matrix for `O P_H`.
-4. Replay the complete obstruction only for witness survivors.
-5. Build the parallel `P_h`, `P_A`, and `P_psi` bases.
+2. Export the complete direct-spinor `P_H` coefficient basis, including all
+   lower symbols at the declared engineering weight.
+3. Build the parallel `P_h`, `P_A`, and `P_psi` bases from the same parent.
+4. Apply the `-1/56` witness only to the `Hhat`-factorizing `P_A` subblock.
+5. Assemble the coupled common-parent compatibility matrix on GPU.
 6. Solve the coupled supersymmetry and gauge-descent system.
 7. Derive `K_pre`, `C_H`, reducibility, and quotient normal forms.
 8. Verify formal-momentum closure and `44 + 84 | 128` cohomology.
@@ -262,3 +318,9 @@ plan tests whether a shared unconstrained parent restricts `Hhat` to a proper
 subspace and simultaneously produces the physical component fields. Until the
 coupled chain-map and source-gauge descent gates pass, no prepotential-level
 `F`, prepotential-level `K`, or irreducibility theorem is claimed.
+
+The GPU substrate is manifest-driven and variable-width. Its first acceptance
+fixture is the 30-column leading family `12 + 2 + 8 + 8`; its production input
+is the frozen 1,386-column manifest after every Cartesian/PBW emitter is
+certified. The engine must fail closed while any component block lacks explicit
+source kernels, target Clebsches, or exact equivariance gates.

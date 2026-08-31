@@ -38,6 +38,10 @@ mod eleven_dimensional_clifford;
 mod eleven_dimensional_complete_f;
 mod eleven_dimensional_complete_f_kernel;
 #[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_common_parent_ph_manifest;
+#[cfg_attr(not(test), allow(dead_code))]
+mod eleven_dimensional_common_parent_ph_obstruction_gpu;
+#[cfg_attr(not(test), allow(dead_code))]
 mod eleven_dimensional_component_gravitino_a3_fiber;
 #[cfg_attr(not(test), allow(dead_code))]
 mod eleven_dimensional_component_gravity_relative_fiber;

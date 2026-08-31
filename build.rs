@@ -9,6 +9,7 @@ fn main() {
     println!("cargo:rerun-if-changed=cuda/d21_invariant_diagrams_cuda.cu");
     println!("cargo:rerun-if-changed=cuda/d21_witness_constructor_cuda.cu");
     println!("cargo:rerun-if-changed=cuda/teleparallel_lorentz_descent_cuda.cu");
+    println!("cargo:rerun-if-changed=cuda/common_parent_ph_obstruction_cuda.cu");
     println!("cargo:rerun-if-env-changed=CUDA_HOME");
     println!("cargo:rerun-if-env-changed=CUDA_PATH");
     println!("cargo:rerun-if-env-changed=ADYNKRA_CUDA_ARCH");
@@ -39,6 +40,7 @@ fn main() {
     let d21_diagrams_object = out_dir.join("d21_invariant_diagrams_cuda.o");
     let d21_witness_object = out_dir.join("d21_witness_constructor_cuda.o");
     let lorentz_descent_object = out_dir.join("teleparallel_lorentz_descent_cuda.o");
+    let common_parent_ph_object = out_dir.join("common_parent_ph_obstruction_cuda.o");
     let archive = out_dir.join("libadynkra_second_momentum_fx_cuda.a");
     let architecture = env::var("ADYNKRA_CUDA_ARCH").unwrap_or_else(|_| "sm_89".to_owned());
     run(
@@ -133,6 +135,21 @@ fn main() {
     );
     run(
         Command::new(&nvcc)
+            .arg("-std=c++17")
+            .arg("-O3")
+            .arg("-lineinfo")
+            .arg("-Xptxas=-warn-spills")
+            .arg("--threads=0")
+            .arg(format!("-arch={architecture}"))
+            .arg("-Xcompiler=-fPIC")
+            .arg("-c")
+            .arg("cuda/common_parent_ph_obstruction_cuda.cu")
+            .arg("-o")
+            .arg(&common_parent_ph_object),
+        "compile common-parent P_H obstruction CUDA backend",
+    );
+    run(
+        Command::new(&nvcc)
             .arg("--lib")
             .arg(&second_momentum_object)
             .arg(&complete_f_object)
@@ -140,6 +157,7 @@ fn main() {
             .arg(&d21_diagrams_object)
             .arg(&d21_witness_object)
             .arg(&lorentz_descent_object)
+            .arg(&common_parent_ph_object)
             .arg("-o")
             .arg(&archive),
         "archive second-momentum CUDA backend",

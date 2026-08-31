@@ -1,0 +1,463 @@
+{
+  "P_A_blueprint": {
+    "coefficient_dimension": 8,
+    "minimal_completeness_gates": [
+      "source rank-nullity and exact integer raising residual for all eight source fixtures",
+      "four abstract multiplicity-one coupling residuals are zero under all five Chevalley raising operators",
+      "eight embedded source maps have pairwise bound source hashes and nonzero target highest coefficient",
+      "Cartesian target join has exact rank165, all six antisymmetry identities, and zero residual for all55 Lorentz generators",
+      "the eight full PBW coefficient streams have exact column rank8 on retained actual rows",
+      "one source coefficient mutation and one omitted antisymmetry route are both rejected"
+    ],
+    "shortest_source_completion": [
+      "Expose the existing level15 descendant generator, descend each 00001 highest vector to the lowest weight, apply the signed exterior Hodge complement, and verify all level17 raising rows exactly.",
+      "Adapt the deterministic sparse highest-weight kernel generator to exterior degree17 label00101, requiring rank161429 and nullity3, then verify every integer raising row.",
+      "Add a generic multiplicity-one abstract coupling problem with target00100 and target highest weight [2,2,2,0,0] for source labels00001,10001,01001,00101.",
+      "Apply each abstract coupling to all eight exterior fixtures and join its 165 target states to lexicographic Cartesian three-form masks."
+    ],
+    "source_fixture_status": {
+      "level15_exact_hodge_inputs_for_00001": 2,
+      "level17_existing_copies": 3,
+      "missing_level17_00101_copies": 3
+    },
+    "target_projector_route": "No spectral projector is needed. Lambda3(V) is already the irreducible 00100. Use the exact 3-slot antisymmetrizer and lexicographic 165-coordinate basis; a Casimir eigen-residual is an optional redundant gate."
+  },
+  "P_psi_blueprint": {
+    "aggregate_level18_artifact_sha256": "a5730b5e146c4f5bbabe5db1162a4139e8f2a80b7cb4f6225e2c723f0bb313ac",
+    "coefficient_dimension": 8,
+    "minimal_completeness_gates": [
+      "all eight pinned embedded maps pass, have rank320, and have zero exact raising residual",
+      "P320 is idempotent, has rank320 and trace-kernel rank32, and every target column has zero gamma trace",
+      "abstract-to-Cartesian join has rank320, exact two-sided reconstruction, and zero residual for all55 Lorentz generators",
+      "the eight full PBW coefficient streams have exact column rank8 on retained actual rows",
+      "collapsing two source copies and mutating the time metric or gamma-trace subtraction are rejected"
+    ],
+    "representation_maps_already_complete": true,
+    "shortest_component_completion": [
+      "Replay the eight existing embedded target10001 maps in canonical order.",
+      "Generate the abstract target lowering basis once and solve its exact join to canonical_gamma_traceless_frame_basis().",
+      "Emit source exterior mask, free Psi spinor, and canonical Hhat ordinal rows for each coefficient column."
+    ],
+    "target_projector_route": "Use the exact P320 gamma-trace projector on the 352-dimensional vector-spinor, then the canonical 320-frame basis and its spatial-slot left inverse. This is stronger and cheaper than a new Casimir projector."
+  },
+  "boundary": "This audit closes the exact source-system shapes, canonical order, and reuse boundary for the sixteen leading P_A and P_psi generators. It does not construct the missing level17 00101 kernels, the P_A abstract couplings, either Cartesian stream, lower PBW symbols, or the coupled common-parent relations.",
+  "canonical_order": {
+    "P_A": [
+      {
+        "abstract_coupling": "unique multiplicity-one 00001 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 518,
+        "local_ordinal": 0,
+        "source_copy": 1,
+        "source_dynkin_label": "00001",
+        "source_path_or_hodge_input": "data/eleven_dimensional_bridge/00001_highest_weight_kernel_1.i16le",
+        "source_sha256": "6e56975b88f6c33f4f217aee7b229c2ec659f85008c10e8f750cde9bd118e1b5",
+        "source_status": "construct by exact longest-Weyl descent of the level15 fixture followed by exterior Hodge complement",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 00001 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 519,
+        "local_ordinal": 1,
+        "source_copy": 2,
+        "source_dynkin_label": "00001",
+        "source_path_or_hodge_input": "data/eleven_dimensional_bridge/00001_highest_weight_kernel_2.i16le",
+        "source_sha256": "9579d69698366505e010f9f67998add2978e2d6b0da635776f982f022b714dbf",
+        "source_status": "construct by exact longest-Weyl descent of the level15 fixture followed by exterior Hodge complement",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 10001 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 520,
+        "local_ordinal": 2,
+        "source_copy": 1,
+        "source_dynkin_label": "10001",
+        "source_path_or_hodge_input": "data/eleven_dimensional_spinor_bridge/level17_10001_highest_weight_kernel.i16le",
+        "source_sha256": "1fb0a6d1169313ec5c0f5644a75a445b5cb61cbea2e58380fd98231f6879735a",
+        "source_status": "existing exact level17 fixture",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 01001 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 521,
+        "local_ordinal": 3,
+        "source_copy": 1,
+        "source_dynkin_label": "01001",
+        "source_path_or_hodge_input": "data/eleven_dimensional_spinor_bridge/level17_01001_highest_weight_kernel_1.i16le",
+        "source_sha256": "657319b79038b678e2dc00433ee96d8aa586d35665b8f9ae65c0cf3b949cb12a",
+        "source_status": "existing exact level17 fixture",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 01001 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 522,
+        "local_ordinal": 4,
+        "source_copy": 2,
+        "source_dynkin_label": "01001",
+        "source_path_or_hodge_input": "data/eleven_dimensional_spinor_bridge/level17_01001_highest_weight_kernel_2.i16le",
+        "source_sha256": "c93fe55ee353e298eed86695475350970dc6b38f9edfacbac2572097bf55d41a",
+        "source_status": "existing exact level17 fixture",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 00101 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 523,
+        "local_ordinal": 5,
+        "source_copy": 1,
+        "source_dynkin_label": "00101",
+        "source_path_or_hodge_input": null,
+        "source_sha256": null,
+        "source_status": "missing exact level17 highest-weight kernel",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 00101 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 524,
+        "local_ordinal": 6,
+        "source_copy": 2,
+        "source_dynkin_label": "00101",
+        "source_path_or_hodge_input": null,
+        "source_sha256": null,
+        "source_status": "missing exact level17 highest-weight kernel",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      },
+      {
+        "abstract_coupling": "unique multiplicity-one 00101 tensor 00001 -> 00100",
+        "global_manifest_ordinal": 525,
+        "local_ordinal": 7,
+        "source_copy": 3,
+        "source_dynkin_label": "00101",
+        "source_path_or_hodge_input": null,
+        "source_sha256": null,
+        "source_status": "missing exact level17 highest-weight kernel",
+        "target": "lexicographic Cartesian Lambda3(V), dimension 165"
+      }
+    ],
+    "P_psi": [
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "ffb14b67a2973e18c52752e330905ce567476e64eaa45838c0b6b41bd2f3e8b4",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_00100_copy1.json",
+        "embedded_map_sha256": "b0a855bccadf4dff9da70c92c263684c73d9427025f6a5441d36c1710ddf99b1",
+        "global_manifest_ordinal": 786,
+        "local_ordinal": 0,
+        "source_copy": 1,
+        "source_dynkin_label": "00100",
+        "source_fixture": "level18_00100_highest_weight_kernel_1.i16le",
+        "source_fixture_sha256": "4cda9f551ddad96d56a2d707b6bae9876cc318e02c1610cbe72c5e6b835859b5"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "1abdb82d72ca1bdfe639a734399a2302d3b3f2876d4cda7d6a25c6d1e871c456",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_00100_copy2.json",
+        "embedded_map_sha256": "927d24f5a0e882ecc155325dcba0ccccb2df21fe5fd4bb0df32e4dba56bcbb3c",
+        "global_manifest_ordinal": 787,
+        "local_ordinal": 1,
+        "source_copy": 2,
+        "source_dynkin_label": "00100",
+        "source_fixture": "level18_00100_highest_weight_kernel_2.i16le",
+        "source_fixture_sha256": "d85dd3017f64d142dcb81a317204cec77cba85e251357bb0e3d0de292127e317"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "5bd29fec1ae44367a53e60986c2e8aa0a21ecae663cd7abad53732032e4c8764",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_00010_copy1.json",
+        "embedded_map_sha256": "59ee028e0f5ff87a7d594ff8c669af145896fc8d025528b163317a446c5fc256",
+        "global_manifest_ordinal": 788,
+        "local_ordinal": 2,
+        "source_copy": 1,
+        "source_dynkin_label": "00010",
+        "source_fixture": "level18_00010_highest_weight_kernel_1.i16le",
+        "source_fixture_sha256": "0f44032a1a0b21effcfa7de72e00b79892dbbbbb80fdda16cc431db5d1ccfa90"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "c18767e714f65402efc6cf01c9134b1211ddadc419668f4965ca491a11b7924e",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_00010_copy2.json",
+        "embedded_map_sha256": "6ced96418a64b60225cc78e974abdb1249f733db7e45e5a0cbaa690c3496458e",
+        "global_manifest_ordinal": 789,
+        "local_ordinal": 3,
+        "source_copy": 2,
+        "source_dynkin_label": "00010",
+        "source_fixture": "level18_00010_highest_weight_kernel_2.i16le",
+        "source_fixture_sha256": "3b7c0b9504726d6b91a3d4346d91312be041efb9343c10fce28303871430fde6"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "49dfbed68a50a1a91b2bccee38ab6444e7ad8db9fbb6789253003b6bf735c890",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_10100_copy1.json",
+        "embedded_map_sha256": "7e08ba8d618c6bcb2479c204bda5eb77c94c7185b0ba1596db7bf9edf6c09c4e",
+        "global_manifest_ordinal": 790,
+        "local_ordinal": 4,
+        "source_copy": 1,
+        "source_dynkin_label": "10100",
+        "source_fixture": "level18_10100_highest_weight_kernel.i16le",
+        "source_fixture_sha256": "1ba1482e16f7a8a5c4d1ff477d03e44fba2a9719f5d88a447940bcb51b447331"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "637c87dd8a8fa17c82198b6772f396d901d302437eb56180e285b79142af8190",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_10010_copy1.json",
+        "embedded_map_sha256": "89c6790cc05f3b75097ce7e81716c21ba25d13099046e44be7250e4408f68a18",
+        "global_manifest_ordinal": 791,
+        "local_ordinal": 5,
+        "source_copy": 1,
+        "source_dynkin_label": "10010",
+        "source_fixture": "level18_10010_highest_weight_kernel.i16le",
+        "source_fixture_sha256": "ebe77e506f358d7dfc9ac7644326565b3ce7caf2ad008f7640c5f7e391ecab05"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "fabab76c05dd246c3d5e449265c5d0dc62a97db69d202222659b40425bb9fe8b",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_10002_copy1.json",
+        "embedded_map_sha256": "6c14f2ef5f6fb6484e688ed28375cba45ff6619b14ca8e1c93575290c616a806",
+        "global_manifest_ordinal": 792,
+        "local_ordinal": 6,
+        "source_copy": 1,
+        "source_dynkin_label": "10002",
+        "source_fixture": "level18_10002_highest_weight_kernel_1.i16le",
+        "source_fixture_sha256": "d3b2bf84cd74c04505f85a9dc4cbe669ea4f6cce854e5ea2ee68e9e9dd860213"
+      },
+      {
+        "certified_irrep_image_rank": 320,
+        "coupled_map_sha256": "41b777379dd6ebe6afc8610f75846224e988416e5eedddba1d836e6d3103562c",
+        "embedded_map_path": "results/eleven_dimensional_level18_embedded/embedded_10001_from_10002_copy2.json",
+        "embedded_map_sha256": "b679535ec4cb7e472dc271beceff7b54d1c5c8d71e27f471b3588b3d326f0763",
+        "global_manifest_ordinal": 793,
+        "local_ordinal": 7,
+        "source_copy": 2,
+        "source_dynkin_label": "10002",
+        "source_fixture": "level18_10002_highest_weight_kernel_2.i16le",
+        "source_fixture_sha256": "5e17ebbb14f25d6ff1dd10bd566c72c24787fab59d2d56dc983809dae21a185f"
+      }
+    ]
+  },
+  "dependencies": {
+    "results/adynkra_11d_direct_spinor_common_parent_inventory.json": "df9974ce87e656f8931a351bdb1c48974b97c2fe33586942173d02e42a18c610",
+    "results/adynkra_11d_level15_bridge_validation.json": "a60f45da974b999beb9f66efadd84ad7e821243f4b7ee8ef0edb461cee128387",
+    "results/adynkra_11d_level18_embedded_maps.json": "a5730b5e146c4f5bbabe5db1162a4139e8f2a80b7cb4f6225e2c723f0bb313ac",
+    "src/eleven_dimensional_h_hat_jet.rs": "7bea816a4ad4c99506256b82871e8fda4d2002e97baa3b9679050620f5bd1fca",
+    "src/eleven_dimensional_independent_a3_adapter.rs": "1e105b9e7cea17072a8790ac0031a544419fa72bf382a543fcfc40ea9c6e83f1",
+    "src/eleven_dimensional_level16_couplings.rs": "be5bc28bb77923bf2906225e06e8e5fdb44244b07a7c8d80c9e6a28e35a02fe1"
+  },
+  "pa_component_construction_ready": false,
+  "passed_inventory_audit": true,
+  "ppsi_abstract_maps_ready": true,
+  "ppsi_cartesian_stream_ready": false,
+  "publication_contract": {
+    "column_order": "use canonical_order without sorting by filenames",
+    "exactness": "three-prime construction is acceptable only with denominator checks and exact Q replay of the retained rank8 actual-row minor",
+    "hashes": "bind source fixture, abstract coupling, target join, full stream, and dependency source hashes independently",
+    "observability": "checkpoint at generator boundaries and publish the final report by atomic rename after all mutations pass",
+    "row_key": [
+      "target_block",
+      "source_exterior_mask",
+      "free_Psi_spinor",
+      "target_coordinate"
+    ]
+  },
+  "schema_version": "adynkra-11d-common-parent-leading-kernel-blueprint-v1",
+  "source_highest_weight_systems": {
+    "P_A_level17": [
+      {
+        "dynkin_label": "00001",
+        "expected_kernel_dimension": 2,
+        "expected_rank": 591808,
+        "exterior_degree": 17,
+        "highest_weight_doubled_coordinates": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "raising_block_rows": [
+          388720,
+          388720,
+          388720,
+          388720,
+          388720
+        ],
+        "source_weight_space_columns": 591810,
+        "total_raising_rows": 1943600
+      },
+      {
+        "dynkin_label": "10001",
+        "expected_kernel_dimension": 1,
+        "expected_rank": 388719,
+        "exterior_degree": 17,
+        "highest_weight_doubled_coordinates": [
+          3,
+          1,
+          1,
+          1,
+          1
+        ],
+        "raising_block_rows": [
+          166158,
+          252162,
+          252162,
+          252162,
+          252162
+        ],
+        "source_weight_space_columns": 388720,
+        "total_raising_rows": 1174806
+      },
+      {
+        "dynkin_label": "01001",
+        "expected_kernel_dimension": 2,
+        "expected_rank": 252160,
+        "exterior_degree": 17,
+        "highest_weight_doubled_coordinates": [
+          3,
+          3,
+          1,
+          1,
+          1
+        ],
+        "raising_block_rows": [
+          166158,
+          104875,
+          161432,
+          161432,
+          161432
+        ],
+        "source_weight_space_columns": 252162,
+        "total_raising_rows": 755329
+      },
+      {
+        "dynkin_label": "00101",
+        "expected_kernel_dimension": 3,
+        "expected_rank": 161429,
+        "exterior_degree": 17,
+        "highest_weight_doubled_coordinates": [
+          3,
+          3,
+          3,
+          1,
+          1
+        ],
+        "raising_block_rows": [
+          104875,
+          104875,
+          65220,
+          101902,
+          101902
+        ],
+        "source_weight_space_columns": 161432,
+        "total_raising_rows": 478774
+      }
+    ],
+    "P_psi_level18": [
+      {
+        "dynkin_label": "00100",
+        "expected_kernel_dimension": 2,
+        "expected_rank": 348238,
+        "exterior_degree": 18,
+        "highest_weight_doubled_coordinates": [
+          2,
+          2,
+          2,
+          0,
+          0
+        ],
+        "raising_block_rows": [
+          227528,
+          227528,
+          144678,
+          224380,
+          280014
+        ],
+        "source_weight_space_columns": 348240,
+        "total_raising_rows": 1104128
+      },
+      {
+        "dynkin_label": "00010",
+        "expected_kernel_dimension": 2,
+        "expected_rank": 280012,
+        "exterior_degree": 18,
+        "highest_weight_doubled_coordinates": [
+          2,
+          2,
+          2,
+          2,
+          0
+        ],
+        "raising_block_rows": [
+          181748,
+          181748,
+          181748,
+          114758,
+          224380
+        ],
+        "source_weight_space_columns": 280014,
+        "total_raising_rows": 884382
+      },
+      {
+        "dynkin_label": "10100",
+        "expected_kernel_dimension": 1,
+        "expected_rank": 181747,
+        "exterior_degree": 18,
+        "highest_weight_doubled_coordinates": [
+          4,
+          2,
+          2,
+          0,
+          0
+        ],
+        "raising_block_rows": [
+          76888,
+          116328,
+          72380,
+          114758,
+          144678
+        ],
+        "source_weight_space_columns": 181748,
+        "total_raising_rows": 525032
+      },
+      {
+        "dynkin_label": "10010",
+        "expected_kernel_dimension": 1,
+        "expected_rank": 144677,
+        "exterior_degree": 18,
+        "highest_weight_doubled_coordinates": [
+          4,
+          2,
+          2,
+          2,
+          0
+        ],
+        "raising_block_rows": [
+          60298,
+          91936,
+          91936,
+          56758,
+          114758
+        ],
+        "source_weight_space_columns": 144678,
+        "total_raising_rows": 415686
+      },
+      {
+        "dynkin_label": "10002",
+        "expected_kernel_dimension": 2,
+        "expected_rank": 114756,
+        "exterior_degree": 18,
+        "highest_weight_doubled_coordinates": [
+          4,
+          2,
+          2,
+          2,
+          2
+        ],
+        "raising_block_rows": [
+          47096,
+          72380,
+          72380,
+          72380,
+          56758
+        ],
+        "source_weight_space_columns": 114758,
+        "total_raising_rows": 320994
+      }
+    ]
+  }
+}

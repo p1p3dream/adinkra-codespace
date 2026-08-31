@@ -1,0 +1,106 @@
+{
+  "benchmark_command": "for i in 1 2 3; do /tmp/common_parent_ph_bench 1000000; done",
+  "boundary": "Characteristic-zero lifting, exact Q(i) pivot-minor replay, manifest hashing, atomic checkpoint serialization, and construction of the real common-parent row stream remain CPU or producer responsibilities. The engine does not reinterpret the closed 56-column, 77-column, or scalar lines as new science.",
+  "compile_command": "/usr/local/cuda/bin/nvcc -std=c++17 -O3 -lineinfo -arch=sm_89 -Xptxas=-v -DADYNKRA_COMMON_PARENT_PH_OBSTRUCTION_STANDALONE cuda/common_parent_ph_obstruction_cuda.cu -o /tmp/common_parent_ph_bench",
+  "conservative_high_water_bytes": 160008652,
+  "cuda": "12.6 build 34431801_0",
+  "date": "2026-08-31",
+  "driver": "590.48.01",
+  "entries_per_second": [
+    146401630.914,
+    150146001.972,
+    150187945.195
+  ],
+  "features": [
+    "persistent context",
+    "runtime manifest-driven column width",
+    "fused three-prime F_p(i) arithmetic",
+    "64-bit row keys",
+    "device sparse COO sort and reduce",
+    "retained expected+1 RREF",
+    "witness-first stop",
+    "two pinned host and device batch slots",
+    "five-second heartbeat contract",
+    "resident and conservative transient VRAM high-water",
+    "checkpoint export and adoption",
+    "CPU modular kernel reconstruction"
+  ],
+  "ffi_typecheck": {
+    "command": "rustc --edition=2024 --crate-type lib --cfg feature=\\\"cuda\\\" src/eleven_dimensional_common_parent_ph_obstruction_gpu.rs -o /tmp/libcommon_parent_ph.rlib",
+    "passed": true
+  },
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "host": "stonkbot",
+  "local_cpu_tests": {
+    "command": "rustc --edition=2024 --test src/eleven_dimensional_common_parent_ph_obstruction_gpu.rs -O -o /tmp/common_parent_ph_obstruction_tests && /tmp/common_parent_ph_obstruction_tests --nocapture",
+    "failed": 0,
+    "passed": 6
+  },
+  "median_entries_per_second": 150146001.972,
+  "median_wall_milliseconds": 6.660184,
+  "negative_controls_only": {
+    "old_joint_columns": 56,
+    "old_second_momentum_columns": 77,
+    "scalar_factorizing_line": "negative parity fixture only"
+  },
+  "ptxas": {
+    "reduce_max_registers": 80,
+    "retained_rref_registers": 36,
+    "retained_rref_spills": 0,
+    "sort_max_registers": 64,
+    "thrust_spills": 0,
+    "unpack_registers": 20,
+    "unpack_spills": 0
+  },
+  "remote_binary_sha256": "4d78602744c2e61fa387c5bae3f99aeb2d861978819c7718eee23cbc7de90efa",
+  "resident_bytes": 120008572,
+  "schema_version": "adynkra-11d-common-parent-ph-gpu-substrate-benchmark-v1",
+  "scientific_handoff": {
+    "augmented_engine_columns": 1387,
+    "block_counts": {
+      "P_A": 268,
+      "P_H": 386,
+      "P_h": 132,
+      "P_psi": 600
+    },
+    "blocker": "The representation inventory is complete, but packed canonical COO emitters and the coupled all-order constraint rows are not yet materialized. The missing construction covers 253 q>=3 P_H symbols and 1000 component-block coefficients. No manifest-bound expected rank or row stream exists yet.",
+    "candidate_columns": 1386,
+    "candidate_manifest_sha256": "38ba66b5f90a2938706c9f68b9cc1cd969b60b407655e0643e33dbeb411f36cb",
+    "inventory_path": "results/adynkra_11d_direct_spinor_common_parent_inventory.json",
+    "inventory_sha256": "df9974ce87e656f8931a351bdb1c48974b97c2fe33586942173d02e42a18c610",
+    "launch_ready": false,
+    "p_hhat_columns": 386
+  },
+  "scientific_obstruction_run_completed": false,
+  "scope": "Synthetic exact contract benchmark for the generic persistent P_H obstruction and kernel substrate. This is not a scientific common-parent result.",
+  "source_sha256": {
+    "cuda/common_parent_ph_obstruction_cuda.cu": "86bced64dd9442178293e66723ed4922682e5725ea65357847025ca291eeb93f",
+    "src/eleven_dimensional_common_parent_ph_obstruction_gpu.rs": "94694a606cb45d179d421ee7bed1c5bd6e695a436ddbb5c9e652cfff880c0c94"
+  },
+  "substrate_passed": true,
+  "synthetic_contract": {
+    "augmented_retained_rank": 13,
+    "batches": 2,
+    "columns": 24,
+    "cpu_gpu_ranks": [
+      13,
+      13,
+      13
+    ],
+    "cpu_gpu_witness_pivot_column": 12,
+    "cpu_gpu_witness_row_key": 12,
+    "expected_rank": 12,
+    "input_entries": 1000000,
+    "pinned_primes": [
+      1073741783,
+      1073741723,
+      1073741719
+    ]
+  },
+  "vram_mib": 24564,
+  "wall_milliseconds": [
+    6.830525,
+    6.660184,
+    6.658324
+  ]
+}
